@@ -1,0 +1,4 @@
+BacArena
+========
+
+agent based modelling
