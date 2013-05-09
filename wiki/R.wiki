@@ -1,5 +1,20 @@
 =R=
 
+==r bindings aus libsbml==
+* Installation
+  # install libsbml http://sourceforge.net/projects/sbml/files/libsbml/5.8.0/stable/Linux/64-bit/
+  # install libsbml http://sourceforge.net/projects/sbml/files/libsbml/5.8.0/stable/Linux/64-bit/R%20interface/
+  # R CMD INSTALL libSBML_5.8.0_R_x86_64-pc-linux-gnu.tar.gz
+* Test
+  - library(libSBML)
+  - doc <- readSBML("ecoli_orth2011_msb201165-s3.xml")
+  - ecoli <- SBMLDocument_getModel(doc)
+  - Model_getNumSpecies(ecoli)
+  - Model_getNumReactions(ecoli)
+* API
+  - http://sbml.org/Software/libSBML/docs/cpp-api (entspricht c++)
+
+
 ==SBMLR==
 * ACHTUNG: liest externe smbl-modelle (bsp ecoli) nicht ein!!
 * http://www.bioconductor.org/packages/2.11/bioc/html/SBMLR.html
@@ -8,6 +23,7 @@
   - biocLite("SBMLR")
 
 ==rsbml==
+* ACHTUNG: braucht ganz veralterte libsbml version (2 oder 3) -> Schrott!!
 * http://www.bioconductor.org/packages/2.12/bioc/html/rsbml.html
 * R libsbml key bindings
   - http://sourceforge.net/projects/sbml/files/libsbml/5.8.0/stable/Linux/64-bit/R%20interface/libSBML_5.8.0_R_x86_64-pc-linux-gnu.tar.gz/download
