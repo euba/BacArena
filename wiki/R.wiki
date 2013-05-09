@@ -1,0 +1,14 @@
+=R=
+
+==SBMLR==
+* ACHTUNG: liest externe smbl-modelle (bsp ecoli) nicht ein!!
+* http://www.bioconductor.org/packages/2.11/bioc/html/SBMLR.html
+* R code
+  - source("http://bioconductor.org/biocLite.R")
+  - biocLite("SBMLR")
+
+==rsbml==
+* http://www.bioconductor.org/packages/2.12/bioc/html/rsbml.html
+* R libsbml key bindings
+  - http://sourceforge.net/projects/sbml/files/libsbml/5.8.0/stable/Linux/64-bit/R%20interface/libSBML_5.8.0_R_x86_64-pc-linux-gnu.tar.gz/download
+  - R CMD INSTALL libSBML_5.8.0_R_x86_64-pc-linux-gnu.tar.gz
