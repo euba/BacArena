@@ -3,3 +3,6 @@
 * [[netlogo]]
 * [[Konzept]]
 * [[R]]
+
+* http://systemsbiology.ucsd.edu/InSilicoOrganisms/OtherOrganisms sbml models
+* http://bigg.ucsd.edu/bigg/main.pl 
