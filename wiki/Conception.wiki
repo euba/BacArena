@@ -1,0 +1,16 @@
+=Conception=
+
+==Representation==
+* Bacteria as agents in rule based modelling
+
+==Microbial Ecology==
+* Useing flux balance analysis for getting in and out fluxes which determine interaction between bacterial cell and its surrounding
+
+==Growth==
+* Biomass function -> cell division
+
+==Thermodynamics==
+* Feasability and direction of a reaction depends on concentration of metabolites
+
+==Signalling==
+* Quorum sensing

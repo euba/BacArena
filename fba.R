@@ -23,10 +23,6 @@ stoch <- matrix(data = 0, nrow = length(spec), ncol = length(reac))#, rownames=s
 colnames(stoch) <- reac
 rownames(stoch) <- spec
 
-# initialize
-lb <- rep(-Inf, Model_getNumSpecies(ecoli)) # lower bound
-ub <- rep(Inf, Model_getNumSpecies(ecoli))  # upper bound
-
 
 #
 # fill stoichiometric matrix
@@ -55,12 +51,28 @@ for(i in seq_len(Model_getNumReactions(ecoli))){
 }
 #stoch <- cbind(stoch, tmp)
 
+
+# initialize
+lb <- rep(-Inf, Model_getNumSpecies(ecoli)) # lower bound
+ub <- rep(Inf, Model_getNumSpecies(ecoli))  # upper bound
+
+
 # objective function
 c <- rep(0, dim(stoch)[2])
 c[which(colnames(stoch)=="R_Biomass_Ecoli_core_N__w_GAM_")] <- 1 
-
-# objective function
 lb[which(rownames(stoch)=="R_ATPM")] <- 7.6
 ub[which(rownames(stoch)=="R_ATPM")] <- 7.6
 
 # define growth media
+lb[grep("R_EX", colnames(stoch))] <- 0
+
+colnames(stoch)
+
+
+lb[which(rownames(stoch)=="R_EX_glc_D_e")] <- -10
+lb[which(rownames(stoch)=="R_EX_h2o_e")] <- -1000
+lb[which(rownames(stoch)=="R_EX_h_e")] <- -1000
+lb[which(rownames(stoch)=="R_EX_o2_e")] <- -1000
+lb[which(rownames(stoch)=="R_EX_pi_e")] <- -1000
+
+
