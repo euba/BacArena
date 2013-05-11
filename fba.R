@@ -1,5 +1,6 @@
 library(libSBML)
-doc <- readSBML("ecoli_core.xml")
+library(lpSolveAPI)
+doc <- readSBML("ecoli_core2.xml")
 ecoli <- SBMLDocument_getModel(doc)
 Model_getNumSpecies(ecoli)
 Model_getNumReactions(ecoli)
@@ -23,6 +24,9 @@ stoch <- matrix(data = 0, nrow = length(spec), ncol = length(reac))#, rownames=s
 colnames(stoch) <- reac
 rownames(stoch) <- spec
 
+# initialize
+lb <- rep(-Inf, Model_getNumReactions(ecoli)) # lower bound
+ub <- rep(Inf, Model_getNumReactions(ecoli))  # upper bound
 
 #
 # fill stoichiometric matrix
@@ -46,33 +50,43 @@ for(i in seq_len(Model_getNumReactions(ecoli))){
   #colnames(stoch) <- c(colnames(stoch), paste(colnames(stoch[,i]),"rev", sep=""))
   #}
   if(!Reaction_getReversible(re)){
-    lb[i]<-0 
+    lb[i] <- 0 
   }
 }
 #stoch <- cbind(stoch, tmp)
 
-
-# initialize
-lb <- rep(-Inf, Model_getNumSpecies(ecoli)) # lower bound
-ub <- rep(Inf, Model_getNumSpecies(ecoli))  # upper bound
-
-
 # objective function
 c <- rep(0, dim(stoch)[2])
-c[which(colnames(stoch)=="R_Biomass_Ecoli_core_N__w_GAM_")] <- 1 
-lb[which(rownames(stoch)=="R_ATPM")] <- 7.6
-ub[which(rownames(stoch)=="R_ATPM")] <- 7.6
+
+c[which(colnames(stoch)=="R_Biomass_Ecoli_core_w_GAM")] <- 1 
+#c[which(colnames(stoch)=="R_Biomass_Ecoli_core_N__w_GAM_")] <- 1 
+lb[which(colnames(stoch)=="R_ATPM")] <- 7.6
+ub[which(colnames(stoch)=="R_ATPM")] <- 7.6
 
 # define growth media
 lb[grep("R_EX", colnames(stoch))] <- 0
 
-colnames(stoch)
+lb[which(colnames(stoch)=="R_EX_glc_e")] <- -10
+lb[which(colnames(stoch)=="R_EX_h2o_e")] <- -1000
+lb[which(colnames(stoch)=="R_EX_h_e")] <- -1000
+lb[which(colnames(stoch)=="R_EX_o2_e")] <- -1000
+lb[which(colnames(stoch)=="R_EX_pi_e")] <- -1000
 
+# linear programming
+linp <- make.lp(0, dim(stoch)[2], verbose = "full")
+lp.control(linp,sense='max')
+set.objfn(linp, c)
+for(i in 1:nrow(stoch)){
+  add.constraint(linp, stoch[i,], "=", 0)
+}
+set.bounds(linp,lower=lb)
+set.bounds(linp,upper=ub)
 
-lb[which(rownames(stoch)=="R_EX_glc_D_e")] <- -10
-lb[which(rownames(stoch)=="R_EX_h2o_e")] <- -1000
-lb[which(rownames(stoch)=="R_EX_h_e")] <- -1000
-lb[which(rownames(stoch)=="R_EX_o2_e")] <- -1000
-lb[which(rownames(stoch)=="R_EX_pi_e")] <- -1000
+solve(linp)
+get.objective(linp)
+
+write.lp(linp,"test", NULL)
+
+rm(linp)
 
 
