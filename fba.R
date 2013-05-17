@@ -1,6 +1,6 @@
 library(libSBML)
 library(lpSolveAPI)
-doc <- readSBML("ecoli_core2.xml")
+doc <- readSBML("ecoli_core.xml")
 ecoli <- SBMLDocument_getModel(doc)
 Model_getNumSpecies(ecoli)
 Model_getNumReactions(ecoli)
@@ -9,11 +9,15 @@ Model_getNumReactions(ecoli)
 # make stoichiometric matrix
 #
 
+
 spec <- vector(mode = "character", length = 0)
 for(i in seq_len(Model_getNumSpecies(ecoli))){  
   sp  =	Model_getSpecies(ecoli,	i-1);	
-  spec[i] <- Species_getId(sp);	
+  spec[i] <- Species_getId(sp);
 }
+ex <- rep(0, Model_getNumSpecies(ecoli)) 
+ex <- regexpr("_b$",spec) #mark external species/metabolites
+
 #spec <- as.factor(spec)
 reac <- vector(mode = "character", length = 0)
 for(i in seq_len(Model_getNumReactions(ecoli))){  
@@ -58,26 +62,28 @@ for(i in seq_len(Model_getNumReactions(ecoli))){
 # objective function
 c <- rep(0, dim(stoch)[2])
 
-c[which(colnames(stoch)=="R_Biomass_Ecoli_core_w_GAM")] <- 1 
-#c[which(colnames(stoch)=="R_Biomass_Ecoli_core_N__w_GAM_")] <- 1 
+#c[which(colnames(stoch)=="R_Biomass_Ecoli_core_w_GAM")] <- 1 
+c[which(colnames(stoch)=="R_Biomass_Ecoli_core_N__w_GAM_")] <- 1 
 lb[which(colnames(stoch)=="R_ATPM")] <- 7.6
 ub[which(colnames(stoch)=="R_ATPM")] <- 7.6
 
 # define growth media
 lb[grep("R_EX", colnames(stoch))] <- 0
 
-lb[which(colnames(stoch)=="R_EX_glc_e")] <- -10
-lb[which(colnames(stoch)=="R_EX_h2o_e")] <- -1000
-lb[which(colnames(stoch)=="R_EX_h_e")] <- -1000
-lb[which(colnames(stoch)=="R_EX_o2_e")] <- -1000
-lb[which(colnames(stoch)=="R_EX_pi_e")] <- -1000
+lb[which(colnames(stoch)=="R_EX_glc_e_")] <- -10
+lb[which(colnames(stoch)=="R_EX_h2o_e_")] <- -1000
+lb[which(colnames(stoch)=="R_EX_h_e_")] <- -1000
+lb[which(colnames(stoch)=="R_EX_o2_e_")] <- -1000
+lb[which(colnames(stoch)=="R_EX_pi_e_")] <- -1000
 
 # linear programming
-linp <- make.lp(0, dim(stoch)[2], verbose = "full")
+#linp <- make.lp(0, dim(stoch)[2], verbose = "full")
+linp <- make.lp(0, dim(stoch)[2])
 lp.control(linp,sense='max')
 set.objfn(linp, c)
 for(i in 1:nrow(stoch)){
-  add.constraint(linp, stoch[i,], "=", 0)
+  # only add constraint if it's not an external metabolite!!
+  if(ex[i] == -1) add.constraint(linp, stoch[i,], "=", 0) 
 }
 set.bounds(linp,lower=lb)
 set.bounds(linp,upper=ub)
