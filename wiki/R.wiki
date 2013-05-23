@@ -2,3 +2,7 @@
 
 [[sbml]] (read and parse)
 
+==speedup R==
+* R compiler http://dirk.eddelbuettel.com/blog/2011/04/12/
+* Rccp http://cran.r-project.org/web/packages/Rcpp/index.html
+* apply http://stackoverflow.com/questions/3505701/r-grouping-functions-sapply-vs-lapply-vs-apply-vs-tapply-vs-by-vs-aggrega
