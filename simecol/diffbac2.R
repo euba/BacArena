@@ -1,12 +1,47 @@
 #Diffusion and movement
 
 library(simecol)
+library(Rcpp)
+library(inline)
+library(rbenchmark)
 
 #Variable Declaration
 
-n <- 20
-m <- 20
+n <- 200
+m <- 200
 iter <- 10
+
+bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
+
+src <- '
+  const Rcpp::NumericMatrix  source(A);
+  Rcpp::NumericMatrix tmp = Rcpp::clone(source);
+
+   /* initialize random seed: */
+  srand (time(NULL));
+  /* generate secret number between 1 and 10: */
+  //iSecret = rand() % 3;
+  
+  int n = tmp.nrow();
+  int m = tmp.ncol();
+
+  for (int i = 0; i < n; i++){
+    for (int j = 1; j < m; j++){
+      if(source(i,j) != 0){
+        int a = (i + rand() % 3 - 1) % n; // get an integer between [-1:1]
+        int b = (j + rand() % 3 - 1) % m; // get an integer between [-1:1]
+        if(tmp(a,b) == 0){ // if empty go for it!
+          tmp(a,b) = 1;
+          tmp(i,j) = 0;
+        }
+      }
+    }
+  }
+  return tmp;
+'
+movement <- cxxfunction(signature(A = "numeric"), body = src, plugin="Rcpp")
+
+
 enum <- as.vector(sapply(letters, function(x){
   for(i in 1:9){
     a[i] <- paste(x, i, sep="")
@@ -24,9 +59,9 @@ substrat <- lapply(s, function(x, n, m){
 }, n=n, m=m)
 names(substrat) <- s
 
-#bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
+bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
 #bac <- matrix(c(rep(1,2*n), rep(0,n*m-2*n)), nrow=n, ncol=m)
-bac <- matrix(c(rep(0,(n*m-2*n)/2), rep(1,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m)
+#bac <- matrix(c(rep(0,(n*m-2*n)/2), rep(1,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m)
 
 #Iteration with rules to apply for each agent
 
@@ -51,19 +86,10 @@ for(time in 1:iter){
   #dev.off()
   
   #random movement of bacteria:
-  y <- bac
-  for (i in 0:(n-1)){
-    for(j in 0:(m-1)){
-      if(y[i+1,j+1] != 0){
-        a <- (i + round(runif(1,-1,1))) %% n 
-        b <- (j + round(runif(1,-1,1))) %% m 
-        if(bac[a+1,b+1] == 0){
-          bac[a+1,b+1] <- 1
-          bac[i+1,j+1] <- 0
-        }
-      }
-    }
-  }
+  bac <- movement(bac)  
+  
+  
+  
   #plotting functions:
   #jpeg(paste("~/BacArena/plot", paste(enum[time], ".jpeg", sep=""), sep=""), quality = 100, width=600, height=600)
   image(bac, col=c("white", "black"))
