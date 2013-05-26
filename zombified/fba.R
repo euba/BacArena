@@ -70,7 +70,7 @@ ub[which(colnames(stoch)=="R_ATPM")] <- 7.6
 # define growth media
 lb[grep("R_EX", colnames(stoch))] <- 0
 
-lb[which(colnames(stoch)=="R_EX_glc_e_")] <- -10
+lb[which(colnames(stoch)=="R_EX_glc_e_")] <- -18.5
 lb[which(colnames(stoch)=="R_EX_h2o_e_")] <- -1000
 lb[which(colnames(stoch)=="R_EX_h_e_")] <- -1000
 lb[which(colnames(stoch)=="R_EX_o2_e_")] <- -1000

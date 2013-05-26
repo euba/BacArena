@@ -10,10 +10,10 @@ substrat <- lapply(s, function(x, n, m){
 }, n=n, m=m)
 names(substrat) <- s
 
-image(substrat$M_co2_b)
-substrat$M_co2_b
+#image(substrat$M_co2_b)
+#substrat$M_co2_b
 
-plot(as.data.frame(substrat$M_co2_b))
+#plot(as.data.frame(substrat$M_co2_b))
 
 diff <- new("rwalkModel",
             main = function(time, init, parms) {
@@ -48,8 +48,4 @@ sim(diff)
 
 plot(sim(diff))
 
-y <- substrat[[1]]
-anb <- eightneighbours(y)
-nb <- neighbours(y)
-y[5,5]
-(anb / nb)[5,5]
+

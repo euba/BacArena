@@ -8,6 +8,28 @@ m <- 2000
 bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
 
 
+
+## benchmark diffusion
+
+s <- c("M_ac_b","M_akg_b", "M_co2_b", "M_etoh_b", "M_for_b", "M_fum_b", "M_glc_D_b", "M_h2o_b", "M_h_b", "M_lac_D_b","M_o2_b", "M_pi_b", "M_pyr_b", "M_succ_b")
+substrat <- lapply(s, function(x, n, m){
+  matrix(runif(n*m), nrow=n, ncol=m)
+  #matrix(c(runif(n), rep(0, n*m-n)), nrow=n, ncol=m)
+  #matrix(c(rep(1, 2*n), rep(0, n*m-2*n)), nrow=n, ncol=m)
+}, n=n, m=m)
+names(substrat) <- s
+
+#diffusion of substrates by mean over neighbourhood
+substrat <- lapply(substrat, function(x){
+  anb <- eightneighbours(x)
+  nb <- neighbours(x)
+  mat <- (anb+x)/(nb+1)
+  return(mat)
+})
+
+
+
+
 ## benchmark bug movement (cpp vs. R loops)
 
 src <- '
@@ -52,6 +74,7 @@ movement2 <- function(bac, n, m){
       }
     }
   }
+  return(bac)
 }
 
 res <- benchmark(movement2(bac,n,m),
@@ -60,7 +83,6 @@ res <- benchmark(movement2(bac,n,m),
                  order="relative",
                  replications=1)
 print(res) ## show result
-
 
 
 
