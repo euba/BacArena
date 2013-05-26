@@ -5,14 +5,14 @@ library(Rcpp)
 library(inline)
 library(rbenchmark)
 
-source(file="./simecol/fba2.R")
-sbml <- read.sbml("ecoli_core.xml")
+source(file="fba.R")
+sbml <- read.sbml("data/ecoli_core.xml")
 
 
 #Variable Declaration
 
-n <- 25
-m <- 25
+n <- 30
+m <- 30
 iter <- 30
 
 bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
@@ -47,15 +47,30 @@ src <- '
 '
 movement <- cxxfunction(signature(A = "numeric"), body = src, plugin="Rcpp")
 
-
-
-
-enum <- as.vector(sapply(letters, function(x){
-  for(i in 1:9){
-    a[i] <- paste(x, i, sep="")
+movement2 <- function(bac, n, m){
+  y <- bac
+  for (i in 0:(n-1)){
+    for(j in 0:(m-1)){
+      if(y[i+1,j+1] != 0){
+        a <- (i + round(runif(1,-1,1))) %% n 
+        b <- (j + round(runif(1,-1,1))) %% m 
+        if(bac[a+1,b+1] == 0){
+          bac[a+1,b+1] <- 1
+          bac[i+1,j+1] <- 0
+        }
+      }
+    }
   }
-  return(a)
-}))
+  return(bac)
+}
+
+
+#enum <- as.vector(sapply(letters, function(x){
+#  for(i in 1:9){
+#    a[i] <- paste(x, i, sep="")
+#  }
+#  return(a)
+#}))
 
 #Initiation of agents
 
@@ -115,7 +130,7 @@ for(time in 1:iter){
         spos <- lapply(substrat, function(x, i, j){
           return(x[i,j])
         },i=i, j=j)
-        growth <- fba(spos, sbml$stoch, sbml$lb, sbml$ub)
+        growth <- fba(spos, sbml$stoch, sbml$lb, sbml$ub, sbml$ex)
         gvec[k]=growth
         k <- k + 1
       }
