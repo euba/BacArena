@@ -6,46 +6,21 @@ library(inline)
 library(rbenchmark)
 
 source(file="fba.R")
+source(file="cpp_source.R")
 sbml <- read.sbml("data/ecoli_core.xml")
 
 
 #Variable Declaration
 
-n <- 30
-m <- 30
-iter <- 30
+n <- 16
+m <- 16
+iter <- 300
 
 bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
 
-src <- '
-  const Rcpp::NumericMatrix  source(A);
-  Rcpp::NumericMatrix tmp = Rcpp::clone(source);
 
-   /* initialize random seed: */
-  srand (time(NULL));
-  /* generate secret number between 1 and 10: */
-  //iSecret = rand() % 3;
-  
-  int n = tmp.nrow();
-  int m = tmp.ncol();
-
-  for (int i = 0; i < n; i++){
-    for (int j = 1; j < m; j++){
-      if(source(i,j) != 0){
-        int a = (i + rand() % 3 - 1) % n; // get an integer between [-1:1]
-        int b = (j + rand() % 3 - 1) % m; // get an integer between [-1:1]
-        if (a == -1) a = n -1; //ugly. we are not satisfied with this...
-        if (b == -1) b = m -1;
-        if(tmp(a,b) == 0){ // if empty go for it!
-          tmp(a,b) = 1;
-          tmp(i,j) = 0;
-        }
-      }
-    }
-  }
-  return tmp;
-'
-movement <- cxxfunction(signature(A = "numeric"), body = src, plugin="Rcpp")
+movement <- cxxfunction(signature(A = "numeric"), body = src_movement, plugin="Rcpp")
+diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
 
 movement2 <- function(bac, n, m){
   y <- bac
@@ -99,12 +74,14 @@ bac <- matrix(c(rep(0,(n*m-2*n)/2), rep(1,2*n), rep(0,(n*m-2*n)/2)), nrow=n, nco
 #Iteration with rules to apply for each agent
 for(time in 1:iter){      
   #diffusion of substrates by mean over neighbourhood
-  substrat <- lapply(substrat, function(x){
-    anb <- eightneighbours(x)
-    nb <- neighbours(x)
-    mat <- (anb+x)/(nb+1)
-    return(mat)
-  })
+  #substrat <- lapply(substrat, function(x){
+  #  anb <- eightneighbours(x)
+  #  nb <- neighbours(x)
+  #  mat <- (anb+x)/(nb+1)
+  #  return(mat)
+  #})
+  diffusion(substrat)
+  
   #plotting functions:
   #jpeg(paste("~/BacArena/plot", paste(enum[time], ".jpeg", sep=""), sep=""), quality = 100, width=600, height=600)
   image(substrat$M_glc_b, zlim=c(0,100), col=colorRampPalette(c("white", "black", "red"))(40))
@@ -115,14 +92,16 @@ for(time in 1:iter){
   #    main=paste(names(x)[i], paste("step:", time)))
   #}
   #dev.off()
+  print(paste("Sum of glucose:", sum(apply(substrat$M_glc_b, 1, sum))))
   
   #random movement of bacteria:
   #bac <- movement(bac)  
   #bac <- movement2(bac,n,m)
   bac <- t(apply(bac, 1, sample))  # movement by using random permutation matrix
   
+  #fba
   bacnum <- sum(apply(bac, 1, sum))
-  print(bacnum)
+  print(paste("Bacs:", bacnum))
   gvec <- 1:bacnum
   k <- 0
   for (i in 1:n){

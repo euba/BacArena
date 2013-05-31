@@ -20,13 +20,23 @@ substrat <- lapply(s, function(x, n, m){
 names(substrat) <- s
 
 #diffusion of substrates by mean over neighbourhood
-substrat <- lapply(substrat, function(x){
-  anb <- eightneighbours(x)
-  nb <- neighbours(x)
-  mat <- (anb+x)/(nb+1)
-  return(mat)
-})
+diffusion2 <- function(substrat){ 
+    blob <- lapply(substrat, function(x){
+    anb <- eightneighbours(x)
+    nb <- neighbours(x)
+    mat <- (anb+x)/(nb+1)
+    #return(mat)
+})}
 
+diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
+
+res <- benchmark(           
+                 diffusion2(substrat),
+                 diffusion(substrat),
+                 columns=c("test", "replications", "elapsed","relative", "user.self", "sys.self"),
+                 order="relative",
+                 replications=1)
+print(res) ## show result
 
 
 
