@@ -12,9 +12,9 @@ sbml <- read.sbml("data/ecoli_core.xml")
 
 #Variable Declaration
 
-n <- 16
-m <- 16
-iter <- 300
+n <- 100
+m <- 100
+iter <- 100
 
 bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
 
@@ -39,13 +39,13 @@ movement2 <- function(bac, n, m){
   return(bac)
 }
 
-
-#enum <- as.vector(sapply(letters, function(x){
-#  for(i in 1:9){
-#    a[i] <- paste(x, i, sep="")
-#  }
-#  return(a)
-#}))
+a <- vector(mode="character")
+enum <- as.vector(sapply(letters, function(x){
+  for(i in 1:9){
+    a[i] <- paste(x, i, sep="")
+  }
+  return(a)
+}))
 
 #Initiation of agents
 
@@ -72,6 +72,8 @@ bac <- matrix(c(rep(0,(n*m-2*n)/2), rep(1,2*n), rep(0,(n*m-2*n)/2)), nrow=n, nco
 
 
 #Iteration with rules to apply for each agent
+mgvec <- vector("numeric")
+sgvec <- vector("numeric")
 for(time in 1:iter){      
   #diffusion of substrates by mean over neighbourhood
   #substrat <- lapply(substrat, function(x){
@@ -83,7 +85,8 @@ for(time in 1:iter){
   diffusion(substrat)
   
   #plotting functions:
-  #jpeg(paste("~/BacArena/plot", paste(enum[time], ".jpeg", sep=""), sep=""), quality = 100, width=600, height=600)
+  jpeg(paste("~/BacArena/plot", paste(enum[time], ".jpeg", sep=""), sep=""), quality = 100, width=1000, height=1000)
+  par(mfrow=c(2,2))
   image(substrat$M_glc_b, zlim=c(0,100), col=colorRampPalette(c("white", "black", "red"))(40))
   #par(mfrow=c(3,3))
   #for(i in 1:9){
@@ -116,11 +119,13 @@ for(time in 1:iter){
       }
     }
   }
-  print(sd(gvec))
-    
+  image(bac, col=c("white", "black"))
+  mgvec[time] <- mean(gvec)
+  sgvec[time] <- sd(gvec)
+  plot(1:time, mgvec, type="b", xlab="Iteration", ylab="mean replication rate")
+  plot(1:time, sgvec, type="b", xlab="Iteration", ylab="standard deviation replication rate")
   
   #plotting functions:
   #jpeg(paste("~/BacArena/plot", paste(enum[time], ".jpeg", sep=""), sep=""), quality = 100, width=600, height=600)
-  image(bac, col=c("white", "black"))
-  #dev.off()
+  dev.off()
 }
