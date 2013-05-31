@@ -1,6 +1,6 @@
 library(libSBML)
 library(lpSolveAPI)
-doc <- readSBML("ecoli_core.xml")
+doc <- readSBML("data/ecoli_core.xml")
 ecoli <- SBMLDocument_getModel(doc)
 Model_getNumSpecies(ecoli)
 Model_getNumReactions(ecoli)
@@ -70,10 +70,10 @@ ub[which(colnames(stoch)=="R_ATPM")] <- 7.6
 # define growth media
 lb[grep("R_EX", colnames(stoch))] <- 0
 
-lb[which(colnames(stoch)=="R_EX_glc_e_")] <- -18.5
+lb[which(colnames(stoch)=="R_EX_fum_e_")] <- -18.5
 lb[which(colnames(stoch)=="R_EX_h2o_e_")] <- -1000
 lb[which(colnames(stoch)=="R_EX_h_e_")] <- -1000
-lb[which(colnames(stoch)=="R_EX_o2_e_")] <- -1000
+#lb[which(colnames(stoch)=="R_EX_o2_e_")] <- -1000
 lb[which(colnames(stoch)=="R_EX_pi_e_")] <- -1000
 
 # linear programming
@@ -89,10 +89,10 @@ set.bounds(linp,lower=lb)
 set.bounds(linp,upper=ub)
 
 solve(linp)
+flux <- get.variables(linp)
+names(flux) <- reac
 get.objective(linp)
 
 write.lp(linp,"test", NULL)
 
 rm(linp)
-
-

@@ -96,8 +96,13 @@ set.bounds(linp,upper=ub)
 
 solve(linp)
 value <- get.objective(linp)
+
+#get opt fluxes
+flux <- get.variables(linp)
+names(flux) <- reac
+
 rm(linp)
-return(value)
+return(flux)
 
 #write.lp(linp,"test", NULL)
 

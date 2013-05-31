@@ -113,7 +113,8 @@ for(time in 1:iter){
         spos <- lapply(substrat, function(x, i, j){
           return(x[i,j])
         },i=i, j=j)
-        growth <- fba(spos, sbml$stoch, sbml$lb, sbml$ub, sbml$ex)
+        growth <- fba(spos, sbml$stoch, sbml$lb, sbml$ub, sbml$ex)["R_Biomass_Ecoli_core_N__w_GAM_"]
+        print(growth)
         gvec[k]=growth
         k <- k + 1
       }
