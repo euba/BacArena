@@ -121,7 +121,8 @@ for(time in 1:iter){
   
   #random movement of bacteria:
   #bac <- movement(bac)  
-  bac <- movement2(bac,n,m)  
+  #bac <- movement2(bac,n,m)
+  bac <- t(apply(bac, 1, sample))  # movement by using random permutation matrix
   
   bacnum <- sum(apply(bac, 1, sum))
   print(bacnum)
