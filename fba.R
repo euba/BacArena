@@ -60,10 +60,10 @@ read.sbml <- function(sbml_file){
     }
   }
   #stoch <- cbind(stoch, tmp)
-  return(list(stoch=stoch, lb=lb, ub=ub, ex=ex))
+  return(list(stoch=stoch, lb=lb, ub=ub, ex=ex, reac=reac))
 }  
 
-fba<-function(substrat, stoch, lb, ub, ex){
+fba<-function(substrat, stoch, lb, ub, ex, reac){
 
 # objective function
 c <- rep(0, dim(stoch)[2])
@@ -76,11 +76,11 @@ ub[which(colnames(stoch)=="R_ATPM")] <- 7.6
 # define growth media
 lb[grep("R_EX", colnames(stoch))] <- 0
 
-lb[which(colnames(stoch)=="R_EX_glc_e_")] <- - substrat[["M_glc_b"]]
-lb[which(colnames(stoch)=="R_EX_h2o_e_")] <- substrat[["M_h2o_b"]]
-lb[which(colnames(stoch)=="R_EX_h_e_")] <- -substrat[["M_h_b"]]
-lb[which(colnames(stoch)=="R_EX_o2_e_")] <- -substrat[["M_o2_b"]]
-lb[which(colnames(stoch)=="R_EX_pi_e_")] <- -substrat[["M_pi_b"]]
+lb[which(colnames(stoch)=="R_EX_glc_e_")] <-  - substrat[["M_glc_b"]]
+lb[which(colnames(stoch)=="R_EX_h2o_e_")] <-  -substrat[["M_h2o_b"]]
+lb[which(colnames(stoch)=="R_EX_h_e_")]   <-  -substrat[["M_h_b"]]
+lb[which(colnames(stoch)=="R_EX_o2_e_")]  <-  -substrat[["M_o2_b"]]
+lb[which(colnames(stoch)=="R_EX_pi_e_")]  <-  -substrat[["M_pi_b"]]
 
 # linear programming
 #linp <- make.lp(0, dim(stoch)[2], verbose = "full")
