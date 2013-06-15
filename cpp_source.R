@@ -1,34 +1,103 @@
-# Diffusion by mean with lowest neighbour 
+# Diffusion by mean with lowest neighbour
+# randomly choosen cells
+#
 src_diffusion <- '
+Rcpp::List xlist(A);
+int n = xlist.size();
+srand (time(NULL)); /* initialize random seed: */
+  for(int k=0; k<n; k++) {
+    SEXP ll = xlist[k];
+    Rcpp::NumericMatrix y(ll);
+    //copy matrix to diffuse successive
+    //Rcpp::NumericMatrix tmp = Rcpp::clone(y);
+    //std::cout << y(1,1);
+    int n = y.ncol();
+    int m = y.nrow();
+    int l = 0;
+    while(l++ < n*m ){ // repeat as long as cells exist
+      int i = rand() % n;
+      int j = rand() % m;
+
+      double min = y(i,j);
+      std::vector<std::pair<int,int> > list_min; //list containing minima
+      for(int l=-1; l<=1; l++){
+        for(int o=-1; o<=1; o++){
+          int pos_i = i + l;
+          int pos_j = j + o;
+          if(pos_i>=0 && pos_i<n && pos_j>=0 && pos_j<m){ //boundary check
+            if(y(pos_i,pos_j) < min) {
+              min = y(pos_i,pos_j);
+              list_min.clear(); // clear list with old minima
+              std::pair <int,int> new_min(pos_i,pos_j);
+              list_min.push_back(new_min);
+            }
+            else if(y(pos_i,pos_j) == min) {
+              std::pair <int,int> new_min(pos_i,pos_j);
+              list_min.push_back(new_min);
+            }
+          }
+        }
+      }
+      std::random_shuffle ( list_min.begin(), list_min.end() ); //randomize order
+      // choose randomly one of the found minima
+        
+      int min_i = list_min.front().first;
+      int min_j = list_min.front().second;
+      double m = (y(i,j) + y(min_i,min_j)) / 2.0;
+
+      y(i,j) = m;
+      y(min_i, min_j) = m;
+    }
+
+    
+  }
+'
+
+
+
+# Diffusion by mean with lowest neighbour
+# synchron updating!
+#
+src_diffusion3 <- '
   Rcpp::List xlist(A);
   int n = xlist.size();
   for(int k=0; k<n; k++) {
     SEXP ll = xlist[k];
     Rcpp::NumericMatrix y(ll);
-    //copy matrix to diffuse sucsessive
-    Rcpp::NumericMatrix tmp = Rcpp::clone(y);
+    //copy matrix to diffuse successive
+    //Rcpp::NumericMatrix tmp = Rcpp::clone(y);
     //std::cout << y(1,1);
-    int n = tmp.ncol();
-    int m = tmp.nrow();
+    int n = y.ncol();
+    int m = y.nrow();
     for(int i=0; i<n; i++){
       for(int j=0; j<m; j++){
-        int min_i = i;
-        int min_j = j;
         double min = y(i,j);
+        std::vector<std::pair<int,int> > list_min; //list containing minima
         for(int l=-1; l<=1; l++){
           for(int o=-1; o<=1; o++){
             int pos_i = i + l;
             int pos_j = j + o;
-            if(pos_i>=0 && pos_i<n && pos_j>=0 && pos_j<m){
+            if(pos_i>=0 && pos_i<n && pos_j>=0 && pos_j<m){ //boundary check
               if(y(pos_i,pos_j) < min) {
                 min = y(pos_i,pos_j);
-                min_i = pos_i;
-                min_j = pos_j;
+                list_min.clear(); // clear list with old minima
+                std::pair <int,int> new_min(pos_i,pos_j);
+                list_min.push_back(new_min);
+              }
+              else if(y(pos_i,pos_j) == min) {
+                std::pair <int,int> new_min(pos_i,pos_j);
+                list_min.push_back(new_min);
               }
             }
           }
         }
+        std::random_shuffle ( list_min.begin(), list_min.end() ); //randomize order
+        // choose randomly one of the found minima
+        
+        int min_i = list_min.front().first;
+        int min_j = list_min.front().second;
         double m = (y(i,j) + y(min_i,min_j)) / 2.0;
+
         y(i,j) = m;
         y(min_i, min_j) = m;
       }

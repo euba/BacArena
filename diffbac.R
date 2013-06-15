@@ -9,18 +9,16 @@ source(file="fba.R")
 source(file="cpp_source.R")
 sbml <- read.sbml("data/ecoli_core.xml")
 
+movement <- cxxfunction(signature(A = "numeric"), body = src_movement, plugin="Rcpp")
+diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
 
 #Variable Declaration
 
-n <- 4
-m <- 4
-iter <- 1
+n <- 30
+m <- 30
+iter <- 100
 
 bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
-
-
-movement <- cxxfunction(signature(A = "numeric"), body = src_movement, plugin="Rcpp")
-diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
 
 movement2 <- function(bac, n, m){
 y <- bac
@@ -59,7 +57,7 @@ substrat <- lapply(s, function(x, n, m){
   
   #matrix(c(runif(n), rep(0, n*m-n)), nrow=n, ncol=m)
   #matrix(c(rep(100, 2*n), rep(0, n*m-2*n)), nrow=n, ncol=m)
-  matrix(c(rep(0,(n*m-2*n)/2), rep(1000,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m)
+  matrix(c(rep(0,(n*m-2*n)/2), rep(50,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m)
 }, n=n, m=m)
 names(substrat) <- s
 # associate each substrate with an exchange reaction (sbml specific!!)
@@ -93,6 +91,30 @@ bac <- matrix(c(rep(0,(n*m-2*n)/2), rep(1,2*n), rep(0,(n*m-2*n)/2)), nrow=n, nco
 mgvec <- vector("numeric")
 sgvec <- vector("numeric")
 for(time in 1:iter){      
+  
+  #
+  #plotting functions:
+  #
+  #jpeg(paste("~/BacArena/plot", paste(enum[time], ".jpeg", sep=""), sep=""), quality = 100, width=1000, height=1000)
+  par(mfrow=c(1,2))
+  image(substrat$M_glc_b, zlim=c(0,50), col=colorRampPalette(c("white", "black", "red"))(40))
+  #par(mfrow=c(3,3))
+  #for(i in 1:9){
+  #  image(x[[i]], zlim=c(0,1), 
+  #    col=colorRampPalette(c("white", "black", rainbow(14)[i]))(40),
+  #    main=paste(names(x)[i], paste("step:", time)))
+  #}
+  #dev.off()
+  image(bac, col=c("white", "black"))
+  mgvec[time] <- mean(gvec)
+  sgvec[time] <- sd(gvec)
+  #plot(1:time, mgvec, type="b", xlab="Iteration", ylab="mean replication rate")
+  #plot(1:time, sgvec, type="b", xlab="Iteration", ylab="standard deviation replication rate")
+  #plotting functions:
+  #jpeg(paste("~/BacArena/plot", paste(enum[time], ".jpeg", sep=""), sep=""), quality = 100, width=600, height=600)
+  #dev.off()
+  
+
   #diffusion of substrates by mean over neighbourhood
   #substrat <- lapply(substrat, function(x){
   #  anb <- eightneighbours(x)
@@ -101,19 +123,9 @@ for(time in 1:iter){
   #  return(mat)
   #})
   #
-  #diffusion(substrat)
+  diffusion(substrat)
   
-  #plotting functions:
-  #jpeg(paste("~/BacArena/plot", paste(enum[time], ".jpeg", sep=""), sep=""), quality = 100, width=1000, height=1000)
-  par(mfrow=c(2,2))
-  image(substrat$M_glc_b, zlim=c(0,100), col=colorRampPalette(c("white", "black", "red"))(40))
-  #par(mfrow=c(3,3))
-  #for(i in 1:9){
-  #  image(x[[i]], zlim=c(0,1), 
-  #    col=colorRampPalette(c("white", "black", rainbow(14)[i]))(40),
-  #    main=paste(names(x)[i], paste("step:", time)))
-  #}
-  #dev.off()
+  
   print(paste("Sum of glucose:", sum(apply(substrat$M_glc_b, 1, sum))))
   
   #random movement of bacteria:
@@ -128,22 +140,22 @@ for(time in 1:iter){
   k <- 0
   for (i in 1:n){
     for(j in 1:m){
-      if(bac[i,j] == 1){ # if there is a Bacterial
+      if( (bac[i,j] == 1) & (substrat[["M_glc_b"]][[i,j]]>=10) ){ # if there is a Bacterial
         spos <- lapply(substrat, function(x, i, j){ # get current substrat vector
           return(x[i,j])
         },i=i, j=j)
         growth <- fba(spos, sbml$stoch, sbml$lb, sbml$ub, sbml$ex, sbml$reac)
         #
         # new substrat vector after metabolism
-        print("")
-        print(paste("glucose before: ", substrat[["M_glc_b"]][[i,j]]))
+        #print("")
+        #print(paste("glucose before: ", substrat[["M_glc_b"]][[i,j]]))
         sapply(names(sapply(substrat, names)),function(x,i,j,substrat){
-          growth[[sub_ex[[x]]]]
+          #growth[[sub_ex[[x]]]]
           #substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
         },i=i,j=j,substrat=substrat)
-        print(paste("glucose uptake by bac: (", i, ",", j, ")=", growth[["R_EX_glc_e_"]]))
-        print(paste("growth: ",growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]))
-        print(paste("glucose after: ", substrat[["M_glc_b"]][[i,j]]))
+        #print(paste("glucose uptake by bac: (", i, ",", j, ")=", growth[["R_EX_glc_e_"]]))
+        #print(paste("growth: ",growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]))
+        #print(paste("glucose after: ", substrat[["M_glc_b"]][[i,j]]))
         #
         #print(growth)
         gvec[k]=growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]
@@ -159,13 +171,4 @@ for(time in 1:iter){
   #fba(test123, sbml$stoch, sbml$lb, sbml$ub, sbml$ex, sbml$reac)
   #
   
-  image(bac, col=c("white", "black"))
-  mgvec[time] <- mean(gvec)
-  sgvec[time] <- sd(gvec)
-  #plot(1:time, mgvec, type="b", xlab="Iteration", ylab="mean replication rate")
-  #plot(1:time, sgvec, type="b", xlab="Iteration", ylab="standard deviation replication rate")
-  
-  #plotting functions:
-  #jpeg(paste("~/BacArena/plot", paste(enum[time], ".jpeg", sep=""), sep=""), quality = 100, width=600, height=600)
-  #dev.off()
 }
