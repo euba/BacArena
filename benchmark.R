@@ -8,6 +8,23 @@ m <- 2000
 bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
 
 
+##benchmark matrix generation
+src_matrix <- '
+  int n = as<int>(N);
+  int m = as<int>(M);
+  Rcpp::NumericMatrix tmp(n,m);
+  return tmp;
+'
+zero_matrix <- cxxfunction(signature(N = "integer", M= "integer"), body = src_matrix, plugin="Rcpp")
+res <- benchmark(           
+  diffusion2(substrat),
+  diffusion(substrat),
+  columns=c("test", "replications", "elapsed","relative", "user.self", "sys.self"),
+  order="relative",
+  replications=1)
+print(res) ## show result
+
+
 
 ## benchmark diffusion
 

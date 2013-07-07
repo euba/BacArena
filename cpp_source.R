@@ -143,33 +143,32 @@ src_diffusion2 <- '
 '
 
 src_movement <- '
-  const Rcpp::NumericMatrix  source(A);
-  Rcpp::NumericMatrix tmp = Rcpp::clone(source);
+  Rcpp::NumericMatrix  tmp(input_matrix);
+  Rcpp::DataFrame l(input_frame);
 
    /* initialize random seed: */
   srand (time(NULL));
-  /* generate secret number between 1 and 10: */
-  //iSecret = rand() % 3;
   
   int n = tmp.nrow();
   int m = tmp.ncol();
 
-  for (int i = 0; i < n; i++){
-    for (int j = 0; j < m; j++){
-      if(source(i,j) != 0){
-        int a = (i + rand() % 3 - 1);
-        int b = (j + rand() % 3 - 1);
-        if(a == -1) a = n-1;
-        if(b == -1) b = m-1;
-        if(a == n) a = 0;
-        if(b == m) b = 0;
+  //std::cout << l.length();
+  std::vector<int> x = l(0);
+  std::vector<int> y = l(1);
 
-        if(tmp(a,b) == 0){ // if empty go for it!
-          tmp(a,b) = 1;
-          tmp(i,j) = 0;
-        }
-      }
+  for(int i=0; i < x.size(); i++){
+    int a = (x[i] + rand() % 3 - 1);
+    int b = (y[i] + rand() % 3 - 1);
+    if(a == -1) a = n-1;
+    if(b == -1) b = m-1;
+    if(a == n) a = 0;
+    if(b == m) b = 0;
+
+    if(tmp(a,b) == 0){ // if empty go for it!
+      tmp(a,b) = 1;
+      x[i] = a;
+      y[i] = b;
     }
-  }
+  }  
   return tmp;
 '
