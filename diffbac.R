@@ -14,9 +14,9 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 
 #Variable Declaration
 
-n <- 30
-m <- 30
-iter <- 100
+n <- 8
+m <- 8
+iter <- 5
 
 bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
 
@@ -57,7 +57,7 @@ substrat <- lapply(s, function(x, n, m){
   
   #matrix(c(runif(n), rep(0, n*m-n)), nrow=n, ncol=m)
   #matrix(c(rep(100, 2*n), rep(0, n*m-2*n)), nrow=n, ncol=m)
-  matrix(c(rep(0,(n*m-2*n)/2), rep(50,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m)
+  matrix(c(rep(0,(n*m-2*n)/2), rep(10,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m)
 }, n=n, m=m)
 names(substrat) <- s
 # associate each substrate with an exchange reaction (sbml specific!!)
@@ -90,6 +90,11 @@ bac <- matrix(c(rep(0,(n*m-2*n)/2), rep(1,2*n), rep(0,(n*m-2*n)/2)), nrow=n, nco
 #Iteration with rules to apply for each agent
 mgvec <- vector("numeric")
 sgvec <- vector("numeric")
+
+bacnum <- sum(apply(bac, 1, sum))
+print(paste("Bacs:", bacnum))
+gvec <- 1:bacnum
+
 for(time in 1:iter){      
   
   #
@@ -129,9 +134,9 @@ for(time in 1:iter){
   print(paste("Sum of glucose:", sum(apply(substrat$M_glc_b, 1, sum))))
   
   #random movement of bacteria:
-  #bac <- movement(bac)  
+  bac <- movement(bac)  
   #bac <- movement2(bac,n,m)
-  bac <- t(apply(bac, 1, sample))  # movement by using random permutation matrix
+  #bac <- t(apply(bac, 1, sample))  # movement by using random permutation matrix
   
   #fba
   bacnum <- sum(apply(bac, 1, sum))
@@ -140,22 +145,22 @@ for(time in 1:iter){
   k <- 0
   for (i in 1:n){
     for(j in 1:m){
-      if( (bac[i,j] == 1) & (substrat[["M_glc_b"]][[i,j]]>=10) ){ # if there is a Bacterial
+      if( (bac[i,j] == 1) & (substrat[["M_glc_b"]][[i,j]]>=1) ){ # if there is a Bacterial
         spos <- lapply(substrat, function(x, i, j){ # get current substrat vector
           return(x[i,j])
         },i=i, j=j)
         growth <- fba(spos, sbml$stoch, sbml$lb, sbml$ub, sbml$ex, sbml$reac)
         #
         # new substrat vector after metabolism
-        #print("")
-        #print(paste("glucose before: ", substrat[["M_glc_b"]][[i,j]]))
+        print("")
+        print(paste("glucose before: ", substrat[["M_glc_b"]][[i,j]]))
         sapply(names(sapply(substrat, names)),function(x,i,j,substrat){
-          #growth[[sub_ex[[x]]]]
-          #substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
+          #print(growth[[sub_ex[[x]]]])
+          substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
         },i=i,j=j,substrat=substrat)
-        #print(paste("glucose uptake by bac: (", i, ",", j, ")=", growth[["R_EX_glc_e_"]]))
-        #print(paste("growth: ",growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]))
-        #print(paste("glucose after: ", substrat[["M_glc_b"]][[i,j]]))
+        print(paste("glucose uptake by bac: (", i, ",", j, ")=", growth[["R_EX_glc_e_"]]))
+        print(paste("growth: ",growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]))
+        print(paste("glucose after: ", substrat[["M_glc_b"]][[i,j]]))
         #
         #print(growth)
         gvec[k]=growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]
