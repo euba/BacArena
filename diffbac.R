@@ -11,7 +11,7 @@ source(file="cpp_source.R")
 sbml <- read.sbml("data/ecoli_core.xml")
 #sbml <- read.sbml("/home/eugen/BacArena/data/ecoli_core.xml")
 
-movement <- cxxfunction(signature(A = "numeric"), body = src_movement, plugin="Rcpp")
+movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame"), body = src_movement, plugin="Rcpp")
 diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
 
 #Variable Declaration
@@ -96,11 +96,8 @@ sub_ex[["M_succ_b"]]  <- "R_EX_succ_e_"
 mgvec <- vector("numeric")
 sgvec <- vector("numeric")
 
-bacnum <- sum(apply(bac, 1, sum))
-print(paste("Bacs:", bacnum))
-gvec <- 1:bacnum
 
-bacnum <- sum(apply(bac, 1, sum))
+bacnum <- dim(bac)[1]
 gvec <- 1:bacnum
 
 #Varma and Palsson 1994:
@@ -121,8 +118,10 @@ for(time in 1:iter){
   #    main=paste(names(x)[i], paste("step:", time)))
   #}
   #dev.off()
+  bacnum <- dim(bac)[1]
+  print(paste("Bacs:", bacnum))
+  gvec <- 1:bacnum
   
-  #image(bac, col=c("white", "black"))
   mgvec[time] <- mean(gvec)
   sgvec[time] <- sd(gvec)
   #plot(1:time, mgvec, type="b", xlab="Iteration", ylab="mean replication rate")
@@ -168,6 +167,11 @@ for(time in 1:iter){
   #random movement of bacteria:
   
   #bac <- movement(bac)  
+  print(bac)
+  bac_img <- movement(matrix(0,n,m), bac) # move bacs and return matrix for printing
+  image(bac_img, col=c("white", "black"))
+  print("")
+  print(bac)
   
   #bac <- movement2(bac,n,m)
   #bac <- t(apply(bac, 1, sample))  # movement by using random permutation matrix
@@ -185,15 +189,15 @@ for(time in 1:iter){
     spos <- lapply(substrat, function(x, i, j){ # get current substrat vector
       return(x[i,j])
     },i=i, j=j)
-    growth <- fba(spos, sbml$stoch, sbml$lb, sbml$ub, sbml$ex, sbml$reac)
+    #growth <- fba(spos, sbml$stoch, sbml$lb, sbml$ub, sbml$ex, sbml$reac)
     #
     # new substrat vector after metabolism
     #print("")
     #print(paste("glucose before: ", substrat[["M_glc_b"]][[i,j]]))
-    sapply(names(sapply(substrat, names)),function(x,i,j,substrat){
+#    sapply(names(sapply(substrat, names)),function(x,i,j,substrat){
       #growth[[sub_ex[[x]]]]
-      substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
-    },i=i,j=j,substrat=substrat)
+#      substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
+#    },i=i,j=j,substrat=substrat)
     #print(paste("glucose uptake by bac: (", i, ",", j, ")=", growth[["R_EX_glc_e_"]]))
     #print(paste("growth: ",growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]))
     #print(paste("glucose after: ", substrat[["M_glc_b"]][[i,j]]))

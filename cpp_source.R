@@ -143,7 +143,7 @@ src_diffusion2 <- '
 '
 
 src_movement <- '
-  Rcpp::NumericMatrix  tmp(input_matrix);
+  Rcpp::NumericMatrix tmp(input_matrix);
   Rcpp::DataFrame l(input_frame);
 
    /* initialize random seed: */
@@ -153,22 +153,24 @@ src_movement <- '
   int m = tmp.ncol();
 
   //std::cout << l.length();
-  std::vector<int> x = l(0);
-  std::vector<int> y = l(1);
+  //std::cout << as<std::vector>(l(0))[1] << std::endl;
+  Rcpp::Vector<const int> *x = &l(0);
+  //Rcpp::Vector<Rccp::int> *y = &l(1);
 
-  for(int i=0; i < x.size(); i++){
-    int a = (x[i] + rand() % 3 - 1);
-    int b = (y[i] + rand() % 3 - 1);
-    if(a == -1) a = n-1;
-    if(b == -1) b = m-1;
-    if(a == n) a = 0;
-    if(b == m) b = 0;
-
-    if(tmp(a,b) == 0){ // if empty go for it!
-      tmp(a,b) = 1;
-      x[i] = a;
-      y[i] = b;
-    }
-  }  
+  //for(int i=0; i < x->size(); i++){
+  //  int a = (x->at(i) + rand() % 3 - 1);
+  //  int b = (y->at(i) + rand() % 3 - 1);
+  //  if(a == -1) a = n-1;
+  //  if(b == -1) b = m-1;
+  //  if(a == n) a = 0;
+  //  if(b == m) b = 0;
+ 
+  //  if(tmp(a,b) == 0){ // if empty go for it!
+  //    tmp(a,b) = 1;
+  //    std::cout << x[i] << a << std::endl;
+  //    x->at(i) = a;
+  //    y->at(i) = b;
+  //  }
+  //}  
   return tmp;
 '
