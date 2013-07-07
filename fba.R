@@ -93,9 +93,9 @@ if(substrat[["M_o2_b"]] == 0){
 }
 lb[which(colnames(stoch)=="R_EX_h2o_e_")] <-  -substrat[["M_h2o_b"]]
 lb[which(colnames(stoch)=="R_EX_h_e_")]   <-  -substrat[["M_h_b"]]
-#lb[which(colnames(stoch)=="R_EX_o2_e_")]  <-  -substrat[["M_o2_b"]]
-if(-substrat[["M_o2_b"]] > -15) lb[which(colnames(stoch)=="R_EX_o2_e_")] <-  -substrat[["M_o2_b"]]
-  else lb[which(colnames(stoch)=="R_EX_o2_e_")] <- -15
+lb[which(colnames(stoch)=="R_EX_o2_e_")]  <-  -substrat[["M_o2_b"]]
+#if(-substrat[["M_o2_b"]] > -15) lb[which(colnames(stoch)=="R_EX_o2_e_")] <-  -substrat[["M_o2_b"]]
+#  else lb[which(colnames(stoch)=="R_EX_o2_e_")] <- -15
 lb[which(colnames(stoch)=="R_EX_pi_e_")]  <-  -substrat[["M_pi_b"]]
 
 # linear programming

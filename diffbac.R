@@ -18,7 +18,7 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 
 n <- 10
 m <- 10
-iter <- 10
+iter <- 5
 
 bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
 
@@ -95,8 +95,6 @@ bacnum <- sum(apply(bac, 1, sum))
 print(paste("Bacs:", bacnum))
 gvec <- 1:bacnum
 
-for(time in 1:iter){      
-  
 bacnum <- sum(apply(bac, 1, sum))
 gvec <- 1:bacnum
 
@@ -131,16 +129,16 @@ for(time in 1:iter){
   #print(paste("Sum of glucose:", sum(apply(substrat$M_glc_b, 1, sum))))
   #print(paste("Sum of O2:", sum(apply(substrat$M_o2_b, 1, sum))))
   #single element in matrix:
-  print(paste("Glucose:", substrat$M_glc_b[n/2,m/2]))
-  print(paste("O2:", substrat$M_o2_b[n/2,m/2]))
-  print(paste("Acetate:", substrat$M_ac_b[n/2,m/2]))
-  print(paste("CO2:", substrat$M_co2_b[n/2,m/2]))
-  print(paste("Ethanol:", substrat$M_etoh_b[n/2,m/2]))
-  print(paste("Succinate:", substrat$M_succ_b[n/2,m/2]))
-  print(paste("Akg:", substrat$M_akg_b[n/2,m/2]))
-  print(paste("Fumarate:", substrat$M_fum_b[n/2,m/2]))
-  print(paste("Formate:", substrat$M_for_b[n/2,m/2]))
-  print("")
+  #print(paste("Glucose:", substrat$M_glc_b[n/2,m/2]))
+  #print(paste("O2:", substrat$M_o2_b[n/2,m/2]))
+  #print(paste("Acetate:", substrat$M_ac_b[n/2,m/2]))
+  #print(paste("CO2:", substrat$M_co2_b[n/2,m/2]))
+  #print(paste("Ethanol:", substrat$M_etoh_b[n/2,m/2]))
+  #print(paste("Succinate:", substrat$M_succ_b[n/2,m/2]))
+  #print(paste("Akg:", substrat$M_akg_b[n/2,m/2]))
+  #print(paste("Fumarate:", substrat$M_fum_b[n/2,m/2]))
+  #print(paste("Formate:", substrat$M_for_b[n/2,m/2]))
+  #print("")
   #diffusion of substrates by mean over neighbourhood
   #substrat <- lapply(substrat, function(x){
   #  anb <- eightneighbours(x)
@@ -149,18 +147,18 @@ for(time in 1:iter){
   #  return(mat)
   #})
   #
-  diffusion(substrat)
+  #diffusion(substrat)
   
-  print(paste("Glucose:", substrat$M_glc_b[n/2,m/2]))
-  print(paste("O2:", substrat$M_o2_b[n/2,m/2]))
-  print(paste("Acetate:", substrat$M_ac_b[n/2,m/2]))
-  print(paste("CO2:", substrat$M_co2_b[n/2,m/2]))
-  print(paste("Ethanol:", substrat$M_etoh_b[n/2,m/2]))
-  print(paste("Succinate:", substrat$M_succ_b[n/2,m/2]))
-  print(paste("Akg:", substrat$M_akg_b[n/2,m/2]))
-  print(paste("Fumarate:", substrat$M_fum_b[n/2,m/2]))
-  print(paste("Formate:", substrat$M_for_b[n/2,m/2]))
-  print("")
+  #print(paste("Glucose:", substrat$M_glc_b[n/2,m/2]))
+  #print(paste("O2:", substrat$M_o2_b[n/2,m/2]))
+  #print(paste("Acetate:", substrat$M_ac_b[n/2,m/2]))
+  #print(paste("CO2:", substrat$M_co2_b[n/2,m/2]))
+  #print(paste("Ethanol:", substrat$M_etoh_b[n/2,m/2]))
+  #print(paste("Succinate:", substrat$M_succ_b[n/2,m/2]))
+  #print(paste("Akg:", substrat$M_akg_b[n/2,m/2]))
+  #print(paste("Fumarate:", substrat$M_fum_b[n/2,m/2]))
+  #print(paste("Formate:", substrat$M_for_b[n/2,m/2]))
+  #print("")
   #random movement of bacteria:
   bac <- movement(bac)  
   #bac <- movement2(bac,n,m)
@@ -180,15 +178,15 @@ for(time in 1:iter){
         growth <- fba(spos, sbml$stoch, sbml$lb, sbml$ub, sbml$ex, sbml$reac)
         #
         # new substrat vector after metabolism
-        print("")
-        print(paste("glucose before: ", substrat[["M_glc_b"]][[i,j]]))
+        #print("")
+        #print(paste("glucose before: ", substrat[["M_glc_b"]][[i,j]]))
         sapply(names(sapply(substrat, names)),function(x,i,j,substrat){
           #growth[[sub_ex[[x]]]]
           substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
         },i=i,j=j,substrat=substrat)
-        print(paste("glucose uptake by bac: (", i, ",", j, ")=", growth[["R_EX_glc_e_"]]))
-        print(paste("growth: ",growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]))
-        print(paste("glucose after: ", substrat[["M_glc_b"]][[i,j]]))
+        #print(paste("glucose uptake by bac: (", i, ",", j, ")=", growth[["R_EX_glc_e_"]]))
+        #print(paste("growth: ",growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]))
+        #print(paste("glucose after: ", substrat[["M_glc_b"]][[i,j]]))
         #
         #print(growth)
         gvec[k]=growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]
@@ -197,22 +195,24 @@ for(time in 1:iter){
     }
   }
   
-  print(paste("Glucose:", substrat$M_glc_b[n/2,m/2]))
-  print(paste("O2:", substrat$M_o2_b[n/2,m/2]))
-  print(paste("Acetate:", substrat$M_ac_b[n/2,m/2]))
-  print(paste("CO2:", substrat$M_co2_b[n/2,m/2]))
-  print(paste("Ethanol:", substrat$M_etoh_b[n/2,m/2]))
-  print(paste("Succinate:", substrat$M_succ_b[n/2,m/2]))
-  print(paste("Akg:", substrat$M_akg_b[n/2,m/2]))
-  print(paste("Fumarate:", substrat$M_fum_b[n/2,m/2]))
-  print(paste("Formate:", substrat$M_for_b[n/2,m/2]))
-  print(paste("Bac:", bac[n/2,m/2]))
-  print("")
+  #print(paste("Glucose:", substrat$M_glc_b[n/2,m/2]))
+  #print(paste("O2:", substrat$M_o2_b[n/2,m/2]))
+  #print(paste("Acetate:", substrat$M_ac_b[n/2,m/2]))
+  #print(paste("CO2:", substrat$M_co2_b[n/2,m/2]))
+  #print(paste("Ethanol:", substrat$M_etoh_b[n/2,m/2]))
+  #print(paste("Succinate:", substrat$M_succ_b[n/2,m/2]))
+  #print(paste("Akg:", substrat$M_akg_b[n/2,m/2]))
+  #print(paste("Fumarate:", substrat$M_fum_b[n/2,m/2]))
+  #print(paste("Formate:", substrat$M_for_b[n/2,m/2]))
+  #print(paste("Bac:", bac[n/2,m/2]))
+  #print("")
   #
   # fba test (test123 is artificial substrate vector)
   #
-  #test123 <- c(0,0,0,0,0,0,1000,1000,1000,0,1000,1000,0,0)
-  #names(test123) <- s
-  #fba(test123, sbml$stoch, sbml$lb, sbml$ub, sbml$ex, sbml$reac)
+  #("M_ac_b","M_akg_b", "M_co2_b", "M_etoh_b", "M_for_b", "M_fum_b", "M_glc_b", "M_h2o_b", "M_h_b", "M_lac_D_b","M_o2_b", "M_pi_b", "M_pyr_b", "M_succ_b")
+  #test123 <- c(0,0,0,0,1000,1000,1000,1000,1000,0,2.5,1000,0,0)
+  test123 <- c(1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000)
+  names(test123) <- s
+  print(fba(test123, sbml$stoch, sbml$lb, sbml$ub, sbml$ex, sbml$reac))
   #
 }
