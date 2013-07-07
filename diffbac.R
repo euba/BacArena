@@ -19,8 +19,12 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 n <- 10
 m <- 10
 iter <- 5
+bacs <- 30
 
-bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
+#bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
+bac <- data.frame(cbind(x=round(runif(bacs, min=1, max=m)), y=round(runif(bacs, min=1, max=n)), 
+                        type=rep("ecoli", bacs), growth=rep(1, bacs)))
+bac <- bac[!duplicated(bac[,1:2]),]
 
 movement2 <- function(bac, n, m){
 y <- bac
