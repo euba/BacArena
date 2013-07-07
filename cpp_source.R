@@ -155,12 +155,15 @@ src_movement <- '
   int m = tmp.ncol();
 
   for (int i = 0; i < n; i++){
-    for (int j = 1; j < m; j++){
+    for (int j = 0; j < m; j++){
       if(source(i,j) != 0){
-        int a = (i + rand() % 3 - 1) % n; // get an integer between [-1:1]
-        int b = (j + rand() % 3 - 1) % m; // get an integer between [-1:1]
-        if (a == -1) a = n -1; //ugly. we are not satisfied with this...
-        if (b == -1) b = m -1;
+        int a = (i + rand() % 3 - 1);
+        int b = (j + rand() % 3 - 1);
+        if(a == -1) a = n-1;
+        if(b == -1) b = m-1;
+        if(a == n) a = 0;
+        if(b == m) b = 0;
+
         if(tmp(a,b) == 0){ // if empty go for it!
           tmp(a,b) = 1;
           tmp(i,j) = 0;
