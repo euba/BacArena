@@ -145,7 +145,9 @@ src_diffusion2 <- '
 src_movement <- '
   Rcpp::NumericMatrix tmp(input_matrix);
   Rcpp::DataFrame l(input_frame);
-
+  Rcpp::IntegerVector x = l["x"];
+  Rcpp::IntegerVector y = l["y"];
+  
    /* initialize random seed: */
   srand (time(NULL));
   
@@ -154,8 +156,11 @@ src_movement <- '
 
   //std::cout << l.length();
   //std::cout << as<std::vector>(l(0))[1] << std::endl;
-  Rcpp::IntegerVector x = l[0];
-  Rcpp::IntegerVector y = l[1];
+  
+  std::set<std::pair<int,int> > s;
+  for(int i=0; i < x.size(); i++){
+    s.insert(std::make_pair(x(i), y(i)));
+  }
 
   for(int i=0; i < x.size(); i++){
     int a = (x(i) + rand() % 3 - 1);
@@ -165,12 +170,17 @@ src_movement <- '
     if(a == n) a = 0;
     if(b == m) b = 0;
  
-    if(tmp(a,b) == 0){ // if empty go for it!
+    if(s.find(std::make_pair(a,b)) == s.end()){ // if empty go for it!
       tmp(a,b) = 1;
-      std::cout << x[i] << a << std::endl;
+      s.insert(std::make_pair(a,b));
+      s.erase(std::make_pair(x(i),y(i)));
+      std::cout << "move: (" << x(i) << "," << y(i) << ") -> (" << a << "," << b << ")" << std::endl;
       x(i) = a;
       y(i) = b;
     }
+    else tmp(x(i), y(i)) = 1;
   }  
-  return tmp;
+
+  Rcpp::DataFrame new_l = Rcpp::DataFrame::create(Rcpp::Named("x")=x, Rcpp::Named("y")=y, Rcpp::Named("type")=l[2], Rcpp::Named("growth")=l[3]);
+  return(Rcpp::List::create(Rcpp::Named("df")=new_l, Rcpp::Named("matrix")=tmp));
 '

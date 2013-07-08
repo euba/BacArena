@@ -16,10 +16,10 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 
 #Variable Declaration
 
-n <- 10
-m <- 10
-iter <- 5
-bacs <- 30
+n <- 6
+m <- 6
+iter <- 20
+bacs <- 10
 
 #bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
 bac <- data.frame(x=round(runif(bacs, min=1, max=m)), y=round(runif(bacs, min=1, max=n)), 
@@ -168,7 +168,10 @@ for(time in 1:iter){
   
   #bac <- movement(bac)  
   print(bac)
-  bac_img <- movement(matrix(0,n,m), bac) # move bacs and return matrix for printing
+  tmp <- movement(matrix(0,n,m), bac) # move bacs and return matrix for printing
+  bac_img <- tmp$matrix
+  bac <- tmp$df
+  
   image(bac_img, col=c("white", "black"))
   print("")
   print(bac)
@@ -203,8 +206,8 @@ for(time in 1:iter){
     #print(paste("glucose after: ", substrat[["M_glc_b"]][[i,j]]))
     #
     #print(growth)
-    gvec[k]=growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]
-    k <- k + 1
+#    gvec[k]=growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]
+    #k <- k + 1
   }
   
   #print(paste("Glucose:", substrat$M_glc_b[n/2,m/2]))
