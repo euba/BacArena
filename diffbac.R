@@ -8,8 +8,7 @@ library(rbenchmark)
 setwd("~/BacArena")
 source(file="fba.R")
 source(file="cpp_source.R")
-#sbml <- read.sbml("data/ecoli_core.xml")
-sbml <- read.sbml("/home/eugen/BacArena/data/ecoli_core.xml")
+sbml <- read.sbml("data/ecoli_core.xml")
 
 movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame"), body = src_movement, plugin="Rcpp")
 diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
@@ -22,7 +21,7 @@ iter <- 5
 bacs <- 5
 
 #bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
-bac <- data.frame(x=round(runif(bacs, min=1, max=m)), y=round(runif(bacs, min=1, max=n)), 
+bac <- data.frame(x=round(runif(bacs, min=1, max=n)), y=round(runif(bacs, min=1, max=m)), 
                   type=rep("ecoli", bacs), growth=rep(1, bacs))
 bac <- bac[!duplicated(bac[,1:2]),]
 rownames(bac) <- 1:nrow(bac) #change indices in data.frame
@@ -213,7 +212,7 @@ for(time in 1:iter){
     gvec[l]=growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]
     
     #live and die
-    if(bac[l,]$growth>1)  bac[-l,]
+    #if(bac[l,]$growth>1)  bac[-l,]
     #movement
     a <- (i + xr[l])
     b <- (j + yr[l])

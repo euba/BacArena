@@ -148,6 +148,9 @@ src_movement <- '
   Rcpp::IntegerVector x = l["x"];
   Rcpp::IntegerVector y = l["y"];
   
+  x=x-1;  // index in c++ starts at 0
+  y=y-1;
+  
    /* initialize random seed: */
   srand (time(NULL));
   
@@ -174,13 +177,16 @@ src_movement <- '
       tmp(a,b) = 1;
       s.insert(std::make_pair(a,b));
       s.erase(std::make_pair(x(i),y(i)));
-      std::cout << "move: (" << x(i) << "," << y(i) << ") -> (" << a << "," << b << ")" << std::endl;
-      x(i) = a;
+      std::cout << "move: (" << x(i)-1 << "," << y(i)-1 << ") -> (" << a+1 << "," << b+1 << ")" << std::endl;
+      x(i) = a; 
       y(i) = b;
     }
     else tmp(x(i), y(i)) = 1;
   }  
-
+  
+  x=x+1; // index in R starts at 1
+  y=y+1;
+  
   Rcpp::DataFrame new_l = Rcpp::DataFrame::create(Rcpp::Named("x")=x, Rcpp::Named("y")=y, Rcpp::Named("type")=l[2], Rcpp::Named("growth")=l[3]);
   return(Rcpp::List::create(Rcpp::Named("df")=new_l, Rcpp::Named("matrix")=tmp));
 '
