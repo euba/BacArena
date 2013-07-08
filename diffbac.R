@@ -167,8 +167,12 @@ for(time in 1:iter){
   #random movement of bacteria:
   
   #bac <- movement(bac)  
-  #print(bac)
-  bac_img <- movement(matrix(0,n,m), bac) # move bacs and return matrix for printing
+
+  print(bac)
+  tmp <- movement(matrix(0,n,m), bac) # move bacs and return matrix for printing
+  bac_img <- tmp$matrix
+  bac <- tmp$df
+  
   image(bac_img, col=c("white", "black"))
   #print("")
   #print(bac)
@@ -205,6 +209,7 @@ for(time in 1:iter){
     #print(paste("glucose after: ", substrat[["M_glc_b"]][[i,j]]))
     #
     #print(growth)
+
     gvec[l]=growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]
     
     #live and die
@@ -217,7 +222,7 @@ for(time in 1:iter){
     if(a == n){a = 0}
     if(b == m){b = 0}
     #if(!(bac[,1:2]==c(a,b))){ # if empty go for it!
-    bac[l,1:2] <- c(a,b)
+    #bac[l,1:2] <- c(a,b)
     #}
   }
   
