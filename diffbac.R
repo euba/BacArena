@@ -15,10 +15,10 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 
 #Variable Declaration
 
-n <- 5
-m <- 5
-iter <- 5
-bacs <- 5
+n <- 20
+m <- 20
+iter <- 20
+bacs <- 8
 
 #bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
 bac <- data.frame(x=round(runif(bacs, min=1, max=n)), y=round(runif(bacs, min=1, max=m)), 
@@ -167,12 +167,20 @@ for(time in 1:iter){
   
   #bac <- movement(bac)  
 
+  ##### movement
   print(bac)
-  tmp <- movement(matrix(0,n,m), bac) # move bacs and return matrix for printing
-  bac_img <- tmp$matrix
-  bac <- tmp$df
+  #tmp <- movement(matrix(0,n,m), bac) # move bacs and return matrix for printing
+  #bac_img <- tmp$matrix
+  #bac <- tmp$df
   
-  image(bac_img, col=c("white", "black"))
+  mat = matrix(0,n,m)
+  apply(bac[,1:2], 1, function(x){
+    mat[as.numeric(x[1]), as.numeric(x[2])] <<- 1
+  })
+  image(mat, col=c("white", "black"))
+  
+  #image(bac_img, col=c("white", "black"))
+  
   #print("")
   #print(bac)
   
@@ -216,13 +224,20 @@ for(time in 1:iter){
     #movement
     a <- (i + xr[l])
     b <- (j + yr[l])
-    if(a == -1){a = n-1}
-    if(b == -1){b = m-1}
-    if(a == n){a = 0}
-    if(b == m){b = 0}
-    #if(!(bac[,1:2]==c(a,b))){ # if empty go for it!
-    #bac[l,1:2] <- c(a,b)
-    #}
+    if(a == 0){a = n}
+    if(b == 0){b = m}
+    if(a == n+1){a = 1}
+    if(b == m+1){b = 1}
+    test <- apply(bac[,1:2], 1, function(x, p){
+      if(sum(x==p)==2){
+        return(T)
+      }else{
+        return(F)
+      }
+    }, p=c(a,b))
+    if(!(sum(test)>=1)){ # if empty go for it!
+      bac[l,1:2] <- c(a,b)
+    }
   }
   
   #print(paste("Glucose:", substrat$M_glc_b[n/2,m/2]))
