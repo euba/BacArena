@@ -85,10 +85,10 @@ lb[grep("R_EX", colnames(stoch))] <- 0
 #lb[which(colnames(stoch)=="R_EX_glc_e_")] <-  -substrat[["M_glc_b"]]
 #if anaerobic conditions overwrite maximal Glucose uptake:
 if(substrat[["M_o2_b"]] == 0){
-  if(-substrat[["M_glc_b"]] > -18.5) lb[which(colnames(stoch)=="R_EX_glc_e_")] <-  -substrat[["M_glc_b"]]
+  if(-substrat[["M_glc_b"]] < -18.5) lb[which(colnames(stoch)=="R_EX_glc_e_")] <-  -substrat[["M_glc_b"]]
     else lb[which(colnames(stoch)=="R_EX_glc_e_")] <- -18.5
 }else{
-  if(-substrat[["M_glc_b"]] > -10.5) lb[which(colnames(stoch)=="R_EX_glc_e_")] <-  -substrat[["M_glc_b"]]
+  if(-substrat[["M_glc_b"]] < -10.5) lb[which(colnames(stoch)=="R_EX_glc_e_")] <-  -substrat[["M_glc_b"]]
     else lb[which(colnames(stoch)=="R_EX_glc_e_")] <- -10.5
 }
 lb[which(colnames(stoch)=="R_EX_h2o_e_")] <-  -substrat[["M_h2o_b"]]
