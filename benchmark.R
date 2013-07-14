@@ -3,12 +3,118 @@ library(inline)
 library(rbenchmark)
 
 
-n <- 2000
-m <- 2000
+n <- 100
+m <- 100
 bac <- matrix(round(runif(n*m, min=0, max=0.7)), nrow=n, ncol=m)
+bacs <- round(n*m*0.1)
+iter <- 20
+s <- c("M_ac_b","M_akg_b", "M_co2_b", "M_etoh_b", "M_for_b", "M_fum_b", "M_glc_b", "M_h2o_b", "M_h_b", "M_lac_D_b","M_o2_b", "M_pi_b", "M_pyr_b", "M_succ_b")
+substrat <- lapply(s, function(x, n, m){
+  #matrix(runif(n*m,min=0,max=100), nrow=n, ncol=m) # random substrate
+  #matrix(c(rep(100, 2*n), rep(0, n*m-2*n)), nrow=n, ncol=m) # downstairs substrate
+  matrix(c(rep(0,(n*m-2*n)/2), rep(10,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m) # substrate in the middle of our street ohooo
+}, n=n, m=m)
+names(substrat) <- s
+
+
+#
+# benchmark movement (c++ vs. R)
+#
+
+bac <- data.frame(x=round(runif(bacs, min=1, max=n)), y=round(runif(bacs, min=1, max=m)), 
+                  type=rep("ecoli", bacs), growth=rep(1, bacs))
+bac <- bac[!duplicated(bac[,1:2]),]
+rownames(bac) <- 1:nrow(bac) #change indices in data.frame
+
+
+movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame"), body = src_movement, plugin="Rcpp")
+
+
+R_mov = function(bac, substrat, n, m, iter){
+  for(time in 1:iter){        
+  #
+  #plotting functions
+  bacnum <- dim(bac)[1]
+  
+  mat = matrix(0,n,m) # conversion of data frame into bac matrix
+  apply(bac[,1:2], 1, function(x){
+    mat[as.numeric(x[1]), as.numeric(x[2])] <<- 1
+  })
+
+  
+  #
+  # FBA
+  #
+  bacnum <- dim(bac)[1]
+  gvec <- 1:bacnum
+  
+  xr <- round(runif(bacnum, min = -1, max = 1))
+  yr <- round(runif(bacnum, min = -1, max = 1))
+  for(l in 1:bacnum){
+    i <- bac[l,][1,1]
+    j <- bac[l,][1,2]
+      
+    #
+    # Movement in R 
+    #
+    a <- (i + xr[l])
+    b <- (j + yr[l])
+    if(a == 0){a = n}
+    if(b == 0){b = m}
+    if(a == n+1){a = 1}
+    if(b == m+1){b = 1}
+    test <- apply(bac[,1:2], 1, function(x, p){
+      if(sum(x==p)==2){
+        return(T)
+      }else{
+        return(F)
+      }
+    }, p=c(a,b))
+    if(!(sum(test)>=1)){ # if empty go for it!
+      bac[l,1:2] <- c(a,b)
+    }
+  }
+}
+}
+
+cpp_mov <- function(bac, substrat, n, m, iter){
+  for(time in 1:iter){        
+  #
+  #plotting functions
+  bacnum <- dim(bac)[1]
+  
+  #
+  # Model of Movement
+  #
+  tmp <- movement(matrix(0,n,m), bac) # move bacs and return matrix for printing
+  bac_img <- tmp$matrix
+  bac <- tmp$df
+  
+  #
+  # FBA
+  #
+  bacnum <- dim(bac)[1]
+  gvec <- 1:bacnum
+  
+  for(l in 1:bacnum){
+    i <- bac[l,][1,1]
+    j <- bac[l,][1,2]
+  }
+}
+}
+
+res <- benchmark(           
+  R_mov(bac, substrat, n, m, iter),
+  cpp_mov(bac, substrat, n, m, iter),
+  columns=c("test", "replications", "elapsed","relative", "user.self", "sys.self"),
+  order="relative",
+  replications=1)
+print(res) ## show result
+
 
 
 ##benchmark matrix generation
+
 src_matrix <- '
   int n = as<int>(N);
   int m = as<int>(M);

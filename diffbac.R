@@ -63,13 +63,6 @@ sub_ex[["M_pyr_b"]]   <- "R_EX_pyr_e_"
 sub_ex[["M_succ_b"]]  <- "R_EX_succ_e_"
 
 
-#Initializatio of reporter variables
-mgvec <- vector("numeric")
-sgvec <- vector("numeric")
-bacnum <- dim(bac)[1]
-gvec <- 1:bacnum
-
-
 #
 #Iteration with rules to apply for each agent
 #

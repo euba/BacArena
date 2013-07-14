@@ -177,7 +177,7 @@ src_movement <- '
       tmp(a,b) = 1;
       s.insert(std::make_pair(a,b));
       s.erase(std::make_pair(x(i),y(i)));
-      std::cout << "move: (" << x(i)-1 << "," << y(i)-1 << ") -> (" << a+1 << "," << b+1 << ")" << std::endl;
+      //std::cout << "move: (" << x(i)-1 << "," << y(i)-1 << ") -> (" << a+1 << "," << b+1 << ")" << std::endl;
       x(i) = a; 
       y(i) = b;
     }
