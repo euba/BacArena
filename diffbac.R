@@ -19,7 +19,7 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 
 n <- 20
 m <- 20
-iter <- 20
+iter <- 30
 bacs <- 8
 
 #
@@ -39,7 +39,8 @@ s <- c("M_ac_b","M_akg_b", "M_co2_b", "M_etoh_b", "M_for_b", "M_fum_b", "M_glc_b
 substrat <- lapply(s, function(x, n, m){
   #matrix(runif(n*m,min=0,max=100), nrow=n, ncol=m) # random substrate
   #matrix(c(rep(100, 2*n), rep(0, n*m-2*n)), nrow=n, ncol=m) # downstairs substrate
-  matrix(c(rep(0,(n*m-2*n)/2), rep(10,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m) # substrate in the middle of our street ohooo
+  #matrix(c(rep(0,(n*m-2*n)/2), rep(10,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m) # substrate in the middle of our street ohooo
+  matrix(100,n,m) # homogen substrate distribution
 }, n=n, m=m)
 names(substrat) <- s
 #
@@ -76,7 +77,7 @@ for(time in 1:iter){
   #
   # Model of Diffusion
   #
-  #diffusion(substrat)
+  diffusion(substrat)
   
   #
   # Model of Movement
@@ -119,11 +120,6 @@ for(time in 1:iter){
     gvec[l]=growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]
     
     #
-    # Live and die
-    #
-    #if(bac[l,]$growth>1)  bac[-l,]
-    
-    #
     # Movement in R 
     #
     a <- (i + xr[l])
@@ -139,8 +135,27 @@ for(time in 1:iter){
         return(F)
       }
     }, p=c(a,b))
+    if(bac[l,]$growth>2){ # test for duplication
+      bac[l,]$growth <- bac[l,]$growth/2
+      bac <- rbind(bac, bac[l,])
+      dupli <- T
+    }
     if(!(sum(test)>=1)){ # if empty go for it!
       bac[l,1:2] <- c(a,b)
+    }else{
+      if(dupli){ # if neighbour not empty and cell duplicated, kill doughter cell
+        bac <- bac[-(bacnum+1),]
+      }
     }
+  }
+  
+  #
+  # Live and die
+  #
+  bac$growth <- bac$growth-0.2 #the cost of living
+  bac <- bac[!(bac$growth<0.5),] #death
+  if(dim(bac)[1]==0){
+    print("ALL BACTERIA DIED")
+    break
   }
 }
