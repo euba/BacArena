@@ -19,7 +19,7 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 
 n <- 20
 m <- 20
-iter <- 30
+iter <- 50
 bacs <- 8
 
 #
@@ -40,7 +40,7 @@ substrat <- lapply(s, function(x, n, m){
   #matrix(runif(n*m,min=0,max=100), nrow=n, ncol=m) # random substrate
   #matrix(c(rep(100, 2*n), rep(0, n*m-2*n)), nrow=n, ncol=m) # downstairs substrate
   #matrix(c(rep(0,(n*m-2*n)/2), rep(10,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m) # substrate in the middle of our street ohooo
-  matrix(100,n,m) # homogen substrate distribution
+  matrix(20,n,m) # homogen substrate distribution
 }, n=n, m=m)
 names(substrat) <- s
 #
@@ -67,12 +67,17 @@ sub_ex[["M_succ_b"]]  <- "R_EX_succ_e_"
 #
 #Iteration with rules to apply for each agent
 #
+bac_history <- vector(mode="numeric")
 for(time in 1:iter){        
   #
   #plotting functions
-  par(mfrow=c(1,2))
-  image(substrat$M_glc_b, zlim=c(0,50), col=colorRampPalette(c("white", "black", "red"))(40))
-  bacnum <- dim(bac)[1]
+   par(mfrow=c(2,2))
+   image(substrat$M_glc_b, zlim=c(0,50), col=colorRampPalette(c("white", "black", "red"))(40), main="glucose concentration")
+   image(substrat$M_o2_b, zlim=c(0,50), col=colorRampPalette(c("white", "black", "red"))(40), main="oxygen concentration")
+   bacnum <- dim(bac)[1]
+   
+   bac_history[time] <- bacnum
+   plot(1:time, bac_history, type="b", main="growth curve")
   
   #
   # Model of Diffusion
@@ -82,7 +87,7 @@ for(time in 1:iter){
   #
   # Model of Movement
   #
-  print(bac)
+  #print(bac)
   #tmp <- movement(matrix(0,n,m), bac) # move bacs and return matrix for printing
   #bac_img <- tmp$matrix
   #bac <- tmp$df
@@ -93,14 +98,14 @@ for(time in 1:iter){
   apply(bac[,1:2], 1, function(x){
     mat[as.numeric(x[1]), as.numeric(x[2])] <<- 1
   })
-  image(mat, col=c("white", "black"))
+   image(mat, col=c("white", "black"), main="bacterial movement")
   
   
   #
   # FBA
   #
-  bacnum <- dim(bac)[1]
   gvec <- 1:bacnum
+  #print(bacnum)
   
   xr <- round(runif(bacnum, min = -1, max = 1))
   yr <- round(runif(bacnum, min = -1, max = 1))
