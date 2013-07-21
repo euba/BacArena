@@ -10,27 +10,30 @@ source(file="fba.R")
 source(file="cpp_source.R")
 sbml <- read.sbml("data/ecoli_core.xml")
 
-movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame"), body = src_movement, plugin="Rcpp")
+#movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame"), body = src_movement, plugin="Rcpp")
 diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
 
 #
 # Variable Declaration
 #
 
-n <- 20
-m <- 20
-iter <- 50
-bacs <- 8
+n <- 30
+m <- 30
+iter <- 100
+bacs <- 1
+smax <- 70
 
 #
 # Initiation of agents
 #
 
-bac <- data.frame(x=round(runif(bacs, min=1, max=n)), y=round(runif(bacs, min=1, max=m)), 
-                  type=rep("ecoli", bacs), growth=rep(1, bacs))
-bac <- bac[!duplicated(bac[,1:2]),]
-rownames(bac) <- 1:nrow(bac) #change indices in data.frame
+#bac <- data.frame(x=round(runif(bacs, min=1, max=n)), y=round(runif(bacs, min=1, max=m)),
+#                  type=rep("ecoli", bacs), growth=rep(1, bacs))
+#bac <- bac[!duplicated(bac[,1:2]),]
+#rownames(bac) <- 1:nrow(bac) #change indices in data.frame
 
+
+bac <- data.frame(x=n/2, y=m/2,type="ecoli", growth=1) # one cell in the centre
 
 #
 # intial Substrate distribution
@@ -40,7 +43,7 @@ substrat <- lapply(s, function(x, n, m){
   #matrix(runif(n*m,min=0,max=100), nrow=n, ncol=m) # random substrate
   #matrix(c(rep(100, 2*n), rep(0, n*m-2*n)), nrow=n, ncol=m) # downstairs substrate
   #matrix(c(rep(0,(n*m-2*n)/2), rep(10,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m) # substrate in the middle of our street ohooo
-  matrix(20,n,m) # homogen substrate distribution
+  matrix(smax,n,m) # homogen substrate distribution
 }, n=n, m=m)
 names(substrat) <- s
 #
@@ -48,36 +51,36 @@ names(substrat) <- s
 #
 sub_ex <- character(length(s))
 names(sub_ex) <- s
-sub_ex[["M_ac_b"]]    <- "R_EX_ac_e_"
-sub_ex[["M_akg_b"]]   <- "R_EX_akg_e_"
-sub_ex[["M_co2_b"]]   <- "R_EX_co2_e_"
-sub_ex[["M_etoh_b"]]  <- "R_EX_etoh_e_"
-sub_ex[["M_fum_b"]]   <- "R_EX_fum_e_" 
-sub_ex[["M_for_b"]]   <- "R_EX_for_e_"
-sub_ex[["M_glc_b"]]   <- "R_EX_glc_e_"
-sub_ex[["M_h2o_b"]]   <- "R_EX_h2o_e_"
-sub_ex[["M_h_b"]]     <- "R_EX_h_e_"
+sub_ex[["M_ac_b"]] <- "R_EX_ac_e_"
+sub_ex[["M_akg_b"]] <- "R_EX_akg_e_"
+sub_ex[["M_co2_b"]] <- "R_EX_co2_e_"
+sub_ex[["M_etoh_b"]] <- "R_EX_etoh_e_"
+sub_ex[["M_fum_b"]] <- "R_EX_fum_e_"
+sub_ex[["M_for_b"]] <- "R_EX_for_e_"
+sub_ex[["M_glc_b"]] <- "R_EX_glc_e_"
+sub_ex[["M_h2o_b"]] <- "R_EX_h2o_e_"
+sub_ex[["M_h_b"]] <- "R_EX_h_e_"
 sub_ex[["M_lac_D_b"]] <- "R_EX_lac_D_e_"
-sub_ex[["M_o2_b"]]    <- "R_EX_o2_e_"
-sub_ex[["M_pi_b"]]    <- "R_EX_pi_e_"
-sub_ex[["M_pyr_b"]]   <- "R_EX_pyr_e_"
-sub_ex[["M_succ_b"]]  <- "R_EX_succ_e_"
+sub_ex[["M_o2_b"]] <- "R_EX_o2_e_"
+sub_ex[["M_pi_b"]] <- "R_EX_pi_e_"
+sub_ex[["M_pyr_b"]] <- "R_EX_pyr_e_"
+sub_ex[["M_succ_b"]] <- "R_EX_succ_e_"
 
 
 #
 #Iteration with rules to apply for each agent
 #
 bac_history <- vector(mode="numeric")
-for(time in 1:iter){        
+for(time in 1:iter){
   #
   #plotting functions
-   par(mfrow=c(2,2))
-   image(substrat$M_glc_b, zlim=c(0,50), col=colorRampPalette(c("white", "black", "red"))(40), main="glucose concentration")
-   image(substrat$M_o2_b, zlim=c(0,50), col=colorRampPalette(c("white", "black", "red"))(40), main="oxygen concentration")
-   bacnum <- dim(bac)[1]
-   
-   bac_history[time] <- bacnum
-   plot(1:time, bac_history, type="b", main="growth curve")
+  par(mfrow=c(2,2))
+  image(substrat$M_glc_b, zlim=c(0,smax), col=colorRampPalette(c("white", "black"))(40), main="glucose concentration")
+  image(substrat$M_o2_b, zlim=c(0,smax), col=colorRampPalette(c("white", "black"))(40), main="oxygen concentration")
+  bacnum <- dim(bac)[1]
+  
+  bac_history[time] <- bacnum
+  plot(1:time, bac_history, type="b", main="growth curve")
   
   #
   # Model of Diffusion
@@ -98,7 +101,7 @@ for(time in 1:iter){
   apply(bac[,1:2], 1, function(x){
     mat[as.numeric(x[1]), as.numeric(x[2])] <<- 1
   })
-   image(mat, col=c("white", "black"), main="bacterial movement")
+  image(mat, col=c("white", "black"), main="bacterial movement")
   
   
   #
@@ -117,7 +120,7 @@ for(time in 1:iter){
     },i=i, j=j)
     growth <- fba(spos, sbml$stoch, sbml$lb, sbml$ub, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex)
     bac[l,][1,4] <- bac[l,][1,4] + growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]
-
+    
     sapply(names(sapply(substrat, names)),function(x,i,j,substrat){
       substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
     },i=i,j=j,substrat=substrat)
@@ -125,8 +128,9 @@ for(time in 1:iter){
     gvec[l]=growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]
     
     #
-    # Movement in R 
+    # Movement in R
     #
+    dupli <- F # boolean variable to test for duplication
     a <- (i + xr[l])
     b <- (j + yr[l])
     if(a == 0){a = n}
@@ -140,7 +144,7 @@ for(time in 1:iter){
         return(F)
       }
     }, p=c(a,b))
-    if(bac[l,]$growth>2){ # test for duplication
+    if(bac[l,]$growth>1){ # test for duplication
       bac[l,]$growth <- bac[l,]$growth/2
       bac <- rbind(bac, bac[l,])
       dupli <- T
@@ -158,7 +162,7 @@ for(time in 1:iter){
   # Live and die
   #
   bac$growth <- bac$growth-0.2 #the cost of living
-  bac <- bac[!(bac$growth<0.5),] #death
+  bac <- bac[!(bac$growth<0.2),] #death
   if(dim(bac)[1]==0){
     print("ALL BACTERIA DIED")
     break
