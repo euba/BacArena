@@ -115,7 +115,7 @@ for(time in 1:iter){
     spos <- lapply(substrat, function(x, i, j){ # get current substrat vector
       return(x[i,j])
     },i=i, j=j)
-    growth <- fba(spos, sbml$stoch, sbml$lb, sbml$ub, sbml$ex, sbml$reac)
+    growth <- fba(spos, sbml$stoch, sbml$lb, sbml$ub, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex)
     bac[l,][1,4] <- bac[l,][1,4] + growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]
 
     sapply(names(sapply(substrat, names)),function(x,i,j,substrat){

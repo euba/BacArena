@@ -63,7 +63,7 @@ read.sbml <- function(sbml_file){
   return(list(stoch=stoch, lb=lb, ub=ub, ex=ex, reac=reac))
 }  
 
-fba<-function(substrat, stoch, lb, ub, ex, reac){
+fba<-function(substrat, stoch, lb, ub, ex, reac, growth, sub_ex){
 
 #Varma and Palsson 1994:
 #maximum oxygen utilization rate (15 mmol of 02 per g [dry weight] per h)
@@ -85,10 +85,10 @@ lb[grep("R_EX", colnames(stoch))] <- 0
 #lb[which(colnames(stoch)=="R_EX_glc_e_")] <-  -substrat[["M_glc_b"]]
 #if anaerobic conditions overwrite maximal Glucose uptake:
 if(substrat[["M_o2_b"]] == 0){
-  if(-substrat[["M_glc_b"]] < -18.5) lb[which(colnames(stoch)=="R_EX_glc_e_")] <-  -substrat[["M_glc_b"]]
+  if(substrat[["M_glc_b"]] < 18.5) lb[which(colnames(stoch)=="R_EX_glc_e_")] <-  -substrat[["M_glc_b"]]
     else lb[which(colnames(stoch)=="R_EX_glc_e_")] <- -18.5
 }else{
-  if(-substrat[["M_glc_b"]] < -10.5) lb[which(colnames(stoch)=="R_EX_glc_e_")] <-  -substrat[["M_glc_b"]]
+  if(substrat[["M_glc_b"]] < 10.5) lb[which(colnames(stoch)=="R_EX_glc_e_")] <-  -substrat[["M_glc_b"]]
     else lb[which(colnames(stoch)=="R_EX_glc_e_")] <- -10.5
 }
 lb[which(colnames(stoch)=="R_EX_h2o_e_")] <-  -substrat[["M_h2o_b"]]
@@ -116,6 +116,22 @@ value <- get.objective(linp)
 #get opt fluxes
 flux <- get.variables(linp)
 names(flux) <- reac
+
+#considering the case that well growing bacs have higher fluxes!!
+#print(substrat)
+#print("")
+#print(flux)
+#print("")
+#print(lb[which(colnames(stoch)=="R_EX_glc_e_")])
+#print("")
+pos_uptake <- sapply(names(sapply(substrat, names)),function(x,substrat,growth){
+  return(flux[[sub_ex[[x]]]] * growth + substrat[[x]])
+},substrat=substrat, growth=growth)
+#print(pos_uptake)
+#print("")
+if(all(pos_uptake>=0)) flux <- flux * growth
+#if(all(pos_uptake>=0)) print(flux * growth)
+
 
 rm(linp)
 return(flux)
