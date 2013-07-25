@@ -63,7 +63,7 @@ read.sbml <- function(sbml_file){
   return(list(stoch=stoch, lb=lb, ub=ub, ex=ex, reac=reac))
 }  
 
-fba<-function(substrat, stoch, lb, ub, ex, reac, growth, sub_ex){
+fba<-function(substrat, stoch, lb, ub, ex, reac, growth, sub_ex, type){
 
 #Varma and Palsson 1994:
 #maximum oxygen utilization rate (15 mmol of 02 per g [dry weight] per h)
@@ -73,30 +73,10 @@ fba<-function(substrat, stoch, lb, ub, ex, reac, growth, sub_ex){
   
 # objective function
 c <- rep(0, dim(stoch)[2])
-
 #c[which(colnames(stoch)=="R_Biomass_Ecoli_core_w_GAM")] <- 1 
-c[which(colnames(stoch)=="R_Biomass_Ecoli_core_N__w_GAM_")] <- 1 
-lb[which(colnames(stoch)=="R_ATPM")] <- 7.6
-ub[which(colnames(stoch)=="R_ATPM")] <- 7.6
+c[which(colnames(stoch)==get_biomassf(type))] <- 1 
 
-# define growth media
-lb[grep("R_EX", colnames(stoch))] <- 0
-
-#lb[which(colnames(stoch)=="R_EX_glc_e_")] <-  -substrat[["M_glc_b"]]
-#if anaerobic conditions overwrite maximal Glucose uptake:
-if(substrat[["M_o2_b"]] == 0){
-  if(substrat[["M_glc_b"]] < 18.5) lb[which(colnames(stoch)=="R_EX_glc_e_")] <-  -substrat[["M_glc_b"]]
-    else lb[which(colnames(stoch)=="R_EX_glc_e_")] <- -18.5
-}else{
-  if(substrat[["M_glc_b"]] < 10.5) lb[which(colnames(stoch)=="R_EX_glc_e_")] <-  -substrat[["M_glc_b"]]
-    else lb[which(colnames(stoch)=="R_EX_glc_e_")] <- -10.5
-}
-lb[which(colnames(stoch)=="R_EX_h2o_e_")] <-  -substrat[["M_h2o_b"]]
-lb[which(colnames(stoch)=="R_EX_h_e_")]   <-  -substrat[["M_h_b"]]
-lb[which(colnames(stoch)=="R_EX_o2_e_")]  <-  -substrat[["M_o2_b"]]
-#if(-substrat[["M_o2_b"]] > -15) lb[which(colnames(stoch)=="R_EX_o2_e_")] <-  -substrat[["M_o2_b"]]
-#  else lb[which(colnames(stoch)=="R_EX_o2_e_")] <- -15
-lb[which(colnames(stoch)=="R_EX_pi_e_")]  <-  -substrat[["M_pi_b"]]
+lb <- set_lower_bound(type, substrat, lb)
 
 # linear programming
 #linp <- make.lp(0, dim(stoch)[2], verbose = "full")
@@ -129,7 +109,7 @@ pos_uptake <- sapply(names(sapply(substrat, names)),function(x,substrat,growth){
 },substrat=substrat, growth=growth)
 #print(pos_uptake)
 #print("")
-if(all(pos_uptake>=0)) flux <- flux * growth
+if(all(pos_uptake>=0) == T) flux <- flux * growth
 #if(all(pos_uptake>=0)) print(flux * growth)
 
 

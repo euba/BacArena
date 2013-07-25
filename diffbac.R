@@ -8,7 +8,7 @@ library(rbenchmark)
 setwd("~/BacArena")
 source(file="fba.R")
 source(file="cpp_source.R")
-sbml <- read.sbml("data/ecoli_core.xml")
+source(file="baggage.R")
 
 #movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame"), body = src_movement, plugin="Rcpp")
 diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
@@ -22,6 +22,13 @@ m <- 30
 iter <- 100
 bacs <- 1
 smax <- 70
+s <- c("acetate","aketoglutarate", "co2", "etanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate")
+
+#
+# loading bacteria
+#
+source(file="ecoli.R")
+
 
 #
 # Initiation of agents
@@ -38,7 +45,6 @@ bac <- data.frame(x=n/2, y=m/2,type="ecoli", growth=1) # one cell in the centre
 #
 # intial Substrate distribution
 #
-s <- c("M_ac_b","M_akg_b", "M_co2_b", "M_etoh_b", "M_for_b", "M_fum_b", "M_glc_b", "M_h2o_b", "M_h_b", "M_lac_D_b","M_o2_b", "M_pi_b", "M_pyr_b", "M_succ_b")
 substrat <- lapply(s, function(x, n, m){
   #matrix(runif(n*m,min=0,max=100), nrow=n, ncol=m) # random substrate
   #matrix(c(rep(100, 2*n), rep(0, n*m-2*n)), nrow=n, ncol=m) # downstairs substrate
@@ -46,25 +52,7 @@ substrat <- lapply(s, function(x, n, m){
   matrix(smax,n,m) # homogen substrate distribution
 }, n=n, m=m)
 names(substrat) <- s
-#
-# associate each substrate with an exchange reaction (sbml specific!!)
-#
-sub_ex <- character(length(s))
-names(sub_ex) <- s
-sub_ex[["M_ac_b"]] <- "R_EX_ac_e_"
-sub_ex[["M_akg_b"]] <- "R_EX_akg_e_"
-sub_ex[["M_co2_b"]] <- "R_EX_co2_e_"
-sub_ex[["M_etoh_b"]] <- "R_EX_etoh_e_"
-sub_ex[["M_fum_b"]] <- "R_EX_fum_e_"
-sub_ex[["M_for_b"]] <- "R_EX_for_e_"
-sub_ex[["M_glc_b"]] <- "R_EX_glc_e_"
-sub_ex[["M_h2o_b"]] <- "R_EX_h2o_e_"
-sub_ex[["M_h_b"]] <- "R_EX_h_e_"
-sub_ex[["M_lac_D_b"]] <- "R_EX_lac_D_e_"
-sub_ex[["M_o2_b"]] <- "R_EX_o2_e_"
-sub_ex[["M_pi_b"]] <- "R_EX_pi_e_"
-sub_ex[["M_pyr_b"]] <- "R_EX_pyr_e_"
-sub_ex[["M_succ_b"]] <- "R_EX_succ_e_"
+
 
 
 #
@@ -75,8 +63,8 @@ for(time in 1:iter){
   #
   #plotting functions
   par(mfrow=c(2,2))
-  image(substrat$M_glc_b, zlim=c(0,smax), col=colorRampPalette(c("white", "black"))(40), main="glucose concentration")
-  image(substrat$M_o2_b, zlim=c(0,smax), col=colorRampPalette(c("white", "black"))(40), main="oxygen concentration")
+  image(substrat$glucose, zlim=c(0,smax), col=colorRampPalette(c("white", "black"))(40), main="glucose concentration")
+  image(substrat$o2, zlim=c(0,smax), col=colorRampPalette(c("white", "black"))(40), main="oxygen concentration")
   bacnum <- dim(bac)[1]
   
   bac_history[time] <- bacnum
@@ -109,23 +97,33 @@ for(time in 1:iter){
   #
   gvec <- 1:bacnum
   #print(bacnum)
-  
+    
   xr <- round(runif(bacnum, min = -1, max = 1))
   yr <- round(runif(bacnum, min = -1, max = 1))
   for(l in 1:bacnum){
+    
+    #
+    # get variables according to bac type
+    #
+    sbml <- get_sbml(bac[l,]$type) # get sbml according to bac type
+    biomassf <- get_biomassf(bac[l,]$type)
+    sub_ex <- get_sub_ex(bac[l,]$type)
+    lb <- get_lower_bound(bac[l,]$type)
+    ub <- get_upper_bound(bac[l,]$type)
+    
     i <- bac[l,][1,1]
     j <- bac[l,][1,2]
     spos <- lapply(substrat, function(x, i, j){ # get current substrat vector
       return(x[i,j])
     },i=i, j=j)
-    growth <- fba(spos, sbml$stoch, sbml$lb, sbml$ub, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex)
-    bac[l,][1,4] <- bac[l,][1,4] + growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]
+    growth <- fba(spos, sbml$stoch, lb, ub, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+    bac[l,][1,4] <- bac[l,][1,4] + growth[[biomassf]]
     
     sapply(names(sapply(substrat, names)),function(x,i,j,substrat){
       substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
     },i=i,j=j,substrat=substrat)
     
-    gvec[l]=growth[["R_Biomass_Ecoli_core_N__w_GAM_"]]
+    gvec[l]=growth[[biomassf]]
     
     #
     # Movement in R
