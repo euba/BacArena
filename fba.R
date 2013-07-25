@@ -6,24 +6,24 @@ library(lpSolveAPI)
 # make stoichiometric matrix
 #
 
-read.sbml <- function(sbml_file){
+read.sbml <- function(sbml_file, ex_pattern){
   doc <- readSBML(sbml_file)
-  ecoli <- SBMLDocument_getModel(doc)
-  Model_getNumSpecies(ecoli)
-  Model_getNumReactions(ecoli)  
+  sbml <- SBMLDocument_getModel(doc)
+  Model_getNumSpecies(sbml)
+  Model_getNumReactions(sbml)  
 
   spec <- vector(mode = "character", length = 0)
-  for(i in seq_len(Model_getNumSpecies(ecoli))){  
-    sp  =  Model_getSpecies(ecoli,	i-1);	
+  for(i in seq_len(Model_getNumSpecies(sbml))){  
+    sp  =  Model_getSpecies(sbml,	i-1);	
     spec[i] <- Species_getId(sp);
   }
-  ex <- rep(0, Model_getNumSpecies(ecoli)) 
-  ex <- regexpr("_b$",spec) #mark external species/metabolites
+  ex <- rep(0, Model_getNumSpecies(sbml)) 
+  ex <- regexpr(ex_pattern,spec) #mark external species/metabolites
 
   #spec <- as.factor(spec)
   reac <- vector(mode = "character", length = 0)
-  for(i in seq_len(Model_getNumReactions(ecoli))){  
-    re  =	Model_getReaction(ecoli,	i-1);	
+  for(i in seq_len(Model_getNumReactions(sbml))){  
+    re  =	Model_getReaction(sbml,	i-1);	
     reac[i] <- Reaction_getId(re);
   }
   stoch <- matrix(data = 0, nrow = length(spec), ncol = length(reac))#, rownames=spec, colnames=reac)
@@ -31,15 +31,15 @@ read.sbml <- function(sbml_file){
   rownames(stoch) <- spec
 
   # initialize
-  lb <- rep(-Inf, Model_getNumReactions(ecoli)) # lower bound
-  ub <- rep(Inf, Model_getNumReactions(ecoli))  # upper bound
+  lb <- rep(-Inf, Model_getNumReactions(sbml)) # lower bound
+  ub <- rep(Inf, Model_getNumReactions(sbml))  # upper bound
   
   #
   # fill stoichiometric matrix
   #
   #tmp<-matrix(numeric(0), dim(stoch)[1],0)
-  for(i in seq_len(Model_getNumReactions(ecoli))){  
-    re  =  Model_getReaction(ecoli,	i-1);	
+  for(i in seq_len(Model_getNumReactions(sbml))){  
+    re  =  Model_getReaction(sbml,	i-1);	
     for(j in seq_len(Reaction_getNumReactants(re))){
       ed = Reaction_getReactant(re, j-1);
       stoch[SimpleSpeciesReference_getSpecies(ed),i] <- -SpeciesReference_getStoichiometry(ed)
@@ -105,7 +105,8 @@ names(flux) <- reac
 #print(lb[which(colnames(stoch)=="R_EX_glc_e_")])
 #print("")
 pos_uptake <- sapply(names(sapply(substrat, names)),function(x,substrat,growth){
-  return(flux[[sub_ex[[x]]]] * growth + substrat[[x]])
+  if(x %in% sub_ex == T) return(flux[[sub_ex[[x]]]] * growth + substrat[[x]])
+  else return(0)
 },substrat=substrat, growth=growth)
 #print(pos_uptake)
 #print("")

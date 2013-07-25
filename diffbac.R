@@ -22,7 +22,7 @@ m <- 30
 iter <- 100
 bacs <- 1
 smax <- 70
-s <- c("acetate","aketoglutarate", "co2", "etanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate")
+s <- c("acetate","aketoglutarate", "co2", "etanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate", "h2", "methanol", "methane")
 
 #
 # loading bacteria
@@ -120,7 +120,7 @@ for(time in 1:iter){
     bac[l,][1,4] <- bac[l,][1,4] + growth[[biomassf]]
     
     sapply(names(sapply(substrat, names)),function(x,i,j,substrat){
-      substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
+      if(x %in% sub_ex == T) substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
     },i=i,j=j,substrat=substrat)
     
     gvec[l]=growth[[biomassf]]
