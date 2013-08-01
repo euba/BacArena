@@ -65,10 +65,6 @@ read.sbml <- function(sbml_file, ex_pattern){
 
 fba<-function(substrat, stoch, lb, ub, ex, reac, growth, sub_ex, type){
 
-#Varma and Palsson 1994:
-#maximum oxygen utilization rate (15 mmol of 02 per g [dry weight] per h)
-#the maximum aerobic glucose utilization rate (10.5 mmol of Glc per g [dryweight] per h), the maximum anaerobic glucose utilization rate (18.5 mmol of Glc per g [dry weight] per h),  
-#the non-growth-associated maintenance requirements (7.6 mmol of ATP per g [dry weight] per h), and the growth-associated maintenance requirements (13 mmol of ATP per g of biomass).
   
   
 # objective function

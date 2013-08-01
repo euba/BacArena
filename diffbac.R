@@ -17,8 +17,8 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 # Variable Declaration
 #
 
-n <- 30
-m <- 30
+n <- 20
+m <- 20
 iter <- 100
 bacs <- 1
 smax <- 70
@@ -41,6 +41,7 @@ source(file="ecoli.R")
 
 
 bac <- data.frame(x=n/2, y=m/2,type="ecoli", growth=1) # one cell in the centre
+#bac <- data.frame(x=n, y=m,type="ecoli", growth=1) # one cell in the centre
 
 #
 # intial Substrate distribution
@@ -52,6 +53,9 @@ substrat <- lapply(s, function(x, n, m){
   matrix(smax,n,m) # homogen substrate distribution
 }, n=n, m=m)
 names(substrat) <- s
+substrat[["o2"]] <- matrix(0,n,m)
+substrat[["acetate"]] <- matrix(0,n,m)
+substrat[["h2o"]] <- matrix(99999,n,m)
 
 
 
@@ -59,16 +63,28 @@ names(substrat) <- s
 #Iteration with rules to apply for each agent
 #
 bac_history <- vector(mode="numeric")
+substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
 for(time in 1:iter){
   #
   #plotting functions
-  par(mfrow=c(2,2))
-  image(substrat$glucose, zlim=c(0,smax), col=colorRampPalette(c("white", "black"))(40), main="glucose concentration")
-  image(substrat$o2, zlim=c(0,smax), col=colorRampPalette(c("white", "black"))(40), main="oxygen concentration")
+  par(mfrow=c(3,2))
+  image(substrat$glucose, zlim=c(0,smax), col=colorRampPalette(c("white", "green"))(40), main="glucose concentration")
+  image(substrat$o2, zlim=c(0,smax), col=colorRampPalette(c("white", "blue"))(40), main="oxygen concentration")
+  image(substrat$acetate, zlim=c(0,100), col=colorRampPalette(c("white", "orange"))(40), main="acetate concentration")
+  
   bacnum <- dim(bac)[1]
   
   bac_history[time] <- bacnum
   plot(1:time, bac_history, type="b", main="growth curve")
+  
+  
+  substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
+  rownames(substrat_history) <- names(substrat)
+  plot(1:time, substrat_history["acetate",1:time], col="orange", ylim=c(0,70), ylab="concentration", xlab="time")
+  lines(1:time, substrat_history["glucose",1:time], col="green", type="b")
+  lines(1:time, substrat_history["o2",1:time], col="blue", type="b")
+  lines(1:time, substrat_history["formiate",1:time], col="red", type="b")
+  legend("left", c("acetate", "glucose", "o2", "formiate"), pch=1,col=c("orange", "green", "blue", "red"))
   
   #
   # Model of Diffusion
@@ -120,10 +136,20 @@ for(time in 1:iter){
     bac[l,][1,4] <- bac[l,][1,4] + growth[[biomassf]]
     
     sapply(names(sapply(substrat, names)),function(x,i,j,substrat){
-      if(x %in% sub_ex == T) substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
+      if(x %in% names(sub_ex)) { # only update substrate which are metabolic relevant for current organism
+        if (substrat[[x]][i,j] < -growth[[sub_ex[[x]]]]){ # test for negative fba return
+          print(bac[l,])
+          print(growth)
+          print(spos)
+          print(c(x, ": ", substrat[[x]][i,j], " uptake: ", -growth[[sub_ex[[x]]]]))
+          stop("FBA ERROR: return flux excesses available substrate!")
+        }
+        else substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
+      } 
     },i=i,j=j,substrat=substrat)
     
     gvec[l]=growth[[biomassf]]
+    #print(growth)
     
     #
     # Movement in R
@@ -159,8 +185,8 @@ for(time in 1:iter){
   #
   # Live and die
   #
-  bac$growth <- bac$growth-0.2 #the cost of living
-  bac <- bac[!(bac$growth<0.2),] #death
+  bac$growth <- bac$growth-0.1 #the cost of living
+  bac <- bac[!(bac$growth<0.1),] #death
   if(dim(bac)[1]==0){
     print("ALL BACTERIA DIED")
     break
