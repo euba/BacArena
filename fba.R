@@ -63,16 +63,17 @@ read.sbml <- function(sbml_file, ex_pattern){
   return(list(stoch=stoch, lb=lb, ub=ub, ex=ex, reac=reac))
 }  
 
-fba<-function(substrat, stoch, lb, ub, ex, reac, growth, sub_ex, type){
+fba<-function(substrat, stoch, ex, reac, growth, sub_ex, type){
 
-  
-  
+substrat <- lapply(substrat, function(x){round(x, digits=2)}) # ROUNDING!!!
+
 # objective function
 c <- rep(0, dim(stoch)[2])
 #c[which(colnames(stoch)=="R_Biomass_Ecoli_core_w_GAM")] <- 1 
 c[which(colnames(stoch)==get_biomassf(type))] <- 1 
 
-lb <- set_lower_bound(type, substrat, lb)
+lb <- set_lower_bound(type, substrat) # current substrate defines lower bounds
+ub <- get_upper_bound(type)
 
 # linear programming
 #linp <- make.lp(0, dim(stoch)[2], verbose = "full")
@@ -109,11 +110,10 @@ pos_uptake <- sapply(names(sapply(substrat, names)),function(x,substrat,growth){
 if(all(pos_uptake>=0) == T) flux <- flux * growth
 #if(all(pos_uptake>=0)) print(flux * growth)
 
+write.lp(linp,"test", NULL) # debug 
 
 rm(linp)
 return(flux)
-
-#write.lp(linp,"test", NULL)
 
 }
 

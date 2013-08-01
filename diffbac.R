@@ -17,8 +17,8 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 # Variable Declaration
 #
 
-n <- 20
-m <- 20
+n <- 10
+m <- 10
 iter <- 100
 bacs <- 1
 smax <- 70
@@ -55,7 +55,10 @@ substrat <- lapply(s, function(x, n, m){
 names(substrat) <- s
 substrat[["o2"]] <- matrix(0,n,m)
 substrat[["acetate"]] <- matrix(0,n,m)
-substrat[["h2o"]] <- matrix(99999,n,m)
+substrat[["formiate"]] <- matrix(0,n,m)
+substrat[["ethanol"]] <- matrix(0,n,m)
+substrat[["fumarate"]] <- matrix(0,n,m)
+#substrat[["h2o"]] <- matrix(99999,n,m)
 
 
 
@@ -69,7 +72,7 @@ for(time in 1:iter){
   #plotting functions
   par(mfrow=c(3,2))
   image(substrat$glucose, zlim=c(0,smax), col=colorRampPalette(c("white", "green"))(40), main="glucose concentration")
-  image(substrat$o2, zlim=c(0,smax), col=colorRampPalette(c("white", "blue"))(40), main="oxygen concentration")
+  #image(substrat$o2, zlim=c(0,smax), col=colorRampPalette(c("white", "cyan"))(40), main="oxygen concentration")
   image(substrat$acetate, zlim=c(0,100), col=colorRampPalette(c("white", "orange"))(40), main="acetate concentration")
   
   bacnum <- dim(bac)[1]
@@ -80,11 +83,17 @@ for(time in 1:iter){
   
   substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
   rownames(substrat_history) <- names(substrat)
-  plot(1:time, substrat_history["acetate",1:time], col="orange", ylim=c(0,70), ylab="concentration", xlab="time")
+  plot(1:time, substrat_history["h2o",1:time], col="blue", ylim=c(0,70), ylab="concentration", xlab="time")
   lines(1:time, substrat_history["glucose",1:time], col="green", type="b")
-  lines(1:time, substrat_history["o2",1:time], col="blue", type="b")
+  lines(1:time, substrat_history["o2",1:time], col="cyan", type="b")
+  lines(1:time, substrat_history["co2",1:time], col="magenta", type="b")
+  legend("left", c("water", "glucose", "o2", "co2"), pch=1,col=c("blue", "green", "cyan", "magenta"))
+  plot(1:time, substrat_history["acetate",1:time], col="orange", ylim=c(0,70), ylab="concentration", xlab="time")
+  lines(1:time, substrat_history["fumarate",1:time], col="gray", type="b")
   lines(1:time, substrat_history["formiate",1:time], col="red", type="b")
-  legend("left", c("acetate", "glucose", "o2", "formiate"), pch=1,col=c("orange", "green", "blue", "red"))
+  lines(1:time, substrat_history["ethanol",1:time], col="brown", type="b")
+  legend("left", c("acetate", "fumarate", "formiate", "ethanol"), pch=1,col=c("orange", "gray", "red", "brown"))
+  
   
   #
   # Model of Diffusion
@@ -132,24 +141,44 @@ for(time in 1:iter){
     spos <- lapply(substrat, function(x, i, j){ # get current substrat vector
       return(x[i,j])
     },i=i, j=j)
-    growth <- fba(spos, sbml$stoch, lb, ub, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
-    bac[l,][1,4] <- bac[l,][1,4] + growth[[biomassf]]
-    
-    sapply(names(sapply(substrat, names)),function(x,i,j,substrat){
-      if(x %in% names(sub_ex)) { # only update substrate which are metabolic relevant for current organism
-        if (substrat[[x]][i,j] < -growth[[sub_ex[[x]]]]){ # test for negative fba return
-          print(bac[l,])
-          print(growth)
-          print(spos)
-          print(c(x, ": ", substrat[[x]][i,j], " uptake: ", -growth[[sub_ex[[x]]]]))
-          stop("FBA ERROR: return flux excesses available substrate!")
+    #growth <- fba(spos, sbml$stoch, lb, ub, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+    growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+    growth <- lapply(growth, function(x){round(x, digits=2)}) # ROUNDING!!!
+    if(growth[[biomassf]] != 0){ # continue only if there is growth !
+      bac[l,][1,4] <- bac[l,][1,4] + growth[[biomassf]]
+      
+      sapply(names(sapply(substrat, names)),function(x,i,j,substrat){
+        if(x %in% names(sub_ex)) { # only update substrate which are metabolic relevant for current organism
+          #print(substrat[[x]][i,j])
+          #print(growth[[sub_ex[[x]]]])
+          if(substrat[[x]][i,j] < -growth[[sub_ex[[x]]]]){ # test for negative fba return
+            print(growth)
+            print("")
+            print("lower bound")
+            # get lower bound with names
+            lbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, lb){
+              if(x %in% names(sub_ex)) lb[which(colnames(stoch)==sub_ex[[x]])]
+            },stoch=sbml$stoch, sub_ex=sub_ex, lb=lb)
+            print(t(lbound))
+            print("")
+            print("upper bound")
+            rbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, ub){
+              if(x %in% names(sub_ex)) ub[which(colnames(stoch)==sub_ex[[x]])]
+            },stoch=sbml$stoch, sub_ex=sub_ex, ub=ub)
+            print(t(rbound))
+            print("")
+            print(t(spos))
+            print(bac[l,])
+            print(c(x, substrat[[x]][i,j], " uptake: ", -growth[[sub_ex[[x]]]]))
+            stop("FBA ERROR: return flux excesses available substrate!")
+          }
+          else substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
         }
-        else substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
-      } 
-    },i=i,j=j,substrat=substrat)
-    
-    gvec[l]=growth[[biomassf]]
-    #print(growth)
+      },i=i,j=j,substrat=substrat)
+      
+      gvec[l]=growth[[biomassf]]
+      #print(growth)
+    }
     
     #
     # Movement in R

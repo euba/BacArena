@@ -28,7 +28,7 @@ get_upper_bound <- function(type){
   if (type=="barkeri") return(barkeri_upper_bound)
 }
 
-set_lower_bound <- function(type, substrat, lower_bound){
-  if (type=="ecoli") return(ecoli_set_lower_bound(substrat, lower_bound))
-  if (type=="barkeri") return(barkeri_set_lower_bound(substrat, lower_bound))
+set_lower_bound <- function(type, substrat){
+  if (type=="ecoli") return(ecoli_set_lower_bound(substrat))
+  if (type=="barkeri") return(barkeri_set_lower_bound(substrat))
 }
