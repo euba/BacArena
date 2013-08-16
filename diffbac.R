@@ -17,8 +17,8 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 # Variable Declaration
 #
 
-n <- 10
-m <- 10
+n <- 50
+m <- 50
 iter <- 100
 bacs <- 1
 smax <- 70
@@ -75,14 +75,10 @@ for(time in 1:iter){
   #plotting functions
   par(mfrow=c(3,2))
   image(substrat$glucose, zlim=c(0,max(substrat$glucose)), col=colorRampPalette(c("white", "green"))(40), main="glucose concentration")
-  #image(substrat$o2, zlim=c(0,smax), col=colorRampPalette(c("white", "cyan"))(40), main="oxygen concentration")
+  #image(substrat$glucose, zlim=c(0,70), col=colorRampPalette(c("white", "green"))(40), main="glucose concentration")
+
+  #image(substrat$acetate, zlim=c(0,200), col=colorRampPalette(c("white", "orange"))(40), main="acetate concentration")
   image(substrat$acetate, zlim=c(0,max(substrat$acetate)), col=colorRampPalette(c("white", "orange"))(40), main="acetate concentration")
-  
-  bacnum <- dim(bac)[1]
-  
-  bac_history[time] <- bacnum
-  plot(1:time, bac_history, type="b", main="growth curve")
-  
   
   substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
   rownames(substrat_history) <- names(substrat)
@@ -97,6 +93,9 @@ for(time in 1:iter){
   lines(1:time, substrat_history["ethanol",1:time], col="brown", type="b")
   legend("left", c("acetate", "fumarate", "formiate", "ethanol"), pch=1,col=c("orange", "gray", "red", "brown"))
   
+  bacnum <- dim(bac)[1]
+  bac_history[time] <- bacnum
+  plot(1:time, bac_history, type="b", main="growth curve")
   
   #
   # Model of Diffusion
@@ -226,5 +225,5 @@ for(time in 1:iter){
     print("ALL BACTERIA DIED")
     break
   }
-  print(substrat$glucose)
+  #print(substrat$glucose)
 }

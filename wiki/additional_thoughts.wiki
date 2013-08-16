@@ -1,0 +1,33 @@
+=Additional Thoughts=
+
+==E.coli and lower/upper bounds==
+* Does it make sense to include different lowerbounds of glucose uptake according to oxygen concentrations?
+* Anaerobic lifestyle is more interesting -> social interactions
+* Different uptake rates are only included to match biological experiments -> no rational explanations for the values 
+
+==Metabolic competion between species==
+* What happens if two species compete for the same substrate?
+* In the current model the individual, which is actualized first gets all -> bias towards the first listed in bac dataframe
+* Different ranking in bac list -> "strong" species are listed first, which are known from empirical values to outcompete others?
+
+==Different substrate diffusion function==
+* Take idea of Christoph
+* Actualize the whole substrate grid instead just the neighbourhood
+* Different diffusion rates for each specific substrate
+
+==Life and Death==
+* Current ecoli core model does not include full biomass requirements (amino acid, vitamin, ... metabolism)
+* Living costs should be implemented in growth maintenance
+* When cells are dividing separate whole metabolome (all molecules) of the individual between doughter and mother cell
+* What is the real treshold for death?
+
+==Syntrophic E.coli==
+* Create new SBML model (ecoli_mut.R), where glucose uptake is knocked out
+* Main substrate for ecoli.R is glucose and for ecoli_mut.R acetate
+
+==Chemotaxis==
+* What is faster diffusion or movement?
+* If diffusion is faster no spatial patterns (aggregation) of species interactions can be seen
+* Chemotaxis in neighbourhood or actualization of whole grid?
+* Define to which substrate bacteria should diffuse to -> problematic: mutiple substrates
+* Chemotaxis: tumbling and active swiming
