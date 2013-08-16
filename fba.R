@@ -65,12 +65,12 @@ read.sbml <- function(sbml_file, ex_pattern){
 
 fba<-function(substrat, stoch, ex, reac, growth, sub_ex, type){
 
-substrat <- lapply(substrat, function(x){round(x, digits=2)}) # ROUNDING!!!
+#substrat <- lapply(substrat, function(x){round(x, digits=2)}) # ROUNDING!!!
 
 # objective function
-c <- rep(0, dim(stoch)[2])
+cs <- rep(0, dim(stoch)[2])
 #c[which(colnames(stoch)=="R_Biomass_Ecoli_core_w_GAM")] <- 1 
-c[which(colnames(stoch)==get_biomassf(type))] <- 1 
+cs[which(colnames(stoch)==get_biomassf(type))] <- 1 
 
 lb <- set_lower_bound(type, substrat) # current substrate defines lower bounds
 ub <- get_upper_bound(type)
@@ -79,7 +79,7 @@ ub <- get_upper_bound(type)
 #linp <- make.lp(0, dim(stoch)[2], verbose = "full")
 linp <- make.lp(0, dim(stoch)[2])
 lp.control(linp,sense='max')
-set.objfn(linp, c)
+set.objfn(linp, cs)
 for(i in 1:nrow(stoch)){
   # only add constraint if it's not an external metabolite!!
   if(ex[i] == -1) add.constraint(linp, stoch[i,], "=", 0) 

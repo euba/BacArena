@@ -60,13 +60,15 @@ ecoli_set_lower_bound <- function(substrat){
   
   #ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <-  -substrat[["glucose"]]
   #if anaerobic conditions overwrite maximal Glucose uptake:
-  if(substrat[["o2"]] == 0){
-    if(substrat[["glucose"]] < 18.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -substrat[["glucose"]]
-    else ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -18.5
-  }else{
-    if(substrat[["glucose"]] < 10.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -substrat[["glucose"]]
-    else ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -10.5
-  }
+  
+  #if(substrat[["o2"]] == 0){
+  #  if(substrat[["glucose"]] < 18.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -substrat[["glucose"]]
+  #  else ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -18.5
+  #}else{
+  #  if(substrat[["glucose"]] < 10.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -substrat[["glucose"]]
+  #  else ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -10.5
+  #}
+  ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -18.5
   ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["h2o"]])] <-  -substrat[["h2o"]]
   ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["proton"]])]   <-  -substrat[["proton"]]
   ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["o2"]])]  <-  -substrat[["o2"]]
