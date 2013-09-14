@@ -15,7 +15,7 @@ ecoli_stochmatrix <- ecoli_sbml$stoch
 #ecoli_sub_ex[["acetate"]]         <- "R_EX_ac_e_"
 #ecoli_sub_ex[["aketoglutarate"]]  <- "R_EX_akg_e_"
 #ecoli_sub_ex[["co2"]]             <- "R_EX_co2_e_"
-#ecoli_sub_ex[["etanol"]]          <- "R_EX_etoh_e_"
+#ecoli_sub_ex[["ethanol"]]          <- "R_EX_etoh_e_"
 #ecoli_sub_ex[["fumarate"]]        <- "R_EX_fum_e_"
 #ecoli_sub_ex[["formiate"]]        <- "R_EX_for_e_"
 #ecoli_sub_ex[["glucose"]]         <- "R_EX_glc_e_"
@@ -27,8 +27,8 @@ ecoli_stochmatrix <- ecoli_sbml$stoch
 #ecoli_sub_ex[["pyruvate"]]        <- "R_EX_pyr_e_"
 #ecoli_sub_ex[["succinate"]]       <- "R_EX_succ_e_"
 
-sname <- c("acetate","aketoglutarate", "co2", "etanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate")
-ecoli_sub_ex <- c("R_EX_ac_e_", "R_EX_akg_e_", "R_EX_co2_e_", "R_EX_etoh_e_", "R_EX_fum_e_", "R_EX_for_e_", "R_EX_glc_e_", "R_EX_h2o_e_", "R_EX_h_e_", "R_EX_lac_D_e_", "R_EX_o2_e_", "R_EX_pi_e_", "R_EX_pyr_e_", "R_EX_succ_e_")
+sname <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate","glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate")
+ecoli_sub_ex <- c("R_EX_ac_e_", "R_EX_akg_e_", "R_EX_co2_e_", "R_EX_etoh_e_", "R_EX_for_e_", "R_EX_fum_e_",  "R_EX_glc_e_", "R_EX_h2o_e_", "R_EX_h_e_", "R_EX_lac_D_e_", "R_EX_o2_e_", "R_EX_pi_e_", "R_EX_pyr_e_", "R_EX_succ_e_")
 names(ecoli_sub_ex) <- sname
 
 ecoli_lower_bound <- ecoli_sbml$lb
@@ -61,14 +61,16 @@ ecoli_set_lower_bound <- function(substrat){
   #ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <-  -substrat[["glucose"]]
   #if anaerobic conditions overwrite maximal Glucose uptake:
   
-  #if(substrat[["o2"]] < 0.01){
-  #  if(substrat[["glucose"]] < 18.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -substrat[["glucose"]]
-  #  else ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -18.5
-  #}else{
-  #  if(substrat[["glucose"]] < 10.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -substrat[["glucose"]]
-  #  else ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -10.5
-  #}
-  ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -18.5
+  if(substrat[["o2"]] < 0.01){
+    #if(substrat[["glucose"]] < 18.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -substrat[["glucose"]]
+    #else ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -18.5
+    if(substrat[["glucose"]] > 18.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -18.5
+  }else{
+    #if(substrat[["glucose"]] < 10.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -substrat[["glucose"]]
+    #else ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -10.5
+    if(substrat[["glucose"]] > 10.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -10.5
+  }
+  #ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -18.5
   ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["h2o"]])] <-  -substrat[["h2o"]]
   ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["proton"]])]   <-  -substrat[["proton"]]
   ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["o2"]])]  <-  -substrat[["o2"]]

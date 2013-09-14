@@ -31,8 +31,8 @@ read.sbml <- function(sbml_file, ex_pattern){
   rownames(stoch) <- spec
 
   # initialize
-  lb <- rep(-Inf, Model_getNumReactions(sbml)) # lower bound
-  ub <- rep(Inf, Model_getNumReactions(sbml))  # upper bound
+  lb <- rep(-1e+30, Model_getNumReactions(sbml)) # lower bound
+  ub <- rep(1e+30, Model_getNumReactions(sbml))  # upper bound
   
   #
   # fill stoichiometric matrix
@@ -76,9 +76,9 @@ lb <- set_lower_bound(type, substrat) # current substrate defines lower bounds
 ub <- get_upper_bound(type)
 
 # linear programming
-#linp <- make.lp(0, dim(stoch)[2], verbose = "full")
-linp <- make.lp(0, dim(stoch)[2])
-lp.control(linp,sense='max')
+linp <- make.lp(0, dim(stoch)[2], verbose = "full")
+#linp <- make.lp(0, dim(stoch)[2])
+lp.control(linp,sense='max',verbose='important', anti.degen="none")
 set.objfn(linp, cs)
 for(i in 1:nrow(stoch)){
   # only add constraint if it's not an external metabolite!!

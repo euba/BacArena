@@ -17,15 +17,15 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 # Variable Declaration
 #
 
-n <- 50
-m <- 50
-iter <- 100
+n <- 5
+m <- 5
+iter <- 20
 bacs <- 1
 smax <- 70
 #ecoli
-s <- c("acetate","aketoglutarate", "co2", "etanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate")
+s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate")
 #mbarkeri
-#s <- c("acetate","aketoglutarate", "co2", "etanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate", "h2", "methanol", "methane")
+#s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate", "h2", "methanol", "methane")
 
 #
 # loading bacteria
@@ -82,12 +82,12 @@ for(time in 1:iter){
   
   substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
   rownames(substrat_history) <- names(substrat)
-  plot(1:time, substrat_history["h2o",1:time], col="blue", ylim=c(0,max(substrat_history["co2",1:time])), ylab="concentration", xlab="time") #set max y-value to highest product conentration
+  plot(1:time, substrat_history["h2o",1:time], col="blue", ylim=c(0,max(substrat_history[,1:time])), ylab="concentration", xlab="time") #set max y-value to highest product conentration
   lines(1:time, substrat_history["glucose",1:time], col="green", type="b")
   lines(1:time, substrat_history["o2",1:time], col="cyan", type="b")
   lines(1:time, substrat_history["co2",1:time], col="magenta", type="b")
   legend("left", c("water", "glucose", "o2", "co2"), pch=1,col=c("blue", "green", "cyan", "magenta"))
-  plot(1:time, substrat_history["acetate",1:time], col="orange", ylim=c(0,max(substrat_history["fumarate",1:time])), ylab="concentration", xlab="time")
+  plot(1:time, substrat_history["acetate",1:time], col="orange", ylim=c(0,max(substrat_history[,1:time])), ylab="concentration", xlab="time")
   lines(1:time, substrat_history["fumarate",1:time], col="gray", type="b")
   lines(1:time, substrat_history["formiate",1:time], col="red", type="b")
   lines(1:time, substrat_history["ethanol",1:time], col="brown", type="b")
@@ -157,25 +157,25 @@ for(time in 1:iter){
           #print(substrat[[x]][i,j])
           #print(growth[[sub_ex[[x]]]])
           if(substrat[[x]][i,j] < -growth[[sub_ex[[x]]]]){ # test for negative fba return
-            #print(growth)
-            #print("")
-            #print("lower bound")
+            print(t(growth))
+            print("")
+            print("lower bound")
             # get lower bound with names
             lbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, lb){
               if(x %in% names(sub_ex)) lb[which(colnames(stoch)==sub_ex[[x]])]
             },stoch=sbml$stoch, sub_ex=sub_ex, lb=lb)
-            #print(t(lbound))
-            #print("")
-            #print("upper bound")
+            print(t(lbound))
+            print("")
+            print("upper bound")
             rbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, ub){
               if(x %in% names(sub_ex)) ub[which(colnames(stoch)==sub_ex[[x]])]
             },stoch=sbml$stoch, sub_ex=sub_ex, ub=ub)
-            #print(t(rbound))
-            #print("")
-            #print(t(spos))
-            #print(bac[l,])
-            #print(c(x, substrat[[x]][i,j], " uptake: ", -growth[[sub_ex[[x]]]]))
-            #stop("FBA ERROR: return flux excesses available substrate!")
+            print(t(rbound))
+            print("")
+            print(t(spos))
+            print(bac[l,])
+            print(c(x, substrat[[x]][i,j], " uptake: ", -growth[[sub_ex[[x]]]]))
+            stop("FBA ERROR: return flux excesses available substrate!")
           }
           else substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
         }
