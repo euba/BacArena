@@ -78,7 +78,7 @@ ub <- get_upper_bound(type)
 # linear programming
 linp <- make.lp(0, dim(stoch)[2], verbose = "full")
 #linp <- make.lp(0, dim(stoch)[2])
-lp.control(linp,sense='max',verbose='important', anti.degen="none")
+lp.control(linp,sense='max',verbose='full', anti.degen="none")
 set.objfn(linp, cs)
 for(i in 1:nrow(stoch)){
   # only add constraint if it's not an external metabolite!!
@@ -87,7 +87,7 @@ for(i in 1:nrow(stoch)){
 set.bounds(linp,lower=lb)
 set.bounds(linp,upper=ub)
 
-solve(linp)
+if(solve(linp)!=0) return("DEAD")
 value <- get.objective(linp)
 
 #get opt fluxes

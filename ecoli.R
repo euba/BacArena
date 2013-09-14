@@ -52,8 +52,9 @@ ecoli_set_lower_bound <- function(substrat){
   ecoli_upper_bound[which(colnames(ecoli_stochmatrix)==get_maintenancef("ecoli"))] <- 7.6
   ecoli_lower_bound[grep("R_EX", colnames(ecoli_stochmatrix))] <- 0 # define growth media
   
-  
+  print(substrat)
   sapply(names(sapply(substrat, names)), function(x, ecoli_stochmatrix, ecoli_sub_ex, lb){
+    #print(x)
     if(x %in% names(ecoli_sub_ex)) lb[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[[x]])] <<- - substrat[[x]] # "<<-" is necessary for extern variable modification
   },ecoli_stochmatrix=ecoli_stochmatrix, ecoli_sub_ex=ecoli_sub_ex, lb=lb)
   

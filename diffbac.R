@@ -19,7 +19,7 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 
 n <- 5
 m <- 5
-iter <- 20
+iter <- 50
 bacs <- 1
 smax <- 70
 #ecoli
@@ -43,7 +43,7 @@ source(file="ecoli.R")
 #rownames(bac) <- 1:nrow(bac) #change indices in data.frame
 
 
-bac <- data.frame(x=n/2, y=m/2,type="ecoli", growth=1) # one cell in the centre
+bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
 #bac <- data.frame(x=n, y=m,type="ecoli", growth=1) # one cell in the centre
 
 #
@@ -147,7 +147,11 @@ for(time in 1:iter){
       return(x[i,j])
     },i=i, j=j)
     #growth <- fba(spos, sbml$stoch, lb, ub, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+    print(spos)
     growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+    if(growth=="DEAD"){
+      bac[-l,]
+    }else{
     growth <- lapply(growth, function(x){round(x, digits=2)}) # ROUNDING!!!
     if(growth[[biomassf]] != 0){ # continue only if there is growth !
       bac[l,][1,4] <- bac[l,][1,4] + growth[[biomassf]]
@@ -180,6 +184,28 @@ for(time in 1:iter){
           else substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
         }
       },i=i,j=j,substrat=substrat)
+      
+      if(max(sapply(substrat,max))>1e+20){
+        print(t(growth))
+        print("")
+        print("lower bound")
+        # get lower bound with names
+        lbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, lb){
+          if(x %in% names(sub_ex)) lb[which(colnames(stoch)==sub_ex[[x]])]
+        },stoch=sbml$stoch, sub_ex=sub_ex, lb=lb)
+        print(t(lbound))
+        print("")
+        print("upper bound")
+        rbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, ub){
+          if(x %in% names(sub_ex)) ub[which(colnames(stoch)==sub_ex[[x]])]
+        },stoch=sbml$stoch, sub_ex=sub_ex, ub=ub)
+        print(t(rbound))
+        print("")
+        print(t(spos))
+        print(bac[l,])
+        print(c(x, substrat[[x]][i,j], " uptake: ", -growth[[sub_ex[[x]]]]))
+        stop("FBA ERROR: return flux near infinity")
+      }
       
       gvec[l]=growth[[biomassf]]
       #print(growth)
@@ -214,7 +240,6 @@ for(time in 1:iter){
         bac <- bac[-(bacnum+1),]
       }
     }
-  }
   
   #
   # Live and die
@@ -226,4 +251,6 @@ for(time in 1:iter){
     break
   }
   #print(substrat$glucose)
+  }
+  }
 }
