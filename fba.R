@@ -76,9 +76,10 @@ lb <- set_lower_bound(type, substrat) # current substrate defines lower bounds
 ub <- get_upper_bound(type)
 
 # linear programming
-linp <- make.lp(0, dim(stoch)[2], verbose = "full")
-#linp <- make.lp(0, dim(stoch)[2])
-lp.control(linp,sense='max',verbose='full', anti.degen="none")
+#linp <- make.lp(0, dim(stoch)[2], verbose = "full")
+linp <- make.lp(0, dim(stoch)[2])
+#lp.control(linp,sense='max',verbose='full', anti.degen="none")
+lp.control(linp,sense='max',verbose='important')
 set.objfn(linp, cs)
 for(i in 1:nrow(stoch)){
   # only add constraint if it's not an external metabolite!!
@@ -87,7 +88,7 @@ for(i in 1:nrow(stoch)){
 set.bounds(linp,lower=lb)
 set.bounds(linp,upper=ub)
 
-if(solve(linp)!=0) return("DEAD")
+if(solve(linp)!=0) return("DEAD") # very important!! if no feasable solutions is found there is still some (useless) result
 value <- get.objective(linp)
 
 #get opt fluxes

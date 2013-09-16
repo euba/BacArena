@@ -70,6 +70,8 @@ substrat[["fumarate"]] <- matrix(0,n,m)
 #
 bac_history <- vector(mode="numeric")
 substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
+max_glucose = max(substrat$glucose)
+max_acetate = max(substrat$acetate)
 for(time in 1:iter){
   #
   #plotting functions
@@ -128,7 +130,9 @@ for(time in 1:iter){
   xr <- round(runif(bacnum, min = -1, max = 1))
   yr <- round(runif(bacnum, min = -1, max = 1))
   for(l in 1:bacnum){
-    
+    #print(l)
+    #print(bac)
+        
     #
     # get variables according to bac type
     #
@@ -147,110 +151,118 @@ for(time in 1:iter){
       return(x[i,j])
     },i=i, j=j)
     #growth <- fba(spos, sbml$stoch, lb, ub, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
-    print(spos)
+    #print(spos)
     growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
-    if(growth=="DEAD"){
+    
+    # check for feasable lin prog solutions first!
+    if(growth == "DEAD"){
+      print("----")
+      cat("no fba solution found for: ")
+      print(bac[l,])
+      print(t(spos))
+      print("----")
       bac[-l,]
     }else{
-    growth <- lapply(growth, function(x){round(x, digits=2)}) # ROUNDING!!!
-    if(growth[[biomassf]] != 0){ # continue only if there is growth !
-      bac[l,][1,4] <- bac[l,][1,4] + growth[[biomassf]]
-      
-      sapply(names(sapply(substrat, names)),function(x,i,j,substrat){
-        if(x %in% names(sub_ex)) { # only update substrate which are metabolic relevant for current organism
-          #print(substrat[[x]][i,j])
-          #print(growth[[sub_ex[[x]]]])
-          if(substrat[[x]][i,j] < -growth[[sub_ex[[x]]]]){ # test for negative fba return
-            print(t(growth))
-            print("")
-            print("lower bound")
-            # get lower bound with names
-            lbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, lb){
-              if(x %in% names(sub_ex)) lb[which(colnames(stoch)==sub_ex[[x]])]
-            },stoch=sbml$stoch, sub_ex=sub_ex, lb=lb)
-            print(t(lbound))
-            print("")
-            print("upper bound")
-            rbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, ub){
-              if(x %in% names(sub_ex)) ub[which(colnames(stoch)==sub_ex[[x]])]
-            },stoch=sbml$stoch, sub_ex=sub_ex, ub=ub)
-            print(t(rbound))
-            print("")
-            print(t(spos))
-            print(bac[l,])
-            print(c(x, substrat[[x]][i,j], " uptake: ", -growth[[sub_ex[[x]]]]))
-            stop("FBA ERROR: return flux excesses available substrate!")
+      growth <- lapply(growth, function(x){round(x, digits=2)}) # ROUNDING!!!
+      if(growth[[biomassf]] != 0){ # continue only if there is growth !
+        bac[l,][1,4] <- bac[l,][1,4] + growth[[biomassf]]
+        
+        sapply(names(sapply(substrat, names)),function(x,i,j,substrat){
+          if(x %in% names(sub_ex)) { # only update substrate which are metabolic relevant for current organism
+            #print(substrat[[x]][i,j])
+            #print(growth[[sub_ex[[x]]]])
+            if(substrat[[x]][i,j] < -growth[[sub_ex[[x]]]]){ # test for negative fba return
+              print(t(growth))
+              print("")
+              print("lower bound")
+              # get lower bound with names
+              lbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, lb){
+                if(x %in% names(sub_ex)) lb[which(colnames(stoch)==sub_ex[[x]])]
+              },stoch=sbml$stoch, sub_ex=sub_ex, lb=lb)
+              print(t(lbound))
+              print("")
+              print("upper bound")
+              rbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, ub){
+                if(x %in% names(sub_ex)) ub[which(colnames(stoch)==sub_ex[[x]])]
+              },stoch=sbml$stoch, sub_ex=sub_ex, ub=ub)
+              print(t(rbound))
+              print("")
+              print(t(spos))
+              print(bac[l,])
+              print(c(x, substrat[[x]][i,j], " uptake: ", -growth[[sub_ex[[x]]]]))
+              stop("FBA ERROR: return flux excesses available substrate!")
+            }
+            else substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
           }
-          else substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
+        },i=i,j=j,substrat=substrat)
+        
+        # check for errorlike substrate uptake/concentration
+        if(max(sapply(substrat,max))>1e+20){
+          print(t(growth))
+          print("")
+          print("lower bound")
+          # get lower bound with names
+          lbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, lb){
+            if(x %in% names(sub_ex)) lb[which(colnames(stoch)==sub_ex[[x]])]
+          },stoch=sbml$stoch, sub_ex=sub_ex, lb=lb)
+          print(t(lbound))
+          print("")
+          print("upper bound")
+          rbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, ub){
+            if(x %in% names(sub_ex)) ub[which(colnames(stoch)==sub_ex[[x]])]
+          },stoch=sbml$stoch, sub_ex=sub_ex, ub=ub)
+          print(t(rbound))
+          print("")
+          print(t(spos))
+          print(bac[l,])
+          print(c(x, substrat[[x]][i,j], " uptake: ", -growth[[sub_ex[[x]]]]))
+          stop("FBA ERROR: Unusual high substrate concentrations!! (~infinity)")
         }
-      },i=i,j=j,substrat=substrat)
-      
-      if(max(sapply(substrat,max))>1e+20){
-        print(t(growth))
-        print("")
-        print("lower bound")
-        # get lower bound with names
-        lbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, lb){
-          if(x %in% names(sub_ex)) lb[which(colnames(stoch)==sub_ex[[x]])]
-        },stoch=sbml$stoch, sub_ex=sub_ex, lb=lb)
-        print(t(lbound))
-        print("")
-        print("upper bound")
-        rbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, ub){
-          if(x %in% names(sub_ex)) ub[which(colnames(stoch)==sub_ex[[x]])]
-        },stoch=sbml$stoch, sub_ex=sub_ex, ub=ub)
-        print(t(rbound))
-        print("")
-        print(t(spos))
-        print(bac[l,])
-        print(c(x, substrat[[x]][i,j], " uptake: ", -growth[[sub_ex[[x]]]]))
-        stop("FBA ERROR: return flux near infinity")
+        
+        gvec[l]=growth[[biomassf]]
+        #print(growth)
       }
       
-      gvec[l]=growth[[biomassf]]
-      #print(growth)
-    }
-    
-    #
-    # Movement in R
-    #
-    dupli <- F # boolean variable to test for duplication
-    a <- (i + xr[l])
-    b <- (j + yr[l])
-    if(a == 0){a = n}
-    if(b == 0){b = m}
-    if(a == n+1){a = 1}
-    if(b == m+1){b = 1}
-    test <- apply(bac[,1:2], 1, function(x, p){
-      if(sum(x==p)==2){
-        return(T)
+      #
+      # Movement in R
+      #
+      dupli <- F # boolean variable to test for duplication
+      a <- (i + xr[l])
+      b <- (j + yr[l])
+      if(a == 0){a = n}
+      if(b == 0){b = m}
+      if(a == n+1){a = 1}
+      if(b == m+1){b = 1}
+      test <- apply(bac[,1:2], 1, function(x, p){
+        if(sum(x==p)==2){
+          return(T)
+        }else{
+          return(F)
+        }
+      }, p=c(a,b))
+      if(bac[l,]$growth>1){ # test for duplication
+        bac[l,]$growth <- bac[l,]$growth/2
+        bac <- rbind(bac, bac[l,])
+        dupli <- T
+      }
+      if(!(sum(test)>=1)){ # if empty go for it!
+        bac[l,1:2] <- c(a,b)
       }else{
-        return(F)
-      }
-    }, p=c(a,b))
-    if(bac[l,]$growth>1){ # test for duplication
-      bac[l,]$growth <- bac[l,]$growth/2
-      bac <- rbind(bac, bac[l,])
-      dupli <- T
-    }
-    if(!(sum(test)>=1)){ # if empty go for it!
-      bac[l,1:2] <- c(a,b)
-    }else{
-      if(dupli){ # if neighbour not empty and cell duplicated, kill doughter cell
-        bac <- bac[-(bacnum+1),]
+        if(dupli){ # if neighbour not empty and cell duplicated, kill doughter cell
+          bac <- bac[-(bacnum+1),]
+        }
       }
     }
+  }
   
   #
   # Live and die
   #
   bac$growth <- bac$growth-0.1 #the cost of living
   bac <- bac[!(bac$growth<0.1),] #death
+  
   if(dim(bac)[1]==0){
     print("ALL BACTERIA DIED")
     break
-  }
-  #print(substrat$glucose)
-  }
   }
 }
