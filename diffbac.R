@@ -17,9 +17,9 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 # Variable Declaration
 #
 
-n <- 5
-m <- 5
-iter <- 50
+n <- 25
+m <- 25
+iter <- 100
 bacs <- 1
 smax <- 70
 #ecoli
@@ -71,16 +71,17 @@ substrat[["fumarate"]] <- matrix(0,n,m)
 bac_history <- vector(mode="numeric")
 substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
 max_glucose = max(substrat$glucose)
-max_acetate = max(substrat$acetate)
+max_acetate = 100
 for(time in 1:iter){
+  print(max(substrat$acetate))
   #
   #plotting functions
   par(mfrow=c(3,2))
-  image(substrat$glucose, zlim=c(0,max(substrat$glucose)), col=colorRampPalette(c("white", "green"))(40), main="glucose concentration")
+  image(substrat$glucose, zlim=c(0,max_glucose), col=colorRampPalette(c("white", "green"))(40), main="glucose concentration")
   #image(substrat$glucose, zlim=c(0,70), col=colorRampPalette(c("white", "green"))(40), main="glucose concentration")
 
   #image(substrat$acetate, zlim=c(0,200), col=colorRampPalette(c("white", "orange"))(40), main="acetate concentration")
-  image(substrat$acetate, zlim=c(0,max(substrat$acetate)), col=colorRampPalette(c("white", "orange"))(40), main="acetate concentration")
+  image(substrat$acetate, zlim=c(0,max_acetate), col=colorRampPalette(c("white", "orange"))(40), main="acetate concentration")
   
   substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
   rownames(substrat_history) <- names(substrat)
@@ -89,11 +90,12 @@ for(time in 1:iter){
   lines(1:time, substrat_history["o2",1:time], col="cyan", type="b")
   lines(1:time, substrat_history["co2",1:time], col="magenta", type="b")
   legend("left", c("water", "glucose", "o2", "co2"), pch=1,col=c("blue", "green", "cyan", "magenta"))
-  plot(1:time, substrat_history["acetate",1:time], col="orange", ylim=c(0,max(substrat_history[,1:time])), ylab="concentration", xlab="time")
-  lines(1:time, substrat_history["fumarate",1:time], col="gray", type="b")
-  lines(1:time, substrat_history["formiate",1:time], col="red", type="b")
-  lines(1:time, substrat_history["ethanol",1:time], col="brown", type="b")
-  legend("left", c("acetate", "fumarate", "formiate", "ethanol"), pch=1,col=c("orange", "gray", "red", "brown"))
+  
+  plot(1:time, substrat_history["acetate",1:time], col="orange", pch=1, ylim=c(0,max_acetate), ylab="concentration", xlab="time")
+  lines(1:time, substrat_history["fumarate",1:time], col="gray", pch=2, type="b")
+  lines(1:time, substrat_history["formiate",1:time], col="red", pch=3, type="b")
+  lines(1:time, substrat_history["ethanol",1:time], col="brown", pch=4, type="b")
+  legend("left", c("acetate", "fumarate", "formiate", "ethanol"), pch=c(1,2,3,4),col=c("orange", "gray", "red", "brown"))
   
   bacnum <- dim(bac)[1]
   bac_history[time] <- bacnum
