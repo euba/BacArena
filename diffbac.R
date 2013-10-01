@@ -17,8 +17,8 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 # Variable Declaration
 #
 
-n <- 25
-m <- 25
+n <- 5
+m <- 5
 iter <- 100
 bacs <- 1
 smax <- 70
@@ -76,31 +76,35 @@ for(time in 1:iter){
   print(max(substrat$acetate))
   #
   #plotting functions
-  par(mfrow=c(3,2))
-  image(substrat$glucose, zlim=c(0,max_glucose), col=colorRampPalette(c("white", "green"))(40), main="glucose concentration")
+  #par(mfrow=c(3,2))
+  #image(substrat$glucose, zlim=c(0,max_glucose), col=colorRampPalette(c("white", "green"))(40), main="glucose concentration")
+  
   #image(substrat$glucose, zlim=c(0,70), col=colorRampPalette(c("white", "green"))(40), main="glucose concentration")
 
   #image(substrat$acetate, zlim=c(0,200), col=colorRampPalette(c("white", "orange"))(40), main="acetate concentration")
-  image(substrat$acetate, zlim=c(0,max_acetate), col=colorRampPalette(c("white", "orange"))(40), main="acetate concentration")
-  
-  substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
-  rownames(substrat_history) <- names(substrat)
-  plot(1:time, substrat_history["h2o",1:time], col="blue", ylim=c(0,max(substrat_history[,1:time])), ylab="concentration", xlab="time") #set max y-value to highest product conentration
-  lines(1:time, substrat_history["glucose",1:time], col="green", type="b")
-  lines(1:time, substrat_history["o2",1:time], col="cyan", type="b")
-  lines(1:time, substrat_history["co2",1:time], col="magenta", type="b")
-  legend("left", c("water", "glucose", "o2", "co2"), pch=1,col=c("blue", "green", "cyan", "magenta"))
-  
-  plot(1:time, substrat_history["acetate",1:time], col="orange", pch=1, ylim=c(0,max_acetate), ylab="concentration", xlab="time")
-  lines(1:time, substrat_history["fumarate",1:time], col="gray", pch=2, type="b")
-  lines(1:time, substrat_history["formiate",1:time], col="red", pch=3, type="b")
-  lines(1:time, substrat_history["ethanol",1:time], col="brown", pch=4, type="b")
-  legend("left", c("acetate", "fumarate", "formiate", "ethanol"), pch=c(1,2,3,4),col=c("orange", "gray", "red", "brown"))
+  #image(substrat$acetate, zlim=c(0,max_acetate), col=colorRampPalette(c("white", "orange"))(40), main="acetate concentration")
   
   bacnum <- dim(bac)[1]
   bac_history[time] <- bacnum
-  plot(1:time, bac_history, type="b", main="growth curve")
+  substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
+  rownames(substrat_history) <- names(substrat)
   
+  #plot(1:time, substrat_history[1,1:time], col=1, pch=1, ylim=c(0,max(substrat_history[,1:time])), ylab="concentration", xlab="time") #set max y-value to highest product conentration
+  #plot(1:time, substrat_history["h2o",1:time], col="blue", ylim=c(0,max(substrat_history[,1:time])), ylab="concentration", xlab="time") #set max y-value to highest product conentration
+  
+  #lines(1:time, substrat_history["glucose",1:time], col="green", type="b")
+  #lines(1:time, substrat_history["o2",1:time], col="cyan", type="b")
+  #lines(1:time, substrat_history["co2",1:time], col="magenta", type="b")
+  #legend("left", c("water", "glucose", "o2", "co2"), pch=1,col=c("blue", "green", "cyan", "magenta"))
+  
+  #plot(1:time, substrat_history["acetate",1:time], col="orange", pch=1, ylim=c(0,max_acetate), ylab="concentration", xlab="time")
+  #lines(1:time, substrat_history["fumarate",1:time], col="gray", pch=2, type="b")
+  #lines(1:time, substrat_history["formiate",1:time], col="red", pch=3, type="b")
+  #lines(1:time, substrat_history["ethanol",1:time], col="brown", pch=4, type="b")
+  #legend("left", c("acetate", "fumarate", "formiate", "ethanol"), pch=c(1,2,3,4),col=c("orange", "gray", "red", "brown"))
+  
+  #plot(1:time, bac_history, type="b", main="growth curve")
+  plot.bacs(time=time, bac=bac)
   #
   # Model of Diffusion
   #
@@ -116,11 +120,11 @@ for(time in 1:iter){
   #image(bac_img, col=c("white", "black"))
   
   
-  mat = matrix(0,n,m) # conversion of data frame into bac matrix
-  apply(bac[,1:2], 1, function(x){
-    mat[as.numeric(x[1]), as.numeric(x[2])] <<- 1
-  })
-  image(mat, col=c("white", "black"), main="bacterial movement")
+  #mat = matrix(0,n,m) # conversion of data frame into bac matrix
+  #apply(bac[,1:2], 1, function(x){
+  #  mat[as.numeric(x[1]), as.numeric(x[2])] <<- 1
+  #})
+  #image(mat, col=c("white", "black"), main="bacterial movement")
   
   
   #
