@@ -5,21 +5,30 @@ library(Rcpp)
 library(inline)
 library(rbenchmark)
 
+#just for plotting
+library(ggplot2)
+library(reshape2)
+library(reshape)
+library(scales)
+library(gridExtra)
+
+
 setwd("~/BacArena")
 source(file="fba.R")
 source(file="cpp_source.R")
 source(file="baggage.R")
 
-#movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame"), body = src_movement, plugin="Rcpp")
-diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
-
+if(!exists("movement", mode="function")){ #test if function already exists -> saves time for testing source code
+movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame"), body = src_movement, plugin="Rcpp")
+#diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
+}
 #
 # Variable Declaration
 #
 
-n <- 5
-m <- 5
-iter <- 100
+n <- 10
+m <- 10
+iter <- 10
 bacs <- 1
 smax <- 70
 #ecoli
@@ -68,6 +77,7 @@ substrat[["fumarate"]] <- matrix(0,n,m)
 #
 #Iteration with rules to apply for each agent
 #
+plot_list <- list()
 bac_history <- vector(mode="numeric")
 substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
 max_glucose = max(substrat$glucose)
@@ -104,7 +114,9 @@ for(time in 1:iter){
   #legend("left", c("acetate", "fumarate", "formiate", "ethanol"), pch=c(1,2,3,4),col=c("orange", "gray", "red", "brown"))
   
   #plot(1:time, bac_history, type="b", main="growth curve")
-  plot.bacs(time=time, bac=bac)
+
+  plot_list[[time]] <- plot.bacs(time=time, bac=bac)
+  
   #
   # Model of Diffusion
   #
@@ -272,3 +284,16 @@ for(time in 1:iter){
     break
   }
 }
+
+
+###############plotting
+
+#lapply(plot_list[-1], function(x){
+#  grid.newpage() # Open a new page on grid device
+#  pushViewport(viewport(layout = grid.layout(3, 2)))
+#  print(x$sub, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+#  print(x$prod, vp = viewport(layout.pos.row = 1, layout.pos.col = 2))
+#  print(x$subs, vp = viewport(layout.pos.row = 2, layout.pos.col = 1:2))
+#  print(x$bacpos, vp = viewport(layout.pos.row = 3, layout.pos.col = 1))
+#  print(x$growth, vp = viewport(layout.pos.row = 3, layout.pos.col = 2))
+#})
