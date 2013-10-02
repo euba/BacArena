@@ -7,6 +7,7 @@ library(lpSolveAPI)
 #
 
 read.sbml <- function(sbml_file, ex_pattern){
+  print("still there...")
   doc <- readSBML(sbml_file)
   sbml <- SBMLDocument_getModel(doc)
   Model_getNumSpecies(sbml)
@@ -60,8 +61,11 @@ read.sbml <- function(sbml_file, ex_pattern){
     }
   }
   #stoch <- cbind(stoch, tmp)
+  str(stoch)
   return(list(stoch=stoch, lb=lb, ub=ub, ex=ex, reac=reac))
 }  
+
+
 
 fba<-function(substrat, stoch, ex, reac, growth, sub_ex, type){
 
@@ -69,9 +73,9 @@ fba<-function(substrat, stoch, ex, reac, growth, sub_ex, type){
 
 # objective function
 cs <- rep(0, dim(stoch)[2])
-#c[which(colnames(stoch)=="R_Biomass_Ecoli_core_w_GAM")] <- 1 
 cs[which(colnames(stoch)==get_biomassf(type))] <- 1 
 
+# set boundaries
 lb <- set_lower_bound(type, substrat) # current substrate defines lower bounds
 ub <- get_upper_bound(type)
 
@@ -88,29 +92,70 @@ for(i in 1:nrow(stoch)){
 set.bounds(linp,lower=lb)
 set.bounds(linp,upper=ub)
 
-if(solve(linp)!=0) return("DEAD") # very important!! if no feasable solutions is found there is still some (useless) result
-value <- get.objective(linp)
+# print substrate
+print("substrate")
+print(t(substrat))
+print("")
 
+# print lower bound
+print("lower bound")
+# get lower bound with names
+lbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, lb){
+  if(x %in% names(sub_ex)) lb[which(colnames(stoch)==sub_ex[[x]])]
+},stoch=stoch, sub_ex=sub_ex, lb=lb)
+print(t(lbound))
+
+#Solve opt problem
+status <- solve(linp)
+print(status)
+if(status!=0) return("DEAD") # very important!! if no feasable solutions is found there is still some (useless) result
+value <- get.objective(linp)
 #get opt fluxes
 flux <- get.variables(linp)
 names(flux) <- reac
 
+# check for conistency (is fba return bounded correctly?)
+sapply(names(sapply(substrat, names)),function(x,substrat){
+  if(x %in% names(sub_ex)) { # only update substrate which are metabolic relevant for current organism
+    if(round(as.numeric(substrat[x]),1) < -round(flux[[sub_ex[[x]]]],1)){ # test for negative fba return
+      print(t(flux))
+      print("")
+      print("lower bound")
+      # get lower bound with names
+      lbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, lb){
+        if(x %in% names(sub_ex)) lb[which(colnames(stoch)==sub_ex[[x]])]
+      },stoch=sbml$stoch, sub_ex=sub_ex, lb=lb)
+      print(t(lbound))
+      print("")
+      print("upper bound")
+      rbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, ub){
+        if(x %in% names(sub_ex)) ub[which(colnames(stoch)==sub_ex[[x]])]
+      },stoch=sbml$stoch, sub_ex=sub_ex, ub=ub)
+      print(t(rbound))
+      print("")
+      print(c(x, substrat[[x]], " uptake: ", -flux[[sub_ex[[x]]]]))
+      stop("FBA ERROR: return flux excesses available substrate!")
+    }
+  }
+},substrat=substrat)
+
 #considering the case that well growing bacs have higher fluxes!!
-#print(substrat)
-#print("")
-#print(flux)
-#print("")
-#print(lb[which(colnames(stoch)=="R_EX_glc_e_")])
-#print("")
 pos_uptake <- sapply(names(sapply(substrat, names)),function(x,substrat,growth){
-  if(x %in% sub_ex == T) return(flux[[sub_ex[[x]]]] * growth + substrat[[x]])
+  if(x %in% names(sub_ex == T)) return(flux[[sub_ex[[x]]]] * growth + substrat[[x]])
   else return(0)
 },substrat=substrat, growth=growth)
-#print(pos_uptake)
-#print("")
 if(all(pos_uptake>=0) == T) flux <- flux * growth
-#if(all(pos_uptake>=0)) print(flux * growth)
 
+# print uptake
+uptake <- sapply(names(sapply(substrat, names)),function(x,substrat){
+  if(x %in% names(sub_ex) == T) return(flux[[sub_ex[[x]]]])
+  else return(0)
+},substrat=substrat)
+names(uptake) <- names(substrat)
+print("uptake")
+print(t(uptake))
+
+# debug file
 write.lp(linp,"test", NULL) # debug 
 
 rm(linp)

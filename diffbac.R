@@ -32,14 +32,15 @@ iter <- 10
 bacs <- 1
 smax <- 70
 #ecoli
-s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate")
+#s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate")
 #mbarkeri
-#s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate", "h2", "methanol", "methane")
+s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate", "h2", "methanol", "methane")
 
 #
 # loading bacteria
 #
 source(file="ecoli.R")
+source(file="barkeri.R")
 
 
 #
@@ -52,7 +53,8 @@ source(file="ecoli.R")
 #rownames(bac) <- 1:nrow(bac) #change indices in data.frame
 
 
-bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
+#bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
+bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
 #bac <- data.frame(x=n, y=m,type="ecoli", growth=1) # one cell in the centre
 
 #
@@ -65,11 +67,11 @@ substrat <- lapply(s, function(x, n, m){
   matrix(smax,n,m) # homogen substrate distribution
 }, n=n, m=m)
 names(substrat) <- s
-substrat[["o2"]] <- matrix(0,n,m)
-substrat[["acetate"]] <- matrix(0,n,m)
-substrat[["formiate"]] <- matrix(0,n,m)
-substrat[["ethanol"]] <- matrix(0,n,m)
-substrat[["fumarate"]] <- matrix(0,n,m)
+#substrat[["o2"]] <- matrix(0,n,m)
+#substrat[["acetate"]] <- matrix(0,n,m)
+#substrat[["formiate"]] <- matrix(0,n,m)
+#substrat[["ethanol"]] <- matrix(0,n,m)
+#substrat[["fumarate"]] <- matrix(0,n,m)
 #substrat[["h2o"]] <- matrix(99999,n,m)
 
 
@@ -83,7 +85,6 @@ substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
 max_glucose = max(substrat$glucose)
 max_acetate = 100
 for(time in 1:iter){
-  print(max(substrat$acetate))
   #
   #plotting functions
   #par(mfrow=c(3,2))
@@ -157,9 +158,7 @@ for(time in 1:iter){
     sbml <- get_sbml(bac[l,]$type) # get sbml according to bac type
     biomassf <- get_biomassf(bac[l,]$type)
     sub_ex <- get_sub_ex(bac[l,]$type)
-    lb <- get_lower_bound(bac[l,]$type)
-    ub <- get_upper_bound(bac[l,]$type)
-    
+        
     i <- bac[l,][1,1]
     j <- bac[l,][1,2]
     
@@ -170,7 +169,11 @@ for(time in 1:iter){
     },i=i, j=j)
     #growth <- fba(spos, sbml$stoch, lb, ub, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
     #print(spos)
+    print(bac)
     growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+    
+    lb <- get_lower_bound(bac[l,]$type)
+    ub <- get_upper_bound(bac[l,]$type)
     
     # check for feasable lin prog solutions first!
     if(growth == "DEAD"){
@@ -189,28 +192,8 @@ for(time in 1:iter){
           if(x %in% names(sub_ex)) { # only update substrate which are metabolic relevant for current organism
             #print(substrat[[x]][i,j])
             #print(growth[[sub_ex[[x]]]])
-            if(substrat[[x]][i,j] < -growth[[sub_ex[[x]]]]){ # test for negative fba return
-              print(t(growth))
-              print("")
-              print("lower bound")
-              # get lower bound with names
-              lbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, lb){
-                if(x %in% names(sub_ex)) lb[which(colnames(stoch)==sub_ex[[x]])]
-              },stoch=sbml$stoch, sub_ex=sub_ex, lb=lb)
-              print(t(lbound))
-              print("")
-              print("upper bound")
-              rbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, ub){
-                if(x %in% names(sub_ex)) ub[which(colnames(stoch)==sub_ex[[x]])]
-              },stoch=sbml$stoch, sub_ex=sub_ex, ub=ub)
-              print(t(rbound))
-              print("")
-              print(t(spos))
-              print(bac[l,])
-              print(c(x, substrat[[x]][i,j], " uptake: ", -growth[[sub_ex[[x]]]]))
-              stop("FBA ERROR: return flux excesses available substrate!")
-            }
-            else substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
+            
+            substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
           }
         },i=i,j=j,substrat=substrat)
         
