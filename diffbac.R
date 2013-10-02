@@ -5,21 +5,30 @@ library(Rcpp)
 library(inline)
 library(rbenchmark)
 
+#just for plotting
+library(ggplot2)
+library(reshape2)
+library(reshape)
+library(scales)
+library(gridExtra)
+
+
 setwd("~/BacArena")
 source(file="fba.R")
 source(file="cpp_source.R")
 source(file="baggage.R")
 
-#movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame"), body = src_movement, plugin="Rcpp")
-diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
-
+if(!exists("movement", mode="function")){ #test if function already exists -> saves time for testing source code
+movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame"), body = src_movement, plugin="Rcpp")
+#diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
+}
 #
 # Variable Declaration
 #
 
-n <- 5
-m <- 5
-iter <- 2
+n <- 10
+m <- 10
+iter <- 10
 bacs <- 1
 smax <- 70
 #ecoli
@@ -70,6 +79,7 @@ names(substrat) <- s
 #
 #Iteration with rules to apply for each agent
 #
+plot_list <- list()
 bac_history <- vector(mode="numeric")
 substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
 max_glucose = max(substrat$glucose)
@@ -77,30 +87,36 @@ max_acetate = 100
 for(time in 1:iter){
   #
   #plotting functions
-  par(mfrow=c(3,2))
-  image(substrat$glucose, zlim=c(0,max_glucose), col=colorRampPalette(c("white", "green"))(40), main="glucose concentration")
+  #par(mfrow=c(3,2))
+  #image(substrat$glucose, zlim=c(0,max_glucose), col=colorRampPalette(c("white", "green"))(40), main="glucose concentration")
+  
   #image(substrat$glucose, zlim=c(0,70), col=colorRampPalette(c("white", "green"))(40), main="glucose concentration")
 
   #image(substrat$acetate, zlim=c(0,200), col=colorRampPalette(c("white", "orange"))(40), main="acetate concentration")
-  image(substrat$acetate, zlim=c(0,max_acetate), col=colorRampPalette(c("white", "orange"))(40), main="acetate concentration")
-  
-  substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
-  rownames(substrat_history) <- names(substrat)
-  plot(1:time, substrat_history["h2o",1:time], col="blue", ylim=c(0,max(substrat_history[,1:time])), ylab="concentration", xlab="time") #set max y-value to highest product conentration
-  lines(1:time, substrat_history["glucose",1:time], col="green", type="b")
-  lines(1:time, substrat_history["o2",1:time], col="cyan", type="b")
-  lines(1:time, substrat_history["co2",1:time], col="magenta", type="b")
-  legend("left", c("water", "glucose", "o2", "co2"), pch=1,col=c("blue", "green", "cyan", "magenta"))
-  
-  plot(1:time, substrat_history["acetate",1:time], col="orange", pch=1, ylim=c(0,max_acetate), ylab="concentration", xlab="time")
-  lines(1:time, substrat_history["fumarate",1:time], col="gray", pch=2, type="b")
-  lines(1:time, substrat_history["formiate",1:time], col="red", pch=3, type="b")
-  lines(1:time, substrat_history["ethanol",1:time], col="brown", pch=4, type="b")
-  legend("left", c("acetate", "fumarate", "formiate", "ethanol"), pch=c(1,2,3,4),col=c("orange", "gray", "red", "brown"))
+  #image(substrat$acetate, zlim=c(0,max_acetate), col=colorRampPalette(c("white", "orange"))(40), main="acetate concentration")
   
   bacnum <- dim(bac)[1]
   bac_history[time] <- bacnum
-  plot(1:time, bac_history, type="b", main="growth curve")
+  substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
+  rownames(substrat_history) <- names(substrat)
+  
+  #plot(1:time, substrat_history[1,1:time], col=1, pch=1, ylim=c(0,max(substrat_history[,1:time])), ylab="concentration", xlab="time") #set max y-value to highest product conentration
+  #plot(1:time, substrat_history["h2o",1:time], col="blue", ylim=c(0,max(substrat_history[,1:time])), ylab="concentration", xlab="time") #set max y-value to highest product conentration
+  
+  #lines(1:time, substrat_history["glucose",1:time], col="green", type="b")
+  #lines(1:time, substrat_history["o2",1:time], col="cyan", type="b")
+  #lines(1:time, substrat_history["co2",1:time], col="magenta", type="b")
+  #legend("left", c("water", "glucose", "o2", "co2"), pch=1,col=c("blue", "green", "cyan", "magenta"))
+  
+  #plot(1:time, substrat_history["acetate",1:time], col="orange", pch=1, ylim=c(0,max_acetate), ylab="concentration", xlab="time")
+  #lines(1:time, substrat_history["fumarate",1:time], col="gray", pch=2, type="b")
+  #lines(1:time, substrat_history["formiate",1:time], col="red", pch=3, type="b")
+  #lines(1:time, substrat_history["ethanol",1:time], col="brown", pch=4, type="b")
+  #legend("left", c("acetate", "fumarate", "formiate", "ethanol"), pch=c(1,2,3,4),col=c("orange", "gray", "red", "brown"))
+  
+  #plot(1:time, bac_history, type="b", main="growth curve")
+
+  plot_list[[time]] <- plot.bacs(time=time, bac=bac)
   
   #
   # Model of Diffusion
@@ -117,11 +133,11 @@ for(time in 1:iter){
   #image(bac_img, col=c("white", "black"))
   
   
-  mat = matrix(0,n,m) # conversion of data frame into bac matrix
-  apply(bac[,1:2], 1, function(x){
-    mat[as.numeric(x[1]), as.numeric(x[2])] <<- 1
-  })
-  image(mat, col=c("white", "black"), main="bacterial movement")
+  #mat = matrix(0,n,m) # conversion of data frame into bac matrix
+  #apply(bac[,1:2], 1, function(x){
+  #  mat[as.numeric(x[1]), as.numeric(x[2])] <<- 1
+  #})
+  #image(mat, col=c("white", "black"), main="bacterial movement")
   
   
   #
@@ -251,3 +267,16 @@ for(time in 1:iter){
     break
   }
 }
+
+
+###############plotting
+
+#lapply(plot_list[-1], function(x){
+#  grid.newpage() # Open a new page on grid device
+#  pushViewport(viewport(layout = grid.layout(3, 2)))
+#  print(x$sub, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+#  print(x$prod, vp = viewport(layout.pos.row = 1, layout.pos.col = 2))
+#  print(x$subs, vp = viewport(layout.pos.row = 2, layout.pos.col = 1:2))
+#  print(x$bacpos, vp = viewport(layout.pos.row = 3, layout.pos.col = 1))
+#  print(x$growth, vp = viewport(layout.pos.row = 3, layout.pos.col = 2))
+#})
