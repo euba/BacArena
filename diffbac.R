@@ -28,13 +28,14 @@ movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.f
 
 n <- 10
 m <- 10
-iter <- 10
+iter <- 50
 bacs <- 1
 smax <- 70
 #ecoli
 #s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate")
 #mbarkeri
 s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate", "h2", "methanol", "methane")
+
 
 #
 # loading bacteria
@@ -54,7 +55,8 @@ source(file="barkeri.R")
 
 
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
-bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
+bac <- rbind(data.frame(x=round(n), y=round(m),type="ecoli", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
+#bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
 #bac <- data.frame(x=n, y=m,type="ecoli", growth=1) # one cell in the centre
 
 #
@@ -116,7 +118,7 @@ for(time in 1:iter){
   
   #plot(1:time, bac_history, type="b", main="growth curve")
 
-  plot_list[[time]] <- plot.bacs(time=time, bac=bac)
+  plot_list[[time]] <- plot.bacs(time=time, bac=bac, product=substrat$methane, substrate=substrat$pyruvate)
   
   #
   # Model of Diffusion

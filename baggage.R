@@ -142,14 +142,17 @@ plot.bacs <- function(substrate=substrat$glucose, product=substrat$acetate, sub_
     lines(1:time, sub_his[i,1:time], col=i, pch=i, type="b")
   }
   plot(0,0, col="white")
-  legend("top", row.names(sub_his), pch=1:(dim(sub_his)[1]), col=1:dim(sub_his)[1])
+  legend("top", row.names(sub_his), pch=1:(dim(sub_his)[1]), col=1:dim(sub_his)[1], cex=0.64)
   
   
   plot(1:length(bac_his), bac_his, type="b", main="growth curve", xlab="time", ylab="number of bacteria")
   
-  mat = matrix(0,n,m) # conversion of data frame into bac matrix
-  apply(bac[,1:2], 1, function(x){
-    mat[as.numeric(x[1]), as.numeric(x[2])] <<- 1
+  mat = matrix(10,n,m) # conversion of data frame into bac matrix
+  apply(bac[,1:3], 1, function(x){
+    if(x[3] == "barkeri") mat[as.numeric(x[1]), as.numeric(x[2])] <<- 1
+    if(x[3] == "ecoli") mat[as.numeric(x[1]), as.numeric(x[2])] <<- 5
   })
-  image(mat, col=c("white", "black"), main="bacterial movement")
+  #image(mat, col=c("white", "black"), main="bacterial movement")
+  image(mat, col=terrain.colors(10), main="bacterial movement")
+  print(mat)
 }
