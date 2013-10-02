@@ -53,30 +53,17 @@ ecoli_set_lower_bound <- function(substrat){
   ecoli_lower_bound[grep("R_EX", colnames(ecoli_stochmatrix))] <- 0 # define growth media
   
   #print(substrat)
-  sapply(names(sapply(substrat, names)), function(x, ecoli_stochmatrix, ecoli_sub_ex, lb){
+  sapply(names(sapply(substrat, names)), function(x, ecoli_stochmatrix, ecoli_sub_ex, ecoli_lower_bound){
     #print(x)
-    if(x %in% names(ecoli_sub_ex)) lb[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[[x]])] <<- - substrat[[x]] # "<<-" is necessary for extern variable modification
-  },ecoli_stochmatrix=ecoli_stochmatrix, ecoli_sub_ex=ecoli_sub_ex, lb=lb)
+    if(x %in% names(ecoli_sub_ex)) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[[x]])] <<- - substrat[[x]] # "<<-" is necessary for extern variable modification
+  },ecoli_stochmatrix=ecoli_stochmatrix, ecoli_sub_ex=ecoli_sub_ex, ecoli_lower_bound=ecoli_lower_bound)
   
   
-  #ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <-  -substrat[["glucose"]]
-  #if anaerobic conditions overwrite maximal Glucose uptake:
-  
+  #limit flux exchange rate:
   if(substrat[["o2"]] < 0.01){
-    #if(substrat[["glucose"]] < 18.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -substrat[["glucose"]]
-    #else ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -18.5
     if(substrat[["glucose"]] > 18.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -18.5
   }else{
-    #if(substrat[["glucose"]] < 10.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -substrat[["glucose"]]
-    #else ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -10.5
     if(substrat[["glucose"]] > 10.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -10.5
   }
-  #ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -18.5
-  ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["h2o"]])] <-  -substrat[["h2o"]]
-  ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["proton"]])]   <-  -substrat[["proton"]]
-  ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["o2"]])]  <-  -substrat[["o2"]]
-  #if(substrat[["o2"]] < 15) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["o2"]])] <- -substrat[["o2"]]
-  #  else ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["o2"]])] <- -15
-  ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["iphosphate"]])]  <-  -substrat[["iphosphate"]]
   return(ecoli_lower_bound)
 }

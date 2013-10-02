@@ -20,14 +20,14 @@ source(file="baggage.R")
 
 if(!exists("movement", mode="function")){ #test if function already exists -> saves time for testing source code
 movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame"), body = src_movement, plugin="Rcpp")
-#diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
+diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
 }
 #
 # Variable Declaration
 #
 
-n <- 10
-m <- 10
+n <- 15
+m <- 15
 iter <- 50
 bacs <- 1
 smax <- 70
@@ -55,8 +55,8 @@ source(file="barkeri.R")
 
 
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
-bac <- rbind(data.frame(x=round(n), y=round(m),type="ecoli", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
-#bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
+#bac <- rbind(data.frame(x=round(n), y=round(m),type="ecoli", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
+bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
 #bac <- data.frame(x=n, y=m,type="ecoli", growth=1) # one cell in the centre
 
 #
@@ -66,17 +66,16 @@ substrat <- lapply(s, function(x, n, m){
   #matrix(runif(n*m,min=0,max=100), nrow=n, ncol=m) # random substrate
   #matrix(c(rep(100, 2*n), rep(0, n*m-2*n)), nrow=n, ncol=m) # downstairs substrate
   #matrix(c(rep(0,(n*m-2*n)/2), rep(10,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m) # substrate in the middle of our street ohooo
-  matrix(smax,n,m) # homogen substrate distribution
+  matrix(0,n,m) # homogen substrate distribution
 }, n=n, m=m)
 names(substrat) <- s
-#substrat[["o2"]] <- matrix(0,n,m)
-#substrat[["acetate"]] <- matrix(0,n,m)
-#substrat[["formiate"]] <- matrix(0,n,m)
-#substrat[["ethanol"]] <- matrix(0,n,m)
-#substrat[["fumarate"]] <- matrix(0,n,m)
-#substrat[["h2o"]] <- matrix(99999,n,m)
-
-
+substrat[["iphosphate"]] <- matrix(smax,n,m)
+substrat[["h2o"]] <- matrix(smax,n,m)
+substrat[["proton"]] <- matrix(smax,n,m)
+substrat[["pyruvate"]] <- matrix(smax,n,m)
+#substrat[["h2"]] <- matrix(smax,n,m)
+#substrat[["co2"]] <- matrix(smax,n,m)
+#substrat[["methanol"]] <- matrix(smax,n,m)
 
 #
 #Iteration with rules to apply for each agent
@@ -118,7 +117,7 @@ for(time in 1:iter){
   
   #plot(1:time, bac_history, type="b", main="growth curve")
 
-  plot_list[[time]] <- plot.bacs(time=time, bac=bac, product=substrat$methane, substrate=substrat$pyruvate)
+  plot_list[[time]] <- plot.bacs(time=time, bac=bac, subnam1="pyruvate", subnam2="co2", subnam3="proton", prodnam="acetate")
   
   #
   # Model of Diffusion
@@ -151,8 +150,9 @@ for(time in 1:iter){
   xr <- round(runif(bacnum, min = -1, max = 1))
   yr <- round(runif(bacnum, min = -1, max = 1))
   for(l in 1:bacnum){
+  if(dim(bac)[1]==0) break # well a little bit ugly but our sins will be forgiven, every time you use a break god kills another kitten
     #print(l)
-    #print(bac)
+    print(bac)
         
     #
     # get variables according to bac type
@@ -184,7 +184,7 @@ for(time in 1:iter){
       print(bac[l,])
       print(t(spos))
       print("----")
-      bac[-l,]
+      bac <- bac[-l,]
     }else{
       growth <- lapply(growth, function(x){round(x, digits=2)}) # ROUNDING!!!
       if(growth[[biomassf]] != 0){ # continue only if there is growth !
@@ -261,13 +261,13 @@ for(time in 1:iter){
   #
   # Live and die
   #
-  bac$growth <- bac$growth-0.1 #the cost of living
-  bac <- bac[!(bac$growth<0.1),] #death
-  
-  if(dim(bac)[1]==0){
-    print("ALL BACTERIA DIED")
-    break
-  }
+  #bac$growth <- bac$growth-0.1 #the cost of living
+  #bac <- bac[!(bac$growth<0.1),] #death
+  #
+  #if(dim(bac)[1]==0){
+  #  print("ALL BACTERIA DIED")
+  #  break
+  #}
 }
 
 

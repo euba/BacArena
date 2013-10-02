@@ -107,7 +107,7 @@ print(t(lbound))
 #Solve opt problem
 status <- solve(linp)
 print(status)
-if(status!=0) return("DEAD") # very important!! if no feasable solutions is found there is still some (useless) result
+if(status!=0) return("DEAD") # very important!! if no feasible solutions is found there is still some (useless) result
 value <- get.objective(linp)
 #get opt fluxes
 flux <- get.variables(linp)
@@ -153,6 +153,8 @@ uptake <- sapply(names(sapply(substrat, names)),function(x,substrat){
 names(uptake) <- names(substrat)
 print("uptake")
 print(t(uptake))
+print("growth rate:")
+print(flux[[get_biomassf(bac[l,]$type)]])
 
 # debug file
 write.lp(linp,"test", NULL) # debug 

@@ -130,12 +130,15 @@ plot.bacs.cool <- function(substrate=substrat[[7]], product=substrat[[1]], sub_h
   return(list(sub=sub, prod=prod, bacpos=bacpos, growth=growth, subs=subs))
 }
 
-plot.bacs <- function(substrate=substrat$glucose, product=substrat$acetate, sub_his=substrat_history,
+plot.bacs <- function(substrate=substrat,
+                      subnam1, subnam2, subnam3, prodnam, sub_his=substrat_history,
                       bac_his=bac_history, bac, time){ #substrate and product as matrices
-  par(mfrow=c(3,2))
+  par(mfrow=c(2,4))
   
-  image(substrate, zlim=c(0,max(substrate)), col=colorRampPalette(c("white", "green"))(40), main="substrate concentration")
-  image(product, zlim=c(0,max(product)), col=colorRampPalette(c("white", "red"))(40), main="product concentration")
+  image(substrate[[subnam1]], zlim=c(0,max(substrate[[subnam1]])), col=colorRampPalette(c("white", "green"))(40), main=subnam1)
+  image(substrate[[subnam2]], zlim=c(0,max(substrate[[subnam2]])), col=colorRampPalette(c("white", "red"))(40), main=subnam2)
+  image(substrate[[subnam3]], zlim=c(0,max(substrate[[subnam3]])), col=colorRampPalette(c("white", "steelblue"))(40), main=subnam3)
+  image(substrate[[prodnam]], zlim=c(0,max(substrate[[prodnam]])), col=colorRampPalette(c("white", "orange"))(40), main=prodnam)
   
   plot(1:time, sub_his[1,1:time], col=1, pch=1, ylim=c(0,max(sub_his[,1:time])), ylab="concentration", xlab="time") #set max y-value to highest product conentration
   for(i in 2:(dim(sub_his)[1])){
@@ -154,5 +157,4 @@ plot.bacs <- function(substrate=substrat$glucose, product=substrat$acetate, sub_
   })
   #image(mat, col=c("white", "black"), main="bacterial movement")
   image(mat, col=terrain.colors(10), main="bacterial movement")
-  print(mat)
 }
