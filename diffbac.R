@@ -31,19 +31,17 @@ m <- 15
 iter <- 50
 bacs <- 1
 smax <- 70
-#ecoli
-#s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate")
-#mbarkeri
-s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate", "h2", "methanol", "methane")
+
+s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate", "h2", "methanol", "methane", "acetone", "butyrate", "butanol")
 
 
 #
 # loading bacteria
 #
-source(file="ecoli_iAF1260.R")
+#source(file="ecoli_iAF1260.R")
 #source(file="ecoli.R")
 #source(file="barkeri.R")
-
+source(file="beijerinckii.R")
 
 #
 # Initiation of agents
@@ -58,7 +56,8 @@ source(file="ecoli_iAF1260.R")
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="ecoli", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
-bac <- data.frame(x=round(n/2), y=round(m/2),type="Bcoli", growth=1) # one cell in the centre
+#bac <- data.frame(x=round(n/2), y=round(m/2),type="Bcoli", growth=1) # one cell in the centre
+bac <- data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1) # one cell in the centre
 
 #
 # intial Substrate distribution
@@ -118,7 +117,7 @@ for(time in 1:iter){
   
   #plot(1:time, bac_history, type="b", main="growth curve")
 
-  plot_list[[time]] <- plot.bacs(time=time, bac=bac, subnam1="pyruvate", subnam2="co2", subnam3="proton", prodnam="acetate")
+  plot_list[[time]] <- plot.bacs(time=time, bac=bac, subnam1="glucose", subnam2="co2", subnam3="h2", prodnam="acetate")
   
   #
   # Model of Diffusion
@@ -151,9 +150,9 @@ for(time in 1:iter){
   xr <- round(runif(bacnum, min = -1, max = 1))
   yr <- round(runif(bacnum, min = -1, max = 1))
   for(l in 1:bacnum){
-  if(dim(bac)[1]==0) break # well a little bit ugly but our sins will be forgiven, every time you use a break god kills another kitten
+  #if(dim(bac)[1]==0) break # well a little bit ugly but our sins will be forgiven, every time you use a break god kills another kitten
     #print(l)
-    print(bac)
+    #print(bac)
         
     #
     # get variables according to bac type
@@ -185,7 +184,7 @@ for(time in 1:iter){
       print(bac[l,])
       print(t(spos))
       print("----")
-      bac <- bac[-l,]
+      #bac <- bac[-l,]
     }else{
       growth <- lapply(growth, function(x){round(x, digits=2)}) # ROUNDING!!!
       if(growth[[biomassf]] != 0){ # continue only if there is growth !
