@@ -6,11 +6,11 @@ library(inline)
 library(rbenchmark)
 
 #just for plotting
-library(ggplot2)
-library(reshape2)
-library(reshape)
-library(scales)
-library(gridExtra)
+#library(ggplot2)
+#library(reshape2)
+#library(reshape)
+#library(scales)
+#library(gridExtra)
 
 
 setwd("~/BacArena")
@@ -40,8 +40,9 @@ s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "gl
 #
 # loading bacteria
 #
-source(file="ecoli.R")
-source(file="barkeri.R")
+source(file="ecoli_iAF1260.R")
+#source(file="ecoli.R")
+#source(file="barkeri.R")
 
 
 #
@@ -56,8 +57,8 @@ source(file="barkeri.R")
 
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="ecoli", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
-bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
-#bac <- data.frame(x=n, y=m,type="ecoli", growth=1) # one cell in the centre
+#bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
+bac <- data.frame(x=round(n/2), y=round(m/2),type="Bcoli", growth=1) # one cell in the centre
 
 #
 # intial Substrate distribution
@@ -66,13 +67,13 @@ substrat <- lapply(s, function(x, n, m){
   #matrix(runif(n*m,min=0,max=100), nrow=n, ncol=m) # random substrate
   #matrix(c(rep(100, 2*n), rep(0, n*m-2*n)), nrow=n, ncol=m) # downstairs substrate
   #matrix(c(rep(0,(n*m-2*n)/2), rep(10,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m) # substrate in the middle of our street ohooo
-  matrix(0,n,m) # homogen substrate distribution
+  matrix(smax,n,m) # homogen substrate distribution
 }, n=n, m=m)
 names(substrat) <- s
-substrat[["iphosphate"]] <- matrix(smax,n,m)
-substrat[["h2o"]] <- matrix(smax,n,m)
-substrat[["proton"]] <- matrix(smax,n,m)
-substrat[["pyruvate"]] <- matrix(smax,n,m)
+#substrat[["iphosphate"]] <- matrix(smax,n,m)
+#substrat[["h2o"]] <- matrix(smax,n,m)
+#substrat[["proton"]] <- matrix(smax,n,m)
+#substrat[["pyruvate"]] <- matrix(smax,n,m)
 #substrat[["h2"]] <- matrix(smax,n,m)
 #substrat[["co2"]] <- matrix(smax,n,m)
 #substrat[["methanol"]] <- matrix(smax,n,m)

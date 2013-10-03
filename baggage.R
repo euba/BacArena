@@ -1,34 +1,41 @@
 get_sbml <- function(type){
+  if (type=="Bcoli") return(Bcoli_sbml)
   if (type=="ecoli") return(ecoli_sbml)
   if (type=="barkeri") return(barkeri_sbml)
 }
 
 get_biomassf <- function(type){
+  if (type=="Bcoli") return(Bcoli_biomassf)
   if (type=="ecoli") return(ecoli_biomassf)
   if (type=="barkeri") return(barkeri_biomassf)
 }
 
 get_sub_ex <- function(type){
+  if (type=="Bcoli") return(Bcoli_sub_ex)
   if (type=="ecoli") return(ecoli_sub_ex)
   if (type=="barkeri") return(barkeri_sub_ex)
 }
 
 get_maintenancef <- function(type){
+  if (type=="Bcoli") return(Bcoli_maintenancef)
   if (type=="ecoli") return(ecoli_maintenancef)
   if (type=="barkeri") return(barkeri_maintenancef)
 }
 
 get_lower_bound <- function(type){
+  if (type=="Bcoli") return(Bcoli_lower_bound)
   if (type=="ecoli") return(ecoli_lower_bound)
   if (type=="barkeri") return(barkeri_lower_bound)
 }
 
 get_upper_bound <- function(type){
+  if (type=="Bcoli") return(Bcoli_upper_bound)
   if (type=="ecoli") return(ecoli_upper_bound)
   if (type=="barkeri") return(barkeri_upper_bound)
 }
 
 set_lower_bound <- function(type, substrat){
+  if (type=="Bcoli") return(Bcoli_set_lower_bound(substrat))
   if (type=="ecoli") return(ecoli_set_lower_bound(substrat))
   if (type=="barkeri") return(barkeri_set_lower_bound(substrat))
 }
@@ -152,6 +159,7 @@ plot.bacs <- function(substrate=substrat,
   
   mat = matrix(10,n,m) # conversion of data frame into bac matrix
   apply(bac[,1:3], 1, function(x){
+    if(x[3] == "Bcoli") mat[as.numeric(x[1]), as.numeric(x[2])] <<- 3
     if(x[3] == "barkeri") mat[as.numeric(x[1]), as.numeric(x[2])] <<- 1
     if(x[3] == "ecoli") mat[as.numeric(x[1]), as.numeric(x[2])] <<- 5
   })
