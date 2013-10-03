@@ -1,4 +1,4 @@
-barkeri_sbml <- read.sbml("data/barkeri_iAF692.xml", "_b$") #_b$  regexpr for filtering external reactions (special handling necessary for equilibrium condition in fba)
+barkeri_sbml <- read.sbml("data/barkeri_iAF692.xml", "_b$") #_b$  regexpr for filtering external species (special handling necessary for equilibrium condition in fba)
 
 barkeri_biomassf <- "R_Mb_biomass_30"
 

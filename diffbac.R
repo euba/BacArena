@@ -26,9 +26,9 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 # Variable Declaration
 #
 
-n <- 15
-m <- 15
-iter <- 50
+n <- 10
+m <- 10
+iter <- 100
 bacs <- 1
 smax <- 70
 
@@ -40,7 +40,7 @@ s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "gl
 #
 #source(file="ecoli_iAF1260.R")
 #source(file="ecoli.R")
-#source(file="barkeri.R")
+source(file="barkeri.R")
 source(file="beijerinckii.R")
 
 #
@@ -57,7 +57,8 @@ source(file="beijerinckii.R")
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="ecoli", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="Bcoli", growth=1) # one cell in the centre
-bac <- data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1) # one cell in the centre
+#bac <- data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1) # one cell in the centre
+bac <- rbind(data.frame(x=round(n), y=round(m),type="beijerinckii", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
 
 #
 # intial Substrate distribution
@@ -72,10 +73,15 @@ names(substrat) <- s
 #substrat[["iphosphate"]] <- matrix(smax,n,m)
 #substrat[["h2o"]] <- matrix(smax,n,m)
 #substrat[["proton"]] <- matrix(smax,n,m)
-#substrat[["pyruvate"]] <- matrix(smax,n,m)
-#substrat[["h2"]] <- matrix(smax,n,m)
-#substrat[["co2"]] <- matrix(smax,n,m)
-#substrat[["methanol"]] <- matrix(smax,n,m)
+substrat[["pyruvate"]] <- matrix(0,n,m)
+substrat[["h2"]] <- matrix(0,n,m)
+substrat[["co2"]] <- matrix(0,n,m)
+#substrat[["methanol"]] <- matrix(0,n,m)
+substrat[["methane"]] <- matrix(0,n,m)
+substrat[["acetate"]] <- matrix(0,n,m)
+#matr<-matrix(0, n, m)
+#matr[round(n/2),round(m/2)]=smax
+substrat[["methanol"]] <- matrix(0,n,m) # one cell in the centre
 
 #
 #Iteration with rules to apply for each agent
@@ -85,6 +91,7 @@ bac_history <- vector(mode="numeric")
 substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
 max_glucose = max(substrat$glucose)
 max_acetate = 100
+growth_vec <- vector(mode="numeric") # all current growth rate for statistics
 for(time in 1:iter){
   #
   #plotting functions
@@ -101,45 +108,10 @@ for(time in 1:iter){
   substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
   rownames(substrat_history) <- names(substrat)
   
-  #plot(1:time, substrat_history[1,1:time], col=1, pch=1, ylim=c(0,max(substrat_history[,1:time])), ylab="concentration", xlab="time") #set max y-value to highest product conentration
-  #plot(1:time, substrat_history["h2o",1:time], col="blue", ylim=c(0,max(substrat_history[,1:time])), ylab="concentration", xlab="time") #set max y-value to highest product conentration
-  
-  #lines(1:time, substrat_history["glucose",1:time], col="green", type="b")
-  #lines(1:time, substrat_history["o2",1:time], col="cyan", type="b")
-  #lines(1:time, substrat_history["co2",1:time], col="magenta", type="b")
-  #legend("left", c("water", "glucose", "o2", "co2"), pch=1,col=c("blue", "green", "cyan", "magenta"))
-  
-  #plot(1:time, substrat_history["acetate",1:time], col="orange", pch=1, ylim=c(0,max_acetate), ylab="concentration", xlab="time")
-  #lines(1:time, substrat_history["fumarate",1:time], col="gray", pch=2, type="b")
-  #lines(1:time, substrat_history["formiate",1:time], col="red", pch=3, type="b")
-  #lines(1:time, substrat_history["ethanol",1:time], col="brown", pch=4, type="b")
-  #legend("left", c("acetate", "fumarate", "formiate", "ethanol"), pch=c(1,2,3,4),col=c("orange", "gray", "red", "brown"))
-  
-  #plot(1:time, bac_history, type="b", main="growth curve")
-
-  plot_list[[time]] <- plot.bacs(time=time, bac=bac, subnam1="glucose", subnam2="co2", subnam3="h2", prodnam="acetate")
-  
   #
   # Model of Diffusion
   #
   diffusion(substrat)
-  
-  #
-  # Model of Movement
-  #
-  #print(bac)
-  #tmp <- movement(matrix(0,n,m), bac) # move bacs and return matrix for printing
-  #bac_img <- tmp$matrix
-  #bac <- tmp$df
-  #image(bac_img, col=c("white", "black"))
-  
-  
-  #mat = matrix(0,n,m) # conversion of data frame into bac matrix
-  #apply(bac[,1:2], 1, function(x){
-  #  mat[as.numeric(x[1]), as.numeric(x[2])] <<- 1
-  #})
-  #image(mat, col=c("white", "black"), main="bacterial movement")
-  
   
   #
   # FBA
@@ -169,11 +141,9 @@ for(time in 1:iter){
     spos <- lapply(substrat, function(x, i, j){ # get current substrat vector
       return(x[i,j])
     },i=i, j=j)
-    #growth <- fba(spos, sbml$stoch, lb, ub, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
-    #print(spos)
-    print(bac)
-    growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
     
+    growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+        
     lb <- get_lower_bound(bac[l,]$type)
     ub <- get_upper_bound(bac[l,]$type)
     
@@ -182,11 +152,12 @@ for(time in 1:iter){
       print("----")
       cat("no fba solution found for: ")
       print(bac[l,])
-      print(t(spos))
+      #print(t(spos))
       print("----")
       #bac <- bac[-l,]
     }else{
       growth <- lapply(growth, function(x){round(x, digits=2)}) # ROUNDING!!!
+      growth_vec[l] <- growth[[biomassf]] # save current growth rate to plot it    
       if(growth[[biomassf]] != 0){ # continue only if there is growth !
         bac[l,][1,4] <- bac[l,][1,4] + growth[[biomassf]]
         
@@ -225,7 +196,6 @@ for(time in 1:iter){
         gvec[l]=growth[[biomassf]]
         #print(growth)
       }
-      
       #
       # Movement in R
       #
@@ -257,17 +227,19 @@ for(time in 1:iter){
       }
     }
   }
+
   
   #
   # Live and die
   #
-  #bac$growth <- bac$growth-0.1 #the cost of living
-  #bac <- bac[!(bac$growth<0.1),] #death
+  bac$growth <- bac$growth-0.08 #the cost of living
+  bac <- bac[!(bac$growth<0.1),] #death
   #
-  #if(dim(bac)[1]==0){
-  #  print("ALL BACTERIA DIED")
-  #  break
-  #}
+  if(dim(bac)[1]==0){
+    print("ALL BACTERIA DIED")
+    break
+  }
+  plot_list[[time]] <- plot.bacs(time=time, bac=bac, growth_vec=growth_vec, subnam1="glucose", subnam2="co2", subnam3="h2", prodnam="methane")
 }
 
 

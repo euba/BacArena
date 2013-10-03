@@ -144,10 +144,10 @@ plot.bacs.cool <- function(substrate=substrat[[7]], product=substrat[[1]], sub_h
   return(list(sub=sub, prod=prod, bacpos=bacpos, growth=growth, subs=subs))
 }
 
-plot.bacs <- function(substrate=substrat,
+plot.bacs <- function(substrate=substrat, growth_vec,
                       subnam1, subnam2, subnam3, prodnam, sub_his=substrat_history,
                       bac_his=bac_history, bac, time){ #substrate and product as matrices
-  par(mfrow=c(2,4))
+  par(mfrow=c(3,4))
   
   image(substrate[[subnam1]], zlim=c(0,max(substrate[[subnam1]])), col=colorRampPalette(c("white", "green"))(40), main=subnam1)
   image(substrate[[subnam2]], zlim=c(0,max(substrate[[subnam2]])), col=colorRampPalette(c("white", "red"))(40), main=subnam2)
@@ -173,4 +173,5 @@ plot.bacs <- function(substrate=substrat,
   })
   #image(mat, col=c("white", "black"), main="bacterial movement")
   image(mat, col=terrain.colors(10), main="bacterial movement")
+  boxplot(growth_vec)
 }

@@ -92,21 +92,21 @@ set.bounds(linp,lower=lb)
 set.bounds(linp,upper=ub)
 
 # print substrate
-print("substrate")
-print(t(substrat))
-print("")
+#print("substrate")
+#print(t(substrat))
+#print("")
 
 # print lower bound
-print("lower bound")
+#print("lower bound")
 # get lower bound with names
-lbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, lb){
-  if(x %in% names(sub_ex)) lb[which(colnames(stoch)==sub_ex[[x]])]
-},stoch=stoch, sub_ex=sub_ex, lb=lb)
-print(t(lbound))
+#lbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, lb){
+#  if(x %in% names(sub_ex)) lb[which(colnames(stoch)==sub_ex[[x]])]
+#},stoch=stoch, sub_ex=sub_ex, lb=lb)
+#print(t(lbound))
 
 #Solve opt problem
 status <- solve(linp)
-print(status)
+#print(status)
 if(status!=0) return("DEAD") # very important!! if no feasible solutions is found there is still some (useless) result
 value <- get.objective(linp)
 #get opt fluxes
@@ -146,15 +146,17 @@ pos_uptake <- sapply(names(sapply(substrat, names)),function(x,substrat,growth){
 if(all(pos_uptake>=0) == T) flux <- flux * growth
 
 # print uptake
-uptake <- sapply(names(sapply(substrat, names)),function(x,substrat){
-  if(x %in% names(sub_ex) == T) return(flux[[sub_ex[[x]]]])
-  else return(0)
-},substrat=substrat)
-names(uptake) <- names(substrat)
-print("uptake")
-print(t(uptake))
-print("growth rate:")
-print(flux[[get_biomassf(bac[l,]$type)]])
+if(type=="barkeri"){
+  uptake <- sapply(names(sapply(substrat, names)),function(x,substrat){
+    if(x %in% names(sub_ex) == T) return(flux[[sub_ex[[x]]]])
+    else return(0)
+  },substrat=substrat)
+  names(uptake) <- names(substrat)
+  print("uptake")
+  print(t(uptake))
+  print("growth rate:")
+  print(flux[[get_biomassf(type)]])
+}
 
 # debug file
 write.lp(linp,"test", NULL) # debug 
