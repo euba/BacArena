@@ -38,10 +38,10 @@ s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "gl
 #
 # loading bacteria
 #
-#source(file="ecoli_iAF1260.R")
-#source(file="ecoli.R")
-source(file="barkeri.R")
-source(file="beijerinckii.R")
+#if(!exists("Bcoli_sbml", mode="list"))source(file="ecoli_iAF1260.R")
+#if(!exists("ecoli_sbml", mode="list"))source(file="ecoli.R")
+if(!exists("barkeri_sbml", mode="list")) source(file="barkeri.R")
+if(!exists("beijerinckii_sbml", mode="list")) source(file="beijerinckii.R")
 
 #
 # Initiation of agents
@@ -92,17 +92,14 @@ substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
 max_glucose = max(substrat$glucose)
 max_acetate = 100
 growth_vec <- vector(mode="numeric") # all current growth rate for statistics
-for(time in 1:iter){
-  #
-  #plotting functions
-  #par(mfrow=c(3,2))
-  #image(substrat$glucose, zlim=c(0,max_glucose), col=colorRampPalette(c("white", "green"))(40), main="glucose concentration")
-  
-  #image(substrat$glucose, zlim=c(0,70), col=colorRampPalette(c("white", "green"))(40), main="glucose concentration")
+growth_vec_history <- list(mode="numeric") # all  growth rate for statistics
 
-  #image(substrat$acetate, zlim=c(0,200), col=colorRampPalette(c("white", "orange"))(40), main="acetate concentration")
-  #image(substrat$acetate, zlim=c(0,max_acetate), col=colorRampPalette(c("white", "orange"))(40), main="acetate concentration")
-  
+
+########################################################################################################
+###################################### MAIN LOOP #######################################################
+########################################################################################################
+
+for(time in 1:iter){
   bacnum <- dim(bac)[1]
   bac_history[time] <- bacnum
   substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
@@ -239,7 +236,8 @@ for(time in 1:iter){
     print("ALL BACTERIA DIED")
     break
   }
-  plot_list[[time]] <- plot.bacs(time=time, bac=bac, growth_vec=growth_vec, subnam1="glucose", subnam2="co2", subnam3="h2", prodnam="methane")
+  growth_vec_history[[time]] <- growth_vec
+  plot_list[[time]] <- plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="glucose", subnam2="co2", subnam3="h2", prodnam="methane")
 }
 
 

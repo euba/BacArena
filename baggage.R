@@ -144,7 +144,7 @@ plot.bacs.cool <- function(substrate=substrat[[7]], product=substrat[[1]], sub_h
   return(list(sub=sub, prod=prod, bacpos=bacpos, growth=growth, subs=subs))
 }
 
-plot.bacs <- function(substrate=substrat, growth_vec,
+plot.bacs <- function(substrate=substrat, growth_vec_history=growth_vec_history,
                       subnam1, subnam2, subnam3, prodnam, sub_his=substrat_history,
                       bac_his=bac_history, bac, time){ #substrate and product as matrices
   par(mfrow=c(3,4))
@@ -173,5 +173,5 @@ plot.bacs <- function(substrate=substrat, growth_vec,
   })
   #image(mat, col=c("white", "black"), main="bacterial movement")
   image(mat, col=terrain.colors(10), main="bacterial movement")
-  boxplot(growth_vec)
+  boxplot(growth_vec_history, main="growth rates")
 }
