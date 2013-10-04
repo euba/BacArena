@@ -1,17 +1,13 @@
-#Diffusion and movement
-
 library(simecol)
 library(Rcpp)
 library(inline)
 library(rbenchmark)
-
 #just for plotting
 #library(ggplot2)
 #library(reshape2)
 #library(reshape)
 #library(scales)
 #library(gridExtra)
-
 
 setwd("~/BacArena")
 source(file="fba.R")
@@ -43,19 +39,19 @@ for(time in 1:iter){
   substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
   rownames(substrat_history) <- names(substrat)
   
-  #
-  # Model of Diffusion
-  #
   diffusion(substrat)
   
-  #
-  # FBA
-  #
   gvec <- 1:bacnum
   #print(bacnum)
     
   xr <- round(runif(bacnum, min = -1, max = 1))
   yr <- round(runif(bacnum, min = -1, max = 1))
+  
+  
+  ########################################################################################################
+  ###################################### BACTERIA LOOP ###################################################
+  ########################################################################################################
+  
   for(l in 1:bacnum){
   #if(dim(bac)[1]==0) break # well a little bit ugly but our sins will be forgiven, every time you use a break god kills another kitten
     #print(l)
@@ -76,13 +72,17 @@ for(time in 1:iter){
     spos <- lapply(substrat, function(x, i, j){ # get current substrat vector
       return(x[i,j])
     },i=i, j=j)
+
+    
+    ########################################################################################################
+    ########################################### FBA ########################################################
+    ########################################################################################################
     
     growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
-        
-    lb <- get_lower_bound(bac[l,]$type)
-    ub <- get_upper_bound(bac[l,]$type)
     
-    # check for feasable lin prog solutions first!
+    #
+    # check prog solutions first!
+    #
     if(growth == "DEAD"){
       print("----")
       cat("no fba solution found for: ")
@@ -90,7 +90,11 @@ for(time in 1:iter){
       #print(t(spos))
       print("----")
       #bac <- bac[-l,]
-    }else{
+    }
+    #
+    # if there is a feasable fba solution continue:
+    #
+    else{
       growth <- lapply(growth, function(x){round(x, digits=2)}) # ROUNDING!!!
       growth_vec[l] <- growth[[biomassf]] # save current growth rate to plot it    
       if(growth[[biomassf]] != 0){ # continue only if there is growth !
@@ -105,35 +109,14 @@ for(time in 1:iter){
           }
         },i=i,j=j,substrat=substrat)
         
-        # check for errorlike substrate uptake/concentration
-        if(max(sapply(substrat,max))>1e+20){
-          print(t(growth))
-          print("")
-          print("lower bound")
-          # get lower bound with names
-          lbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, lb){
-            if(x %in% names(sub_ex)) lb[which(colnames(stoch)==sub_ex[[x]])]
-          },stoch=sbml$stoch, sub_ex=sub_ex, lb=lb)
-          print(t(lbound))
-          print("")
-          print("upper bound")
-          rbound <- sapply(names(sapply(substrat, names)), function(x, stoch, sub_ex, ub){
-            if(x %in% names(sub_ex)) ub[which(colnames(stoch)==sub_ex[[x]])]
-          },stoch=sbml$stoch, sub_ex=sub_ex, ub=ub)
-          print(t(rbound))
-          print("")
-          print(t(spos))
-          print(bac[l,])
-          print(c(x, substrat[[x]][i,j], " uptake: ", -growth[[sub_ex[[x]]]]))
-          stop("FBA ERROR: Unusual high substrate concentrations!! (~infinity)")
-        }
-        
         gvec[l]=growth[[biomassf]]
         #print(growth)
       }
-      #
-      # Movement in R
-      #
+ 
+########################################################################################################
+###################################### MOVEMENT & DOUBLING #############################################
+########################################################################################################
+
       dupli <- F # boolean variable to test for duplication
       a <- (i + xr[l])
       b <- (j + yr[l])
@@ -164,9 +147,10 @@ for(time in 1:iter){
   }
 
   
-  #
-  # Live and die
-  #
+########################################################################################################
+##################################### TO BE OR NOT TO BE ###############################################
+########################################################################################################
+  
   bac$growth <- bac$growth-0.08 #the cost of living
   bac <- bac[!(bac$growth<0.1),] #death
   #
