@@ -136,7 +136,7 @@ for(time in 1:iter){
         return(F)
       }
     }, p=c(a,b))
-    if(bac[l,]$growth>1){ # test for duplication
+    if(bac[l,]$growth>2){ # test for duplication
       bac[l,]$growth <- bac[l,]$growth/2
       bac <- rbind(bac, bac[l,])
       dupli <- T
@@ -145,8 +145,17 @@ for(time in 1:iter){
       bac[l,1:2] <- c(a,b)
     }else{
       if(dupli){ # if neighbour not empty and cell duplicated, kill doughter cell
-        bac <- bac[-(bacnum+1),]
+        bac <- bac[-(dim(bac)[1]),]
       }
+    }
+    if(dim(bac)[1]> n*m){
+      print(bac[l,])
+      print(c(a,b))
+      print(test)
+      print(dupli)
+      print("")
+      print(bac)
+      stop("more bacs than space...")
     }
   }
 
