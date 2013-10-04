@@ -22,7 +22,7 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 
 
 plot_list <- list()
-bac_history <- vector(mode="numeric")
+bac_history <- sapply(levels(bac[,3]), function(x){list()[[x]]}) # init list with entry for each bac type
 substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
 max_glucose = max(substrat$glucose)
 max_acetate = 100
@@ -35,7 +35,13 @@ growth_vec_history <- list(mode="numeric") # all  growth rate for statistics
 
 for(time in 1:iter){
   bacnum <- dim(bac)[1]
-  bac_history[time] <- bacnum
+  
+  sapply(levels(bac[,3]), function(x,time,tab,bac_history){
+    bac_history[[x]][time] <<- tab[x]
+  },time=time,tab=table(bac$type),bac_history=bac_history)
+  
+  #bac_history[[time]] <- bacnum
+  
   substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
   rownames(substrat_history) <- names(substrat)
   
@@ -111,8 +117,7 @@ for(time in 1:iter){
         },i=i,j=j,substrat=substrat)
       }
     }
-       
-    
+
 ########################################################################################################
 ###################################### MOVEMENT & DOUBLING #############################################
 ########################################################################################################
@@ -158,7 +163,7 @@ for(time in 1:iter){
     break
   }
   growth_vec_history[[time]] <- growth_vec
-  plot_list[[time]] <- plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="glucose", subnam2="co2", subnam3="h2", prodnam="methane")
+  plot_list[[time]] <- plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="glucose", subnam2="co2", subnam3="h2", prodnam="methane", bac_color=bac_color)
 }
 
 

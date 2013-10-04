@@ -30,7 +30,9 @@ bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell 
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="beijerinckii", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
 
-
+# get a color for each bac
+bac_color <- as.numeric(as.factor(levels(bac[,3])))
+names(bac_color) <- levels(bac[,3])
 
 ########################################################################################################
 ###################################### SUBSTRATE #######################################################

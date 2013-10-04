@@ -159,7 +159,7 @@ plot.bacs.cool <- function(substrate=substrat[[7]], product=substrat[[1]], sub_h
 
 plot.bacs <- function(substrate=substrat, growth_vec_history=growth_vec_history,
                       subnam1, subnam2, subnam3, prodnam, sub_his=substrat_history,
-                      bac_his=bac_history, bac, time){ #substrate and product as matrices
+                      bac_his=bac_history, bac, time, bac_color=bac_color){ #substrate and product as matrices
   par(mfrow=c(3,4))
   
   image(substrate[[subnam1]], zlim=c(0,max(substrate[[subnam1]])), col=colorRampPalette(c("white", "green"))(40), main=subnam1)
@@ -175,16 +175,14 @@ plot.bacs <- function(substrate=substrat, growth_vec_history=growth_vec_history,
   legend("top", row.names(sub_his), pch=1:(dim(sub_his)[1]), col=1:dim(sub_his)[1], cex=0.64)
   
   
-  plot(1:length(bac_his), bac_his, type="b", main="growth curve", xlab="time", ylab="number of bacteria")
+  plot(unlist(bac_his),type="n",xlim=c(1,max(sapply(bac_his,length))), main="growth curve", xlab="time", ylab="number of bacteria")
+  mapply(lines,bac_his,col=bac_color, type="b")
   
-  mat = matrix(10,n,m) # conversion of data frame into bac matrix
+  mat = matrix(length(bac_color)+1,n,m) # conversion of data frame into bac matrix
   apply(bac[,1:3], 1, function(x){
-    if(x[3] == "Bcoli") mat[as.numeric(x[1]), as.numeric(x[2])] <<- 3
-    if(x[3] == "barkeri") mat[as.numeric(x[1]), as.numeric(x[2])] <<- 1
-    if(x[3] == "ecoli") mat[as.numeric(x[1]), as.numeric(x[2])] <<- 5
-    if(x[3] == "beijerinckii") mat[as.numeric(x[1]), as.numeric(x[2])] <<- 7
+    mat[as.numeric(x[1]), as.numeric(x[2])] <<- bac_color[x[3]]
   })
   #image(mat, col=c("white", "black"), main="bacterial movement")
-  image(mat, col=terrain.colors(10), main="bacterial movement")
+  image(mat, col=terrain.colors(length(bac_color)+1), main="bacterial movement")
   boxplot(growth_vec_history, main="growth rates")
 }
