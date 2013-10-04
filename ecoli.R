@@ -61,10 +61,15 @@ ecoli_set_lower_bound <- function(substrat){
   
   
   #limit flux exchange rate:
-  if(substrat[["o2"]] < 0.01){
-    if(substrat[["glucose"]] > 18.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -18.5
-  }else{
-    if(substrat[["glucose"]] > 10.5) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -10.5
-  }
+  #if(substrat[["o2"]] < 0.01){
+  #  if(substrat[["glucose"]] > 18.5) Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["glucose"]])] <- -18.5
+  #}else{
+  #  if(substrat[["glucose"]] > 10.5) Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["glucose"]])] <- -10.5
+  #}
+  
+  #Feist et al 2007:
+  Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["glucose"]])] <- -11
+  Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["o2"]])] <- -18.2
+  
   return(ecoli_lower_bound)
 }

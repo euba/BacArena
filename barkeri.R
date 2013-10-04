@@ -17,6 +17,12 @@ barkeri_lower_bound <- barkeri_sbml$lb
 barkeri_upper_bound <- barkeri_sbml$ub
 
 
+#barkeri_ngam <- 2 #Feist Paper 2013
+#barkeri_gam <- 65 #from biomass function
+
+barkeri_ngam <- 1.75 #Feist Paper 2007
+barkeri_gam <- 30 #from biomass function
+
 barkeri_set_lower_bound <- function(substrat){
   #
   # lower/upper bound is init in read.sbml because of irreversible reactions => lb=0

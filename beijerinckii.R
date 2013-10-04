@@ -16,6 +16,8 @@ names(beijerinckii_sub_ex) <- sname
 beijerinckii_lower_bound <- beijerinckii_sbml$lb
 beijerinckii_upper_bound <- beijerinckii_sbml$ub
 
+beijerinckii_ngam <- 8.5 #Price Paper 2006
+beijerinckii_gam <- 40 #from biomass function
 
 
 beijerinckii_set_lower_bound <- function(substrat){

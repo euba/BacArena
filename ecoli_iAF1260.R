@@ -21,6 +21,10 @@ names(Bcoli_sub_ex) <- sname
 Bcoli_lower_bound <- Bcoli_sbml$lb
 Bcoli_upper_bound <- Bcoli_sbml$ub
 
+#Feist et al 2007
+ecoli_ngam <- 8.39
+ecoli_gam <- 59.81
+
 #
 # set lower bounds to current substrat concentration in cell
 #
@@ -35,8 +39,6 @@ Bcoli_set_lower_bound <- function(substrat){
   #
   Bcoli_lower_bound <- Bcoli_sbml$lb
   Bcoli_upper_bound <- Bcoli_sbml$ub
-  Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==get_maintenancef("Bcoli"))] <- 7.6
-  Bcoli_upper_bound[which(colnames(Bcoli_stochmatrix)==get_maintenancef("Bcoli"))] <- 7.6
   Bcoli_lower_bound[grep("R_EX", colnames(Bcoli_stochmatrix))] <- 0 # define growth media
   
   #set minimal medium -> see suppl. Table2 material Feist et al 2007
@@ -69,10 +71,15 @@ Bcoli_set_lower_bound <- function(substrat){
   
   
   #limit flux exchange rate:
-  if(substrat[["o2"]] < 0.01){
-    if(substrat[["glucose"]] > 18.5) Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["glucose"]])] <- -18.5
-  }else{
-    if(substrat[["glucose"]] > 10.5) Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["glucose"]])] <- -10.5
-  }
+  #if(substrat[["o2"]] < 0.01){
+  #  if(substrat[["glucose"]] > 18.5) Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["glucose"]])] <- -18.5
+  #}else{
+  #  if(substrat[["glucose"]] > 10.5) Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["glucose"]])] <- -10.5
+  #}
+  
+  #Feist et al 2007:
+  Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["glucose"]])] <- -11
+  Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["o2"]])] <- -18.2
+  
   return(Bcoli_lower_bound)
 }
