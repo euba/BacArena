@@ -8,6 +8,7 @@ Bcoli_maintenancef <- "R_ATPM"
 Bcoli_stochmatrix <- Bcoli_sbml$stoch
 
 #colnames(Bcoli_stochmatrix)[grep("biomass", colnames(Bcoli_stochmatrix))] #for finding specific reactions
+colnames(Bcoli_stochmatrix)[grep("R_ATP", colnames(Bcoli_stochmatrix))] #for finding specific reactions
 
 #
 # associate each substrate with an exchange reaction (sbml specific!!)

@@ -40,9 +40,6 @@ for(time in 1:iter){
   rownames(substrat_history) <- names(substrat)
   
   diffusion(substrat)
-  
-  gvec <- 1:bacnum
-  #print(bacnum)
     
   xr <- round(runif(bacnum, min = -1, max = 1))
   yr <- round(runif(bacnum, min = -1, max = 1))
@@ -89,6 +86,10 @@ for(time in 1:iter){
       print(bac[l,])
       #print(t(spos))
       print("----")
+      # new growth rate according to advanced magic calculation *muah*
+      starving_growth <- -(get_ngam(bac[l,]$type)/get_gam(bac[l,]$type))*bac[l,]$growth
+      bac[l,]$growth <- starving_growth + bac[l,]$growth
+      growth_vec[l] <- starving_growth # save current growth rate to plot it 
       #bac <- bac[-l,]
     }
     #
@@ -96,7 +97,7 @@ for(time in 1:iter){
     #
     else{
       growth <- lapply(growth, function(x){round(x, digits=2)}) # ROUNDING!!!
-      growth_vec[l] <- growth[[biomassf]] # save current growth rate to plot it    
+      growth_vec[l] <- growth[[biomassf]] # save current growth rate to plot it 
       if(growth[[biomassf]] != 0){ # continue only if there is growth !
         bac[l,][1,4] <- bac[l,][1,4] + growth[[biomassf]]
         
@@ -108,40 +109,38 @@ for(time in 1:iter){
             substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
           }
         },i=i,j=j,substrat=substrat)
-        
-        gvec[l]=growth[[biomassf]]
-        #print(growth)
       }
- 
+    }
+       
+    
 ########################################################################################################
 ###################################### MOVEMENT & DOUBLING #############################################
 ########################################################################################################
 
-      dupli <- F # boolean variable to test for duplication
-      a <- (i + xr[l])
-      b <- (j + yr[l])
-      if(a == 0){a = n}
-      if(b == 0){b = m}
-      if(a == n+1){a = 1}
-      if(b == m+1){b = 1}
-      test <- apply(bac[,1:2], 1, function(x, p){
-        if(sum(x==p)==2){
-          return(T)
-        }else{
-          return(F)
-        }
-      }, p=c(a,b))
-      if(bac[l,]$growth>1){ # test for duplication
-        bac[l,]$growth <- bac[l,]$growth/2
-        bac <- rbind(bac, bac[l,])
-        dupli <- T
-      }
-      if(!(sum(test)>=1)){ # if empty go for it!
-        bac[l,1:2] <- c(a,b)
+    dupli <- F # boolean variable to test for duplication
+    a <- (i + xr[l])
+    b <- (j + yr[l])
+    if(a == 0){a = n}
+    if(b == 0){b = m}
+    if(a == n+1){a = 1}
+    if(b == m+1){b = 1}
+    test <- apply(bac[,1:2], 1, function(x, p){
+      if(sum(x==p)==2){
+        return(T)
       }else{
-        if(dupli){ # if neighbour not empty and cell duplicated, kill doughter cell
-          bac <- bac[-(bacnum+1),]
-        }
+        return(F)
+      }
+    }, p=c(a,b))
+    if(bac[l,]$growth>1){ # test for duplication
+      bac[l,]$growth <- bac[l,]$growth/2
+      bac <- rbind(bac, bac[l,])
+      dupli <- T
+    }
+    if(!(sum(test)>=1)){ # if empty go for it!
+      bac[l,1:2] <- c(a,b)
+    }else{
+      if(dupli){ # if neighbour not empty and cell duplicated, kill doughter cell
+        bac <- bac[-(bacnum+1),]
       }
     }
   }
@@ -151,8 +150,8 @@ for(time in 1:iter){
 ##################################### TO BE OR NOT TO BE ###############################################
 ########################################################################################################
   
-  bac$growth <- bac$growth-0.08 #the cost of living
-  bac <- bac[!(bac$growth<0.1),] #death
+  #bac$growth <- bac$growth-0.08 #the cost of living
+  bac <- bac[!(bac$growth<0),] #death
   #
   if(dim(bac)[1]==0){
     print("ALL BACTERIA DIED")

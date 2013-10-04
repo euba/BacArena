@@ -34,6 +34,9 @@ names(ecoli_sub_ex) <- sname
 ecoli_lower_bound <- ecoli_sbml$lb
 ecoli_upper_bound <- ecoli_sbml$ub
 
+ecoli_ngam <- 8.39
+ecoli_gam <- 59.81
+
 #
 # set lower bounds to current substrat concentration in cell
 #
@@ -48,8 +51,6 @@ ecoli_set_lower_bound <- function(substrat){
   #
   ecoli_lower_bound <- ecoli_sbml$lb
   ecoli_upper_bound <- ecoli_sbml$ub
-  ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==get_maintenancef("ecoli"))] <- 7.6
-  ecoli_upper_bound[which(colnames(ecoli_stochmatrix)==get_maintenancef("ecoli"))] <- 7.6
   ecoli_lower_bound[grep("R_EX", colnames(ecoli_stochmatrix))] <- 0 # define growth media
   
   #print(substrat)

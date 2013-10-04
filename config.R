@@ -14,21 +14,21 @@ smax <- 70
 ########################################################################################################
 
 #if(!exists("Bcoli_sbml", mode="list"))source(file="ecoli_iAF1260.R")
-#if(!exists("ecoli_sbml", mode="list"))source(file="ecoli.R")
-if(!exists("barkeri_sbml", mode="list")) source(file="barkeri.R")
-if(!exists("beijerinckii_sbml", mode="list")) source(file="beijerinckii.R")
+if(!exists("ecoli_sbml", mode="list"))source(file="ecoli.R")
+#if(!exists("barkeri_sbml", mode="list")) source(file="barkeri.R")
+#if(!exists("beijerinckii_sbml", mode="list")) source(file="beijerinckii.R")
 
 #bac <- data.frame(x=round(runif(bacs, min=1, max=n)), y=round(runif(bacs, min=1, max=m)),
 #                  type=rep("ecoli", bacs), growth=rep(1, bacs))
 #bac <- bac[!duplicated(bac[,1:2]),]
 #rownames(bac) <- 1:nrow(bac) #change indices in data.frame
 
-#bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
+bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="ecoli", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="Bcoli", growth=1) # one cell in the centre
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1) # one cell in the centre
-bac <- rbind(data.frame(x=round(n), y=round(m),type="beijerinckii", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
+#bac <- rbind(data.frame(x=round(n), y=round(m),type="beijerinckii", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
 
 
 

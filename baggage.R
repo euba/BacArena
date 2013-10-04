@@ -47,6 +47,19 @@ set_lower_bound <- function(type, substrat){
   if(type=="beijerinckii") return(beijerinckii_set_lower_bound(substrat))
 }
 
+get_ngam <- function(type, substrat){
+  if (type=="Bcoli") return(Bcoli_ngam)
+  if (type=="ecoli") return(ecoli_ngam)
+  if (type=="barkeri") return(barkeri_ngam)
+  if(type=="beijerinckii") return(beijerinckii_ngam)
+}
+
+get_gam <- function(type, substrat){
+  if (type=="Bcoli") return(Bcoli_gam)
+  if (type=="ecoli") return(ecoli_gam)
+  if (type=="barkeri") return(barkeri_gam)
+  if(type=="beijerinckii") return(beijerinckii_gam)
+}
 
 ########################################################################################################
 ###################################### PLOT FUNCTIONS ##################################################
