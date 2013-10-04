@@ -79,8 +79,9 @@ lb <- set_lower_bound(type, substrat) # current substrate defines lower bounds
 ub <- get_upper_bound(type)
 
 #det boundaries ngam
-lb[which(colnames(stoch)==get_maintenancef(type))] <- get_ngam(type)*growth
-ub[which(colnames(stoch)==get_maintenancef(type))] <- get_ngam(type)*growth
+lb[which(colnames(stoch)==get_maintenancef(type))] <- get_ngam(type)
+ub[which(colnames(stoch)==get_maintenancef(type))] <- get_ngam(type)
+
 
 # linear programming
 #linp <- make.lp(0, dim(stoch)[2], verbose = "full")

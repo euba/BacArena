@@ -26,7 +26,6 @@ bac_history <- sapply(levels(bac[,3]), function(x){list()[[x]]}) # init list wit
 substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
 max_glucose = max(substrat$glucose)
 max_acetate = 100
-growth_vec <- vector(mode="numeric") # all current growth rate for statistics
 growth_vec_history <- list(mode="numeric") # all  growth rate for statistics
 
 ########################################################################################################
@@ -34,6 +33,7 @@ growth_vec_history <- list(mode="numeric") # all  growth rate for statistics
 ########################################################################################################
 
 for(time in 1:iter){
+  growth_vec <- vector(mode="numeric") # all current growth rate for statistics
   bacnum <- dim(bac)[1]
   
   sapply(levels(bac[,3]), function(x,time,tab,bac_history){
@@ -86,17 +86,22 @@ for(time in 1:iter){
     #
     # check prog solutions first!
     #
-    if(growth == "DEAD"){
+    if(length(growth)==1){ # <=> if(growth == "DEAD"){
       print("----")
       cat("no fba solution found for: ")
       print(bac[l,])
       #print(t(spos))
+      print("bac[l,]$growth")
+      print(bac[l,]$growth)
       print("----")
       # new growth rate according to advanced magic calculation *muah*
-      starving_growth <- -(get_ngam(bac[l,]$type)/get_gam(bac[l,]$type))*bac[l,]$growth
+      starving_growth <- -(get_ngam(bac[l,]$type)/get_gam(bac[l,]$type)) 
       bac[l,]$growth <- starving_growth + bac[l,]$growth
       growth_vec[l] <- starving_growth # save current growth rate to plot it 
-      #bac <- bac[-l,]
+      print("growth_vec[l]")
+      print(growth_vec[l])
+      print("bac[l,]$growth")
+      print(bac[l,]$growth)
     }
     #
     # if there is a feasable fba solution continue:
