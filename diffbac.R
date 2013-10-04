@@ -22,7 +22,7 @@ diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin=
 
 
 plot_list <- list()
-bac_history <- vector(mode="numeric")
+bac_history <- sapply(levels(bac[,3]), function(x){list()[[x]]}) # init list with entry for each bac type
 substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
 max_glucose = max(substrat$glucose)
 max_acetate = 100
@@ -35,7 +35,13 @@ growth_vec_history <- list(mode="numeric") # all  growth rate for statistics
 
 for(time in 1:iter){
   bacnum <- dim(bac)[1]
-  bac_history[time] <- bacnum
+  
+  sapply(levels(bac[,3]), function(x,time,tab,bac_history){
+    bac_history[[x]][time] <<- tab[x]
+  },time=time,tab=table(bac$type),bac_history=bac_history)
+  
+  #bac_history[[time]] <- bacnum
+  
   substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
   rownames(substrat_history) <- names(substrat)
   
@@ -112,36 +118,35 @@ for(time in 1:iter){
         gvec[l]=growth[[biomassf]]
         #print(growth)
       }
- 
+    }
 ########################################################################################################
 ###################################### MOVEMENT & DOUBLING #############################################
 ########################################################################################################
 
-      dupli <- F # boolean variable to test for duplication
-      a <- (i + xr[l])
-      b <- (j + yr[l])
-      if(a == 0){a = n}
-      if(b == 0){b = m}
-      if(a == n+1){a = 1}
-      if(b == m+1){b = 1}
-      test <- apply(bac[,1:2], 1, function(x, p){
-        if(sum(x==p)==2){
-          return(T)
-        }else{
-          return(F)
-        }
-      }, p=c(a,b))
-      if(bac[l,]$growth>1){ # test for duplication
-        bac[l,]$growth <- bac[l,]$growth/2
-        bac <- rbind(bac, bac[l,])
-        dupli <- T
-      }
-      if(!(sum(test)>=1)){ # if empty go for it!
-        bac[l,1:2] <- c(a,b)
+    dupli <- F # boolean variable to test for duplication
+    a <- (i + xr[l])
+    b <- (j + yr[l])
+    if(a == 0){a = n}
+    if(b == 0){b = m}
+    if(a == n+1){a = 1}
+    if(b == m+1){b = 1}
+    test <- apply(bac[,1:2], 1, function(x, p){
+      if(sum(x==p)==2){
+        return(T)
       }else{
-        if(dupli){ # if neighbour not empty and cell duplicated, kill doughter cell
-          bac <- bac[-(bacnum+1),]
-        }
+        return(F)
+      }
+    }, p=c(a,b))
+    if(bac[l,]$growth>1){ # test for duplication
+      bac[l,]$growth <- bac[l,]$growth/2
+      bac <- rbind(bac, bac[l,])
+      dupli <- T
+    }
+    if(!(sum(test)>=1)){ # if empty go for it!
+      bac[l,1:2] <- c(a,b)
+    }else{
+      if(dupli){ # if neighbour not empty and cell duplicated, kill doughter cell
+        bac <- bac[-(bacnum+1),]
       }
     }
   }
@@ -159,7 +164,7 @@ for(time in 1:iter){
     break
   }
   growth_vec_history[[time]] <- growth_vec
-  plot_list[[time]] <- plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="glucose", subnam2="co2", subnam3="h2", prodnam="methane")
+  plot_list[[time]] <- plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="glucose", subnam2="co2", subnam3="h2", prodnam="methane", bac_color=bac_color)
 }
 
 
