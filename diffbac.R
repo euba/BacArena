@@ -27,12 +27,21 @@ substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
 max_glucose = max(substrat$glucose)
 max_acetate = 100
 growth_vec_history <- list(mode="numeric") # all  growth rate for statistics
+time_history <- list(mode="numeric") # time comsumption
 
 ########################################################################################################
 ###################################### MAIN LOOP #######################################################
 ########################################################################################################
 
 for(time in 1:iter){
+  #speed test
+  time_fba    <- 0
+  time_diff   <- 0
+  time_mov    <- 0
+  time_total  <- 0
+  time_plot   <- 0
+  time_tmp    <- proc.time()
+  
   growth_vec <- vector(mode="numeric") # all current growth rate for statistics
   bacnum <- dim(bac)[1]
   
@@ -45,7 +54,7 @@ for(time in 1:iter){
   substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
   rownames(substrat_history) <- names(substrat)
   
-  diffusion(substrat, seed)
+  time_diff <- system.time(diffusion(substrat, seed))
     
   xr <- round(runif(bacnum, min = -1, max = 1))
   yr <- round(runif(bacnum, min = -1, max = 1))
@@ -81,7 +90,7 @@ for(time in 1:iter){
     ########################################### FBA ########################################################
     ########################################################################################################
     
-    growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+    time_fba <- time_fba + system.time(growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type))
     
     #
     # check prog solutions first!
@@ -126,7 +135,8 @@ for(time in 1:iter){
 ########################################################################################################
 ###################################### MOVEMENT & DOUBLING #############################################
 ########################################################################################################
-
+    
+    time_tmp2 <- proc.time()
     dupli <- F # boolean variable to test for duplication
     a <- (i + xr[l])
     b <- (j + yr[l])
@@ -162,6 +172,7 @@ for(time in 1:iter){
       print(bac)
       stop("more bacs than space...")
     }
+    time_mov <- time_mov + proc.time() - time_tmp2
   }
 
   
@@ -179,9 +190,22 @@ for(time in 1:iter){
     break
   }
   growth_vec_history[[time]] <- growth_vec
-  plot_list[[time]] <- plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="glucose", subnam2="o2", subnam3="formiate", prodnam="acetate", bac_color=bac_color)
+  time_plot <- system.time(plot_list[[time]] <- plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="glucose", subnam2="o2", subnam3="formiate", prodnam="acetate", bac_color=bac_color))
+
+  time_tot <- proc.time() - time_tmp
+  time_cur <- cbind(time_tot[3], time_diff[3], time_mov[3], time_fba[3], time_plot[3])
+  colnames(time_cur) <- c("total", "diffusion", "movement", "fba", "plot")
+  print(time_cur)
+  time_history[[time]] <- time_cur
 }
 
+# plot time consumption
+m <- do.call(rbind, time_history)
+plot(1:(time-1), m[,1], type="l", col=1, pch=1, , ylab="% time") #set max y-value to highest product conentration
+for(i in 2:(dim(m)[2])){
+  lines(1:(time-1), m[,i], col=i, pch=i, type="l")
+}
+legend("top", colnames(time_cur), pch=c(1:dim(m)[2]), col=c(1:dim(m)[2]), cex=0.3, pt.cex=1)
 
 ###############plotting
 
