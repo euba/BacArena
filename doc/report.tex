@@ -1,0 +1,56 @@
+\documentclass{scrartcl}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\setlength{\parindent}{0ex}
+
+\usepackage[style=authoryear]{biblatex}
+\bibliography{../literatur.bib}
+\setlength{\bibitemsep}{0.5\baselineskip}
+
+
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2.5cm]{geometry}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\newenvironment{items}{
+\begin{itemize}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{itemize}}
+
+\title{\texttt{BacArena}: Simulation of Interactions in Bacterial Communities using Genome-wide Metabolic Reconstructions}
+\author{Johannes Zimmermann\\Eugen Bauer}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+\input{intro.tex}
+
+\section{Methods}
+\input{methods.tex}
+
+\section{Results}
+\input{results.tex}
+
+\section{Discussion}
+\input{discussion.tex}
+  
+
+\printbibliography 
+
+\end{document}
+
+
+\begin{items}
+  \item
+\end{items}
+\begin{enumerate}
+  \item
+\end{enumerate}
