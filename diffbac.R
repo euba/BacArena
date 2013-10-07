@@ -16,11 +16,11 @@ source(file="baggage.R")
 source(file="config.R")
 
 if(!exists("movement", mode="function")){ #test if function already exists -> saves time for testing source code
-movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame"), body = src_movement, plugin="Rcpp")
-diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
+movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame", seed = "integer"), body = src_movement, plugin="Rcpp")
+diffusion <- cxxfunction(signature(A = "numeric", seed = "integer"), body = src_diffusion, plugin="Rcpp")
 }
 
-
+set.seed(seed)
 plot_list <- list()
 bac_history <- sapply(levels(bac[,3]), function(x){list()[[x]]}) # init list with entry for each bac type
 substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
@@ -45,7 +45,7 @@ for(time in 1:iter){
   substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
   rownames(substrat_history) <- names(substrat)
   
-  diffusion(substrat)
+  diffusion(substrat, seed)
     
   xr <- round(runif(bacnum, min = -1, max = 1))
   yr <- round(runif(bacnum, min = -1, max = 1))
@@ -174,6 +174,8 @@ for(time in 1:iter){
   #
   if(dim(bac)[1]==0){
     print("ALL BACTERIA DIED")
+    print("Variable seed:")
+    print(seed)
     break
   }
   growth_vec_history[[time]] <- growth_vec

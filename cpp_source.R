@@ -4,7 +4,8 @@
 src_diffusion <- '
 Rcpp::List xlist(A);
 int n = xlist.size();
-srand (time(NULL)); /* initialize random seed: */
+int seed2 = as<int>(seed);  
+srand (seed2); /* initialize random seed: */
   for(int k=0; k<n; k++) {
     SEXP ll = xlist[k];
     Rcpp::NumericMatrix y(ll);
@@ -147,12 +148,13 @@ src_movement <- '
   Rcpp::DataFrame l(input_frame);
   Rcpp::IntegerVector x = l["x"];
   Rcpp::IntegerVector y = l["y"];
-  
+  int seed2 = as<int>(seed);  
+
   x=x-1;  // index in c++ starts at 0
   y=y-1;
   
    /* initialize random seed: */
-  srand (time(NULL));
+  srand (seed2);
   
   int n = tmp.nrow();
   int m = tmp.ncol();
