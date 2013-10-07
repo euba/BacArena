@@ -22,8 +22,8 @@ Bcoli_lower_bound <- Bcoli_sbml$lb
 Bcoli_upper_bound <- Bcoli_sbml$ub
 
 #Feist et al 2007
-ecoli_ngam <- 8.39
-ecoli_gam <- 59.81
+Bcoli_ngam <- 8.39
+Bcoli_gam <- 59.81
 
 #
 # set lower bounds to current substrat concentration in cell
@@ -78,8 +78,8 @@ Bcoli_set_lower_bound <- function(substrat){
   #}
   
   #Feist et al 2007:
-  Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["glucose"]])] <- -11
-  Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["o2"]])] <- -18.2
+  if(substrat[["glucose"]] > 11) Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["glucose"]])] <- -11
+  if(substrat[["o2"]] > 18.2) Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["o2"]])] <- -18.2
   
   return(Bcoli_lower_bound)
 }

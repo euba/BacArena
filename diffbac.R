@@ -177,7 +177,7 @@ for(time in 1:iter){
     break
   }
   growth_vec_history[[time]] <- growth_vec
-  plot_list[[time]] <- plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="glucose", subnam2="co2", subnam3="h2", prodnam="methane", bac_color=bac_color)
+  plot_list[[time]] <- plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="glucose", subnam2="o2", subnam3="formiate", prodnam="acetate", bac_color=bac_color)
 }
 
 
