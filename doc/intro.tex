@@ -1,7 +1,38 @@
 \subsection{Microbial metabolic ecology}
 
 \subsection{Constrained based modeling}
+Constrained based modeling is one big and succesful development line in systems biology.\footnote{source}
+Metabolism could be considered as a network of biochemical reaction.
+The reaction network itself is accessible to a more formal representation as differential equations using mass action kinetics.
+Because of high numbers of reactions and metabolites the corresponding system of equation and the solution space is high dimensional, too.
+Linear algebra is used for simplified description:
+\[
+  \frac{dx}{dt}=S \cdot v
+\]
+Where $x\in \mathbb{R}^m$ is a vector consisting of concetrations of all $m$ metabolites, $S\in \mathbb{Z}^{m\times r}$ is the stoichiometric matrix, which covers the net comsumption/production of all $r$ biochemical reactions and $v \in \mathbb{R}^r$ symbolised the flux vector and contains therefore the in general nonlinear kinectic relationships.\\
+Now several \textit{constraints} could be applied to achive a more easier to solve problem.
+The most prominent constraint is equilibrium or steady state $dx/dt \stackrel{!}{=}0$.
+It's a reasonable assumption for a metabloic model because there are a lot of evidence for a metabolic steady state in general (i.e. no net change for every metabolites all the time).\footnote{source}\\
+One important constrained based modeling method is flux balance analysis (fba), which will be of the utmost importance for this project.
+By this the former nonlinear problem $dx/dt=S\cdot v$ diminishes to $dx/dt=S\cdot v \stackrel{!}{=}0$, which constitutes a normal linear equation systems.
+Nevertheless there are far more reactions than metabolites $r>m$, so that this linear reaction system is underdetermined.
+That's why other constraints like flux limits are added.
+Flux limits are reaction limits, which narrow down each reaction to some intervall (e.g. irreversible reaction number $i$ has a flux $v_i>0$).
+By this the solution space is shrinked.
+If the biomass composition and non and growth accociated maintenance (ngam/gam) is known, it is possible to formulate an optimization problem:
+\begin{equation*}
+  \begin{aligned}
+    & \underset{v}{\text{maximize}} & & b(v) \\
+    & \text{subject to} & & S \cdot v = 0 \\
+    & & & l_i < v_i < u_i
+  \end{aligned}
+\end{equation*}
+where $l_i$ and $u_i$ are the lower and upper limits for reaction $i$ and $b(v)$ is biomass function, which is going to maximized with respect to an certain flux $v$.
+Thus we search a vector $v$ carrying quantitative values for all fluxes in the whole raction system so that a certain function (here biomass function) is optimal.
+
 
 \subsection{Agent based modeling}
+agent, grid (holland)
 
 \subsection{Aim of the project}
+
