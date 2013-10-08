@@ -121,7 +121,9 @@ names(flux) <- reac
 # check for conistency (is fba return bounded correctly?)
 sapply(names(sapply(substrat, names)),function(x,substrat){
   if(x %in% names(sub_ex)) { # only update substrate which are metabolic relevant for current organism
-    if(round(as.numeric(substrat[x]),2) < -round(flux[[sub_ex[[x]]]],2)){ # test for negative fba return
+    #if(round(as.numeric(substrat[x]),2) < -round(flux[[sub_ex[[x]]]],2)){ # test for negative fba return
+    # workaround because round is too slow!
+    if(as.numeric(substrat[x]) + 0.1 < -flux[[sub_ex[[x]]]]){ # test for negative fba return
       print(t(flux))
       print("")
       print("lower bound")

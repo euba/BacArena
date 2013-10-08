@@ -41,7 +41,9 @@ for(time in 1:iter){
   time_total  <- 0
   time_plot   <- 0
   time_tmp    <- proc.time()
+  time_unk    <- 0
   
+  #time_tmp4 <- proc.time()
   growth_vec <- vector(mode="numeric") # all current growth rate for statistics
   bacnum <- dim(bac)[1]
   
@@ -53,22 +55,21 @@ for(time in 1:iter){
   
   substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
   rownames(substrat_history) <- names(substrat)
+  #time_unk <- time_unk + proc.time() - time_tmp4
   
-  time_diff <- system.time(diffusion(substrat, seed))
-    
+  time_tmp3 <- proc.time()
+    diffusion(substrat, seed)
+  time_diff <- proc.time() - time_tmp3
+  
   xr <- round(runif(bacnum, min = -1, max = 1))
   yr <- round(runif(bacnum, min = -1, max = 1))
-  
   
   ########################################################################################################
   ###################################### BACTERIA LOOP ###################################################
   ########################################################################################################
   
-  for(l in 1:bacnum){
-  #if(dim(bac)[1]==0) break # well a little bit ugly but our sins will be forgiven, every time you use a break god kills another kitten
-    #print(l)
-    #print(bac)
-        
+  for(l in 1:bacnum){     
+    time_tmp4 <- proc.time()
     #
     # get variables according to bac type
     #
@@ -79,19 +80,21 @@ for(time in 1:iter){
     i <- bac[l,][1,1]
     j <- bac[l,][1,2]
     
-    substrat <- lapply(substrat, function(x){round(x, digits=2)}) # ROUNDING!!!
+    # rounding is really slow
+    #substrat <- lapply(substrat, function(x){round(x, digits=2)}) # ROUNDING!!!
     
     spos <- lapply(substrat, function(x, i, j){ # get current substrat vector
       return(x[i,j])
     },i=i, j=j)
-
+    time_unk <- time_unk + proc.time() - time_tmp4
     
     ########################################################################################################
     ########################################### FBA ########################################################
     ########################################################################################################
-    
-    time_fba <- time_fba + system.time(growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type))
-    
+    time_tmp3 <- proc.time()
+      growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+    time_fba <- time_fba + proc.time() - time_tmp3
+    time_tmp4 <- proc.time()
     #
     # check prog solutions first!
     #
@@ -116,7 +119,7 @@ for(time in 1:iter){
     # if there is a feasable fba solution continue:
     #
     else{
-      growth <- lapply(growth, function(x){round(x, digits=2)}) # ROUNDING!!!
+      #growth <- lapply(growth, function(x){round(x, digits=2)}) # ROUNDING!!!
       growth_vec[l] <- growth[[biomassf]] # save current growth rate to plot it 
       if(growth[[biomassf]] != 0){ # continue only if there is growth !
         bac[l,][1,4] <- bac[l,][1,4] + growth[[biomassf]]
@@ -131,7 +134,7 @@ for(time in 1:iter){
         },i=i,j=j,substrat=substrat)
       }
     }
-
+    time_unk <- time_unk + proc.time() - time_tmp4
 ########################################################################################################
 ###################################### MOVEMENT & DOUBLING #############################################
 ########################################################################################################
@@ -174,12 +177,13 @@ for(time in 1:iter){
     }
     time_mov <- time_mov + proc.time() - time_tmp2
   }
-
+  
   
 ########################################################################################################
 ##################################### TO BE OR NOT TO BE ###############################################
 ########################################################################################################
   
+  time_tmp4 <- proc.time()
   #bac$growth <- bac$growth-0.08 #the cost of living
   bac <- bac[!(bac$growth<0),] #death
   #
@@ -190,22 +194,30 @@ for(time in 1:iter){
     break
   }
   growth_vec_history[[time]] <- growth_vec
-  time_plot <- system.time(plot_list[[time]] <- plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="glucose", subnam2="o2", subnam3="formiate", prodnam="acetate", bac_color=bac_color))
-
+  time_unk <- time_unk + proc.time() - time_tmp4
+  time_tmp3 <- proc.time()
+    plot_list[[time]] <- plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="glucose", subnam2="o2", subnam3="formiate", prodnam="acetate", bac_color=bac_color)
+  time_plot <- proc.time() - time_tmp3
+  
   time_tot <- proc.time() - time_tmp
-  time_cur <- cbind(time_tot[3], time_diff[3], time_mov[3], time_fba[3], time_plot[3])
-  colnames(time_cur) <- c("total", "diffusion", "movement", "fba", "plot")
+  time_cur <- cbind(time_tot[3], time_diff[3], time_mov[3], time_fba[3], time_plot[3], time_unk[3])
+  colnames(time_cur) <- c("total", "diffusion", "movement", "fba", "plot", "unknown")
   print(time_cur)
   time_history[[time]] <- time_cur
 }
 
 # plot time consumption
 m <- do.call(rbind, time_history)
-plot(1:(time-1), m[,1], type="l", col=1, pch=1, , ylab="% time") #set max y-value to highest product conentration
+plot(1:dim(m)[1], m[,1], type="l", col=1, pch=1, , ylab="computation time", xlab="time") #set max y-value to highest product conentration
 for(i in 2:(dim(m)[2])){
-  lines(1:(time-1), m[,i], col=i, pch=i, type="l")
+  lines(1:dim(m)[1], m[,i], col=i, pch=i, type="l")
 }
-legend("top", colnames(time_cur), pch=c(1:dim(m)[2]), col=c(1:dim(m)[2]), cex=0.3, pt.cex=1)
+legend("topleft", colnames(time_cur), pch=1, col=c(1:dim(m)[2]), cex=0.64, bty="n")
+plot(1:dim(m)[1], m[,1], ylim=c(0,1), type="n", col=1, pch=1, , ylab="rel. computation time", xlab="time") #set max y-value to highest product conentration
+for(i in 2:(dim(m)[2])){
+  lines(1:dim(m)[1], m[,i]/m[,1], col=i, pch=i, type="l")
+}
+
 
 ###############plotting
 

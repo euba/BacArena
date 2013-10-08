@@ -171,9 +171,8 @@ plot.bacs <- function(substrate=substrat, growth_vec_history=growth_vec_history,
   for(i in 2:(dim(sub_his)[1])){
     lines(1:time, sub_his[i,1:time], col=i, pch=i, type="b")
   }
-  plot(0,0, col="white")
-  legend("top", row.names(sub_his), pch=1:(dim(sub_his)[1]), col=1:dim(sub_his)[1], cex=0.3, pt.cex=1)
-  
+  plot(1, type="n", axes=F, xlab="", ylab="")
+  legend("top", row.names(sub_his), pch=1:(dim(sub_his)[1]), col=1:dim(sub_his)[1], cex=0.5, pt.cex=0.5, bty="n", y.intersp=0.5)
   
   plot(unlist(bac_his),type="n",xlim=c(1,max(sapply(bac_his,length))), main="growth curve", xlab="time", ylab="number of bacteria")
   mapply(lines,bac_his,col=bac_color, type="b")
