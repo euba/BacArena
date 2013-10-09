@@ -1,4 +1,4 @@
-Bcoli_sbml <- read.sbml("data/ecoli_iAF1260.xml", "_b$")
+if(!exists("Bcoli_sbml", mode="list")) Bcoli_sbml <- read.sbml("data/ecoli_iAF1260.xml", "_b$")
 # last delivered variable is regexpr for filtering external reactions (special handling necessary for equilibrium condition in fba)
 
 Bcoli_biomassf <- "R_Ec_biomass_iAF1260_core_59p81M"

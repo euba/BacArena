@@ -13,9 +13,9 @@ Where $x\in \mathbb{R}^m$ is a vector consisting of concetrations of all $m$ met
 Now several \textit{constraints} could be applied to achive a more easier to solve problem.
 The most prominent constraint is equilibrium or steady state $dx/dt \stackrel{!}{=}0$.
 It's a reasonable assumption for a metabloic model because there are a lot of evidence for a metabolic steady state in general (i.e. no net change for every metabolites all the time).\footnote{source}\\
-One important constrained based modeling method is flux balance analysis (fba), which will be of the utmost importance for this project.
+One important constrained based modeling method is flux balance analysis (fba)\footnote{\cite{Varma1994}; \cite{Orth2010}}, which will be of the utmost importance for this project.
 By this the former nonlinear problem $dx/dt=S\cdot v$ diminishes to $dx/dt=S\cdot v \stackrel{!}{=}0$, which constitutes a normal linear equation systems.
-Nevertheless there are far more reactions than metabolites $r>m$, so that this linear reaction system is underdetermined.
+Nevertheless there are far more reactions than metabolites ($r>m$), so that this linear reaction system is underdetermined.
 That's why other constraints like flux limits are added.
 Flux limits are reaction limits, which narrow down each reaction to some intervall (e.g. irreversible reaction number $i$ has a flux $v_i>0$).
 By this the solution space is shrinked.

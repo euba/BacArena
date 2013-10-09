@@ -1,4 +1,4 @@
-beijerinckii_sbml <- read.sbml("data/Cbeijerinckii_iCM925.xml", "_b$") #_b$  regexpr for filtering external species (special handling necessary for equilibrium condition in fba)
+if(!exists("beijerinckii_sbml", mode="list")) beijerinckii_sbml <- read.sbml("data/Cbeijerinckii_iCM925.xml", "_b$") #_b$  regexpr for filtering external species (special handling necessary for equilibrium condition in fba)
 
 beijerinckii_biomassf <- "R_biomass"
 
