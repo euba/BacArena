@@ -1,7 +1,7 @@
 \subsection{Microbial metabolic ecology}
 
 \subsection{Constrained based modeling}
-Constrained based modeling is one big and succesful development line in systems biology.\footnote{source}
+Constrained based modeling is one big and succesful development line in systems biology. (\cite{Esvelt2013}, \cite{Klipp2010} p. 353)
 Metabolism could be considered as a network of biochemical reaction.
 The reaction network itself is accessible to a more formal representation as differential equations using mass action kinetics.
 Because of high numbers of reactions and metabolites the corresponding system of equation and the solution space is high dimensional, too.
@@ -12,8 +12,8 @@ Linear algebra is used for simplified description:
 Where $x\in \mathbb{R}^m$ is a vector consisting of concetrations of all $m$ metabolites, $S\in \mathbb{Z}^{m\times r}$ is the stoichiometric matrix, which covers the net comsumption/production of all $r$ biochemical reactions and $v \in \mathbb{R}^r$ symbolised the flux vector and contains therefore the in general nonlinear kinectic relationships.\\
 Now several \textit{constraints} could be applied to achive a more easier to solve problem.
 The most prominent constraint is equilibrium or steady state $dx/dt \stackrel{!}{=}0$.
-It's a reasonable assumption for a metabloic model because there are a lot of evidence for a metabolic steady state in general (i.e. no net change for every metabolites all the time).\footnote{source}\\
-One important constrained based modeling method is flux balance analysis (fba) \cite{Varma1994}, \cite{Orth2010}, which will be of the utmost importance for this project.
+It's a reasonable assumption for a metabloic model because there are a lot of evidence for a metabolic steady state in general (i.e. no net change for every metabolites all the time).(\cite{Harris1995} p. 10-11)\\
+One important constrained based modeling method is flux balance analysis (fba) (\cite{Varma1994}, \cite{Orth2010}), which will be of the utmost importance for this project.
 By this the former nonlinear problem $dx/dt=S\cdot v$ diminishes to $dx/dt=S\cdot v \stackrel{!}{=}0$, which constitutes a normal linear equation systems.
 Nevertheless there are far more reactions than metabolites ($r>m$), so that this linear reaction system is underdetermined.
 That's why other constraints like flux limits are added.

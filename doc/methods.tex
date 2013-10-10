@@ -1,7 +1,29 @@
 \subsection{Model overview}
 
+\begin{algorithm}
+\SetAlgoLined
+\For{\emph{time} in $1:$\emph{iterations}}{
+  \emph{diffusion}()\;
+  \For{\emph{l} in $1:$\emph{BacNumbers}}{
+    \emph{fba}()\;
+    \emph{movement}()\;
+    \emph{growth}()\;
+  }
+}
+\caption{Main loop called by \texttt{diffbac.R}}
+\end{algorithm}
+
 \subsection{Representation}
+Implementation began in \textit{netlogo}, which is a simple and wide-used agent based modeling framework.\cite{Wilensky1999}
+For statistical analysis the powerful \textit{R} language was our choice. 
+There exists joint package for interaction of \textit{R} and netlogo (e.g.: \cite{Thiele2010}), but above all speed limitations led us looking for other possibilities.
+In \textit{R} there exists packages to do agent based modeling e.g. \textit{simecol}, which is an ecological framework with differential equation based approach, too. \cite{Petzoldt2007}.
+But again we could retain performance improvement by simply implementing it ourselves directly in \textit{R}.
+
 \subsubsection{Environment \& Grid}
+Agents, which are called \textit{Bacs} in BacArena, exists on a \textit{grid} representation.
+A grid is a discretization of space and could be imagined as a chess board, where Bacs move like chess pieces. 
+
 \subsubsection{Bacteria}
 \subsubsection{Substrate}
 
