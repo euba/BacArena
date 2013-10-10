@@ -4,8 +4,15 @@
 \usepackage{graphicx}
 \setlength{\parindent}{0ex}
 
-\usepackage[style=authoryear]{biblatex}
-\bibliography{literatur.bib}
+\usepackage[
+%  style=authoryear,
+%  maxcitenames=1,
+%  maxbibnames=99
+  natbib=true,
+  backend=bibtex
+]{biblatex}
+\addbibresource{literatur.bib}
+
 \setlength{\bibitemsep}{0.5\baselineskip}
 
 \usepackage{amssymb}

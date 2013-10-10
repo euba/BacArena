@@ -13,7 +13,7 @@ Where $x\in \mathbb{R}^m$ is a vector consisting of concetrations of all $m$ met
 Now several \textit{constraints} could be applied to achive a more easier to solve problem.
 The most prominent constraint is equilibrium or steady state $dx/dt \stackrel{!}{=}0$.
 It's a reasonable assumption for a metabloic model because there are a lot of evidence for a metabolic steady state in general (i.e. no net change for every metabolites all the time).\footnote{source}\\
-One important constrained based modeling method is flux balance analysis (fba)\footnote{\cite{Varma1994}; \cite{Orth2010}}, which will be of the utmost importance for this project.
+One important constrained based modeling method is flux balance analysis (fba) \cite{Varma1994}, \cite{Orth2010}, which will be of the utmost importance for this project.
 By this the former nonlinear problem $dx/dt=S\cdot v$ diminishes to $dx/dt=S\cdot v \stackrel{!}{=}0$, which constitutes a normal linear equation systems.
 Nevertheless there are far more reactions than metabolites ($r>m$), so that this linear reaction system is underdetermined.
 That's why other constraints like flux limits are added.
@@ -32,7 +32,21 @@ Thus we search a vector $v$ carrying quantitative values for all fluxes in the w
 
 
 \subsection{Agent based modeling}
-agent, grid (holland)
+\textit{Complexity theory} is a development in system science since 1970s.
+Order isn't any longer considered as something given but is itself to be made.
+Order should be producable as a surface phenomenon by a complex process, which is i) self organizing, ii) secures its autonomity and iii) proceeds remote from equilibrium.(\cite{Cilliers2007} p. 8-10)\\
+According to John Holland, who introduced the important notion of an \textit{agent}, a complex adaptive system (CAS) is defined as follows:
+\begin{quote}
+,,We will view CAS as systems composed of interacting agents described in terms of rules. These agents adapt by changing their rules as experience accumulates.'' (\cite{Holland1995} p. 10)
+\end{quote}
+In this modeling paradigm no general differential equation governs the macro behaviour.
+The parts of the system are called agents and are explicitly described by \textit{rules} instead of regiours theory.
+This enables the possibility to model ,,microscopic'', that is to give individual properties and limited information to agents.
+,,If-then rules'' are heuritic and could depict phenomena, where no mathematical description exists.
+So far: Agents have individuality, live in a surrounding (grid) with limited radius, so that local interaction in the neighbourhood governed by rules are important.\\
+From this microscopic actions the global organization is produced.
+New properties and behauviour could occure and this is noted by the slight magical term \textit{emergence}.(\cite{Zimmermann2010} p. 36-39)
+
 
 \subsection{Aim of the project}
 
