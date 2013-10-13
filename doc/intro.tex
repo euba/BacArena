@@ -1,25 +1,30 @@
 \subsection{Microbial metabolic ecology}
+Microbial communities pose important roles in the cycle of matter ( *) as well as human health and disease ( *). The comprehensive understanding of the interaction between microbes is thus a major goal in microbial ecology and systems biology. 
 
+Microbial consortia often consist of a diverse composition, which degrade complex compounds in multiple steps by different microbes ( *). This division of labour can be realized by the aggregation to biofilms in which multiple layers of microbes are associated with each other and interact by exchanging various metabolites ( *). An example for the cross-feeding between microbes is the interspecies hydrogen transfer. Here, methanogenic archea are associated with bacteria or protists, which produce hydrogen after anearobic degradation ( *). The hydrogen can be taken up as an essential substrate by the methogens, which profits the producer by the removal of the products and thus the thermodynamic limitation ( *). Therefore both partners benefit from this interaction. A close spatial aggregation of the partners can further optimize their individual benefits, since the hydrogen can be exchanged faster.
+
+Recent advances in systems biology made it possible to study the metabolic interactions of multiple species on the systems level ( *). In particular constrained based modeling can be applied to model interspecies metabolic exchanges ( *).
+ 
 \subsection{Constrained based modeling}
-Constrained based modeling is one big and succesful development line in systems biology. (\cite{Esvelt2013}, \cite{Klipp2010} p. 353)
-Metabolism could be considered as a network of biochemical reaction.
-The reaction network itself is accessible to a more formal representation as differential equations using mass action kinetics.
-Because of high numbers of reactions and metabolites the corresponding system of equation and the solution space is high dimensional, too.
-Linear algebra is used for simplified description:
+Constrained based modeling is a successfully applied method in systems biology (\cite{Esvelt2013}, \cite{Klipp2010} p. 353), where the metabolism of single species is considered as a network of biochemical reaction.
+The reaction network itself can be represented more formally with differential equations using mass action kinetics.
+Because of the high numbers of reactions and metabolites the resulting system of equation and the solution space is high dimensional.
+Therefore, linear algebra is used for a simplified description:
 \[
   \frac{dx}{dt}=S \cdot v
 \]
-Where $x\in \mathbb{R}^m$ is a vector consisting of concetrations of all $m$ metabolites, $S\in \mathbb{Z}^{m\times r}$ is the stoichiometric matrix, which covers the net comsumption/production of all $r$ biochemical reactions and $v \in \mathbb{R}^r$ symbolised the flux vector and contains therefore the in general nonlinear kinectic relationships.\\
-Now several \textit{constraints} could be applied to achive a more easier to solve problem.
-The most prominent constraint is equilibrium or steady state $dx/dt \stackrel{!}{=}0$.
-It's a reasonable assumption for a metabloic model because there are a lot of evidence for a metabolic steady state in general (i.e. no net change for every metabolites all the time).(\cite{Harris1995} p. 10-11)\\
-One important constrained based modeling method is flux balance analysis (fba) (\cite{Varma1994}, \cite{Orth2010}), which will be of the utmost importance for this project.
-By this the former nonlinear problem $dx/dt=S\cdot v$ diminishes to $dx/dt=S\cdot v \stackrel{!}{=}0$, which constitutes a normal linear equation systems.
-Nevertheless there are far more reactions than metabolites ($r>m$), so that this linear reaction system is underdetermined.
-That's why other constraints like flux limits are added.
+where $x\in \mathbb{R}^m$ is a vector consisting of concentrations of all $m$ metabolites, $S\in \mathbb{Z}^{m\times r}$ is the stoichiometric matrix, which includes the net consumption/production of all $r$ biochemical reactions and $v \in \mathbb{R}^r$ is the flux vector which contains in general nonlinear kinetic relationships.
+
+Now several \textit{constraints} could be applied to solve the problem more easily. The most prominent constraint is the equilibrium or steady state $dx/dt \stackrel{!}{=}0$.
+It is a reasonable assumption for a metabolic model, because there is evidence for a metabolic steady state in general (i.e. no net change for every metabolites at each time point)(\cite{Harris1995} p. 10-11).
+
+One important constrained based modeling approach is flux balance analysis (fba) (\cite{Varma1994}, \cite{Orth2010}), which will be of utmost importance for this project.
+Here, the former nonlinear problem $dx/dt=S\cdot v$ diminishes to $dx/dt=S\cdot v \stackrel{!}{=}0$, which constitutes a normal linear equation systems.
+Nevertheless, there are far more reactions than metabolites ($r>m$), so that this linear reaction system is underdetermined.
+That is why other constraints like flux limits are added.
 Flux limits are reaction limits, which narrow down each reaction to some intervall (e.g. irreversible reaction number $i$ has a flux $v_i>0$).
 By this the solution space is shrinked.
-If the biomass composition and non and growth accociated maintenance (ngam/gam) is known, it is possible to formulate an optimization problem:
+If the biomass composition, non and growth associated maintenance (ngam/gam) is known, it is possible to formulate an optimization problem:
 \begin{equation*}
   \begin{aligned}
     & \underset{v}{\text{maximize}} & & b(v) \\
@@ -27,26 +32,29 @@ If the biomass composition and non and growth accociated maintenance (ngam/gam) 
     & & & l_i < v_i < u_i
   \end{aligned}
 \end{equation*}
-where $l_i$ and $u_i$ are the lower and upper limits for reaction $i$ and $b(v)$ is biomass function, which is going to maximized with respect to an certain flux $v$.
-Thus we search a vector $v$ carrying quantitative values for all fluxes in the whole raction system so that a certain function (here biomass function) is optimal.
-
+where $l_i$ and $u_i$ are the lower and upper limits for reaction $i$ and $b(v)$ is biomass function, which is going to be maximized with respect to a certain flux $v$.
+Thus, we search a vector $v$ carrying quantitative values for all fluxes in the whole reaction system, so that a certain function (here biomass function) is optimal. Although constrained based modeling frameworks for studying species interactions exist ( *), the complexity of microbial communities is still difficult to asses with this approaches.
 
 \subsection{Agent based modeling}
-\textit{Complexity theory} is a development in system science since 1970s.
-Order isn't any longer considered as something given but is itself to be made.
-Order should be producable as a surface phenomenon by a complex process, which is i) self organizing, ii) secures its autonomity and iii) proceeds remote from equilibrium.(\cite{Cilliers2007} p. 8-10)\\
+\textit{Complexity theory} is a part of system science since 1970s, where order is not longer considered as something given but made by itself. Moreover, order is producible as a surface phenomenon by a complex process, which is i) self organizing, ii) secures its autonomity and iii) proceeds far from an equilibrium (\cite{Cilliers2007} p. 8-10).
+
 According to John Holland, who introduced the important notion of an \textit{agent}, a complex adaptive system (CAS) is defined as follows:
 \begin{quote}
 ,,We will view CAS as systems composed of interacting agents described in terms of rules. These agents adapt by changing their rules as experience accumulates.'' (\cite{Holland1995} p. 10)
 \end{quote}
 In this modeling paradigm no general differential equation governs the macro behaviour.
-The parts of the system are called agents and are explicitly described by \textit{rules} instead of regiours theory.
-This enables the possibility to model ,,microscopic'', that is to give individual properties and limited information to agents.
-,,If-then rules'' are heuritic and could depict phenomena, where no mathematical description exists.
-So far: Agents have individuality, live in a surrounding (grid) with limited radius, so that local interaction in the neighbourhood governed by rules are important.\\
-From this microscopic actions the global organization is produced.
-New properties and behauviour could occure and this is noted by the slight magical term \textit{emergence}.(\cite{Zimmermann2010} p. 36-39)
+The parts of the system called agents are explicitly described by \textit{rules} instead of a theory.
+This enables the possibility to model ,,microscopic'' phenomenons, which give individual properties and defined information to the agents.
+,,If-then rules'' are heuristic and could depict relationships, where no mathematical description exists.
+Therefore, agents have individuality, live in a surrounding area (grid) with limited radius, so that only local interactions in the neighbourhood governed by rules are relevant to produce a global phenomenons.
 
+From this microscopic actions the global organization is produced.
+New properties and behaviour could occur and this is noted by the slightly magical term \textit{emergence} (\cite{Zimmermann2010} p. 36-39).
+
+Agent based modeling (abm) has been successfully applied in ecological studies to model the complexity of global behaviours by simple local interactions between species ( *).
 
 \subsection{Aim of the project}
+The aim of this project is to combine for the first time constrained based modeling in an ecological context with abm to model interactions in microbial communities. In particular microbes are represented as agents which interact with their surrounding substrate concentrations stored in a grid. These interactions are realized with fba, which is used as a rule.
 
+This framework will be used to represent common observations in microbial ecology such as syntrophy.
+%The whole is more than the sum of its parts. [Aristotle]...

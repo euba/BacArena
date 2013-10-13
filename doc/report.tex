@@ -18,6 +18,8 @@
 \usepackage{amssymb}
 \usepackage{hyperref}
 \usepackage[lined]{algorithm2e}
+\providecommand{\SetAlgoLined}{\SetLine}
+\providecommand{\DontPrintSemicolon}{\dontprintsemicolon}
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2.5cm]{geometry}
 
 \usepackage{setspace}
@@ -30,14 +32,22 @@
   \setlength{\parsep}{0pt}
 }{\end{itemize}}
 
-\title{\texttt{BacArena}: Simulation of Interactions in Bacterial Communities using Genome-wide Metabolic Reconstructions}
+\title{\texttt{BacArena}: Simulation of Interactions in Microbial Communities using Genome-wide Metabolic Reconstructions}
 \author{Johannes Zimmermann\\Eugen Bauer}
 \date{\today}
 
 \begin{document}
 
 \maketitle
+
+\section*{Abstract}
+Microbial communities are essential for global ecosystems and human health.
+
+\newpage
+
 \tableofcontents
+
+\newpage
 
 \section{Introduction}
 \input{intro.tex}
@@ -50,8 +60,8 @@
 
 \section{Discussion}
 \input{discussion.tex}
-  
-\fullcite{Feist2006}
+
+
 \printbibliography 
 
 \end{document}
