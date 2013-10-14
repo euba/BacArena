@@ -1,7 +1,7 @@
-library(simecol)
 library(Rcpp)
 library(inline)
 library(rbenchmark)
+library(digest) # hashes
 #just for plotting
 #library(ggplot2)
 #library(reshape2)
@@ -28,6 +28,7 @@ max_glucose = max(substrat$glucose)
 max_acetate = 100
 growth_vec_history <- list(mode="numeric") # all  growth rate for statistics
 time_history <- list(mode="numeric") # time comsumption
+fba_hash <-new.env() # hash fba results to improve performance
 
 ########################################################################################################
 ###################################### MAIN LOOP #######################################################
@@ -91,8 +92,18 @@ for(time in 1:iter){
     ########################################################################################################
     ########################################### FBA ########################################################
     ########################################################################################################
+    
+    
     time_tmp3 <- proc.time()
-      growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+      hash_spos <- digest(floor(unlist(spos))) # rounding!!
+      if(exists(hash_spos, envir=fba_hash)) {
+        growth <- fba_hash[[hash_spos]]
+        stop("ATTENTION: TAKING HASH!!!!")
+      }
+      else {
+        growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+        assign(hash_spos, growth, envir=fba_hash)
+      }
     time_fba <- time_fba + proc.time() - time_tmp3
     time_tmp4 <- proc.time()
     #
