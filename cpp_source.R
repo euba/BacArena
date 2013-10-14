@@ -3,10 +3,10 @@
 #
 src_diffusion <- '
 Rcpp::List xlist(A);
-int n = xlist.size();
+int s = xlist.size();
 int seed2 = as<int>(seed);  
 srand (seed2); /* initialize random seed: */
-  for(int k=0; k<n; k++) {
+  for(int k=0; k<s; k++) {
     SEXP ll = xlist[k];
     Rcpp::NumericMatrix y(ll);
     //copy matrix to diffuse successive
