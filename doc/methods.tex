@@ -20,7 +20,9 @@ Furthermore, the species type was recorded for each agent to call the respective
 }
 \label{alg:mainloop}
 \end{algorithm}
-The solution of the fba was used to adjust the biomass of each agent and to modify the metabolite concentrations according to the produced products and consumed substrates. A diffusion model was applied to spread the metabolite concentrations over the grid environment and a movement function allowed the random dispersal of each bacterial agent.
+The solution of the fba was used to adjust the biomass of each agent and to modify the metabolite concentrations according to the produced products and consumed substrates. 
+This uptake and output of metabolites constitute the exchange with the virtual environment.
+A diffusion model was applied to spread the metabolite concentrations over the grid environment and a movement function allowed the random dispersal of each bacterial agent.
 
 A central theme of \texttt{BacArena} was the modularity of each funcsubtion and metabolic model to allow the extension and replacement of certain parts of the framework. Furthermore, the modularity also enables the inclusion of any desired amount of microbial species. In the following sections the modules of \texttt{BacArena} will be regarded more closely. 
 
@@ -35,6 +37,8 @@ The main parts of the framework were implemented in the programming language \te
 
 \subsubsection{Environment \& Grid}
 Agents in \texttt{BacArena} were assigned to specific two-dimensional $n \times m$ grid positions $i, j \in \mathbb{N}$ and a type variable indicating the species. The grid is a discretization of space and could be imagined as a chess board, where the agents can move like chess pieces. For each grid positions certain metabolite concentrations were also recorded and stored in a separate matrix. For each metabolite a own matrix was constructed (Figure \hyperref[fig:bacarena]{\ref{fig:bacarena}}). The bacterial agents could interact with this environment by the consumption and production of metabolite concentrations.
+Attention is necessary for the boundaries of the grid.
+Here continuous boundary conditions were choosen, i.e. rectangle grid is forming a surface of a sphere or a donut/ring.
 
 \subsubsection{Bacteria}
 Bacteria were represented as rows in a matrix, which had four columns and rows according to the current number of agents on the grid. The first two columns contained the discrete positions of the agents on the grid. The third column indicated the species type of the respective agent. The fourth column stored the current biomass value of the agents.
@@ -44,9 +48,11 @@ For certain bacterial species published genome-wide metabolic reconstruction wer
 In each iteration in \texttt{diffbac.R} (Algorithm \hyperref[alg:mainloop]{\ref{alg:mainloop}}), rows were deleted and included according to the growth function (see below). The grid positions were updated according to the movement function and the biomass increase as a solution of the fba was added to the current biomass value for each agent.
 
 \subsubsection{Substrate}
-Metabolite concentrations were represented as $n \times m \in \mathbb{R}$ matrices. According to the requirements of the used genome-wide metabolic models certain metabolites were selected. In the present study these metabolites were: acetate, aketoglutarate, carbon dioxide, ethanol, formiate, fumarate, glucose, water, proton, lactate, oxygen, phosphate, pyruvate, succinate, hydrogen, methanol, methane, acetone, butyrate and butanol.
+Metabolite concentrations were represented as matrices $m_s \in \mathbb{R}^{n \times m}$ for all substrates $s$. According to the requirements of the used genome-wide metabolic models certain metabolites were selected. In the present study these metabolites were: acetate, aketoglutarate, carbon dioxide, ethanol, formiate, fumarate, glucose, water, proton, lactate, oxygen, phosphate, pyruvate, succinate, hydrogen, methanol, methane, acetone, butyrate and butanol.
+This could be extended easily by just adding another substrate matrix.
+Nonetheless it's necessary to define the corresponding exchange reaction for all organisms for this new added metabolite because there exists no common nomenclature.
 
-The entries of the metabolite matrices were initialized with a concentration of 70 nmol per grid cell. Additionally, in certain simulations the concentration was of selected metabolites set to 0 nmol to generate diverse metabolic phenotypes, such as anaerobic metabolisms.
+The entries of the metabolite matrices were initialized with a concentration of 70 mmol per grid cell. Additionally, in certain simulations the concentration was of selected metabolites set to 0 mmol to generate diverse metabolic phenotypes, such as anaerobic metabolisms.
 
 \subsection{Interactions as rules}
 The different representations were closely integrated with rules, which acted on each individual level.
@@ -65,6 +71,40 @@ $b \leftarrow j+random(1,-1)$\;
 \end{algorithm}
 
 \subsubsection{Diffusion}
+Diffusion is implemented in c++ using Rcpp.
+\begin{algorithm}
+  \caption{}
+  \SetAlgoLined
+  \For{all substrates s}{
+    $l \leftarrow 0$\;
+    $n \leftarrow$ rows\;
+    $m \leftarrow$ columns\;
+    \While{$l++ < n \cdot m$}{
+      $i \leftarrow random(1,n)$\;
+      $j \leftarrow random(1,m)$\;
+      $\min$ $\leftarrow$ random local minimum in neighbourhood of cell $i,j$\;
+      $m \leftarrow (s(\min_i, \min_j)+s(i,j))/2$\;
+      $s(i,j) \leftarrow m$\;
+      $s(\min_i, \min_j) \leftarrow m$\;
+    }
+  }
+\end{algorithm}
+
+
 \subsubsection{Flux balance analysis}
 
 \subsubsection{Growth}
+\paragraph{Duplication}
+For each organism it's obligatory to define maintenance.
+Allways some non growth associated maintenance (ngam) is needed, which accounts normal energy consumption for upkeeping the cell.
+During growth there is additionally some growth associated maintenance (gam) to describe energy consumption necessary to replicate the cell. The unit for ngam and gam is $mmol/g_{\texttt{dryweight}}/h^{-1}$\cite{Thiele2010}.\\
+In \texttt{BacArena} all cells start with a biomass of $1$ symbolizing a intact cell.
+Flux balance analysis (fba) estimates fluxes and returns especially a maximized flux through the biomass function.
+This biomass flux is added to the initial biomass value. A serie of such steps symbolizes groth.
+If accumulated biomass reaches twice the initial biomass value, duplication is possible
+\paragraph{Death}
+Flux balance analysis considers a fixed ngam flux and growth depending gam part of the biomass function.
+Under starving conditions, where no fluxes according to fba calculations can be found, we consider the current biomass as reservoir, from which the cell can feed on.
+\[
+  \textrm{biomass}_{\,t+1} = -\frac{\textrm{ngam}}{\textrm{gam}}\cdot \textrm{biomass}_{\,t}+\textrm{biomass}_{\,t}
+\]
