@@ -88,11 +88,13 @@ ub[which(colnames(stoch)==get_maintenancef(type))] <- get_ngam(type)
 linp <- make.lp(0, dim(stoch)[2])
 #lp.control(linp,sense='max',verbose='full', anti.degen="none")
 lp.control(linp,sense='max',verbose='important')
+row.add.mode(linp, "on") # performance improvement!
 set.objfn(linp, cs)
 for(i in 1:nrow(stoch)){
   # only add constraint if it's not an external metabolite!!
   if(ex[i] == -1) add.constraint(linp, stoch[i,], "=", 0) 
 }
+row.add.mode(linp, "off") # performance improvement!
 set.bounds(linp,lower=lb)
 set.bounds(linp,upper=ub)
 
