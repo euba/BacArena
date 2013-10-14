@@ -4,7 +4,7 @@
 
 n <- 50
 m <- 50
-iter <- 1
+iter <- 20
 bacs <- 1
 smax <- 70 # substrate start concentration
 seed <- 123 # reproduction of random variables
