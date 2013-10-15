@@ -2,10 +2,9 @@
 ###################################### GRID ############################################################
 ########################################################################################################
 
-n <- 50
-m <- 50
-iter <- 20
-bacs <- 1
+n <- 20
+m <- 20
+iter <- 50
 smax <- 70 # substrate start concentration
 seed <- 123 # reproduction of random variables
 
@@ -16,7 +15,7 @@ seed <- 123 # reproduction of random variables
 #source(file="ecoli_iAF1260.R")
 #source(file="ecoli.R")
 source(file="barkeri.R")
-#source(file="beijerinckii.R")
+source(file="beijerinckii.R")
 
 #bac <- data.frame(x=round(runif(bacs, min=1, max=n)), y=round(runif(bacs, min=1, max=m)),
 #                  type=rep("ecoli", bacs), growth=rep(1, bacs))
@@ -25,14 +24,18 @@ source(file="barkeri.R")
 
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="ecoli", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
-bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
+#bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="Bcoli", growth=1) # one cell in the centre
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="beijerinckii", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
+bac <- rbind(data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1),data.frame(x=round(n/2+1), y=round(m/2+1),type="barkeri", growth=1))
+#bac <- data.frame() # empty grid
 
-# get a color for each bac
-bac_color <- as.numeric(as.factor(levels(bac[,3])))
-names(bac_color) <- levels(bac[,3])
+# get a color for each bac (only if there exists bacs)
+if (dim(bac)[1] >= 1) {
+  bac_color <- as.numeric(as.factor(levels(bac[,3])))
+  names(bac_color) <- levels(bac[,3])
+}
 
 ########################################################################################################
 ###################################### SUBSTRATE #######################################################
@@ -50,10 +53,10 @@ names(substrat) <- s
 substrat[["iphosphate"]] <- matrix(10,n,m)
 substrat[["h2o"]] <- matrix(0,n,m)
 #substrat[["proton"]] <- matrix(smax,n,m)
-substrat[["glucose"]] <- matrix(0,n,m)
-substrat[["pyruvate"]] <- matrix(smax,n,m)
-#substrat[["h2"]] <- matrix(0,n,m)
-substrat[["co2"]] <- matrix(smax/2,n,m)
+#substrat[["glucose"]] <- matrix(0,n,m)
+substrat[["pyruvate"]] <- matrix(0,n,m)
+substrat[["h2"]] <- matrix(0,n,m)
+substrat[["co2"]] <- matrix(0,n,m)
 substrat[["methanol"]] <- matrix(0,n,m)
 substrat[["methane"]] <- matrix(0,n,m)
 substrat[["acetate"]] <- matrix(0,n,m)
@@ -61,7 +64,7 @@ substrat[["butanol"]] <- matrix(0,n,m)
 substrat[["ethanol"]] <- matrix(0,n,m)
 substrat[["aketoglutarate"]] <- matrix(0,n,m)
 substrat[["formiate"]] <- matrix(0,n,m)
-substrat[["o2"]] <- matrix(0,n,m)
+#substrat[["o2"]] <- matrix(0,n,m)
 substrat[["succinate"]] <- matrix(0,n,m)
 substrat[["acetone"]] <- matrix(0,n,m)
 substrat[["butyrate"]] <- matrix(0,n,m)

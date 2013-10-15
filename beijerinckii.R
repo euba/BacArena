@@ -57,5 +57,10 @@ beijerinckii_set_lower_bound <- function(substrat){
     if(x %in% names(beijerinckii_sub_ex)) beijerinckii_lower_bound[which(colnames(beijerinckii_stochmatrix)==beijerinckii_sub_ex[[x]])] <<- - substrat[[x]] # "<<-" is necessary for extern variable modification
   },beijerinckii_stochmatrix=beijerinckii_stochmatrix, beijerinckii_sub_ex=beijerinckii_sub_ex, beijerinckii_lower_bound=beijerinckii_lower_bound)
   #print(beijerinckii_lower_bound)
+  
+  #Feist et al 2006:
+  if(substrat[["glucose"]] > 9.39) beijerinckii_lower_bound[which(colnames(beijerinckii_stochmatrix)==beijerinckii_sub_ex[["glucose"]])] <- -9.39
+  if(substrat[["acetate"]] > 3.41) beijerinckii_lower_bound[which(colnames(beijerinckii_stochmatrix)==beijerinckii_sub_ex[["acetate"]])] <- -3.41
+  
   return(beijerinckii_lower_bound)
 }

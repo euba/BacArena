@@ -48,6 +48,13 @@ barkeri_set_lower_bound <- function(substrat){
   sapply(names(sapply(substrat, names)), function(x, barkeri_stochmatrix, barkeri_sub_ex, barkeri_lower_bound){
     if(x %in% names(barkeri_sub_ex)) barkeri_lower_bound[which(colnames(barkeri_stochmatrix)==barkeri_sub_ex[[x]])] <<- - substrat[[x]] # "<<-" is necessary for extern variable modification
   },barkeri_stochmatrix=barkeri_stochmatrix, barkeri_sub_ex=barkeri_sub_ex, barkeri_lower_bound=barkeri_lower_bound)
+  
+  #Feist et al 2006:
+  if(substrat[["methanol"]] > 16) barkeri_lower_bound[which(colnames(barkeri_stochmatrix)==barkeri_sub_ex[["methanol"]])] <- -16
+  if(substrat[["acetate"]] > 8) barkeri_lower_bound[which(colnames(barkeri_stochmatrix)==barkeri_sub_ex[["acetate"]])] <- -8
+  if(substrat[["h2"]] > 41) barkeri_lower_bound[which(colnames(barkeri_stochmatrix)==barkeri_sub_ex[["h2"]])] <- -41
+  if(substrat[["pyruvate"]] > 5) barkeri_lower_bound[which(colnames(barkeri_stochmatrix)==barkeri_sub_ex[["pyruvate"]])] <- -5
+  
   #print(barkeri_lower_bound)
   return(barkeri_lower_bound)
 }

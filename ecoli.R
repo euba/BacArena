@@ -70,6 +70,9 @@ ecoli_set_lower_bound <- function(substrat){
   #Feist et al 2007:
   if(substrat[["glucose"]] > 11) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -11
   if(substrat[["o2"]] > 18.2) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["o2"]])] <- -18.2
+  #Orth et al 2011:
+  if(substrat[["lactate"]] > 16) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["lactate"]])] <- -16
+  if(substrat[["succinate"]] > 16) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["succinate"]])] <- -16
   
   return(ecoli_lower_bound)
 }

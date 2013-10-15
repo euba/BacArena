@@ -58,6 +58,7 @@ for(time in 1:iter){
   rownames(substrat_history) <- names(substrat)
   #time_unk <- time_unk + proc.time() - time_tmp4
   
+  if(time == 1) plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="h2", prod="pyruvate")
   time_tmp3 <- proc.time()
     diffusion(substrat, seed)
   time_diff <- proc.time() - time_tmp3
@@ -102,7 +103,7 @@ for(time in 1:iter){
       #}
       #else {
         growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
-        assign(hash_spos, growth, envir=fba_hash)
+        #assign(hash_spos, growth, envir=fba_hash)
       #}
     time_fba <- time_fba + proc.time() - time_tmp3
     time_tmp4 <- proc.time()
@@ -207,39 +208,39 @@ for(time in 1:iter){
   growth_vec_history[[time]] <- growth_vec
   time_unk <- time_unk + proc.time() - time_tmp4
   time_tmp3 <- proc.time()
-  #plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="pyruvate", subnam2="co2", subnam3="h2", prodnam="methane", bac_color=bac_color)
+  plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="pyruvate", subnam2="co2", subnam3="h2", prodnam="methane", bac_color=bac_color)
   time_plot <- proc.time() - time_tmp3
   
-  plot_list[[time]] <- plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="h2", prod="methane")
+  #plot_list[[time]] <- plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="h2", prod="pyruvate")
   
   time_tot <- proc.time() - time_tmp
   time_cur <- cbind(time_tot[3], time_diff[3], time_mov[3], time_fba[3], time_plot[3], time_unk[3])
   colnames(time_cur) <- c("total", "diffusion", "movement", "fba", "plot", "unknown")
-  print(time_cur)
+  #print(time_cur)
   time_history[[time]] <- time_cur
 }
 
 # plot time consumption
-m <- do.call(rbind, time_history)
-plot(1:dim(m)[1], m[,1], type="l", col=1, pch=1, , ylab="computation time", xlab="time") #set max y-value to highest product conentration
-for(i in 2:(dim(m)[2])){
-  lines(1:dim(m)[1], m[,i], col=i, pch=i, type="l")
-}
-legend("topleft", colnames(time_cur), pch=1, col=c(1:dim(m)[2]), cex=0.64, bty="n")
-plot(1:dim(m)[1], m[,1], ylim=c(0,1), type="n", col=1, pch=1, , ylab="rel. computation time", xlab="time") #set max y-value to highest product conentration
-for(i in 2:(dim(m)[2])){
-  lines(1:dim(m)[1], m[,i]/m[,1], col=i, pch=i, type="l")
-}
+# m <- do.call(rbind, time_history)
+# plot(1:dim(m)[1], m[,1], type="l", col=1, pch=1, , ylab="computation time", xlab="time") #set max y-value to highest product conentration
+# for(i in 2:(dim(m)[2])){
+#   lines(1:dim(m)[1], m[,i], col=i, pch=i, type="l")
+# }
+# legend("topleft", colnames(time_cur), pch=1, col=c(1:dim(m)[2]), cex=0.64, bty="n")
+# plot(1:dim(m)[1], m[,1], ylim=c(0,1), type="n", col=1, pch=1, , ylab="rel. computation time", xlab="time") #set max y-value to highest product conentration
+# for(i in 2:(dim(m)[2])){
+#   lines(1:dim(m)[1], m[,i]/m[,1], col=i, pch=i, type="l")
+# }
 
 
 ###############plotting
 
-lapply(plot_list[-1], function(x){
-  grid.newpage() # Open a new page on grid device
-  pushViewport(viewport(layout = grid.layout(3, 2)))
-  print(x$sub, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
-  print(x$prod, vp = viewport(layout.pos.row = 1, layout.pos.col = 2))
-  print(x$subs, vp = viewport(layout.pos.row = 2, layout.pos.col = 1:2))
-  print(x$bacpos, vp = viewport(layout.pos.row = 3, layout.pos.col = 1))
-  print(x$growth, vp = viewport(layout.pos.row = 3, layout.pos.col = 2))
-})
+# lapply(plot_list[-1], function(x){
+#  grid.newpage() # Open a new page on grid device
+#  pushViewport(viewport(layout = grid.layout(3, 2)))
+#  print(x$sub, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+#  print(x$prod, vp = viewport(layout.pos.row = 1, layout.pos.col = 2))
+#  print(x$subs, vp = viewport(layout.pos.row = 2, layout.pos.col = 1:2))
+#  print(x$bacpos, vp = viewport(layout.pos.row = 3, layout.pos.col = 1))
+#  print(x$growth, vp = viewport(layout.pos.row = 3, layout.pos.col = 2))
+# })

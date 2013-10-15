@@ -69,17 +69,12 @@ Bcoli_set_lower_bound <- function(substrat){
     if(x %in% names(Bcoli_sub_ex)) Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[[x]])] <<- - substrat[[x]] # "<<-" is necessary for extern variable modification
   },Bcoli_stochmatrix=Bcoli_stochmatrix, Bcoli_sub_ex=Bcoli_sub_ex, Bcoli_lower_bound=Bcoli_lower_bound)
   
-  
-  #limit flux exchange rate:
-  #if(substrat[["o2"]] < 0.01){
-  #  if(substrat[["glucose"]] > 18.5) Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["glucose"]])] <- -18.5
-  #}else{
-  #  if(substrat[["glucose"]] > 10.5) Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["glucose"]])] <- -10.5
-  #}
-  
   #Feist et al 2007:
   if(substrat[["glucose"]] > 11) Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["glucose"]])] <- -11
   if(substrat[["o2"]] > 18.2) Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["o2"]])] <- -18.2
+  #Orth et al 2011:
+  if(substrat[["lactate"]] > 16) Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["lactate"]])] <- -16
+  if(substrat[["succinate"]] > 16) Bcoli_lower_bound[which(colnames(Bcoli_stochmatrix)==Bcoli_sub_ex[["succinate"]])] <- -16
   
   return(Bcoli_lower_bound)
 }

@@ -1,3 +1,26 @@
+# Diffusion with correct math model
+src_math_diffusion <- '
+Rcpp::List xlist(A);
+int s = xlist.size();
+int seed2 = as<int>(seed);  
+srand (seed2); /* initialize random seed: */
+
+for(int k=0; k<s; k++) {
+  SEXP ll = xlist[k];
+  Rcpp::NumericMatrix y(ll);
+  
+  int n = y.ncol();
+  int m = y.nrow();
+  A = 1
+
+
+
+}
+'
+
+
+
+
 # Diffusion by mean with lowest neighbour
 # randomly choosen cells
 #
