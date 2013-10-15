@@ -65,15 +65,18 @@ get_gam <- function(type, substrat){
 ###################################### PLOT FUNCTIONS ##################################################
 ########################################################################################################
 
-plot.bacs.cool <- function(substrate=substrat[[7]], product=substrat[[1]], sub_his=substrat_history,
-                      bac_his=bac_history, bac, time,
-                      subnam=names(substrat)[7], prodnam=names(substrat)[1]){ #substrate and product as matrices
+plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
+                      bac_his=bac_history, bac=bac, time=time,
+                      sub=names(substrat)[7], prod=names(substrat)[1]){ #substrate and product as matrices
+  product=substrat[[prod]]
+  substrate=substrat[[sub]]
+  
   data.m <- melt(substrate)
   sub <- ggplot(data.m, aes(X1, X2)) + geom_tile(aes(fill = value), colour = "white") +
     scale_fill_gradient(low = "gray90", high = "darkgreen") +
     scale_x_continuous(labels = function(x){round(x)}) +
     scale_y_continuous(labels = function(x){round(x)}) +
-    ggtitle(paste(subnam,"concentration in mM")) +
+    ggtitle(paste(sub,"concentration in mM")) +
     ylab("") +
     xlab("") +
     theme(plot.title = element_text(size=rel(2), vjust=0.2),
@@ -88,7 +91,7 @@ plot.bacs.cool <- function(substrate=substrat[[7]], product=substrat[[1]], sub_h
     scale_fill_gradient(low = "gray90", high = "darkred") +
     scale_x_continuous(labels = function(x){round(x)}) +
     scale_y_continuous(labels = function(x){round(x)}) +
-    ggtitle(paste(prodnam,"concentration in mM")) +
+    ggtitle(paste(prod,"concentration in mM")) +
     ylab("") +
     xlab("") +
     theme(plot.title = element_text(size=rel(2), vjust=0.2),
@@ -117,7 +120,10 @@ plot.bacs.cool <- function(substrate=substrat[[7]], product=substrat[[1]], sub_h
           panel.grid.minor = element_line(colour="grey", size=0.1),
           #panel.border = element_rect(colour="black", size=1),
           panel.background = element_blank())
-  growth <- ggplot(as.data.frame(cbind(1:length(bac_his), bac_his)), aes(x=V1, y=bac_his)) +
+  
+  bac_his <- cbind(melt(bac_his),1:time)
+  colnames(bac_his)=c("val", "type", "time")
+  growth <- ggplot(bac_his, aes(x=time, y=val, group=type, colour = type)) +
     geom_line(size=1) +
     scale_x_continuous(labels = function(x){floor(x)}) +
     scale_y_continuous(labels = function(x){floor(x)}) +
