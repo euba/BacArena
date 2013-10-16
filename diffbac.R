@@ -203,13 +203,10 @@ for(time in 1:iter){
 ########################################################################################################
   
   time_tmp4 <- proc.time()
-  #bac$growth <- bac$growth-0.08 #the cost of living
   bac <- bac[!(bac$growth<0),] #death
   #
   if(dim(bac)[1]==0){
     print("ALL BACTERIA DIED")
-    print("Variable seed:")
-    print(seed)
     break
   }
   growth_vec_history[[time]] <- growth_vec
@@ -227,8 +224,8 @@ for(time in 1:iter){
   time_history[[time]] <- time_cur
 
   #print interation status
-  iter_print <- c(time, no_fba_found, time_tot[3], dim(bac)[1], hash_uses)
-  names(iter_print) <- c("iteration", "no_fba/growth", "time_elapsed", "#bacs", "#hashing")
+  iter_print <- c(time, no_fba_found, time_tot[3], dim(bac)[1], hash_uses, seed)
+  names(iter_print) <- c("iteration", "no_fba/growth", "time_elapsed", "#bacs", "#hashing", "seed")
   print(iter_print)
 }
 

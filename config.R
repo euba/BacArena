@@ -4,9 +4,10 @@
 
 n <- 20
 m <- 20
-iter <- 200
+iter <- 20
 smax <- 70 # substrate start concentration
-seed <- 123 # reproduction of random variables
+#seed <- 123 # reproduction of random variables
+seed <- sample(1:9999,1)
 
 ########################################################################################################
 ###################################### BACTERIA ########################################################
@@ -46,8 +47,9 @@ s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "gl
 substrat <- lapply(s, function(x, n, m){
   #matrix(runif(n*m,min=0,max=100), nrow=n, ncol=m) # random substrate
   #matrix(c(rep(100, 2*n), rep(0, n*m-2*n)), nrow=n, ncol=m) # downstairs substrate
-  #matrix(c(rep(0,(n*m-2*n)/2), rep(10,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m) # substrate in the middle of our street ohooo
-  matrix(smax,n,m) # homogen substrate distribution
+  #matrix(c(rep(0,(n*m-2*n)/2), rep(smax,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m) # substrate in the middle of our street ohooo
+  #matrix(smax,n,m) # homogen substrate distribution
+  matrix(c(smax, rep(0,m*n-1)), nrow=n, ncol=m) # one peak in top left
 }, n=n, m=m)
 names(substrat) <- s
 #substrat[["iphosphate"]] <- matrix(10,n,m)

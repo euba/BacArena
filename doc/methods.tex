@@ -40,7 +40,7 @@ Agents in \texttt{BacArena} were assigned to specific two-dimensional $n \times 
 One single part of the grid is called \textit{cell} with no biological meaning.
 For each grid positions certain metabolite concentrations were also recorded and stored in a separate matrix. For each metabolite a own matrix was constructed (Figure \hyperref[fig:bacarena]{\ref{fig:bacarena}}). The bacterial agents could interact with this environment by the consumption and production of metabolite concentrations.
 Attention is necessary for the boundaries of the grid.
-Here continuous boundary conditions were choosen, i.e. rectangle grid is forming a surface of a sphere or a torus (donut).
+Here continuous boundary conditions were choosen, i.e. rectangle grid is forming a surface of a torus/donut (horn-torus in square case).
 
 \subsubsection{Bacteria}
 Bacteria were represented as rows in a matrix, which had four columns and rows according to the current number of agents on the grid. The first two columns contained the discrete positions of the agents on the grid. The third column indicated the species type of the respective agent. The fourth column stored the current biomass value of the agents.
