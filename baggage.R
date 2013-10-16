@@ -217,10 +217,10 @@ plot.bacs <- function(substrate=substrat, growth_vec_history=growth_vec_history,
   plot(unlist(bac_his),type="n",xlim=c(1,max(sapply(bac_his,length))), main="growth curve", xlab="time", ylab="number of bacteria")
   mapply(lines,bac_his,col=bac_color, type="b")
   
-  mat = matrix(length(bac_color)+1,n,m) # conversion of data frame into bac matrix
-  apply(bac[,1:3], 1, function(x){
+  mat = matrix(length(bac_color)+1, dim(substrate[[1]])[1], dim(substrate[[1]])[2]) # conversion of data frame into bac matrix
+  apply(bac[,1:3], 1, function(x, bac_color){
     mat[as.numeric(x[1]), as.numeric(x[2])] <<- bac_color[x[3]]
-  })
+  }, bac_color=bac_color)
   #image(mat, col=c("white", "black"), main="bacterial movement")
   image(mat, col=terrain.colors(length(bac_color)+1), main="movement")
   boxplot(growth_vec_history, main="growth rates")

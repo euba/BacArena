@@ -33,10 +33,10 @@ bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell 
 #bac <- data.frame() # empty grid
 
 # get a color for each bac (only if there exists bacs)
-if (dim(bac)[1] >= 1) {
-  bac_color <- as.numeric(as.factor(levels(bac[,3])))
-  names(bac_color) <- levels(bac[,3])
-}
+#if (dim(bac)[1] >= 1) {
+#  bac_color <- as.numeric(as.factor(levels(bac[,3])))
+#  names(bac_color) <- levels(bac[,3])
+#}
 
 ########################################################################################################
 ###################################### SUBSTRATE #######################################################
@@ -48,8 +48,8 @@ substrat <- lapply(s, function(x, n, m){
   #matrix(runif(n*m,min=0,max=100), nrow=n, ncol=m) # random substrate
   #matrix(c(rep(100, 2*n), rep(0, n*m-2*n)), nrow=n, ncol=m) # downstairs substrate
   #matrix(c(rep(0,(n*m-2*n)/2), rep(smax,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m) # substrate in the middle of our street ohooo
-  #matrix(smax,n,m) # homogen substrate distribution
-  matrix(c(smax, rep(0,m*n-1)), nrow=n, ncol=m) # one peak in top left
+  matrix(smax,n,m) # homogen substrate distribution
+  #matrix(c(smax, rep(0,m*n-1)), nrow=n, ncol=m) # one peak in top left
 }, n=n, m=m)
 names(substrat) <- s
 #substrat[["iphosphate"]] <- matrix(10,n,m)

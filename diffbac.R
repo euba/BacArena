@@ -2,12 +2,6 @@ library(Rcpp)
 library(inline)
 library(rbenchmark)
 library(digest) # hashes
-#just for plotting
-library(ggplot2)
-library(reshape2)
-library(reshape)
-library(scales)
-library(gridExtra)
 
 setwd("~/BacArena")
 source(file="fba.R")
@@ -21,14 +15,17 @@ diffusion <- cxxfunction(signature(A = "numeric", seed = "integer"), body = src_
 }
 
 set.seed(seed)
-plot_list <- list()
-bac_history <- sapply(levels(bac[,3]), function(x){list()[[x]]}) # init list with entry for each bac type
-substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
+#plot_list <- list()
+#bac_history <- sapply(levels(bac[,3]), function(x){list()[[x]]}) # init list with entry for each bac type
+#substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
 max_glucose = max(substrat$glucose)
 max_acetate = 100
-growth_vec_history <- list(mode="numeric") # all  growth rate for statistics
+#growth_vec_history <- list()
+
 time_history <- list(mode="numeric") # time comsumption
 fba_hash <-new.env() # hash fba results to improve performance
+
+BacArena_data<- list()
 
 ########################################################################################################
 ###################################### MAIN LOOP #######################################################
@@ -49,20 +46,18 @@ for(time in 1:iter){
   hash_uses <- 0
   
   #time_tmp4 <- proc.time()
-  growth_vec <- vector(mode="numeric") # all current growth rate for statistics
+  #growth_vec <- vector(mode="numeric") # all current growth rate for statistics
   bacnum <- dim(bac)[1]
   
-  sapply(levels(bac[,3]), function(x,time,tab,bac_history){
-    bac_history[[x]][time] <<- tab[x]
-  },time=time,tab=table(bac$type),bac_history=bac_history)
+  #sapply(levels(bac[,3]), function(x,time,tab,bac_history){
+  #  bac_history[[x]][time] <<- tab[x]
+  #},time=time,tab=table(bac$type),bac_history=bac_history)
   
-  #bac_history[[time]] <- bacnum
-  
-  substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
-  rownames(substrat_history) <- names(substrat)
+  #substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
+  #rownames(substrat_history) <- names(substrat)
   #time_unk <- time_unk + proc.time() - time_tmp4
   
-  if(time == 1) plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="h2", prod="pyruvate")
+  #if(time == 1) plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="h2", prod="pyruvate")
   time_tmp3 <- proc.time()
     diffusion(substrat, seed)
   time_diff <- proc.time() - time_tmp3
@@ -128,7 +123,7 @@ for(time in 1:iter){
        # new growth rate according to advanced magic calculation *muah*
        starving_growth <- -(get_ngam(bac[l,]$type)/get_gam(bac[l,]$type)) 
        bac[l,]$growth <- starving_growth + bac[l,]$growth
-       growth_vec[l] <- starving_growth # save current growth rate to plot it 
+       #plot: growth_vec[l] <- starving_growth # save current growth rate to plot it 
 #       print("growth_vec[l]")
 #       print(growth_vec[l])
 #       print("bac[l,]$growth")
@@ -139,7 +134,7 @@ for(time in 1:iter){
     #
     else{
       #growth <- lapply(growth, function(x){round(x, digits=2)}) # ROUNDING!!!
-      growth_vec[l] <- growth[[biomassf]] # save current growth rate to plot it 
+      #plot: growth_vec[l] <- growth[[biomassf]] # save current growth rate to plot it 
       if(growth[[biomassf]] != 0){ # continue only if there is growth !
         bac[l,][1,4] <- bac[l,][1,4] + growth[[biomassf]]
         
@@ -185,15 +180,15 @@ for(time in 1:iter){
         bac <- bac[-(dim(bac)[1]),]
       }
     }
-    if(dim(bac)[1]> n*m){
-      print(bac[l,])
-      print(c(a,b))
-      print(test)
-      print(dupli)
-      print("")
-      print(bac)
-      stop("more bacs than space...")
-    }
+    #if(dim(bac)[1]> n*m){
+    #  print(bac[l,])
+    #  print(c(a,b))
+    #  print(test)
+    #  print(dupli)
+    #  print("")
+    #  print(bac)
+    #  stop("more bacs than space...")
+    #}
     time_mov <- time_mov + proc.time() - time_tmp2
   }
   
@@ -209,11 +204,11 @@ for(time in 1:iter){
     print("ALL BACTERIA DIED")
     break
   }
-  growth_vec_history[[time]] <- growth_vec
+  #growth_vec_history[[time]] <- growth_vec
   time_unk <- time_unk + proc.time() - time_tmp4
   
   time_tmp3 <- proc.time()
-    plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="glucose", subnam2="co2", subnam3="o2", prodnam="acetate", bac_color=bac_color)
+    #plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="glucose", subnam2="co2", subnam3="o2", prodnam="acetate", bac_color=bac_color)
     #plot_list[[time]] <- plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="glucose", sub2="o2", sub3="acetate", prod="co2", bac_col=bac_color)
   time_plot <- proc.time() - time_tmp3
   
@@ -222,6 +217,12 @@ for(time in 1:iter){
   colnames(time_cur) <- c("total", "diffusion", "movement", "fba", "plot", "unknown")
   #print(time_cur)
   time_history[[time]] <- time_cur
+  
+  ########################################################################################################
+  ##################################### DATA GENERATION ##################################################
+  ########################################################################################################
+  
+  BacArena_data[[time]] <- list(substrat=substrat, bac=bac)
 
   #print interation status
   iter_print <- c(time, no_fba_found, time_tot[3], dim(bac)[1], hash_uses, seed)
@@ -241,15 +242,5 @@ for(i in 2:(dim(m)[2])){
   lines(1:dim(m)[1], m[,i]/m[,1], col=i, pch=i, type="l")
 }
 
-
-###############plotting
-# 
-#  lapply(plot_list[-1], function(x){
-#   grid.newpage() # Open a new page on grid device
-#   pushViewport(viewport(layout = grid.layout(3, 2)))
-#   print(x$sub, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
-#   print(x$prod, vp = viewport(layout.pos.row = 1, layout.pos.col = 2))
-#   print(x$subs, vp = viewport(layout.pos.row = 2, layout.pos.col = 1:2))
-#   print(x$bacpos, vp = viewport(layout.pos.row = 3, layout.pos.col = 1))
-#   print(x$growth, vp = viewport(layout.pos.row = 3, layout.pos.col = 2))
-#  })
+#save data
+save(BacArena_data, file = "BacArena_data.RData")
