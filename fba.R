@@ -155,17 +155,17 @@ pos_uptake <- sapply(names(sapply(substrat, names)),function(x,substrat,growth){
 if(all(pos_uptake>=0) == T) flux <- flux * growth
 
 # print uptake
-if(type=="barkeri"){
-  uptake <- sapply(names(sapply(substrat, names)),function(x,substrat){
-    if(x %in% names(sub_ex) == T) return(flux[[sub_ex[[x]]]])
-    else return(0)
-  },substrat=substrat)
-  names(uptake) <- names(substrat)
-  print("uptake")
-  print(t(uptake))
-  print("growth rate:")
-  print(flux[[get_biomassf(type)]])
-}
+# if(type=="barkeri"){
+#   uptake <- sapply(names(sapply(substrat, names)),function(x,substrat){
+#     if(x %in% names(sub_ex) == T) return(flux[[sub_ex[[x]]]])
+#     else return(0)
+#   },substrat=substrat)
+#   names(uptake) <- names(substrat)
+#   print("uptake")
+#   print(t(uptake))
+#   print("growth rate:")
+#   print(flux[[get_biomassf(type)]])
+# }
 
 # debug file
 write.lp(linp,"test", NULL) # debug 

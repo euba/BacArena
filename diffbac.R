@@ -44,6 +44,10 @@ for(time in 1:iter){
   time_tmp    <- proc.time()
   time_unk    <- 0
   
+  #iterration status
+  no_fba_found <- 0
+  hash_uses <- 0
+  
   #time_tmp4 <- proc.time()
   growth_vec <- vector(mode="numeric") # all current growth rate for statistics
   bacnum <- dim(bac)[1]
@@ -97,35 +101,38 @@ for(time in 1:iter){
     
     time_tmp3 <- proc.time()
       hash_spos <- digest(floor(unlist(spos))) # rounding!!
-      #if(exists(hash_spos, envir=fba_hash)) {
-      #  growth <- fba_hash[[hash_spos]]
+      if(exists(hash_spos, envir=fba_hash)) {
+        growth <- fba_hash[[hash_spos]]
+        hash_uses <- hash_uses + 1
       #  stop("ATTENTION: TAKING HASH!!!!")
-      #}
-      #else {
+      }
+      else {
         growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
-        #assign(hash_spos, growth, envir=fba_hash)
-      #}
+        assign(hash_spos, growth, envir=fba_hash)
+      }
     time_fba <- time_fba + proc.time() - time_tmp3
     time_tmp4 <- proc.time()
     #
     # check prog solutions first!
     #
     if(length(growth)==1){ # <=> if(growth == "DEAD"){
-      print("----")
-      cat("no fba solution found for: ")
-      print(bac[l,])
-      #print(t(spos))
-      print("bac[l,]$growth")
-      print(bac[l,]$growth)
-      print("----")
-      # new growth rate according to advanced magic calculation *muah*
-      starving_growth <- -(get_ngam(bac[l,]$type)/get_gam(bac[l,]$type)) 
-      bac[l,]$growth <- starving_growth + bac[l,]$growth
-      growth_vec[l] <- starving_growth # save current growth rate to plot it 
-      print("growth_vec[l]")
-      print(growth_vec[l])
-      print("bac[l,]$growth")
-      print(bac[l,]$growth)
+      no_fba_found <- no_fba_found+1
+#      print("----")
+#      cat("no fba solution found for: ")
+#      print(bac[l,])
+#       #print(t(spos))
+#       print("bac[l,]$growth")
+#       print(bac[l,]$growth)
+#       print("----")
+
+       # new growth rate according to advanced magic calculation *muah*
+       starving_growth <- -(get_ngam(bac[l,]$type)/get_gam(bac[l,]$type)) 
+       bac[l,]$growth <- starving_growth + bac[l,]$growth
+       growth_vec[l] <- starving_growth # save current growth rate to plot it 
+#       print("growth_vec[l]")
+#       print(growth_vec[l])
+#       print("bac[l,]$growth")
+#       print(bac[l,]$growth)
     }
     #
     # if there is a feasable fba solution continue:
@@ -207,40 +214,45 @@ for(time in 1:iter){
   }
   growth_vec_history[[time]] <- growth_vec
   time_unk <- time_unk + proc.time() - time_tmp4
-  time_tmp3 <- proc.time()
-  #plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="pyruvate", subnam2="co2", subnam3="h2", prodnam="methane", bac_color=bac_color)
-  time_plot <- proc.time() - time_tmp3
   
-  plot_list[[time]] <- plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="h2", sub2="co2", sub3="acetate", prod="methane", bac_col=bac_color)
+  time_tmp3 <- proc.time()
+    plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="glucose", subnam2="co2", subnam3="o2", prodnam="acetate", bac_color=bac_color)
+    #plot_list[[time]] <- plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="glucose", sub2="o2", sub3="acetate", prod="co2", bac_col=bac_color)
+  time_plot <- proc.time() - time_tmp3
   
   time_tot <- proc.time() - time_tmp
   time_cur <- cbind(time_tot[3], time_diff[3], time_mov[3], time_fba[3], time_plot[3], time_unk[3])
   colnames(time_cur) <- c("total", "diffusion", "movement", "fba", "plot", "unknown")
   #print(time_cur)
   time_history[[time]] <- time_cur
+
+  #print interation status
+  iter_print <- c(time, no_fba_found, time_tot[3], dim(bac)[1], hash_uses)
+  names(iter_print) <- c("iteration", "no_fba/growth", "time_elapsed", "#bacs", "#hashing")
+  print(iter_print)
 }
 
-# plot time consumption
-# m <- do.call(rbind, time_history)
-# plot(1:dim(m)[1], m[,1], type="l", col=1, pch=1, , ylab="computation time", xlab="time") #set max y-value to highest product conentration
-# for(i in 2:(dim(m)[2])){
-#   lines(1:dim(m)[1], m[,i], col=i, pch=i, type="l")
-# }
-# legend("topleft", colnames(time_cur), pch=1, col=c(1:dim(m)[2]), cex=0.64, bty="n")
-# plot(1:dim(m)[1], m[,1], ylim=c(0,1), type="n", col=1, pch=1, , ylab="rel. computation time", xlab="time") #set max y-value to highest product conentration
-# for(i in 2:(dim(m)[2])){
-#   lines(1:dim(m)[1], m[,i]/m[,1], col=i, pch=i, type="l")
-# }
+#plot time consumption
+m <- do.call(rbind, time_history)
+plot(1:dim(m)[1], m[,1], type="l", col=1, pch=1, , ylab="computation time", xlab="time") #set max y-value to highest product conentration
+for(i in 2:(dim(m)[2])){
+  lines(1:dim(m)[1], m[,i], col=i, pch=i, type="l")
+}
+legend("topleft", colnames(time_cur), pch=1, col=c(1:dim(m)[2]), cex=0.64, bty="n")
+plot(1:dim(m)[1], m[,1], ylim=c(0,1), type="n", col=1, pch=1, , ylab="rel. computation time", xlab="time") #set max y-value to highest product conentration
+for(i in 2:(dim(m)[2])){
+  lines(1:dim(m)[1], m[,i]/m[,1], col=i, pch=i, type="l")
+}
 
 
 ###############plotting
-
-lapply(plot_list[-1], function(x){
- grid.newpage() # Open a new page on grid device
- pushViewport(viewport(layout = grid.layout(3, 2)))
- print(x$sub, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
- print(x$prod, vp = viewport(layout.pos.row = 1, layout.pos.col = 2))
- print(x$subs, vp = viewport(layout.pos.row = 2, layout.pos.col = 1:2))
- print(x$bacpos, vp = viewport(layout.pos.row = 3, layout.pos.col = 1))
- print(x$growth, vp = viewport(layout.pos.row = 3, layout.pos.col = 2))
-})
+# 
+#  lapply(plot_list[-1], function(x){
+#   grid.newpage() # Open a new page on grid device
+#   pushViewport(viewport(layout = grid.layout(3, 2)))
+#   print(x$sub, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+#   print(x$prod, vp = viewport(layout.pos.row = 1, layout.pos.col = 2))
+#   print(x$subs, vp = viewport(layout.pos.row = 2, layout.pos.col = 1:2))
+#   print(x$bacpos, vp = viewport(layout.pos.row = 3, layout.pos.col = 1))
+#   print(x$growth, vp = viewport(layout.pos.row = 3, layout.pos.col = 2))
+#  })

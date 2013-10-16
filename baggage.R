@@ -132,8 +132,10 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
           axis.ticks = element_blank(),
           axis.text = element_blank(),
           panel.background = element_blank())
-  print(prod)
+  
   subs <- ggplot(melt(as.matrix(sub_his[,1:time])), aes(x=X2, y=value, group=X1, colour=X1)) +
+    geom_point() +
+    scale_fill_identity() +
     geom_line(size=1) +
     scale_x_continuous(labels = function(x){floor(x)}) +
     scale_y_continuous(labels = function(x){floor(x)}) +
