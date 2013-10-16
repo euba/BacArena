@@ -66,10 +66,12 @@ get_gam <- function(type, substrat){
 ########################################################################################################
 
 plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
-                      bac_his=bac_history, bac=bac, time=time,
-                      sub=names(substrat)[7], prod=names(substrat)[1]){ #substrate and product as matrices
+                      bac_his=bac_history, bac=bac, time=time, sub2=names(substrat)[3], sub3=names(substrat)[1],
+                      sub=names(substrat)[7], prod=names(substrat)[1], bac_col=bac_color){ #substrate and product as matrices
   product=substrat[[prod]]
   substrate=substrat[[sub]]
+  substrate2=substrat[[sub2]]
+  substrate3=substrat[[sub3]]
   
   data.m <- melt(substrate)
   sub <- ggplot(data.m, aes(X1, X2)) + geom_tile(aes(fill = value), colour = "white") +
@@ -86,9 +88,39 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
           axis.text = element_blank(),
           panel.background = element_blank())
   
+  data.m <- melt(substrate2)
+  sub2 <- ggplot(data.m, aes(X1, X2)) + geom_tile(aes(fill = value), colour = "white") +
+    scale_fill_gradient(low = "gray90", high = "darkred") +
+    scale_x_continuous(labels = function(x){round(x)}) +
+    scale_y_continuous(labels = function(x){round(x)}) +
+    ggtitle(paste(sub2,"concentration in mM")) +
+    ylab("") +
+    xlab("") +
+    theme(plot.title = element_text(size=rel(2), vjust=0.2),
+          legend.position="top",
+          legend.title = element_blank(),
+          axis.ticks = element_blank(),
+          axis.text = element_blank(),
+          panel.background = element_blank())
+  
+  data.m <- melt(substrate3)
+  sub3 <- ggplot(data.m, aes(X1, X2)) + geom_tile(aes(fill = value), colour = "white") +
+    scale_fill_gradient(low = "gray90", high = "darkblue") +
+    scale_x_continuous(labels = function(x){round(x)}) +
+    scale_y_continuous(labels = function(x){round(x)}) +
+    ggtitle(paste(sub3,"concentration in mM")) +
+    ylab("") +
+    xlab("") +
+    theme(plot.title = element_text(size=rel(2), vjust=0.2),
+          legend.position="top",
+          legend.title = element_blank(),
+          axis.ticks = element_blank(),
+          axis.text = element_blank(),
+          panel.background = element_blank())
+  
   data.m <- melt(product)
   prod <- ggplot(data.m, aes(X1, X2)) + geom_tile(aes(fill = value), colour = "white") +
-    scale_fill_gradient(low = "gray90", high = "darkred") +
+    scale_fill_gradient(low = "gray90", high = "steelblue") +
     scale_x_continuous(labels = function(x){round(x)}) +
     scale_y_continuous(labels = function(x){round(x)}) +
     ggtitle(paste(prod,"concentration in mM")) +
@@ -143,13 +175,13 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
           #panel.border = element_rect(colour="black", size=1),
           panel.background = element_blank())
 
-  mat = matrix(0,n,m) # conversion of data frame into bac matrix
-  apply(bac[,1:2], 1, function(x){
-    mat[as.numeric(x[1]), as.numeric(x[2])] <<- 1
-  })
+  mat = matrix(length(bac_col)+1,n,m) # conversion of data frame into bac matrix
+  apply(bac[,1:3], 1, function(x, bac_col){
+    mat[as.numeric(x[1]), as.numeric(x[2])] <<- bac_col[x[3]]
+  }, bac_col=bac_col)
   data.m <- melt(mat)
   bacpos <- ggplot(data.m, aes(X1, X2)) + geom_tile(aes(fill = value), colour = "white") +
-    scale_fill_gradient(low = "gray90", high = "black") +
+    scale_fill_gradient(low = "black", high = "gray90") +
     scale_x_continuous(labels = function(x){round(x)}) +
     scale_y_continuous(labels = function(x){round(x)}) +
     ggtitle("bacterial movement") +
@@ -160,7 +192,7 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
           axis.ticks = element_blank(),
           axis.text = element_blank(),
           panel.background = element_blank())
-  return(list(sub=sub, prod=prod, bacpos=bacpos, growth=growth, subs=subs))
+  return(list(sub=sub, prod=prod, bacpos=bacpos, growth=growth, subs=subs, sub2=sub2))
 }
 
 plot.bacs <- function(substrate=substrat, growth_vec_history=growth_vec_history,

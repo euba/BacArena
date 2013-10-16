@@ -208,10 +208,10 @@ for(time in 1:iter){
   growth_vec_history[[time]] <- growth_vec
   time_unk <- time_unk + proc.time() - time_tmp4
   time_tmp3 <- proc.time()
-  plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="pyruvate", subnam2="co2", subnam3="h2", prodnam="methane", bac_color=bac_color)
+  #plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="pyruvate", subnam2="co2", subnam3="h2", prodnam="methane", bac_color=bac_color)
   time_plot <- proc.time() - time_tmp3
   
-  #plot_list[[time]] <- plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="h2", prod="pyruvate")
+  plot_list[[time]] <- plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="h2", sub2="co2", sub3="acetate", prod="methane", bac_col=bac_color)
   
   time_tot <- proc.time() - time_tmp
   time_cur <- cbind(time_tot[3], time_diff[3], time_mov[3], time_fba[3], time_plot[3], time_unk[3])
@@ -235,12 +235,12 @@ for(time in 1:iter){
 
 ###############plotting
 
-# lapply(plot_list[-1], function(x){
-#  grid.newpage() # Open a new page on grid device
-#  pushViewport(viewport(layout = grid.layout(3, 2)))
-#  print(x$sub, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
-#  print(x$prod, vp = viewport(layout.pos.row = 1, layout.pos.col = 2))
-#  print(x$subs, vp = viewport(layout.pos.row = 2, layout.pos.col = 1:2))
-#  print(x$bacpos, vp = viewport(layout.pos.row = 3, layout.pos.col = 1))
-#  print(x$growth, vp = viewport(layout.pos.row = 3, layout.pos.col = 2))
-# })
+lapply(plot_list[-1], function(x){
+ grid.newpage() # Open a new page on grid device
+ pushViewport(viewport(layout = grid.layout(3, 2)))
+ print(x$sub, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+ print(x$prod, vp = viewport(layout.pos.row = 1, layout.pos.col = 2))
+ print(x$subs, vp = viewport(layout.pos.row = 2, layout.pos.col = 1:2))
+ print(x$bacpos, vp = viewport(layout.pos.row = 3, layout.pos.col = 1))
+ print(x$growth, vp = viewport(layout.pos.row = 3, layout.pos.col = 2))
+})
