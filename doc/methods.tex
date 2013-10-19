@@ -30,7 +30,7 @@ A central theme of \texttt{BacArena} was the modularity of each funcsubtion and 
 % -> this should be part of the discussion:
 %Implementation began in \textit{netlogo}, which is a simple and wide-used agent based modeling framework.\cite{Wilensky1999}
 %For statistical analysis the powerful \textit{R} language was our choice. 
-%There exists joint package for interaction of \textit{R} and netlogo (e.g.: \cite{Thiele2010}), but above all speed limitations led us looking for other possibilities.
+%There exists joint package for interaction of \textit{R} and netlogo (e.g.: \cite{JanThiele2010}), but above all speed limitations led us looking for other possibilities.
 %In \textit{R} there exists packages to do agent based modeling e.g. \textit{simecol}, which is an ecological framework with differential equation based approach, too. \cite{Petzoldt2007}.
 %But again we could retain performance improvement by simply implementing it ourselves directly in \textit{R}.
 The main parts of the framework were implemented in the programming language \texttt{R} ( *). Additionally, certain parts were implemented in \texttt{C++} and integrated in \texttt{R} with the package \texttt{Rcpp} ( *).
@@ -98,12 +98,33 @@ Further work could be done by implementing more sofisticated diffusion models li
 
 
 \subsubsection{Flux balance analysis}
+As described in chapter \ref{cobra} flux balace analysis (fba) determines a flux vector for all reactions by maximizing (in our case) biomass.
+To solve the optimization problem we use \textit{lpsolve} \cite{lpsolve}, which has also a \textit{R} package \cite{Rlpsolve}.
+\textit{lpsolve} is a mixed integer linear programming solver, ,,based on the revised simplex method and the branch-and-bound method for integers''.\cite{lpsolvedocu}\\
+For each organism, who is located somewhere on the grid, the corresponding \textit{sbml} model is loaded.
+In the next step, several constrains could be applied:
+\begin{enumerate}
+  \item Lower bound of irreversible reaction fluxes is set to $0$
+  \item All internal metabolites are assumpt to be in flux equilibrium, i.e. $S\cdot v=0$.
+  \item Avaible substrates control the flux of all exchange reactions (lower bound is set to substrate concentration)
+  \item Certain empirically validated flux boundaries (e.g. maximal uptake rate) limits exchange reactions even further.
+\end{enumerate}
+Linear optimization delivers a steady state flux vector $v$, which maximizes the biomass reaction.
+All fluxes are multiplied according to previous growth, because the unit of $v$ is $[mmol/(g_{\texttt{dryweight}}\cdot h)]$ (higher biomass/dryweight $\sim$ higher fluxes).
+The solution of the optimization is taken to redefine substrate concentrations.
+All uptaking exchange reactions lower the avaible substrates and the providing exchange reactions rise it.
+The flux of the biomass reaction defines the growth rate, which is added to the previous growth variable.
 
 \subsubsection{Growth}
+Growth is considered as output of the fba-optimized biomass function.
+Bacterial uptake of substrate leads to a growth rate $[mmol/(g_{\texttt{dryweight}}\cdot h)]$, which is the flux through the biomass reaction.
+Two different prozesses are part of the model: 
+First, accumulation of biomass allows reproduction of bacteria (duplication).
+And second, a certain time of starvation consumes avaible biomass and drives finally to cell death.
 \paragraph{Duplication}
 For each organism it's obligatory to define maintenance.
 Allways some non growth associated maintenance (ngam) is needed, which accounts normal energy consumption for upkeeping the cell.
-During growth there is additionally some growth associated maintenance (gam) to describe energy consumption necessary to replicate the cell. The unit for ngam and gam is $mmol/g_{\texttt{dryweight}}/h^{-1}$\cite{Thiele2010}.\\
+During growth there is additionally some growth associated maintenance (gam) to describe energy consumption necessary to replicate the cell. The unit for ngam and gam is $mmol/(g_{\texttt{dryweight}}\cdot h)$, again \cite{Thiele2010}.\\
 In \texttt{BacArena} all cells start with a biomass of $1$ symbolizing a intact cell.
 Flux balance analysis (fba) estimates fluxes and returns especially a maximized flux through the biomass function.
 This biomass flux is added to the initial biomass value. A serie of such steps symbolizes groth.
