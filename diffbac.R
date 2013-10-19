@@ -15,12 +15,15 @@ diffusion <- cxxfunction(signature(A = "numeric", seed = "integer"), body = src_
 }
 
 set.seed(seed)
-#plot_list <- list()
-#bac_history <- sapply(levels(bac[,3]), function(x){list()[[x]]}) # init list with entry for each bac type
-#substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
+
+
 max_glucose = max(substrat$glucose)
 max_acetate = 100
-#growth_vec_history <- list()
+
+# variables for diagnostic plot
+growth_vec_history <- list()
+substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
+bac_history <- sapply(levels(bac[,3]), function(x){list()[[x]]}) # init list with entry for each bac type
 
 time_history <- list(mode="numeric") # time comsumption
 fba_hash <-new.env() # hash fba results to improve performance
@@ -95,16 +98,18 @@ for(time in 1:iter){
     
     
     time_tmp3 <- proc.time()
-      hash_spos <- digest(floor(unlist(spos))) # rounding!!
-      if(exists(hash_spos, envir=fba_hash)) {
-        growth <- fba_hash[[hash_spos]]
-        hash_uses <- hash_uses + 1
-      #  stop("ATTENTION: TAKING HASH!!!!")
-      }
-      else {
-        growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
-        assign(hash_spos, growth, envir=fba_hash)
-      }
+#       hash_spos <- digest(floor(unlist(spos))) # rounding!!
+#       if(exists(hash_spos, envir=fba_hash)) {
+#         growth <- fba_hash[[hash_spos]]
+#         hash_uses <- hash_uses + 1
+#       #  stop("ATTENTION: TAKING HASH!!!!")
+#       }
+#       else {
+#         growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+#         assign(hash_spos, growth, envir=fba_hash)
+#       }
+    growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+    
     time_fba <- time_fba + proc.time() - time_tmp3
     time_tmp4 <- proc.time()
     #
@@ -223,7 +228,12 @@ for(time in 1:iter){
   ########################################################################################################
   
   BacArena_data[[time]] <- list(substrat=substrat, bac=bac)
-
+  
+  #
+  # diagnostic plots 
+  #
+  #diag_plot(BacArena_data, time)
+    
   #print interation status
   iter_print <- c(time, no_fba_found, time_tot[3], dim(bac)[1], hash_uses, seed)
   names(iter_print) <- c("iteration", "no_fba/growth", "time_elapsed", "#bacs", "#hashing", "seed")
@@ -241,6 +251,7 @@ plot(1:dim(m)[1], m[,1], ylim=c(0,1), type="n", col=1, pch=1, , ylab="rel. compu
 for(i in 2:(dim(m)[2])){
   lines(1:dim(m)[1], m[,i]/m[,1], col=i, pch=i, type="l")
 }
+legend("top", colnames(time_cur), pch=1, col=c(1:dim(m)[2]), cex=0.64, bty="n")
 
 #save data
 save(BacArena_data, file = "BacArena_data.RData")

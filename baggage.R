@@ -105,7 +105,7 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
   
   data.m <- melt(substrate3)
   sub3 <- ggplot(data.m, aes(X1, X2)) + geom_tile(aes(fill = value), colour = "white") +
-    scale_fill_gradient(low = "gray90", high = "darkblue") +
+    scale_fill_gradient(low = "gray90", high = "blue") +
     scale_x_continuous(labels = function(x){round(x)}) +
     scale_y_continuous(labels = function(x){round(x)}) +
     ggtitle(paste(sub3,"concentration in mM")) +
@@ -134,8 +134,6 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
           panel.background = element_blank())
   
   subs <- ggplot(melt(as.matrix(sub_his[,1:time])), aes(x=X2, y=value, group=X1, colour=X1)) +
-    geom_point() +
-    scale_fill_identity() +
     geom_line(size=1) +
     scale_x_continuous(labels = function(x){floor(x)}) +
     scale_y_continuous(labels = function(x){floor(x)}) +
@@ -177,7 +175,7 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
           #panel.border = element_rect(colour="black", size=1),
           panel.background = element_blank())
 
-  mat = matrix(length(bac_col)+1,n,m) # conversion of data frame into bac matrix
+  mat = matrix(length(bac_color)+1, dim(substrat[[1]])[1], dim(substrat[[1]])[2]) 
   apply(bac[,1:3], 1, function(x, bac_col){
     mat[as.numeric(x[1]), as.numeric(x[2])] <<- bac_col[x[3]]
   }, bac_col=bac_col)
@@ -194,7 +192,7 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
           axis.ticks = element_blank(),
           axis.text = element_blank(),
           panel.background = element_blank())
-  return(list(sub=sub, prod=prod, bacpos=bacpos, growth=growth, subs=subs, sub2=sub2))
+  return(list(sub=sub, prod=prod, bacpos=bacpos, growth=growth, subs=subs, sub2=sub2, sub3=sub3))
 }
 
 plot.bacs <- function(substrate=substrat, growth_vec_history=growth_vec_history,
@@ -224,4 +222,23 @@ plot.bacs <- function(substrate=substrat, growth_vec_history=growth_vec_history,
   #image(mat, col=c("white", "black"), main="bacterial movement")
   image(mat, col=terrain.colors(length(bac_color)+1), main="movement")
   boxplot(growth_vec_history, main="growth rates")
+}
+
+diag_plot <- function(BacArena_data, time){
+  substrat <- BacArena_data[[time]]$substrat
+  bac <- BacArena_data[[time]]$bac
+  growth_vec <- bac$growth
+  growth_vec_history[[time]] <- growth_vec
+  if (dim(bac)[1] >= 1) {
+    bac_color <- as.numeric(as.factor(levels(bac[,3])))
+    names(bac_color) <- levels(bac[,3])
+  }
+  
+  substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
+  rownames(substrat_history) <- names(substrat)
+  
+  sapply(levels(bac[,3]), function(x,time,tab,bac_history){
+    bac_history[[x]][time] <<- tab[x]
+  },time=time,tab=table(bac$type),bac_history=bac_history)
+  plot.bacs(time=time, bac=bac, substrate=substrat, growth_vec_history=growth_vec_history, sub_his=substrat_history, bac_his=bac_history, subnam1="glucose", subnam2="co2", subnam3="o2", prodnam="acetate", bac_color=bac_color)
 }

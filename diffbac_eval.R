@@ -8,11 +8,14 @@ library(gridExtra)
 source(file="baggage.R")
 
 setwd("~/BacArena")
-load("BacArena_data.RData")
+#load("BacArena_data.RData")
+#load("results/barkeri_50x50_.RData")
+load("results/ecoli_20x20_aerob_seed55.RData")
 
+fav_subs <-c("acetate","co2","ethanol","formiate","glucose","o2")
 plot_list <- list()
 growth_vec_history <- list()
-substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
+substrat_history <- matrix(data=0, nrow=length(substrat[fav_subs]), ncol=iter)
 bac_history <- sapply(levels(bac[,3]), function(x){list()[[x]]}) # init list with entry for each bac type
 
 for(time in 1:length(BacArena_data)){
@@ -25,18 +28,19 @@ for(time in 1:length(BacArena_data)){
     names(bac_color) <- levels(bac[,3])
   }
   
-  substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
-  rownames(substrat_history) <- names(substrat)
+  substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))[fav_subs]
+  rownames(substrat_history) <- fav_subs
   
   sapply(levels(bac[,3]), function(x,time,tab,bac_history){
     bac_history[[x]][time] <<- tab[x]
   },time=time,tab=table(bac$type),bac_history=bac_history)
   
   
-  plot.bacs(time=time, bac=bac, substrate=substrat, growth_vec_history=growth_vec_history, sub_his=substrat_history, bac_his=bac_history, subnam1="glucose", subnam2="co2", subnam3="o2", prodnam="acetate", bac_color=bac_color)
-  #plot_list[[time]] <- plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="glucose", sub2="o2", sub3="acetate", prod="co2", bac_col=bac_color)
+  #plot.bacs(time=time, bac=bac, substrate=substrat, growth_vec_history=growth_vec_history, sub_his=substrat_history, bac_his=bac_history, subnam1="glucose", subnam2="co2", subnam3="o2", prodnam="acetate", bac_color=bac_color)
+  plot_list[[time]] <- plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="glucose", sub2="o2", sub3="co2", prod="lactate", bac_col=bac_color)
 }
 
+plot_list[[61]]$subs
 ###############plotting for ggplot
 # # 
 #   lapply(plot_list[-1], function(x){
