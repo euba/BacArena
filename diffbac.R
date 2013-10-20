@@ -251,7 +251,7 @@ plot(1:dim(m)[1], m[,1], ylim=c(0,1), type="n", col=1, pch=1, , ylab="rel. compu
 for(i in 2:(dim(m)[2])){
   lines(1:dim(m)[1], m[,i]/m[,1], col=i, pch=i, type="l")
 }
-legend("top", colnames(time_cur), pch=1, col=c(1:dim(m)[2]), cex=0.64, bty="n")
+legend("left", colnames(time_cur), pch=1, col=c(1:dim(m)[2]), cex=0.64, bty="n")
 
 #save data
 save(BacArena_data, file = "BacArena_data.RData")
