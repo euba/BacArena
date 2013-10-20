@@ -1,3 +1,10 @@
+\subsection{Movement and diffusion}
+In agent based modeling there are two different rules for updating:
+A Synchronous mode updates all cells simultanously, i.e. local changes are stored in a temporary copy and only after computation of all cells this changes will be efficacious.
+Contrary to this, in a asynchronous mode changes will be made immediately (\cite{Matthies2002} p. 92).\\
+Implementing a simple, naive diffusion model, which interchanges states between neighboured cells, asynchronous updating with randomly choosen cells is preferred because i) synchronouse updating violates conservation laws and ii) nonrandomly asynchronousy is causing a biased diffusion direction \cite{Bandman1999}.
+
+Further work could be done by implementing more sofisticated diffusion models like block-rotation \cite{Bandman1999} or the discrete diffusion model by Grajdeanu \cite{Grajdeanu2007}.
 \subsection{Population models of single organisms}
 \subsection{Synthrophy in mixed communities}
 \subsection{From heterogeneity to biofilms}
