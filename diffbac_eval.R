@@ -8,20 +8,24 @@ library(gridExtra)
 setwd("~/BacArena")
 source(file="baggage.R")
 
-#load("BacArena_data.RData")
-#load("results/barkeri_50x50_.RData")
+load("BacArena_data.RData")
+
 #load("results/ecoli_20x20_aerob_seed55.RData")
 #load("results/beijerinckii_20x20_seed943.RData")
 #load("results/barkeri_20x20_seed9659.RData")
 #load("results/barkeri_h2_20x20_seed6083.RData")
-load("results/barkeri_beijerinckii_20x20_seed6764.RData")
-
+#load("results/barkeri_beijerinckii_20x20_seed6764.RData")
+#load("results/ecoli_beijerinckii_20x20_seed5147.RData")
+#load("results/barkeri_ecoli_20x20_seed4612.RData")
+#load("results/Bcoli_20x20_seed176.RData")
 
 #fav_subs <-c("acetate","co2","ethanol","formiate","glucose","o2") #for ecoli
 #fav_subs <-c("acetate","co2","glucose","h2","butyrate", "succinate") #for beijerinckii
 #fav_subs <-c("methanol","co2","methane","h2o") #for barkeri
 #fav_subs <-c("h2o","co2","methane","h2") #for barkeri on h2/co2
-fav_subs <-c("h2o","co2","methane","h2","acetate","glucose","butyrate", "succinate") #for barkeri,beijerinckii
+#fav_subs <-c("h2o","co2","methane","h2","acetate","glucose","butyrate", "succinate") #for barkeri,beijerinckii
+#fav_subs <-c("acetate","co2","ethanol","formiate","glucose", "h2","butyrate", "succinate") #for anaerobic ecoli,beijerinckii
+#fav_subs <-c("methanol","co2","methane","h2o", "acetate","ethanol","formiate","glucose") #for anaerobic ecoli,barkeri
 #fav_subs <- names(BacArena_data[[1]]$substrat)
 plot_list <- list()
 growth_vec_history <- list()
@@ -48,13 +52,13 @@ for(time in 1:length(BacArena_data)){
   
   
   #plot.bacs(time=time, bac=bac, substrate=substrat, growth_vec_history=growth_vec_history, sub_his=substrat_history, bac_his=bac_history, subnam1="glucose", subnam2="co2", subnam3="o2", prodnam="acetate", bac_color=bac_color)
-  plot_list[[time]] <- plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="glucose", sub2="h2", sub3="co2", prod="methane", bac_col=bac_color)
+  plot_list[[time]] <- plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="glucose", sub2="acetate", sub3="co2", prod="methane", bac_col=bac_color)
 }
 
-#save as 8.49 × 7.72 inch
-plot_list[[60]]$bac
-plot_list[[100]]$bac
-plot_list[[160]]$bac
+#save as 6 × 6 inch
+plot_list[[time]]$bac
+plot_list[[35]]$bac
+plot_list[[50]]$bac
 
 #save as: 6x10
 plot_list[[time]]$subs

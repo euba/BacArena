@@ -203,7 +203,7 @@ for(time in 1:iter){
 ########################################################################################################
   
   time_tmp4 <- proc.time()
-  bac <- bac[!(bac$growth<0),] #death
+  #bac <- bac[!(bac$growth<0),] #death
   #
   if(dim(bac)[1]==0){
     print("ALL BACTERIA DIED")
@@ -240,7 +240,7 @@ for(time in 1:iter){
   print(iter_print)
 }
 
-#plot time consumption
+#plot time consumption #save as 6 × 6 inch
 m <- do.call(rbind, time_history)
 plot(1:dim(m)[1], m[,1], type="l", col=1, pch=1, , ylab="computation time", xlab="time") #set max y-value to highest product conentration
 for(i in 2:(dim(m)[2])){
