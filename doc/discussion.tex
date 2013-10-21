@@ -1,11 +1,12 @@
-\subsection{Movement and diffusion}
-In agent based modeling there are two different rules for updating:
-A Synchronous mode updates all cells simultanously, i.e. local changes are stored in a temporary copy and only after computation of all cells this changes will be efficacious.
-Contrary to this, in a asynchronous mode changes will be made immediately (\cite{Matthies2002} p. 92).\\
-Implementing a simple, naive diffusion model, which interchanges states between neighboured cells, asynchronous updating with randomly choosen cells is preferred because i) synchronouse updating violates conservation laws and ii) nonrandomly asynchronousy is causing a biased diffusion direction \cite{Bandman1999}.
-
-Further work could be done by implementing more sofisticated diffusion models like block-rotation \cite{Bandman1999} or the discrete diffusion model by Grajdeanu \cite{Grajdeanu2007}.
+\subsection{General discussion}
+\subsubsection{Time consumption}
+\subsubsection{Diffusion and movement}
+In agent based modeling two different modes for updating can be distinguished:
+A synchronous mode updates all cells simultaneously, i.e. local changes are stored in a temporary copy and will be updated after the computation of all cells. Contrary to this, a asynchronous mode updates changes immediately (\cite{Matthies2002} p. 92).\\
+In our study we implemented for the rules (movement, diffusion) applied to agents a naive model, which relies on the asynchronous update with randomly chosen cells. For the diffusion of agents this method is preferred, because i) synchronous updates would violate conservation laws by the production of additional metabolite concentrations and ii) non-random asynchronous updates cause a biased diffusion direction \cite{Bandman1999}. As indicated in Figure \hyperref[fig:diff]{\ref{fig:diff}} the spreading of metabolite concentrations causes the increase of entropy in the system, which is also observed as a physical phenomenon in biological systems ( *). Additional refinements can be realized with more sofisticated diffusion models such as block-rotation \cite{Bandman1999} or the discrete diffusion model by Grajdeanu \cite{Grajdeanu2007}. Different diffusion coefficients could of certain metabolites could be also included to model the varying dispersal speeds.\\
+The bacterial movement was implemented similar to the diffusion model as a random spread on the grid environment (Figure \hyperref[fig:mov]{\ref{fig:mov}}). Since most bacteria are able to sense the metabolite concentrations in their environment and show a directed motion to the substrate of choice ( *), the movement model can be refined by interaction of the bacterial agents with the substrates. A chemotaxis model would also probably allow the observation of more complex behaviours such as the aggregation to certain parts of the grid environment.
 \subsection{Population models of single organisms}
-\subsection{Synthrophy in mixed communities}
-\subsection{From heterogeneity to biofilms}
+
+\subsection{Interactions in mixed communities}
 \subsection{Conclusions \& outlook}
+%time
