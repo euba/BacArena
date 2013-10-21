@@ -46,8 +46,8 @@ substrat <- lapply(s, function(x, n, m){
 }, n=n, m=m)
 names(substrat) <- s
 substrat[["iphosphate"]] <- matrix(smax,n,m)
-substrat[["h2o"]] <- matrix(smax,n,m)
-substrat[["proton"]] <- matrix(smax,n,m)
+#substrat[["h2o"]] <- matrix(smax,n,m)
+#substrat[["proton"]] <- matrix(smax,n,m)
 substrat[["glucose"]] <- matrix(smax,n,m)
 #substrat[["pyruvate"]] <- matrix(smax,n,m)
 #substrat[["h2"]] <- matrix(smax,n,m)

@@ -62,7 +62,14 @@ for(time in 1:iter){
   
   #if(time == 1) plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="h2", prod="pyruvate")
   time_tmp3 <- proc.time()
+    min_tmp <- min(unlist(lapply(substrat, min)))
     diffusion(substrat, seed)
+    min_diff <- min(unlist(lapply(substrat, min)))
+    if(min_diff < 0) {
+      print(min_tmp)
+      print(min_diff)
+      stop("diffusion -> negative substrate")
+    }
   time_diff <- proc.time() - time_tmp3
   
   xr <- round(runif(bacnum, min = -1, max = 1))
