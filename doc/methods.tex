@@ -126,7 +126,7 @@ In this strategy, the states of randomly chosen neighbouring cells is interchang
 \subsubsection{Flux balance analysis}
 We used fba to represent the metabolic requirements of each microbe in the grid environment.
 As described in chapter \ref{cobra} fba determines a flux vector for all reactions by maximizing (in our case) the biomass function.
-To solve this optimization problem we used \textit{lpsolve} \cite{lpsolve}, which is available as the \textit{R} package \cite{Rlpsolve}.
+To solve this optimization problem we used \textit{lpsolve} \cite{lpsolve}, which is available as a \textit{R} package \cite{Rlpsolve}.
 The package \textit{lpsolve} is a mixed integer linear programming solver, which is ,,based on the revised simplex method and the branch-and-bound method for integers''\cite{lpsolvedocu}.\\
 The respective species specific \textit{SBML} model was loaded for each organism located on the grid (Algorithm \hyperref[alg:mainloop]{\ref{alg:mainloop}}).
 In the subsequent fba, several constrains were applied:
