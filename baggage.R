@@ -179,13 +179,13 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
           #panel.border = element_rect(colour="black", size=1),
           panel.background = element_blank())
 
-  mat = matrix(length(bac_color)+1, dim(substrat[[1]])[1], dim(substrat[[1]])[2]) 
+  mat = matrix(0, dim(substrat[[1]])[1], dim(substrat[[1]])[2]) 
   apply(bac[,1:3], 1, function(x, bac_col){
     mat[as.numeric(x[1]), as.numeric(x[2])] <<- bac_col[x[3]]
   }, bac_col=bac_col)
   data.m <- melt(mat)
   bacpos <- ggplot(data.m, aes(X1, X2)) + geom_tile(aes(fill = value), colour = "white") +
-    scale_fill_gradient(low = "black", high = "gray90") +
+    scale_fill_gradient(low = "gray90", high = "black") +
     scale_x_continuous(labels = function(x){round(x)}) +
     scale_y_continuous(labels = function(x){round(x)}) +
     ggtitle("bacterial movement") +

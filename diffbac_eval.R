@@ -8,15 +8,16 @@ library(gridExtra)
 setwd("~/BacArena")
 source(file="baggage.R")
 
-load("BacArena_data.RData")
+#load("BacArena_data.RData")
 
 #load("results/ecoli_20x20_aerob_seed55.RData")
 #load("results/beijerinckii_20x20_seed943.RData")
 #load("results/barkeri_20x20_seed9659.RData")
+#load("results/barkeri_50x50_.RData")
 #load("results/barkeri_h2_20x20_seed6083.RData")
 #load("results/barkeri_beijerinckii_20x20_seed6764.RData")
 #load("results/ecoli_beijerinckii_20x20_seed5147.RData")
-#load("results/barkeri_ecoli_20x20_seed4612.RData")
+load("results/barkeri_ecoli_20x20_seed4612.RData")
 #load("results/Bcoli_20x20_seed176.RData")
 
 #fav_subs <-c("acetate","co2","ethanol","formiate","glucose","o2") #for ecoli
@@ -52,6 +53,7 @@ for(time in 1:length(BacArena_data)){
   if (dim(bac)[1] >= 1) {
     bac_color <- as.numeric(as.factor(levels(bac[,3])))
     names(bac_color) <- levels(bac[,3])
+    bac_color <-  bac_color * bac_color
   }
   
   substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))[fav_subs]
@@ -63,7 +65,7 @@ for(time in 1:length(BacArena_data)){
   
   
   #plot.bacs(time=time, bac=bac, substrate=substrat, growth_vec_history=growth_vec_history, sub_his=substrat_history, bac_his=bac_history, subnam1="glucose", subnam2="co2", subnam3="o2", prodnam="acetate", bac_color=bac_color)
-  plot_list[[time]] <- plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="glucose", sub2="acetate", sub3="co2", prod="methane", bac_col=bac_color, substrat_max=substrat_max)
+  plot_list[[time]] <- plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="glucose", sub2="h2", sub3="co2", prod="methane", bac_col=bac_color, substrat_max=substrat_max)
 }
 
 #save as 6 × 6 inch
