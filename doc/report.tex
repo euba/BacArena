@@ -4,6 +4,7 @@
 \usepackage{graphicx}
 \setlength{\parindent}{0ex}
 \usepackage{booktabs}
+\usepackage{caption}
 
 
 \usepackage[
@@ -23,12 +24,17 @@
 \usepackage[ruled,noline]{algorithm2e}
 \providecommand{\SetAlgoLined}{\SetLine}
 \providecommand{\DontPrintSemicolon}{\dontprintsemicolon}
-\usepackage[left=2cm,right=2cm,top=2cm,bottom=2.7cm]{geometry}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2.5cm]{geometry}
 
 \usepackage{setspace}
 \onehalfspacing
 
 \usepackage{subfigure}
+
+
+\DeclareCaptionFormat{upper}{#1#2\uppercase{#3}\par}
+\renewcommand{\thesubfigure}{\Alph{subfigure}}
+
 
 \newenvironment{items}{
 \begin{itemize}
