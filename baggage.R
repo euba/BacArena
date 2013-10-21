@@ -67,15 +67,16 @@ get_gam <- function(type, substrat){
 
 plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
                       bac_his=bac_history, bac=bac, time=time, sub2=names(substrat)[3], sub3=names(substrat)[1],
-                      sub=names(substrat)[7], prod=names(substrat)[1], bac_col=bac_color){ #substrate and product as matrices
+                      sub=names(substrat)[7], prod=names(substrat)[1], bac_col=bac_color, substrat_max=substrat_max){ #substrate and product as matrices
   product=substrat[[prod]]
   substrate=substrat[[sub]]
   substrate2=substrat[[sub2]]
   substrate3=substrat[[sub3]]
   
   data.m <- melt(substrate)
+  ymax <- substrat_max[[sub]]
   sub <- ggplot(data.m, aes(X1, X2)) + geom_tile(aes(fill = value), colour = "white") +
-    scale_fill_gradient(low = "gray90", high = "darkgreen") +
+    scale_fill_gradient(low = "gray90", high = "darkgreen", limits=c(0, ymax)) +
     scale_x_continuous(labels = function(x){round(x)}) +
     scale_y_continuous(labels = function(x){round(x)}) +
     ggtitle(paste(sub,"concentration in mM")) +
@@ -89,8 +90,9 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
           panel.background = element_blank())
   
   data.m <- melt(substrate2)
+  ymax <- substrat_max[[sub2]]
   sub2 <- ggplot(data.m, aes(X1, X2)) + geom_tile(aes(fill = value), colour = "white") +
-    scale_fill_gradient(low = "gray90", high = "darkred") +
+    scale_fill_gradient(low = "gray90", high = "darkred", limits=c(0, ymax)) +
     scale_x_continuous(labels = function(x){round(x)}) +
     scale_y_continuous(labels = function(x){round(x)}) +
     ggtitle(paste(sub2,"concentration in mM")) +
@@ -104,8 +106,9 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
           panel.background = element_blank())
   
   data.m <- melt(substrate3)
+  ymax <- substrat_max[[sub3]]
   sub3 <- ggplot(data.m, aes(X1, X2)) + geom_tile(aes(fill = value), colour = "white") +
-    scale_fill_gradient(low = "gray90", high = "blue") +
+    scale_fill_gradient(low = "gray90", high = "blue", limits=c(0, ymax)) +
     scale_x_continuous(labels = function(x){round(x)}) +
     scale_y_continuous(labels = function(x){round(x)}) +
     ggtitle(paste(sub3,"concentration in mM")) +
@@ -119,8 +122,9 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
           panel.background = element_blank())
   
   data.m <- melt(product)
+  ymax <- substrat_max[[prod]]
   prod <- ggplot(data.m, aes(X1, X2)) + geom_tile(aes(fill = value), colour = "white") +
-    scale_fill_gradient(low = "gray90", high = "steelblue") +
+    scale_fill_gradient(low = "gray90", high = "steelblue", limits=c(0, ymax)) +
     scale_x_continuous(labels = function(x){round(x)}) +
     scale_y_continuous(labels = function(x){round(x)}) +
     ggtitle(paste(prod,"concentration in mM")) +
