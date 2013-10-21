@@ -9,16 +9,13 @@ source(file="cpp_source.R")
 source(file="baggage.R")
 source(file="config.R")
 
+set.seed(seed)
+
 if(!exists("movement", mode="function")){ #test if function already exists -> saves time for testing source code
 movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame", seed = "integer"), body = src_movement, plugin="Rcpp")
 diffusion <- cxxfunction(signature(A = "numeric", seed = "integer"), body = src_diffusion, plugin="Rcpp")
 }
 
-set.seed(seed)
-
-
-max_glucose = max(substrat$glucose)
-max_acetate = 100
 
 # variables for diagnostic plot
 growth_vec_history <- list()
@@ -155,7 +152,8 @@ for(time in 1:iter){
             #print(substrat[[x]][i,j])
             #print(growth[[sub_ex[[x]]]])
             
-            substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
+            #substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
+            #substrat[[x]][i,j] <<- round(substrat[[x]][i,j] + growth[[sub_ex[[x]]]], digits=3) # "<<-" is necessary for extern variable modification
             if(substrat[[x]][i,j] < 0){
               print (growth[[sub_ex[[x]]]])
               print (substrat[[x]][i,j])
@@ -215,7 +213,7 @@ for(time in 1:iter){
 ########################################################################################################
   
   time_tmp4 <- proc.time()
-  bac <- bac[!(bac$growth<0),] #death
+  #bac <- bac[!(bac$growth<0),] #death
   #
   if(dim(bac)[1]==0){
     print("ALL BACTERIA DIED")
@@ -244,7 +242,7 @@ for(time in 1:iter){
   #
   # diagnostic plots 
   #
-  #diag_plot(BacArena_data, time)
+  diag_plot(BacArena_data, time)
     
   #print interation status
   iter_print <- c(time, no_fba_found, time_tot[3], dim(bac)[1], hash_uses, seed)
@@ -267,3 +265,4 @@ legend("left", colnames(time_cur), pch=1, col=c(1:dim(m)[2]), cex=0.64, bty="n")
 
 #save data
 save(BacArena_data, file = "BacArena_data.RData")
+load("old.RData")

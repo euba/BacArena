@@ -28,7 +28,7 @@ src_diffusion <- '
 Rcpp::List xlist(A);
 int s = xlist.size();
 int seed2 = as<int>(seed);  
-srand (seed2); /* initialize random seed: */
+//srand (seed2); /* initialize random seed: */
   for(int k=0; k<s; k++) {
     SEXP ll = xlist[k];
     Rcpp::NumericMatrix y(ll);
@@ -39,8 +39,12 @@ srand (seed2); /* initialize random seed: */
     int m = y.nrow();
     int l = 0;
     while(l++ < n*m ){ // repeat as long as cells exist
-      int i = rand() % n;
-      int j = rand() % m;
+      //int i = rand() % n;
+      //int j = rand() % m;
+        
+        // okay this is ugly but who cares ;P  (needed for using same seed as in R)
+        int i = static_cast<int>(round(Rcpp::as<double>(Rcpp::runif(1, 0, n-1))));
+        int j = static_cast<int>(round(Rcpp::as<double>(Rcpp::runif(1, 0, m-1))));
 
       double min = y(i,j);
       std::vector<std::pair<int,int> > list_min; //list containing minima
