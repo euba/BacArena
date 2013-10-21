@@ -6,17 +6,17 @@ n <- 20
 m <- 20
 iter <- 400
 smax <- 70 # substrate start concentration
-#seed <- 123 # reproduction of random variables
-seed <- sample(1:9999,1)
+seed <- 6764 # reproduction of random variables
+#seed <- sample(1:9999,1)
 
 ########################################################################################################
 ###################################### BACTERIA ########################################################
 ########################################################################################################
 
 #source(file="ecoli_iAF1260.R")
-source(file="ecoli.R")
-#source(file="barkeri.R")
-#source(file="beijerinckii.R")
+#source(file="ecoli.R")
+source(file="barkeri.R")
+source(file="beijerinckii.R")
 
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="ecoli", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
@@ -24,11 +24,11 @@ source(file="ecoli.R")
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="Bcoli", growth=1) # one cell in the centre
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="beijerinckii", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
-#bac <- rbind(data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1),data.frame(x=round(n/2+1), y=round(m/2+1),type="barkeri", growth=1))
+bac <- rbind(data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1),data.frame(x=round(n/2+1), y=round(m/2+1),type="barkeri", growth=1))
 #bac <- data.frame() # empty grid
 #bac <- rbind(data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1),data.frame(x=round(n/2+1), y=round(m/2+1),type="Bcoli", growth=1))
 #bac <- rbind(data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1),data.frame(x=round(n/2+1), y=round(m/2+1),type="Bcoli", growth=1))
-bac <- data.frame(x=1:n, y=rep(round(m/2), m), type="ecoli", growth=1) # line of cells in the middle of our grid (ohooo)
+#bac <- data.frame(x=1:n, y=rep(round(m/2), m), type="ecoli", growth=1) # line of cells in the middle of our grid (ohooo)
 
 ########################################################################################################
 ###################################### SUBSTRATE #######################################################
@@ -45,10 +45,10 @@ substrat <- lapply(s, function(x, n, m){
   matrix(0,n,m) # no substrate distribution
 }, n=n, m=m)
 names(substrat) <- s
-#substrat[["iphosphate"]] <- matrix(smax,n,m)
-#substrat[["h2o"]] <- matrix(smax,n,m)
-#substrat[["proton"]] <- matrix(smax,n,m)
-#substrat[["glucose"]] <- matrix(smax,n,m)
+substrat[["iphosphate"]] <- matrix(smax,n,m)
+substrat[["h2o"]] <- matrix(smax,n,m)
+substrat[["proton"]] <- matrix(smax,n,m)
+substrat[["glucose"]] <- matrix(smax,n,m)
 #substrat[["pyruvate"]] <- matrix(smax,n,m)
 #substrat[["h2"]] <- matrix(smax,n,m)
 #substrat[["co2"]] <- matrix(smax,n,m)

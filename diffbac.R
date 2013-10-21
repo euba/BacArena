@@ -149,6 +149,11 @@ for(time in 1:iter){
             #print(growth[[sub_ex[[x]]]])
             
             substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
+            if(substrat[[x]][i,j] < 0){
+              print (growth[[sub_ex[[x]]]])
+              print (substrat[[x]][i,j])
+              stop("negative stubstrate!")
+            } 
           }
         },i=i,j=j,substrat=substrat)
       }
@@ -203,7 +208,7 @@ for(time in 1:iter){
 ########################################################################################################
   
   time_tmp4 <- proc.time()
-  #bac <- bac[!(bac$growth<0),] #death
+  bac <- bac[!(bac$growth<0),] #death
   #
   if(dim(bac)[1]==0){
     print("ALL BACTERIA DIED")
