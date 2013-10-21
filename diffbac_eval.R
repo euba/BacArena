@@ -10,14 +10,14 @@ source(file="baggage.R")
 
 #load("BacArena_data.RData")
 
-#load("results/ecoli_20x20_aerob_seed55.RData")
+load("results/ecoli_20x20_aerob_seed55.RData")
 #load("results/beijerinckii_20x20_seed943.RData")
 #load("results/barkeri_20x20_seed9659.RData")
 #load("results/barkeri_50x50_.RData")
 #load("results/barkeri_h2_20x20_seed6083.RData")
 #load("results/barkeri_beijerinckii_20x20_seed6764.RData")
 #load("results/ecoli_beijerinckii_20x20_seed5147.RData")
-load("results/barkeri_ecoli_20x20_seed4612.RData")
+#load("results/barkeri_ecoli_20x20_seed4612.RData")
 #load("results/Bcoli_20x20_seed176.RData")
 
 #fav_subs <-c("acetate","co2","ethanol","formiate","glucose","o2") #for ecoli
@@ -51,9 +51,13 @@ for(time in 1:length(BacArena_data)){
   growth_vec <- bac$growth
   growth_vec_history[[time]] <- growth_vec
   if (dim(bac)[1] >= 1) {
-    bac_color <- as.numeric(as.factor(levels(bac[,3])))
+    bac_color <-  c("#00CDCD", "#F8766D")
+    #bac_color <- as.numeric(as.factor(levels(bac[,3])))
     names(bac_color) <- levels(bac[,3])
-    bac_color <-  bac_color * bac_color
+  }
+  if (length(levels(bac[,3]))==1){
+    bac_color <-  "#F8766D"
+    names(bac_color) <- levels(bac[,3])
   }
   
   substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))[fav_subs]
