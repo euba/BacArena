@@ -142,6 +142,13 @@ The solution flux vector of the fba optimization was taken to redefine the metab
 
 To represent the biomass the individually determined growth rates $[\frac{\mathrm{mmol}}{\mathrm{g_{DW} \cdot \mathrm{h}}}]$, defined by the flux through the biomass function according to the available substrates, were added to the existing biomass of each microbe. Therefore, the biomass accumulated in each time step (1\;h).
 
+\paragraph{Hashing}
+As a possibility to speed up fba calculations, we implemented a hashing function.
+We set up a table with \textit{md5} hashes from the substrate vector as entries.
+Connected with this entries were the updated substrate vector after fba finished.
+By this ,,calculation memory'' it was possible to use former calculation again to avoid reoccurring identical linear optimization cases.
+
+
 \subsubsection{Growth}
 Microbial growth was considered as the output of the fba-optimized biomass function. In case the fba did not find a solution, we considered a starvation phase, in which biomass was consumed. 
 To produce population dynamics, two different processes were part of the model:

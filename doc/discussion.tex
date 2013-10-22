@@ -1,5 +1,4 @@
 \subsection{General discussion}
-\subsubsection{Time consumption}
 
 
 \subsubsection{Diffusion and movement}
@@ -14,8 +13,32 @@ Different diffusion coefficients could of certain metabolites could be also incl
 The bacterial movement was implemented similar to the diffusion model as a random spread on the grid environment (Figure \hyperref[fig:mov]{\ref{fig:mov}}).
 Since most bacteria are able to sense the metabolite concentrations in their environment and show a directed motion to the substrate of choice \cite{Francisco13}, the movement model can be refined by interaction of the bacterial agents with the substrates.
 A chemotaxis model would also probably allow the observation of more complex behaviours such as the aggregation to certain parts of the grid environment.
+
+\subsubsection{Time consumption}
+FBA calculation of substrate exchange can take $2\,min$ per time step for $180$ bacteria in big \textit{E. coli} model ($1972\times 2382$ metabolites and substrates).
+This leads to an overall calculation time of the introduced population model \ref{Bcoli} of some hours.
+In comparison to the \textit{E. coli} ($77\times 77$) core model, which needs only $xx$ per time step for $180$ bacteria.
+Almost all time is spent for fba calculation.
+For this reason we see further improvements in terms of two points:
+\begin{enumerate}
+  \item Hashing. Implementation of a first fba memory table, which saves prior calculations, is done.
+    The effects should be benchmarked largely.
+  \item Starting base. \textit{lpsolve} offers since version $5.1.05$ the possibility to find a basis according to some guess vector (old solution).
+    With this basis the optimal solution of the optimization problem \textit{can} be faster \cite{warmstart}.
+\end{enumerate}
+
+
+
+
 \subsection{Population models of single organisms}
 
 \subsection{Interactions in mixed communities}
+\textit{M. barkeri} and \textit{C. beijerinckii} are possible syntrophic organisms.
+\textit{C. beijerinckii} produces CO$_2$ and hydrogen, which could be used to grow by \textit{M. barkeri}.
+In our mixed culture this phenomen occurs, too.
+\textit{C. beijerinckii} starts growing and produces a lot of CO$_2$ and hydrogen.
+After consuming all substrate (here glucose) \textit{C. beijerinckii} declines and makes room for \textit{M. barkeri}.
+\textit{M. barkeri} could survive the whole time thanks to the metabolic products of \textit{C. beijerinckii} and grows with delay.
+
+
 \subsection{Conclusions \& outlook}
-%time

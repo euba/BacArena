@@ -56,9 +56,7 @@ Grid size was the dominant factor, because bigger space increased the needed tim
 For larger \textit{SBML} models the fba calculations consumed more time.
 That's why the amount of metabolic reactions is only relevant for fba calculations.
 The time consumption of the other function was independent on the used model and relativly insignificant for \textit{SBML} models taller than $500\times 500$ (reactions $\times$ metabolites).
-Therefore, fba was the time limiting factor of the simulations.\\
-
-
+Therefore, fba was the time limiting factor of the simulations.
 
 \subsection{Population models}
 
@@ -136,6 +134,7 @@ According the dispersion of the microbes on the grid environment, substrates wer
 \end{figure}
 
 \subsubsection{\textit{Escherichia coli big (,,Bcoli'')}}
+\label{Bcoli}
 The \textit{E. coli} model was subjected to initial concentrations of the substrates glucose and oxygen to generate a population model and monitor the production/consumption of various metabolites (Figure \hyperref[fig:ecolisg]{\ref{fig:ecolisg}}). In the first time steps oxygen and glucose were consumed and CO$_2$ was produced. Additionally, few time steps later fermentation products such as acetate and ethanol were produced, which increased in concentration during the exponential phase of microbial growth. 
 CO$_2$ reached average grid cell concentration of $\approx 120\, mmol$, acetate $\approx 50\, mmol$ and ethanol had a final concentration of $\approx 10\,mmol$.
 In the simulation, no production of formate was found. The doubling time in the exponential phase was estimated as 6 iteration (h).
