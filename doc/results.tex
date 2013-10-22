@@ -71,12 +71,12 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \centering
   \subfigure[]{
   %\begin{minipage}[t]{0.45\textwidth}
-    \includegraphics[scale=0.45]{../results/img/ecoli_20x20_aerob_seed55_growth.pdf}
+    \includegraphics[scale=0.4]{../results/img/ecoli_20x20_aerob_seed55_growth.pdf}
   %\end{minipage}
   }
   \subfigure[]{
   %\begin{minipage}[t]{0.45\textwidth}
-    \includegraphics[scale=0.45]{../results/img/ecoli_20x20_aerob_seed55_subs.pdf}
+    \includegraphics[scale=0.4]{../results/img/ecoli_20x20_aerob_seed55_subs.pdf}
   %\end{minipage}
   }
   \caption{Population dynamics of the \emph{E. coli} core model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose and oxygen was added to the environment. The seed of the random number generator was set to 55.}
@@ -134,70 +134,70 @@ According the dispersion of the microbes on the grid environment, substrates wer
 \end{figure}
 
 \subsubsection{\textit{Escherichia coli big (,,Bcoli'')}}
-\label{Bcoli}
-The \textit{E. coli} model was subjected to initial concentrations of the substrates glucose and oxygen to generate a population model and monitor the production/consumption of various metabolites (Figure \hyperref[fig:ecolisg]{\ref{fig:ecolisg}}). In the first time steps oxygen and glucose were consumed and CO$_2$ was produced. Additionally, few time steps later fermentation products such as acetate and ethanol were produced, which increased in concentration during the exponential phase of microbial growth. 
-CO$_2$ reached average grid cell concentration of $\approx 120\, mmol$, acetate $\approx 50\, mmol$ and ethanol had a final concentration of $\approx 10\,mmol$.
-In the simulation, no production of formate was found. The doubling time in the exponential phase was estimated as 6 iteration (h).
-
-The population growth reached the stationary phase in approximately 30 iterations (h), after all substrates were consumed. In the subsequent death phase no metabolites were produced or consumed. The population died out after 60 iterations.
-
-According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:ecoligrids]{\ref{fig:ecoligrids}}). Here, CO$_2$ was produced on every position the bacterial agents visited and  acetate was preferably produced in the centre of the grid.
-\begin{figure}[h!]
-  \centering
-    \includegraphics[scale=0.45]{../results/img/Bcoli_20x20_seed176_growth.pdf}
-    \includegraphics[scale=0.45]{../results/img/Bcoli_20x20_seed176_subs.pdf}
-  \caption{Population dynamics of the big \emph{E. coli} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose and oxygen was added to the environment. The seed of the random number generator was set to 176.}
-  \label{fig:ecolisg}
-\end{figure}
-\begin{figure}[h!]
-  \centering
-  \subfigure[]{
-    \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_bac5.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_bac15.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_bac35.pdf}
-  \end{minipage}
-  }
-  \subfigure[]{
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_glucose5a.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_glucose15.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_glucose35a.pdf}
-  \end{minipage}
-  }
-  \subfigure[]{
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_ace5a.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_ace15.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_ace35a.pdf}
-  \end{minipage}
-  }
-  \subfigure[]{
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_co25a.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_co215.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_co235a.pdf}
-  \end{minipage}
-  }
-  \caption{Population dynamics of the big \emph{E. coli} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), acetate (C) and CO$_2$ (D) (of time step 5, 15 and 35). The seed of the random number generator was set to 176.}
-  \label{fig:ecoligrids}
-\end{figure}
+%\label{Bcoli}
+%The \textit{E. coli} model was subjected to initial concentrations of the substrates glucose and oxygen to generate a population model and monitor the production/consumption of various metabolites (Figure \hyperref[fig:ecolisg]{\ref{fig:ecolisg}}). In the first time steps oxygen and glucose were consumed and CO$_2$ was produced. Additionally, few time steps later fermentation products such as acetate and ethanol were produced, which increased in concentration during the exponential phase of microbial growth. 
+%CO$_2$ reached average grid cell concentration of $\approx 120\, mmol$, acetate $\approx 50\, mmol$ and ethanol had a final concentration of $\approx 10\,mmol$.
+%In the simulation, no production of formate was found. The doubling time in the exponential phase was estimated as 6 iteration (h).
+%
+%The population growth reached the stationary phase in approximately 30 iterations (h), after all substrates were consumed. In the subsequent death phase no metabolites were produced or consumed. The population died out after 60 iterations.
+%
+%According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:ecoligrids]{\ref{fig:ecoligrids}}). Here, CO$_2$ was produced on every position the bacterial agents visited and  acetate was preferably produced in the centre of the grid.
+%\begin{figure}[h!]
+%  \centering
+%    \includegraphics[scale=0.4]{../results/img/Bcoli_20x20_seed176_growth.pdf}
+%    \includegraphics[scale=0.4]{../results/img/Bcoli_20x20_seed176_subs.pdf}
+%  \caption{Population dynamics of the big \emph{E. coli} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose and oxygen was added to the environment. The seed of the random number generator was set to 176.}
+%  \label{fig:ecolisg}
+%\end{figure}
+%\begin{figure}[h!]
+%  \centering
+%  \subfigure[]{
+%    \begin{minipage}[t]{0.3\textwidth}
+%    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_bac5.pdf}
+%  \end{minipage}
+%  \begin{minipage}[t]{0.3\textwidth}
+%    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_bac15.pdf}
+%  \end{minipage}
+%  \begin{minipage}[t]{0.3\textwidth}
+%    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_bac35.pdf}
+%  \end{minipage}
+%  }
+%  \subfigure[]{
+%  \begin{minipage}[t]{0.3\textwidth}
+%    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_glucose5a.pdf}
+%  \end{minipage}
+%  \begin{minipage}[t]{0.3\textwidth}
+%    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_glucose15.pdf}
+%  \end{minipage}
+%  \begin{minipage}[t]{0.3\textwidth}
+%    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_glucose35a.pdf}
+%  \end{minipage}
+%  }
+%  \subfigure[]{
+%  \begin{minipage}[t]{0.3\textwidth}
+%    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_ace5a.pdf}
+%  \end{minipage}
+%  \begin{minipage}[t]{0.3\textwidth}
+%    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_ace15.pdf}
+%  \end{minipage}
+%  \begin{minipage}[t]{0.3\textwidth}
+%    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_ace35a.pdf}
+%  \end{minipage}
+%  }
+%  \subfigure[]{
+%  \begin{minipage}[t]{0.3\textwidth}
+%    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_co25a.pdf}
+%  \end{minipage}
+%  \begin{minipage}[t]{0.3\textwidth}
+%    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_co215.pdf}
+%  \end{minipage}
+%  \begin{minipage}[t]{0.3\textwidth}
+%    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_co235a.pdf}
+%  \end{minipage}
+%  }
+%  \caption{Population dynamics of the big \emph{E. coli} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), acetate (C) and CO$_2$ (D) (of time step 5, 15 and 35). The seed of the random number generator was set to 176.}
+%  \label{fig:ecoligrids}
+%\end{figure}
 
 \subsubsection{\textit{Methanosarcina barkeri}}
 The \textit{M. barkeri} model was subjected to initial concentrations of methanol as a substrate, to generate a population model and monitor the production/consumption of various metabolites (Figure \hyperref[fig:barkerisg]{\ref{fig:barkerisg}}). In the first time steps methanol was consumed and CO$_2$, methane and water was produced. Compared to water and methane, the production of CO$_2$ was considerably lower.
@@ -206,8 +206,8 @@ The population growth reached the stationary phase in approximately 100 iteratio
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:barkerigrids]{\ref{fig:barkerigrids}}).
 \begin{figure}[h!]
   \centering
-    \includegraphics[scale=0.45]{../results/img/barkeri_20x20_seed9659_growth.pdf}
-    \includegraphics[scale=0.45]{../results/img/barkeri_20x20_seed9659_subs.pdf}
+    \includegraphics[scale=0.4]{../results/img/barkeri_20x20_seed9659_growth.pdf}
+    \includegraphics[scale=0.4]{../results/img/barkeri_20x20_seed9659_subs.pdf}
   \caption{Population dynamics of the \emph{M. barkeri} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of methanol was added to the environment. The seed of the random number generator was set to 9659.}
   \label{fig:barkerisg}
 \end{figure}
@@ -272,8 +272,8 @@ The population growth reached the stationary phase in approximately 45 iteration
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:beijergrids]{\ref{fig:beijergrids}}).
 \begin{figure}[h!]
   \centering
-    \includegraphics[scale=0.45]{../results/img/beijerinckii_20x20_seed943_growth.pdf}
-    \includegraphics[scale=0.45]{../results/img/beijerinckii_20x20_seed943_subs.pdf}
+    \includegraphics[scale=0.4]{../results/img/beijerinckii_20x20_seed943_growth.pdf}
+    \includegraphics[scale=0.4]{../results/img/beijerinckii_20x20_seed943_subs.pdf}
   \caption{Population dynamics of the \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose was added to the environment. The seed of the random number generator was set to 943.}
   \label{fig:beijersg}
 \end{figure}
@@ -281,10 +281,10 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \centering
   \subfigure[]{
     \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_bac10.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_bac20.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_bac30.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_bac40.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
     \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_bac50.pdf}
@@ -330,15 +330,15 @@ According the dispersion of the microbes on the grid environment, substrates wer
 
 \subsection{Mixed communities}
 %To study the metabolic interactions of multiple species the individual models described in the previous sections were loaded in the same grid environment.
-\subsubsection{\textit{Escherichia coli big} \& \textit{Methanosarcina barkeri}}
+\subsubsection{\textit{Escherichia coli} \& \textit{Methanosarcina barkeri}}
 The joint simulation of the \textit{E. coli} and \textit{M. barkeri} was subjected to initial concentrations of glucose as a substrate for \textit{E. coli} and methanol as a substrate for \textit{M. barkeri}. In the first time steps the respective substrates were consumed and CO$_2$, acetate, ethanol, formate, water and methane were produced (Figure \hyperref[fig:besg]{\ref{fig:besg}}). Acetate was produced as a fermentation product of \textit{E. coli} and consumed by \textit{M. barkeri}. CO$_2$ was produced by \textit{E. coli} and \textit{M. barkeri}. \textit{E. coli} reached the stationary phase in iteration 90.
 Since grid space was additionally occupied by \textit{M. barkeri}, the \textit{E. coli} population slightly grew after stationary phase of \textit{M. barkeri} in iteration 125. Both populations died out after iteration 175.
 The doubling time in the exponential phase was estimated as 17 iterations (h) for \textit{E. coli} and 12 iterations (h) for \textit{M. barkeri}.
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:cegrid]{\ref{fig:cegrid}}). The production of methane was found in grid positions occupied by \textit{M. barkeri} and glucose consumption was found in position occupied by \textit{E. coli}. In the later stages of growth acetate was consumed by \textit{M. barkeri}.
 \begin{figure}[h!]
   \centering
-    \includegraphics[scale=0.45]{../results/img/barkeri_ecoli_20x20_seed4612_growth.pdf}
-    \includegraphics[scale=0.45]{../results/img/barkeri_ecoli_20x20_seed4612_subs.pdf}
+    \includegraphics[scale=0.4]{../results/img/barkeri_ecoli_20x20_seed4612_growth.pdf}
+    \includegraphics[scale=0.4]{../results/img/barkeri_ecoli_20x20_seed4612_subs.pdf}
   \caption{Population dynamics of the joint big \emph{E. coli} and \emph{M. barkeri} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose and methanol was added to the environment. The seed of the random number generator was set to 4612.}
   \label{fig:besg}
 \end{figure}
@@ -346,49 +346,49 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \centering
   \subfigure[]{
     \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_bac50.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_bac60.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
     \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_bac100.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_bac150.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_bac125.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_glc80.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_glc60.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_glc100a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_glc100.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_glc130.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_glc125.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_ace80.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_ace60.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_ace100a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_ace100.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_ace130.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_ace125.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_meth80.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_meth60.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_meth100a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_meth100.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_meth130.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_meth125.pdf}
   \end{minipage}
   }
-  \caption{Population dynamics of the joint big \emph{E. coli} and \emph{M. barkeri} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), acetate (C) and methane (D) (of time step 80, 100 and 130). The seed of the random number generator was set to 4612.}
+  \caption{Population dynamics of the joint big \emph{E. coli} and \emph{M. barkeri} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), acetate (C) and methane (D) (of time step 60, 100 and 125). The seed of the random number generator was set to 4612.}
 %  \caption{Population and metabolite dynamics of the joint \emph{E. coli} and \emph{M. barkeri} model.}
   \label{fig:begrid}
 \end{figure}
@@ -401,8 +401,8 @@ Acetate was produced by both species. \textit{C. beijerinckii} reached the stati
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:cegrid]{\ref{fig:cegrid}}). Hydrogen production was found in \textit{C. beijerinckii} occupied grid positions and ethanol production in \textit{E. coli} occupied positions.
 \begin{figure}[h!]
   \centering
-    \includegraphics[scale=0.45]{../results/img/ecoli_beijerinckii_20x20_seed5147_growth.pdf}
-    \includegraphics[scale=0.45]{../results/img/ecoli_beijerinckii_20x20_seed5147_subs.pdf}
+    \includegraphics[scale=0.4]{../results/img/ecoli_beijerinckii_20x20_seed5147_growth.pdf}
+    \includegraphics[scale=0.4]{../results/img/ecoli_beijerinckii_20x20_seed5147_subs.pdf}
   \caption{Population dynamics of the joint big \emph{E. coli} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose was added to the environment. The seed of the random number generator was set to 5147.}
   \label{fig:cesg}
 \end{figure}
@@ -466,8 +466,8 @@ In the exponential phase \textit{C. beijerinckii} had an approximate duplication
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:cbgrid]{\ref{fig:cbgrid}}). Hydrogen production was found in \textit{C. beijerinckii} occupied grid positions and methane production in \textit{M. barkeri} occupied positions.
 \begin{figure}[h!]
   \centering
-    \includegraphics[scale=0.45]{../results/img/barkeri_beijerinckii_20x20_seed2942_growth.pdf}
-    \includegraphics[scale=0.45]{../results/img/barkeri_beijerinckii_20x20_seed2942_subs.pdf}
+    \includegraphics[scale=0.4]{../results/img/barkeri_beijerinckii_20x20_seed2942_growth.pdf}
+    \includegraphics[scale=0.4]{../results/img/barkeri_beijerinckii_20x20_seed2942_subs.pdf}
   \caption{Population dynamics of the joint \emph{M. barkeri} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose was added to the environment. The seed of the random number generator was set to 2942.}
   \label{fig:cbsg}
 \end{figure}
