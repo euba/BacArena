@@ -13,7 +13,7 @@ set.seed(seed)
 
 if(!exists("movement", mode="function")){ #test if function already exists -> saves time for testing source code
 movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame", seed = "integer"), body = src_movement, plugin="Rcpp")
-diffusion <- cxxfunction(signature(A = "numeric", seed = "integer"), body = src_diffusion, plugin="Rcpp")
+diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
 }
 
 
@@ -60,7 +60,7 @@ for(time in 1:iter){
   #if(time == 1) plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="h2", prod="pyruvate")
   time_tmp3 <- proc.time()
     min_tmp <- min(unlist(lapply(substrat, min)))
-    diffusion(substrat, seed)
+    diffusion(substrat)
     min_diff <- min(unlist(lapply(substrat, min)))
     if(min_diff < 0) {
       print(min_tmp)

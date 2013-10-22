@@ -141,7 +141,7 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
     geom_line(size=1) +
     scale_x_continuous(labels = function(x){floor(x)}) +
     scale_y_continuous(labels = function(x){floor(x)}) +
-    ylab("concentration in mM") +
+    ylab("average concentration in mM") +
     xlab("time") +
     theme(axis.line = element_line(colour="black", size=1),
           axis.ticks = element_line(colour="black", size=1),

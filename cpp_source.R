@@ -27,24 +27,19 @@ for(int k=0; k<s; k++) {
 src_diffusion <- '
 Rcpp::List xlist(A);
 int s = xlist.size();
-int seed2 = as<int>(seed);  
-//srand (seed2); /* initialize random seed: */
+
   for(int k=0; k<s; k++) {
     SEXP ll = xlist[k];
+    
     Rcpp::NumericMatrix y(ll);
-    //copy matrix to diffuse successive
-    //Rcpp::NumericMatrix tmp = Rcpp::clone(y);
-    //std::cout << y(1,1);
     int n = y.ncol();
     int m = y.nrow();
     int l = 0;
     while(l++ < n*m ){ // repeat as long as cells exist
-      //int i = rand() % n;
-      //int j = rand() % m;
-        
-        // okay this is ugly but who cares ;P  (needed for using same seed as in R)
-        int i = static_cast<int>(round(Rcpp::as<double>(Rcpp::runif(1, 0, n-1))));
-        int j = static_cast<int>(round(Rcpp::as<double>(Rcpp::runif(1, 0, m-1))));
+  
+      // okay this is ugly but who cares ;P  (needed for using same seed as in R)
+      int i = static_cast<int>(round(Rcpp::as<double>(Rcpp::runif(1, 0, n-1))));
+      int j = static_cast<int>(round(Rcpp::as<double>(Rcpp::runif(1, 0, m-1))));
 
       double min = y(i,j);
       std::vector<std::pair<int,int> > list_min; //list containing minima
@@ -69,11 +64,11 @@ int seed2 = as<int>(seed);
           //}
         }
       }
-      std::random_shuffle ( list_min.begin(), list_min.end() ); //randomize order
       // choose randomly one of the found minima
-        
-      int min_i = list_min.front().first;
-      int min_j = list_min.front().second;
+      int rnd_element = static_cast<int>(round(Rcpp::as<double>(Rcpp::runif(1, 0, list_min.size()-1))));
+      int min_i = list_min[rnd_element].first;
+      int min_j = list_min[rnd_element].second;
+      
       double m = (y(i,j) + y(min_i,min_j)) / 2.0;
 
       y(i,j) = m;
