@@ -47,13 +47,20 @@ The movement of the microbial agents showed the random dispersal of the microbes
 \end{figure}
 %\clearpage
 Considering the time consumption of the whole framework (Figure \hyperref[fig:time]{\ref{fig:time}}), the calculation of the flux balance analysis required the highest amount of time.
-Furthermore, the overall fba calculation time was dependent on the number of microbe individuals on the grid, whereat higher numbers of agents resulted in higher calculation times. The same was true for the movement function, which consumed after the fba the highest amount of time. The time consumption of diffusion function was considerably lower than the other functions and constant over the whole simulation, since it is independent on the number of microbes on the grid. Other calculations for diverse matrix operations required with respect to the movement a comparable amount of time.
-For larger \textit{SBML} models the fba calculations consumed more time, whereas the time consumption of the other function was independent on the used model. Therefore, the fba was the time limiting factor of the simulations.
-\subsubsection{\textit{Escherichia coli} core model}
-The \textit{E. coli} core model was subjected to initial concentrations of the substrates glucose and oxygen to generate a population model and monitor the production/consumption of various metabolites (Figure \hyperref[fig:ecoresg]{\ref{fig:ecoresg}}). In the first time steps oxygen and glucose were consumed and CO$_2$ was produced. Additionally, fermentation products such as acetate, formate and ethanol were produced, which increased in concentration during the exponential phase of microbial growth. The doubling time in the exponential phase was estimated as 7 iteration (h).
+Furthermore, the overall fba calculation time was dependent on the number of microbe individuals on the grid, whereat higher numbers of agents resulted in higher overall calculation times. The same was true for the movement function, which consumed after the fba the highest amount of time. The time consumption of diffusion function was considerably lower than the other functions and constant over the whole simulation, since it is independent on the number of microbes on the grid. Other
+calculations for diverse matrix operations (primary $x$apply code in \textit{R}) required with respect to the movement a comparable small amount of time, but is significant, too.\\
+Grid size was the dominant factor, because bigger space increased the needed time of all other parts: More diffusion, more bacteria, more movement, more fba.
+For larger \textit{SBML} models the fba calculations consumed more time.
+That's why the amount of metabolic reactions is only relevant for fba calculations.
+The time consumption of the other function was independent on the used model and relativly insignificant for \textit{SBML} models taller than $500\times 500$ (reactions $\times$ metabolites).
+Therefore, fba was the time limiting factor of the simulations.
 
+\subsubsection{\textit{Escherichia coli} core}
+The \textit{E. coli} core model was subjected to initial concentrations of the substrates glucose and oxygen to generate a population model and monitor the production/consumption of various metabolites (Figure \hyperref[fig:ecoresg]{\ref{fig:ecoresg}}). In the first time steps oxygen and glucose were consumed and CO$_2$ was produced. Additionally, fermentation products such as acetate, formate and ethanol were produced, which increased in concentration during the exponential phase of microbial growth. 
+Acetate and formate were produced on high levels (averaged grid cell concentration of $> 60\, mmol$).
+That's even more than CO$_2$ ($\approx 50\, mmol$).
+The doubling time in the exponential phase was estimated as 7 iteration (h).
 The population growth reached the stationary phase after 30 iterations (h), after all substrates were consumed. In the subsequent death phase no metabolites were produced or consumed.
-
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:ecoregrids]{\ref{fig:ecoregrids}}).
 \begin{figure}[h!]
   \centering
@@ -122,17 +129,19 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \label{fig:ecoregrids}
 \end{figure}
 
-\subsubsection{\textit{Escherichia coli}}
-The \textit{E. coli} model was subjected to initial concentrations of the substrates glucose and oxygen to generate a population model and monitor the production/consumption of various metabolites (Figure \hyperref[fig:ecolisg]{\ref{fig:ecolisg}}). In the first time steps oxygen and glucose were consumed and CO$_2$ was produced. Additionally, few time steps later fermentation products such as acetate and ethanol were produced, which increased in concentration during the exponential phase of microbial growth. In the simulation, no production of formate was found. The doubling time in the exponential phase was estimated as 6 iteration (h).
+\subsubsection{\textit{Escherichia coli big (,,Bcoli'')}}
+The \textit{E. coli} model was subjected to initial concentrations of the substrates glucose and oxygen to generate a population model and monitor the production/consumption of various metabolites (Figure \hyperref[fig:ecolisg]{\ref{fig:ecolisg}}). In the first time steps oxygen and glucose were consumed and CO$_2$ was produced. Additionally, few time steps later fermentation products such as acetate and ethanol were produced, which increased in concentration during the exponential phase of microbial growth. 
+CO$_2$ reached average grid cell concentration of $\approx 120\, mmol$, acetate $\approx 50\, mmol$ and ethanol had a final concentration of $\approx 10\,mmol$.
+In the simulation, no production of formate was found. The doubling time in the exponential phase was estimated as 6 iteration (h).
 
 The population growth reached the stationary phase in approximately 30 iterations (h), after all substrates were consumed. In the subsequent death phase no metabolites were produced or consumed. The population died out after 60 iterations.
 
-According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:ecoligrids]{\ref{fig:ecoligrids}}). Here, CO$_2$ was produced on every position the bacterial agents were in and  acetate was preferably produced in the centre of the grid.
+According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:ecoligrids]{\ref{fig:ecoligrids}}). Here, CO$_2$ was produced on every position the bacterial agents visited and  acetate was preferably produced in the centre of the grid.
 \begin{figure}[h!]
   \centering
     \includegraphics[scale=0.45]{../results/Bcoli_20x20_seed176_growth.pdf}
     \includegraphics[scale=0.45]{../results/Bcoli_20x20_seed176_subs.pdf}
-  \caption{Population dynamics of the \emph{E. coli} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose and oxygen was added to the environment. The seed of the random number generator was set to 176.}
+  \caption{Population dynamics of the big \emph{E. coli} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose and oxygen was added to the environment. The seed of the random number generator was set to 176.}
   \label{fig:ecolisg}
 \end{figure}
 \begin{figure}[h!]
@@ -181,16 +190,14 @@ According the dispersion of the microbes on the grid environment, substrates wer
     \includegraphics[width=\textwidth]{../results/Bcoli_20x20_seed176_co235a.pdf}
   \end{minipage}
   }
-  \caption{Population dynamics of the \emph{E. coli} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), acetate (C) and CO$_2$ (D) (of time step 5, 15 and 35). The seed of the random number generator was set to 176.}
+  \caption{Population dynamics of the big \emph{E. coli} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), acetate (C) and CO$_2$ (D) (of time step 5, 15 and 35). The seed of the random number generator was set to 176.}
   \label{fig:ecoligrids}
 \end{figure}
 
 \subsubsection{\textit{Methanosarcina barkeri}}
 The \textit{M. barkeri} model was subjected to initial concentrations of methanol as a substrate, to generate a population model and monitor the production/consumption of various metabolites (Figure \hyperref[fig:barkerisg]{\ref{fig:barkerisg}}). In the first time steps methanol was consumed and CO$_2$, methane and water was produced. Compared to water and methane, the production of CO$_2$ was considerably lower.
-
 The doubling time in the exponential phase was estimated as 17 iteration (h).
 The population growth reached the stationary phase in approximately 100 iterations (h), after methanol was consumed. In the subsequent death phase no metabolites were produced or consumed. The population died out after 150 iterations.
-
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:barkerigrids]{\ref{fig:barkerigrids}}).
 \begin{figure}[h!]
   \centering
@@ -250,12 +257,13 @@ According the dispersion of the microbes on the grid environment, substrates wer
   %\caption{Population and metabolite dynamics of the \emph{M. barkeri} model on a $20\times20$ grid.}
   \label{fig:barkerigrids}
 \end{figure}
-\subsubsection{\textit{Clostridium beijerinckii}}
-The \textit{C. beijerinckii} model was subjected to initial concentrations of glucose as a substrate, to generate a population model and monitor the production/consumption of various metabolites (Figure \hyperref[fig:beijersg]{\ref{fig:beijersg}}). In the first time steps methanol was consumed and hydrogen, C0$_2$, acetate, butyrate and succinate was produced. Compared to the other products hydrogen and CO$_2$ were produced in higher amounts.
 
+
+\subsubsection{\textit{Clostridium beijerinckii}}
+The \textit{C. beijerinckii} model was subjected to initial concentrations of glucose as a substrate, to generate a population model and monitor the production/consumption of various metabolites (Figure \hyperref[fig:beijersg]{\ref{fig:beijersg}}). In the first time steps glucose was consumed and hydrogen, C0$_2$, acetate, butyrate and succinate were produced in descending amounts. 
+Compared to the other products hydrogen and CO$_2$ were produced much more.
 The doubling time in the exponential phase was estimated as 6 iteration (h).
 The population growth reached the stationary phase in approximately 45 iterations (h), after glucose was almost consumed. In the subsequent death phase no metabolites were produced or consumed. The population died out after 65 iterations.
-
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:beijergrids]{\ref{fig:beijergrids}}).
 \begin{figure}[h!]
   \centering
@@ -317,7 +325,7 @@ According the dispersion of the microbes on the grid environment, substrates wer
 
 \subsection{Mixed communities}
 %To study the metabolic interactions of multiple species the individual models described in the previous sections were loaded in the same grid environment.
-\subsubsection{\textit{Escherichia coli} \& \textit{Methanosarcina barkeri}}
+\subsubsection{\textit{Escherichia coli big} \& \textit{Methanosarcina barkeri}}
 The joint simulation of the \textit{E. coli} and \textit{M. barkeri} was subjected to initial concentrations of glucose as a substrate for \textit{E. coli} and methanol as a substrate for \textit{M. barkeri}. In the first time steps the respective substrates were consumed and CO$_2$, acetate, ethanol, formate, water and methane were produced (Figure \hyperref[fig:besg]{\ref{fig:besg}}). Acetate was produced as a fermentation product of \textit{E. coli} and consumed by \textit{M. barkeri}. CO$_2$ was produced by \textit{E. coli} and \textit{M. barkeri}. \textit{E. coli} reached the stationary phase in iteration 90.
 Since grid space was additionally occupied by \textit{M. barkeri}, the \textit{E. coli} population slightly grew after stationary phase of \textit{M. barkeri} in iteration 125. Both populations died out after iteration 175.
 The doubling time in the exponential phase was estimated as 17 iterations (h) for \textit{E. coli} and 12 iterations (h) for \textit{M. barkeri}.
@@ -326,7 +334,7 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \centering
     \includegraphics[scale=0.45]{../results/barkeri_ecoli_20x20_seed4612_growth.pdf}
     \includegraphics[scale=0.45]{../results/barkeri_ecoli_20x20_seed4612_subs.pdf}
-  \caption{Population dynamics of the joint \emph{E. coli} and \emph{M. barkeri} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose and methanol was added to the environment. The seed of the random number generator was set to 4612.}
+  \caption{Population dynamics of the joint big \emph{E. coli} and \emph{M. barkeri} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose and methanol was added to the environment. The seed of the random number generator was set to 4612.}
   \label{fig:besg}
 \end{figure}
 \begin{figure}[h!]
@@ -375,20 +383,22 @@ According the dispersion of the microbes on the grid environment, substrates wer
     \includegraphics[width=\textwidth]{../results/barkeri_ecoli_20x20_seed4612_meth130.pdf}
   \end{minipage}
   }
-  \caption{Population dynamics of the joint \emph{E. coli} and \emph{M. barkeri} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), acetate (C) and methane (D) (of time step 80, 100 and 130). The seed of the random number generator was set to 4612.}
+  \caption{Population dynamics of the joint big \emph{E. coli} and \emph{M. barkeri} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), acetate (C) and methane (D) (of time step 80, 100 and 130). The seed of the random number generator was set to 4612.}
 %  \caption{Population and metabolite dynamics of the joint \emph{E. coli} and \emph{M. barkeri} model.}
   \label{fig:begrid}
 \end{figure}
 
-\subsubsection{\textit{Escherichia coli} \& \textit{Clostridium beijerinckii}}
-The joint simulation of the \textit{E. coli} and \textit{C. beijerinckii} was subjected to initial concentrations of glucose as a substrate for both organisms. In the first time steps the substrate was competitively consumed by both species and CO$_2$, acetate, ethanol, butyrate, succinate and hydrogen was produced (Figure \hyperref[fig:cesg]{\ref{fig:cesg}}). In comparison to the other metabolites hydrogen and CO$_2$ had the highest concentrations at the end of the simulation. Hydrogen, CO$_2$, butyrate and succinate were exclusively produced by \textit{C. beijerinckii}, whereas ethanol was produced by \textit{E. coli}. Acetate was produced by both species. \textit{C. beijerinckii} reached the stationary phase at 55 iterations and \textit{E. coli} at 60 iterations. Both organisms died at iteration 80. In the exponential phase \textit{C. beijerinckii} had an approximate duplication time of 8 iterations and \textit{E. coli} of 11 iterations.
+\subsubsection{\textit{Escherichia coli big} \& \textit{Clostridium beijerinckii}}
+The joint simulation of the \textit{E. coli} and \textit{C. beijerinckii} was subjected to initial concentrations of glucose as a substrate for both organisms. In the first time steps the substrate was competitively consumed by both species and CO$_2$, acetate, ethanol, butyrate, succinate and hydrogen was produced (Figure \hyperref[fig:cesg]{\ref{fig:cesg}}). In comparison to the other metabolites hydrogen and CO$_2$ had the highest concentrations at the end of the simulation.
+Hydrogen, CO$_2$, butyrate and succinate were exclusively produced by \textit{C. beijerinckii}, whereas ethanol was produced by \textit{E. coli}. 
+Acetate was produced by both species. \textit{C. beijerinckii} reached the stationary phase at 55 iterations and \textit{E. coli} at 60 iterations. Both organisms died at iteration 80. In the exponential phase \textit{C. beijerinckii} had an approximate duplication time of 8 iterations and \textit{E. coli} of 11 iterations.
 
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:cegrid]{\ref{fig:cegrid}}). Hydrogen production was found in \textit{C. beijerinckii} occupied grid positions and ethanol production in \textit{E. coli} occupied positions.
 \begin{figure}[h!]
   \centering
     \includegraphics[scale=0.45]{../results/ecoli_beijerinckii_20x20_seed5147_growth.pdf}
     \includegraphics[scale=0.45]{../results/ecoli_beijerinckii_20x20_seed5147_subs.pdf}
-  \caption{Population dynamics of the joint \emph{E. coli} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose was added to the environment. The seed of the random number generator was set to 5147.}
+  \caption{Population dynamics of the joint big \emph{E. coli} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose was added to the environment. The seed of the random number generator was set to 5147.}
   \label{fig:cesg}
 \end{figure}
 \begin{figure}[h!]
@@ -437,14 +447,17 @@ According the dispersion of the microbes on the grid environment, substrates wer
     \includegraphics[width=\textwidth]{../results/ecoli_beijerinckii_20x20_seed5147_eth60.pdf}
   \end{minipage}
   }
-  \caption{Population dynamics of the joint \emph{E. coli} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), hydrogen (C) and ethanol (D) (of time step 25, 45 and 60). The seed of the random number generator was set to 5147.}
+  \caption{Population dynamics of the joint big \emph{E. coli} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), hydrogen (C) and ethanol (D) (of time step 25, 45 and 60). The seed of the random number generator was set to 5147.}
   %\caption{Dynamics of the joint \emph{E. coli} and \emph{C. beijerinckii} model on a $20\times20$ grid.}
   \label{fig:cegrid}
 \end{figure}
 
 \subsubsection{\textit{Clostridium beijerinckii} \& \textit{Methanosarcina barkeri}}
 The joint simulation of the \textit{M. barkeri} and \textit{C. beijerinckii} was subjected to initial concentrations of glucose as a exclusive substrate for \textit{C. beijerinckii}. In the first time steps the substrate was consumed by \textit{C. beijerinckii} and CO$_2$, hydrogen, acetate, butyrate and succinate was produced (Figure \hyperref[fig:cbsg]{\ref{fig:cbsg}}). 
-In comparison to the other metabolites hydrogen and CO$_2$ had the highest concentrations at the stationary phase of \textit{C. beijerinckii} reached at approximately 60 iterations. The population of \textit{C. beijerinckii} died out at iteration 80 and \textit{M. barkeri} started growing exponentially by taking the produced hydrogen and CO$_2$ as substrates. In the later phases of growth the produced acetate was used as a substrate. The stationary phase of \textit{M. barkeri} was reached at iteration 170. During growth \textit{M. barkeri} produced methane and water by consuming almost the total\textit{C. beijerinckii} produced hydrogen. In the exponential phase \textit{C. beijerinckii} had an approximate duplication time of 8 iterations and \textit{M. barkeri} of 12 iterations.
+In comparison to the other metabolites hydrogen and CO$_2$ had the highest concentrations at the stationary phase of \textit{C. beijerinckii} reached at approximately 60 iterations. The population of \textit{C. beijerinckii} died out at iteration 80 and \textit{M. barkeri} started growing exponentially by taking the produced hydrogen and CO$_2$ as substrates. 
+In the later phases of growth the produced acetate was used as a substrate. The stationary phase of \textit{M. barkeri} was reached at iteration 170. 
+During growth \textit{M. barkeri} produced methane and water by consuming $CO_2$ and almost the total by \textit{C. beijerinckii} produced hydrogen. 
+In the exponential phase \textit{C. beijerinckii} had an approximate duplication time of 8 iterations and \textit{M. barkeri} of 12 iterations.
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:cbgrid]{\ref{fig:cbgrid}}). Hydrogen production was found in \textit{C. beijerinckii} occupied grid positions and methane production in \textit{M. barkeri} occupied positions.
 \begin{figure}[h!]
   \centering
@@ -499,8 +512,8 @@ According the dispersion of the microbes on the grid environment, substrates wer
     \includegraphics[width=\textwidth]{../results/barkeri_beijerinckii_20x20_seed6764_meth150a.pdf}
   \end{minipage}
   }
-  \label{fig:cbgrid}
   \caption{Dynamics of the joint \emph{M. barkeri} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), hydrogen (C) and methanol (D) (time step 50, 100 and 150). The seed of the random number generator was set to 6764.}
+  \label{fig:cbgrid}
   %\caption{Dynamics of the joint \emph{M. barkeri} and \emph{C. beijerinckii} model on a $20\times20$ grid.}
 \end{figure}
 
