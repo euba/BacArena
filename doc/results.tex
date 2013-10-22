@@ -56,7 +56,9 @@ Grid size was the dominant factor, because bigger space increased the needed tim
 For larger \textit{SBML} models the fba calculations consumed more time.
 That's why the amount of metabolic reactions is only relevant for fba calculations.
 The time consumption of the other function was independent on the used model and relativly insignificant for \textit{SBML} models taller than $500\times 500$ (reactions $\times$ metabolites).
-Therefore, fba was the time limiting factor of the simulations.
+Therefore, fba was the time limiting factor of the simulations.\\
+
+
 
 \subsection{Population models}
 
@@ -215,7 +217,7 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \centering
   \subfigure[]{
     \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_bac10.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_bac25.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
     \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_bac75.pdf}
@@ -226,38 +228,38 @@ According the dispersion of the microbes on the grid environment, substrates wer
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_methanol10a.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_methanol75.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_methanol100a.pdf}
-  \end{minipage}
-  }
-  \subfigure[]{
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_co210a.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_co275.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_co2100a.pdf}
-  \end{minipage}
-  }
-  \subfigure[]{
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_meth10a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_meth25.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
     \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_meth75.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_meth100a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_meth100.pdf}
   \end{minipage}
   }
-  \caption{Population dynamics of the \emph{M. barkeri} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of methanol (B), CO$_2$ (C) and methane (D) (of time step 10, 75 and 100). The seed of the random number generator was set to 9659.}
+  \subfigure[]{
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_co225.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_co275.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_co2100.pdf}
+  \end{minipage}
+  }
+  \subfigure[]{
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_methane25.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_methane75.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_methane100.pdf}
+  \end{minipage}
+  }
+  \caption{Population dynamics of the \emph{M. barkeri} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of methanol (B), CO$_2$ (C) and methane (D) (of time step 25, 75 and 100). The seed of the random number generator was set to 9659.}
   %\caption{Population and metabolite dynamics of the \emph{M. barkeri} model on a $20\times20$ grid.}
   \label{fig:barkerigrids}
 \end{figure}
@@ -465,58 +467,58 @@ In the exponential phase \textit{C. beijerinckii} had an approximate duplication
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:cbgrid]{\ref{fig:cbgrid}}). Hydrogen production was found in \textit{C. beijerinckii} occupied grid positions and methane production in \textit{M. barkeri} occupied positions.
 \begin{figure}[h!]
   \centering
-    \includegraphics[scale=0.45]{../results/img/barkeri_beijerinckii_20x20_seed6764_growth.pdf}
-    \includegraphics[scale=0.45]{../results/img/barkeri_beijerinckii_20x20_seed6764_subs.pdf}
-  \caption{Population dynamics of the joint \emph{M. barkeri} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose was added to the environment. The seed of the random number generator was set to 6764.}
+    \includegraphics[scale=0.45]{../results/img/barkeri_beijerinckii_20x20_seed2942_growth.pdf}
+    \includegraphics[scale=0.45]{../results/img/barkeri_beijerinckii_20x20_seed2942_subs.pdf}
+  \caption{Population dynamics of the joint \emph{M. barkeri} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose was added to the environment. The seed of the random number generator was set to 2942.}
   \label{fig:cbsg}
 \end{figure}
 \begin{figure}[h!]
   \centering
   \subfigure[]{
     \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_bac50.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed2942_bac50.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_bac100.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed2942_bac100.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_bac150.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed2942_bac150.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_glc50.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed2942_glc50.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_glc100.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed2942_glc100.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_glc150.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed2942_glc150.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_h250a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed2942_h250.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_h2100a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed2942_h2100.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_h2150a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed2942_h2150.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_meth50a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed2942_methane50.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_meth100a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed2942_methane100.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_meth150a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed2942_methane150.pdf}
   \end{minipage}
   }
-  \caption{Dynamics of the joint \emph{M. barkeri} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), hydrogen (C) and methanol (D) (time step 50, 100 and 150). The seed of the random number generator was set to 6764.}
+  \caption{Dynamics of the joint \emph{M. barkeri} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), hydrogen (C) and methanol (D) (time step 50, 100 and 150). The seed of the random number generator was set to 2942.}
   \label{fig:cbgrid}
   %\caption{Dynamics of the joint \emph{M. barkeri} and \emph{C. beijerinckii} model on a $20\times20$ grid.}
 \end{figure}
