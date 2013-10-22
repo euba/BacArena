@@ -1,5 +1,5 @@
 \subsection{General results of the framework}
-%\subsubsection{Movement}
+\subsubsection{Movement and Diffusion}
 The movement of the microbial agents showed the random dispersal of the microbes over the grid environment (Figure \hyperref[fig:mov]{\ref{fig:mov}}). The same was also observed in the diffusion model, where the metabolite flowed to the lowest concentrations on the grid (Figure \hyperref[fig:diff]{\ref{fig:diff}}).
 
 \begin{figure}[h!]
@@ -30,22 +30,27 @@ The movement of the microbial agents showed the random dispersal of the microbes
   \caption{Diffusion starting with 10\;mmol pyruvate in the middle of a $20\times20$ grid. Three different iteration steps are displayed (time step 1, 2 and 5).}
   \label{fig:diff}
 \end{figure}
+
+\subsubsection{Time consumption}
+
 \begin{figure}[h!]
   \centering
   \subfigure[]{
   \begin{minipage}[t]{0.45\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_20x20_aerob_seed55_time_abs.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_20x20_aerob_seed55_time_abs.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.45\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_20x20_aerob_seed55_time_rel.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_20x20_aerob_seed55_time_rel.pdf}
   \end{minipage}
   }
   \caption{Absolute (A) and relative (B) time consumption over the simulation of the \emph{E. coli} core model on a $20 \times 20$ grid.}
   \label{fig:time}
 \end{figure}
 %\clearpage
+
+
 Considering the time consumption of the whole framework (Figure \hyperref[fig:time]{\ref{fig:time}}), the calculation of the flux balance analysis required the highest amount of time.
 Furthermore, the overall fba calculation time was dependent on the number of microbe individuals on the grid, whereat higher numbers of agents resulted in higher overall calculation times. The same was true for the movement function, which consumed after the fba the highest amount of time. The time consumption of diffusion function was considerably lower than the other functions and constant over the whole simulation, since it is independent on the number of microbes on the grid. Other
 calculations for diverse matrix operations (primary $x$apply code in \textit{R}) required with respect to the movement a comparable small amount of time, but is significant, too.\\
@@ -54,6 +59,11 @@ For larger \textit{SBML} models the fba calculations consumed more time.
 That's why the amount of metabolic reactions is only relevant for fba calculations.
 The time consumption of the other function was independent on the used model and relativly insignificant for \textit{SBML} models taller than $500\times 500$ (reactions $\times$ metabolites).
 Therefore, fba was the time limiting factor of the simulations.
+
+
+
+
+\subsection{Population models}
 
 \subsubsection{\textit{Escherichia coli} core}
 The \textit{E. coli} core model was subjected to initial concentrations of the substrates glucose and oxygen to generate a population model and monitor the production/consumption of various metabolites (Figure \hyperref[fig:ecoresg]{\ref{fig:ecoresg}}). In the first time steps oxygen and glucose were consumed and CO$_2$ was produced. Additionally, fermentation products such as acetate, formate and ethanol were produced, which increased in concentration during the exponential phase of microbial growth. 
@@ -66,12 +76,12 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \centering
   \subfigure[]{
   %\begin{minipage}[t]{0.45\textwidth}
-    \includegraphics[scale=0.45]{../results/ecoli_20x20_aerob_seed55_growth.pdf}
+    \includegraphics[scale=0.45]{../results/img/ecoli_20x20_aerob_seed55_growth.pdf}
   %\end{minipage}
   }
   \subfigure[]{
   %\begin{minipage}[t]{0.45\textwidth}
-    \includegraphics[scale=0.45]{../results/ecoli_20x20_aerob_seed55_subs.pdf}
+    \includegraphics[scale=0.45]{../results/img/ecoli_20x20_aerob_seed55_subs.pdf}
   %\end{minipage}
   }
   \caption{Population dynamics of the \emph{E. coli} core model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose and oxygen was added to the environment. The seed of the random number generator was set to 55.}
@@ -82,50 +92,50 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \centering
   \subfigure[]{
     \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_20x20_aerob_seed55_bac5.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_20x20_aerob_seed55_bac10.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_20x20_aerob_seed55_bac35.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_20x20_aerob_seed55_bac40.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_20x20_aerob_seed55_bac50.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_20x20_aerob_seed55_bac50.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_20x20_aerob_seed55_gluc5.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_20x20_aerob_seed55_glc10.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_20x20_aerob_seed55_gluc35.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_20x20_aerob_seed55_glc40.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_20x20_aerob_seed55_gluc50.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_20x20_aerob_seed55_glc50.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_20x20_aerob_seed55_ace5.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_20x20_aerob_seed55_ace10.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_20x20_aerob_seed55_ace35.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_20x20_aerob_seed55_ace40.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_20x20_aerob_seed55_ace50.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_20x20_aerob_seed55_ace50.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_20x20_aerob_seed55_co25.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_20x20_aerob_seed55_co210.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_20x20_aerob_seed55_co235.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_20x20_aerob_seed55_co240.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_20x20_aerob_seed55_co250.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_20x20_aerob_seed55_co250.pdf}
   \end{minipage}
   }
-  \caption{Population and metabolite dynamics of the \emph{E. coli} core model on a $20\times20$ grid.}
-  %\caption{Population dynamics of the \emph{E. coli} core model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), acetate (C) and CO$_2$ (D) (of time step 5, 35 and 50). The seed of the random number generator was set to 55.}
+  %\caption{Population and metabolite dynamics of the \emph{E. coli} core model on a $20\times20$ grid.}
+  \caption{Population dynamics of the \emph{E. coli} core model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), acetate (C) and CO$_2$ (D) (of time step 10, 40 and 50). The seed of the random number generator was set to 55.}
   \label{fig:ecoregrids}
 \end{figure}
 
@@ -139,8 +149,8 @@ The population growth reached the stationary phase in approximately 30 iteration
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:ecoligrids]{\ref{fig:ecoligrids}}). Here, CO$_2$ was produced on every position the bacterial agents visited and  acetate was preferably produced in the centre of the grid.
 \begin{figure}[h!]
   \centering
-    \includegraphics[scale=0.45]{../results/Bcoli_20x20_seed176_growth.pdf}
-    \includegraphics[scale=0.45]{../results/Bcoli_20x20_seed176_subs.pdf}
+    \includegraphics[scale=0.45]{../results/img/Bcoli_20x20_seed176_growth.pdf}
+    \includegraphics[scale=0.45]{../results/img/Bcoli_20x20_seed176_subs.pdf}
   \caption{Population dynamics of the big \emph{E. coli} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose and oxygen was added to the environment. The seed of the random number generator was set to 176.}
   \label{fig:ecolisg}
 \end{figure}
@@ -148,46 +158,46 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \centering
   \subfigure[]{
     \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/Bcoli_20x20_seed176_bac5.pdf}
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_bac5.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/Bcoli_20x20_seed176_bac15.pdf}
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_bac15.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/Bcoli_20x20_seed176_bac35.pdf}
-  \end{minipage}
-  }
-  \subfigure[]{
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/Bcoli_20x20_seed176_glucose5a.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/Bcoli_20x20_seed176_glucose15.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/Bcoli_20x20_seed176_glucose35a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_bac35.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/Bcoli_20x20_seed176_ace5a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_glucose5a.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/Bcoli_20x20_seed176_ace15.pdf}
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_glucose15.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/Bcoli_20x20_seed176_ace35a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_glucose35a.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/Bcoli_20x20_seed176_co25a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_ace5a.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/Bcoli_20x20_seed176_co215.pdf}
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_ace15.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/Bcoli_20x20_seed176_co235a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_ace35a.pdf}
+  \end{minipage}
+  }
+  \subfigure[]{
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_co25a.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_co215.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed176_co235a.pdf}
   \end{minipage}
   }
   \caption{Population dynamics of the big \emph{E. coli} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), acetate (C) and CO$_2$ (D) (of time step 5, 15 and 35). The seed of the random number generator was set to 176.}
@@ -201,8 +211,8 @@ The population growth reached the stationary phase in approximately 100 iteratio
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:barkerigrids]{\ref{fig:barkerigrids}}).
 \begin{figure}[h!]
   \centering
-    \includegraphics[scale=0.45]{../results/barkeri_20x20_seed9659_growth.pdf}
-    \includegraphics[scale=0.45]{../results/barkeri_20x20_seed9659_subs.pdf}
+    \includegraphics[scale=0.45]{../results/img/barkeri_20x20_seed9659_growth.pdf}
+    \includegraphics[scale=0.45]{../results/img/barkeri_20x20_seed9659_subs.pdf}
   \caption{Population dynamics of the \emph{M. barkeri} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of methanol was added to the environment. The seed of the random number generator was set to 9659.}
   \label{fig:barkerisg}
 \end{figure}
@@ -211,46 +221,46 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \centering
   \subfigure[]{
     \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_20x20_seed9659_bac10.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_bac10.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_20x20_seed9659_bac75.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_bac75.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-      \includegraphics[width=\textwidth]{../results/barkeri_20x20_seed9659_bac100.pdf}
-  \end{minipage}
-  }
-  \subfigure[]{
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_20x20_seed9659_methanol10a.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_20x20_seed9659_methanol75.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_20x20_seed9659_methanol100a.pdf}
+      \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_bac100.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_20x20_seed9659_co210a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_methanol10a.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_20x20_seed9659_co275.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_methanol75.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_20x20_seed9659_co2100a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_methanol100a.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_20x20_seed9659_meth10a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_co210a.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_20x20_seed9659_meth75.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_co275.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_20x20_seed9659_meth100a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_co2100a.pdf}
+  \end{minipage}
+  }
+  \subfigure[]{
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_meth10a.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_meth75.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_meth100a.pdf}
   \end{minipage}
   }
   \caption{Population dynamics of the \emph{M. barkeri} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of methanol (B), CO$_2$ (C) and methane (D) (of time step 10, 75 and 100). The seed of the random number generator was set to 9659.}
@@ -267,8 +277,8 @@ The population growth reached the stationary phase in approximately 45 iteration
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:beijergrids]{\ref{fig:beijergrids}}).
 \begin{figure}[h!]
   \centering
-    \includegraphics[scale=0.45]{../results/beijerinckii_20x20_seed943_growth.pdf}
-    \includegraphics[scale=0.45]{../results/beijerinckii_20x20_seed943_subs.pdf}
+    \includegraphics[scale=0.45]{../results/img/beijerinckii_20x20_seed943_growth.pdf}
+    \includegraphics[scale=0.45]{../results/img/beijerinckii_20x20_seed943_subs.pdf}
   \caption{Population dynamics of the \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose was added to the environment. The seed of the random number generator was set to 943.}
   \label{fig:beijersg}
 \end{figure}
@@ -276,46 +286,46 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \centering
   \subfigure[]{
     \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/beijerinckii_20x20_seed943_bac10.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_bac10.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/beijerinckii_20x20_seed943_bac30.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_bac30.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/beijerinckii_20x20_seed943_bac45.pdf}
-  \end{minipage}
-  }
-  \subfigure[]{
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/beijerinckii_20x20_seed943_gluc10.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/beijerinckii_20x20_seed943_gluc50.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/beijerinckii_20x20_seed943_gluc65.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_bac45.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/beijerinckii_20x20_seed943_h210a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_gluc10.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/beijerinckii_20x20_seed943_h230.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_gluc50.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/beijerinckii_20x20_seed943_h245.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_gluc65.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/beijerinckii_20x20_seed943_co210a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_h210a.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/beijerinckii_20x20_seed943_co230.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_h230.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/beijerinckii_20x20_seed943_co245.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_h245.pdf}
+  \end{minipage}
+  }
+  \subfigure[]{
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_co210a.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_co230.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_co245.pdf}
   \end{minipage}
   }
   \caption{Population dynamics of the \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), hydrogen (C) and CO$_2$ (D) (of time step 10, 30 and 45). The seed of the random number generator was set to 943.}
@@ -332,8 +342,8 @@ The doubling time in the exponential phase was estimated as 17 iterations (h) fo
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:cegrid]{\ref{fig:cegrid}}). The production of methane was found in grid positions occupied by \textit{M. barkeri} and glucose consumption was found in position occupied by \textit{E. coli}. In the later stages of growth acetate was consumed by \textit{M. barkeri}.
 \begin{figure}[h!]
   \centering
-    \includegraphics[scale=0.45]{../results/barkeri_ecoli_20x20_seed4612_growth.pdf}
-    \includegraphics[scale=0.45]{../results/barkeri_ecoli_20x20_seed4612_subs.pdf}
+    \includegraphics[scale=0.45]{../results/img/barkeri_ecoli_20x20_seed4612_growth.pdf}
+    \includegraphics[scale=0.45]{../results/img/barkeri_ecoli_20x20_seed4612_subs.pdf}
   \caption{Population dynamics of the joint big \emph{E. coli} and \emph{M. barkeri} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose and methanol was added to the environment. The seed of the random number generator was set to 4612.}
   \label{fig:besg}
 \end{figure}
@@ -341,46 +351,46 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \centering
   \subfigure[]{
     \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_ecoli_20x20_seed4612_bac50.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_bac50.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_ecoli_20x20_seed4612_bac100.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_bac100.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_ecoli_20x20_seed4612_bac150.pdf}
-  \end{minipage}
-  }
-  \subfigure[]{
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_ecoli_20x20_seed4612_glc80.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_ecoli_20x20_seed4612_glc100a.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_ecoli_20x20_seed4612_glc130.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_bac150.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_ecoli_20x20_seed4612_ace80.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_glc80.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_ecoli_20x20_seed4612_ace100a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_glc100a.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_ecoli_20x20_seed4612_ace130.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_glc130.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_ecoli_20x20_seed4612_meth80.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_ace80.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_ecoli_20x20_seed4612_meth100a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_ace100a.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_ecoli_20x20_seed4612_meth130.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_ace130.pdf}
+  \end{minipage}
+  }
+  \subfigure[]{
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_meth80.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_meth100a.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_ecoli_20x20_seed4612_meth130.pdf}
   \end{minipage}
   }
   \caption{Population dynamics of the joint big \emph{E. coli} and \emph{M. barkeri} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), acetate (C) and methane (D) (of time step 80, 100 and 130). The seed of the random number generator was set to 4612.}
@@ -396,8 +406,8 @@ Acetate was produced by both species. \textit{C. beijerinckii} reached the stati
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:cegrid]{\ref{fig:cegrid}}). Hydrogen production was found in \textit{C. beijerinckii} occupied grid positions and ethanol production in \textit{E. coli} occupied positions.
 \begin{figure}[h!]
   \centering
-    \includegraphics[scale=0.45]{../results/ecoli_beijerinckii_20x20_seed5147_growth.pdf}
-    \includegraphics[scale=0.45]{../results/ecoli_beijerinckii_20x20_seed5147_subs.pdf}
+    \includegraphics[scale=0.45]{../results/img/ecoli_beijerinckii_20x20_seed5147_growth.pdf}
+    \includegraphics[scale=0.45]{../results/img/ecoli_beijerinckii_20x20_seed5147_subs.pdf}
   \caption{Population dynamics of the joint big \emph{E. coli} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose was added to the environment. The seed of the random number generator was set to 5147.}
   \label{fig:cesg}
 \end{figure}
@@ -405,46 +415,46 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \centering
   \subfigure[]{
     \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_beijerinckii_20x20_seed5147_bac10.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_bac10.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_beijerinckii_20x20_seed5147_bac55.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_bac55.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_beijerinckii_20x20_seed5147_bac75.pdf}
-  \end{minipage}
-  }
-  \subfigure[]{
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_beijerinckii_20x20_seed5147_glc25.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_beijerinckii_20x20_seed5147_glc45.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_beijerinckii_20x20_seed5147_glc60.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_bac75.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_beijerinckii_20x20_seed5147_h225.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_glc25.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_beijerinckii_20x20_seed5147_h245.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_glc45.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_beijerinckii_20x20_seed5147_h260.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_glc60.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_beijerinckii_20x20_seed5147_eth25.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_h225.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_beijerinckii_20x20_seed5147_eth45.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_h245.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/ecoli_beijerinckii_20x20_seed5147_eth60.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_h260.pdf}
+  \end{minipage}
+  }
+  \subfigure[]{
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_eth25.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_eth45.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_eth60.pdf}
   \end{minipage}
   }
   \caption{Population dynamics of the joint big \emph{E. coli} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), hydrogen (C) and ethanol (D) (of time step 25, 45 and 60). The seed of the random number generator was set to 5147.}
@@ -456,13 +466,13 @@ According the dispersion of the microbes on the grid environment, substrates wer
 The joint simulation of the \textit{M. barkeri} and \textit{C. beijerinckii} was subjected to initial concentrations of glucose as a exclusive substrate for \textit{C. beijerinckii}. In the first time steps the substrate was consumed by \textit{C. beijerinckii} and CO$_2$, hydrogen, acetate, butyrate and succinate was produced (Figure \hyperref[fig:cbsg]{\ref{fig:cbsg}}). 
 In comparison to the other metabolites hydrogen and CO$_2$ had the highest concentrations at the stationary phase of \textit{C. beijerinckii} reached at approximately 60 iterations. The population of \textit{C. beijerinckii} died out at iteration 80 and \textit{M. barkeri} started growing exponentially by taking the produced hydrogen and CO$_2$ as substrates. 
 In the later phases of growth the produced acetate was used as a substrate. The stationary phase of \textit{M. barkeri} was reached at iteration 170. 
-During growth \textit{M. barkeri} produced methane and water by consuming $CO_2$ and almost the total by \textit{C. beijerinckii} produced hydrogen. 
+During growth \textit{M. barkeri} produced methane and water by consuming CO$_2$ and almost the total hydrogen produced by \textit{C. beijerinckii}. 
 In the exponential phase \textit{C. beijerinckii} had an approximate duplication time of 8 iterations and \textit{M. barkeri} of 12 iterations.
 According the dispersion of the microbes on the grid environment, substrates were consumed and metabolites produced (Figure \hyperref[fig:cbgrid]{\ref{fig:cbgrid}}). Hydrogen production was found in \textit{C. beijerinckii} occupied grid positions and methane production in \textit{M. barkeri} occupied positions.
 \begin{figure}[h!]
   \centering
-    \includegraphics[scale=0.45]{../results/barkeri_beijerinckii_20x20_seed6764_growth.pdf}
-    \includegraphics[scale=0.45]{../results/barkeri_beijerinckii_20x20_seed6764_subs.pdf}
+    \includegraphics[scale=0.45]{../results/img/barkeri_beijerinckii_20x20_seed6764_growth.pdf}
+    \includegraphics[scale=0.45]{../results/img/barkeri_beijerinckii_20x20_seed6764_subs.pdf}
   \caption{Population dynamics of the joint \emph{M. barkeri} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose was added to the environment. The seed of the random number generator was set to 6764.}
   \label{fig:cbsg}
 \end{figure}
@@ -470,46 +480,46 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \centering
   \subfigure[]{
     \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_beijerinckii_20x20_seed6764_bac50.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_bac50.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_beijerinckii_20x20_seed6764_bac100.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_bac100.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_beijerinckii_20x20_seed6764_bac150.pdf}
-  \end{minipage}
-  }
-  \subfigure[]{
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_beijerinckii_20x20_seed6764_glc50.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_beijerinckii_20x20_seed6764_glc100.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_beijerinckii_20x20_seed6764_glc150.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_bac150.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_beijerinckii_20x20_seed6764_h250a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_glc50.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_beijerinckii_20x20_seed6764_h2100a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_glc100.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_beijerinckii_20x20_seed6764_h2150a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_glc150.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_beijerinckii_20x20_seed6764_meth50a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_h250a.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_beijerinckii_20x20_seed6764_meth100a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_h2100a.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/barkeri_beijerinckii_20x20_seed6764_meth150a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_h2150a.pdf}
+  \end{minipage}
+  }
+  \subfigure[]{
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_meth50a.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_meth100a.pdf}
+  \end{minipage}
+  \begin{minipage}[t]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_beijerinckii_20x20_seed6764_meth150a.pdf}
   \end{minipage}
   }
   \caption{Dynamics of the joint \emph{M. barkeri} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), hydrogen (C) and methanol (D) (time step 50, 100 and 150). The seed of the random number generator was set to 6764.}
