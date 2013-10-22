@@ -45,19 +45,15 @@ for(time in 1:iter){
   no_fba_found <- 0
   hash_uses <- 0
   
-  #time_tmp4 <- proc.time()
-  #growth_vec <- vector(mode="numeric") # all current growth rate for statistics
+  growth_vec <- vector(mode="numeric") # for diagnostic plot
+  substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
+  rownames(substrat_history) <- names(substrat)
+
   bacnum <- dim(bac)[1]
   
-  #sapply(levels(bac[,3]), function(x,time,tab,bac_history){
-  #  bac_history[[x]][time] <<- tab[x]
-  #},time=time,tab=table(bac$type),bac_history=bac_history)
-  
-  #substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
-  #rownames(substrat_history) <- names(substrat)
+  #time_tmp4 <- proc.time()
   #time_unk <- time_unk + proc.time() - time_tmp4
   
-  #if(time == 1) plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="h2", prod="pyruvate")
   time_tmp3 <- proc.time()
     min_tmp <- min(unlist(lapply(substrat, min)))
     diffusion(substrat)
@@ -87,10 +83,7 @@ for(time in 1:iter){
         
     i <- bac[l,][1,1]
     j <- bac[l,][1,2]
-    
-    # rounding is really slow
-    #substrat <- lapply(substrat, function(x){round(x, digits=2)}) # ROUNDING!!!
-    
+        
     spos <- lapply(substrat, function(x, i, j){ # get current substrat vector
       return(x[i,j])
     },i=i, j=j)
@@ -102,6 +95,11 @@ for(time in 1:iter){
     
     
     time_tmp3 <- proc.time()
+
+    #
+    # Hashing to reuse old fba results
+    #
+    
 #       hash_spos <- digest(floor(unlist(spos))) # rounding!!
 #       if(exists(hash_spos, envir=fba_hash)) {
 #         growth <- fba_hash[[hash_spos]]
@@ -121,29 +119,17 @@ for(time in 1:iter){
     #
     if(length(growth)==1){ # <=> if(growth == "DEAD"){
       no_fba_found <- no_fba_found+1
-#      print("----")
-#      cat("no fba solution found for: ")
-#      print(bac[l,])
-#       #print(t(spos))
-#       print("bac[l,]$growth")
-#       print(bac[l,]$growth)
-#       print("----")
 
        # new growth rate according to advanced magic calculation *muah*
        starving_growth <- -(get_ngam(bac[l,]$type)/get_gam(bac[l,]$type)) 
        bac[l,]$growth <- starving_growth + bac[l,]$growth
-       #plot: growth_vec[l] <- starving_growth # save current growth rate to plot it 
-#       print("growth_vec[l]")
-#       print(growth_vec[l])
-#       print("bac[l,]$growth")
-#       print(bac[l,]$growth)
+       growth_vec[l] <- starving_growth  # for diagnostic plot
     }
     #
     # if there is a feasable fba solution continue:
     #
     else{
-      #growth <- lapply(growth, function(x){round(x, digits=2)}) # ROUNDING!!!
-      #plot: growth_vec[l] <- growth[[biomassf]] # save current growth rate to plot it 
+      growth_vec[l] <- growth[[biomassf]] # for diagnostic plot
       if(growth[[biomassf]] != 0){ # continue only if there is growth !
         bac[l,][1,4] <- bac[l,][1,4] + growth[[biomassf]]
         
@@ -152,8 +138,12 @@ for(time in 1:iter){
             #print(substrat[[x]][i,j])
             #print(growth[[sub_ex[[x]]]])
             
+            #
+            # rounding to avoid gray bug (different variable accuracy leads to artefacts -> very small negative differences from zero which produces a gray plot)
+            #
             #substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
-            #substrat[[x]][i,j] <<- round(substrat[[x]][i,j] + growth[[sub_ex[[x]]]], digits=3) # "<<-" is necessary for extern variable modification
+            substrat[[x]][i,j] <<- round(substrat[[x]][i,j] + growth[[sub_ex[[x]]]], digits=3) # "<<-" is necessary for extern variable modification
+            
             if(substrat[[x]][i,j] < 0){
               print (growth[[sub_ex[[x]]]])
               print (substrat[[x]][i,j])
@@ -195,15 +185,6 @@ for(time in 1:iter){
         bac <- bac[-(dim(bac)[1]),]
       }
     }
-    #if(dim(bac)[1]> n*m){
-    #  print(bac[l,])
-    #  print(c(a,b))
-    #  print(test)
-    #  print(dupli)
-    #  print("")
-    #  print(bac)
-    #  stop("more bacs than space...")
-    #}
     time_mov <- time_mov + proc.time() - time_tmp2
   }
   
@@ -213,23 +194,20 @@ for(time in 1:iter){
 ########################################################################################################
   
   time_tmp4 <- proc.time()
-  #bac <- bac[!(bac$growth<0),] #death
+  #
+  bac <- bac[!(bac$growth<0),] #death
   #
   if(dim(bac)[1]==0){
     print("ALL BACTERIA DIED")
     break
   }
-  #growth_vec_history[[time]] <- growth_vec
   time_unk <- time_unk + proc.time() - time_tmp4
   
-  time_tmp3 <- proc.time()
-    #plot.bacs(time=time, bac=bac, growth_vec_history=growth_vec_history, subnam1="glucose", subnam2="co2", subnam3="o2", prodnam="acetate", bac_color=bac_color)
-    #plot_list[[time]] <- plot.bacs.cool(bac=bac, time=time, substrat=substrat, sub="glucose", sub2="o2", sub3="acetate", prod="co2", bac_col=bac_color)
-  time_plot <- proc.time() - time_tmp3
+  growth_vec_history[[time]] <- growth_vec # for diagnostic plot
   
   time_tot <- proc.time() - time_tmp
-  time_cur <- cbind(time_tot[3], time_diff[3], time_mov[3], time_fba[3], time_plot[3], time_unk[3])
-  colnames(time_cur) <- c("total", "diffusion", "movement", "fba", "plot", "unknown")
+  time_cur <- cbind(time_tot[3], time_diff[3], time_mov[3], time_fba[3], time_unk[3])
+  colnames(time_cur) <- c("total", "diffusion", "movement", "fba", "unknown")
   #print(time_cur)
   time_history[[time]] <- time_cur
   
@@ -265,4 +243,3 @@ legend("left", colnames(time_cur), pch=1, col=c(1:dim(m)[2]), cex=0.64, bty="n")
 
 #save data
 save(BacArena_data, file = "BacArena_data.RData")
-load("old.RData")
