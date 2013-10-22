@@ -48,8 +48,6 @@ The movement of the microbial agents showed the random dispersal of the microbes
   \caption{Absolute (A) and relative (B) time consumption over the simulation of the \emph{E. coli} core model on a $20 \times 20$ grid.}
   \label{fig:time}
 \end{figure}
-%\clearpage
-
 
 Considering the time consumption of the whole framework (Figure \hyperref[fig:time]{\ref{fig:time}}), the calculation of the flux balance analysis required the highest amount of time.
 Furthermore, the overall fba calculation time was dependent on the number of microbe individuals on the grid, whereat higher numbers of agents resulted in higher overall calculation times. The same was true for the movement function, which consumed after the fba the highest amount of time. The time consumption of diffusion function was considerably lower than the other functions and constant over the whole simulation, since it is independent on the number of microbes on the grid. Other
@@ -59,9 +57,6 @@ For larger \textit{SBML} models the fba calculations consumed more time.
 That's why the amount of metabolic reactions is only relevant for fba calculations.
 The time consumption of the other function was independent on the used model and relativly insignificant for \textit{SBML} models taller than $500\times 500$ (reactions $\times$ metabolites).
 Therefore, fba was the time limiting factor of the simulations.
-
-
-
 
 \subsection{Population models}
 
@@ -87,7 +82,6 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \caption{Population dynamics of the \emph{E. coli} core model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of glucose and oxygen was added to the environment. The seed of the random number generator was set to 55.}
 \label{fig:ecoresg}
 \end{figure}
-
 \begin{figure}[h!]
   \centering
   \subfigure[]{
@@ -292,43 +286,43 @@ According the dispersion of the microbes on the grid environment, substrates wer
     \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_bac30.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_bac45.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_bac50.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_gluc10.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_glc20.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_gluc50.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_glc40.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_gluc65.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_glc50.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_h210a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_h220.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_h230.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_h240.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_h245.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_h250.pdf}
   \end{minipage}
   }
   \subfigure[]{
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_co210a.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_co220.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_co230.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_co240.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_co245.pdf}
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_co250.pdf}
   \end{minipage}
   }
-  \caption{Population dynamics of the \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), hydrogen (C) and CO$_2$ (D) (of time step 10, 30 and 45). The seed of the random number generator was set to 943.}
+  \caption{Population dynamics of the \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), hydrogen (C) and CO$_2$ (D) (of time step 20, 40 and 50). The seed of the random number generator was set to 943.}
    %\caption{Population and metabolite dynamics of the \emph{C. beijerinckii} model on a $20\times20$ grid.}
   \label{fig:beijergrids}
 \end{figure}
@@ -415,13 +409,13 @@ According the dispersion of the microbes on the grid environment, substrates wer
   \centering
   \subfigure[]{
     \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_bac10.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_bac25.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
     \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_bac55.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_bac75.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_bac65.pdf}
   \end{minipage}
   }
   \subfigure[]{
@@ -429,10 +423,10 @@ According the dispersion of the microbes on the grid environment, substrates wer
     \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_glc25.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_glc45.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_glc55.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_glc60.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_glc65.pdf}
   \end{minipage}
   }
   \subfigure[]{
@@ -440,10 +434,10 @@ According the dispersion of the microbes on the grid environment, substrates wer
     \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_h225.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_h245.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_h255.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_h260.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_h265.pdf}
   \end{minipage}
   }
   \subfigure[]{
@@ -451,13 +445,13 @@ According the dispersion of the microbes on the grid environment, substrates wer
     \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_eth25.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_eth45.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_eth55.pdf}
   \end{minipage}
   \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_eth60.pdf}
+    \includegraphics[width=\textwidth]{../results/img/ecoli_beijerinckii_20x20_seed5147_eth65.pdf}
   \end{minipage}
   }
-  \caption{Population dynamics of the joint big \emph{E. coli} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), hydrogen (C) and ethanol (D) (of time step 25, 45 and 60). The seed of the random number generator was set to 5147.}
+  \caption{Population dynamics of the joint big \emph{E. coli} and \emph{C. beijerinckii} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of glucose (B), hydrogen (C) and ethanol (D) (of time step 25, 55 and 65). The seed of the random number generator was set to 5147.}
   %\caption{Dynamics of the joint \emph{E. coli} and \emph{C. beijerinckii} model on a $20\times20$ grid.}
   \label{fig:cegrid}
 \end{figure}
