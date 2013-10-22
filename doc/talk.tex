@@ -11,7 +11,11 @@
 \usepackage[ngerman]{babel}
 \usepackage{graphicx}
 \usepackage{color}
+\usepackage{float}
 
+\usepackage[ruled,noline]{algorithm2e}
+%\providecommand{\SetAlgoLined}{\SetLine}
+%\providecommand{\DontPrintSemicolon}{\dontprintsemicolon}
 
 %quotatation with source
 \def\signed #1{{\leavevmode\unskip\nobreak\hfil\penalty50\hskip2em
@@ -76,83 +80,70 @@
 }
 
 \frame{
-  \title{Agent based modeling}
+  \frametitle{Agent based modeling}
+  \begin{itemize}
+  \setlength{\itemsep}{20pt}
+    \item Grid
+    \item Substrate
+    \item Movement
+    \item Diffusion
+  \end{itemize}
 }
 
 \frame{
-  \title{Constrained based modeling}
+  \frametitle{Algorithmic overview}
+\begin{algorithm}[H]
+  \caption{Main model iterations called by \texttt{diffbac.R} with different functions applied to bacterial agents and metabolite.}
+  \SetAlgoLined
+  \For{number of iterations}{
+    \emph{diffusion}()\;
+    \For{number of bacteria}{
+      \emph{fba}()\;
+      \emph{movement}()\;
+      \emph{growth}()\;
+    }
+  }
+  \label{alg:mainloop}
+  \end{algorithm}
 }
 
 \frame{
-  \title{Reproducible Simulations}
+  \frametitle{Constrained based modeling}
+  \begin{itemize}
+  \setlength{\itemsep}{20pt}
+    \item fba
+  \end{itemize}
 }
 
 \frame{
-  \title{Modularity}
+  \frametitle{Some Feature}
+  \begin{itemize}
+  \setlength{\itemsep}{20pt}
+    \item Reproducible Simulations
+    \item Modularity
+  \end{itemize}
+
 }
 
-
 \frame{
-\begin{figure}[h!]
+  \frametitle{Growth of \textit{M. barkeri}}
+  \begin{columns}
   \centering
-    \includegraphics[scale=0.4]{../results/img/barkeri_20x20_seed9659_growth.pdf}
-    \includegraphics[scale=0.4]{../results/img/barkeri_20x20_seed9659_subs.pdf}
-  \caption{Population dynamics of the \emph{M. barkeri} model on a $20\times20$ grid, with bacterial growth (A) and consumption/production of various metabolites (B). An initial concentration of 70\;mmol per grid cell of methanol was added to the environment. The seed of the random number generator was set to 9659.}
-  \label{fig:barkerisg}
-\end{figure}
-\begin{figure}[h!]
+  \begin{column}{.48\textwidth}
 
-  \centering
-  \subfigure[]{
-    \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_bac25.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_bac75.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-      \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_bac100.pdf}
-  \end{minipage}
-  }
-  \subfigure[]{
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_meth25.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_meth75.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_meth100.pdf}
-  \end{minipage}
-  }
-  \subfigure[]{
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_co225.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_co275.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_co2100.pdf}
-  \end{minipage}
-  }
-  \subfigure[]{
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_methane25.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_methane75.pdf}
-  \end{minipage}
-  \begin{minipage}[t]{0.3\textwidth}
-    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_methane100.pdf}
-  \end{minipage}
-  }
-  \caption{Population dynamics of the \emph{M. barkeri} model on a $20\times20$ grid, with bacterial movement (A) and concentrations of methanol (B), CO$_2$ (C) and methane (D) (of time step 25, 75 and 100). The seed of the random number generator was set to 9659.}
-  \label{fig:barkerigrids}
-\end{figure}
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_subs.pdf}
+  \end{column}
+  \hfill
+  \begin{column}{.48\textwidth}
+
+    \includegraphics[width=\textwidth]{../results/img/barkeri_20x20_seed9659_growth.pdf}
+  \end{column}
+  \end{columns}
 }
 
 \end{document}
+
+
 \frame{
   \frametitle{}
 }
