@@ -51,14 +51,24 @@ According to experimental studies the metabolite fluxes as well as the growth (G
 
 \begin{table}[h!]\centering\scriptsize
 \caption{Flux constraints as well as the growth (GAM) and non growth associated maintenance (NGAM) set for each model according to the respective reference. Values are given in $\frac{\mathrm{mmol}}{\mathrm{h}}$.}
-\begin{tabular}{lllllllllll}
+\begin{tabular}{lllll}
 \toprule
- & NGAM & GAM & Glucose & Oxygen & Succinate & Methanol & Hydrogen & Pyruvate & Acetate & Reference\\
+% & NGAM & GAM & Glucose & Oxygen & Succinate & Methanol & Hydrogen & Pyruvate & Acetate & Reference\\
+& \emph{E. coli} & \emph{M. barkeri} & \emph{C. beijerinckii} & Reference\\
 \midrule
 %\multicolumn{4}{l}{\textbf{Uptake:}}\\
-\emph{E. coli} & 8.39 & 59.81 & 11 & 18.2 & 16 & $-$ & $-$ & $-$ & $-$ & \cite{Feist07}, \cite{Orth11}\\
-\emph{M. barkeri} & 1.75 & 30 & $-$ & $-$ & $-$ & 16 & 41 & 5 & 8 & \cite{Feist06}\\
-\emph{C. beijerinckii} & 8.5 & 40 & 9.39 & $-$ & $-$ & $-$ & $-$ & $-$ & 3.41 & \cite{Milne11}\\
+%\emph{E. coli} & 8.39 & 59.81 & 11 & 18.2 & 16 & $-$ & $-$ & $-$ & $-$ & \cite{Feist07}, \cite{Orth11}\\
+%\emph{M. barkeri} & 1.75 & 30 & $-$ & $-$ & $-$ & 16 & 41 & 5 & 8 & \cite{Feist06}\\
+%\emph{C. beijerinckii} & 8.5 & 40 & 9.39 & $-$ & $-$ & $-$ & $-$ & $-$ & 3.41 & \cite{Milne11}\\
+NGAM & 8.39 & 1.75 & 8.5 & \cite{Feist07}, \cite{Feist06}, \cite{Milne11}\\
+GAM & 59.81 & 30 & 40 & \cite{Feist07}, \cite{Feist06}, \cite{Milne11}\\
+Glucose & 11 & $-$ & 9.39 & \cite{Feist07}, \cite{Milne11}\\
+Oxygen & 18.2 & $-$ & $-$ & \cite{Feist07}\\
+Succinate & 16 & $-$ & $-$ & \cite{Orth11}\\
+Methanol & $-$ & 16 & $-$ & \cite{Feist06}\\
+Hydrogen & $-$ & 41 & $-$ & \cite{Feist06}\\
+Pyruvate & $-$ & 5 & $-$ & \cite{Feist06}\\
+Acetate & $-$ & 8 & 3.41 & \cite{Feist06}, \cite{Milne11}\\
 %\multicolumn{4}{l}{\textbf{Growth:}}\\
 \bottomrule 
 \end{tabular} 

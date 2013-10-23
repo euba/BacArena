@@ -27,10 +27,32 @@ For this reason we see further improvements in terms of two points:
     With this basis the optimal solution of the optimization problem \textit{can} be faster \cite{warmstart}.
 \end{enumerate}
 
-
-
-
 \subsection{Population models of single organisms}
+All population models show similarities in their growth curves (Figure \hyperref[fig:ecoresg]{\ref{fig:ecoresg}}, \hyperref[fig:ecolisg]{\ref{fig:ecolisg}}, \hyperref[fig:barkerisg]{\ref{fig:barkerisg}} and \hyperref[fig:beijersg]{\ref{fig:beijersg}}).
+Roughly, the observed growth can be separated into three phases: the exponential, the stationary and the death phase. Those phases are also observed in experimental studies of microbial growth ( *).
+During the exponential phase all substrates are efficiently used by the fba to accumulate biomass, which is then used for duplication. In the stationary phase almost all substrates were exploited and the fba does not find any feasible solution, which results in the reduction of biomass. Subsequently, bacterial agents are removed, if the biomass is below zero, which leads to the death phase.
+
+According to experimental studies \cite{Varma94}, the time for \emph{E. coli} to reach the stationary phase is about 8\;h, which is in contradiction to the observed time of approximately 39\;h in our study (Figure \hyperref[fig:ecoresg]{\ref{fig:ecoresg}}). This can be explained by the used artificial media composition, which might not be sufficient for an optimal growth.
+Moreover, the substrate concentrations were set to not empirically justified arbitrary values. Further refinements of substrate concentrations could thus increase the accuracy of the model to match experimental results. Additionally, the constraints of the used exchange reactions can also be refined to more realistic values.
+
+The observed growth of \emph{E. coli} (Figure \hyperref[fig:ecoresg]{\ref{fig:ecoresg}}) can be mainly characterized by the aerobic respiration of glucose by 
+\[
+  \textrm{C}_{6}\textrm{H}_{12}\textrm{O}_{6} + 6\textrm{O}_2 \rightarrow 6\textrm{CO}_{2} + 6 \textrm{H}_{2}\textrm{O}
+\]
+where one molecule of glucose and 6 molecules of oxygen are consumed to produce 6 molecules of CO$_2$ and water. According to the stochiometry of this reaction more oxygen was consumed by the model compared to glucose (Figure \hyperref[fig:ecolisg]{\ref{fig:ecolisg}}). Additionally, various fermentation products are produced via mixed acid fermentation under aerobic conditions (Figure \hyperref[fig:ecoresg]{\ref{fig:ecoresg}}), which is in concordance to experimental studies \cite{Sunya13}.
+In these studies, formate is only produced under anaerobic conditions. Interestingly, the production of formate is observed under aerobic conditions in \emph{E. coli} core, whereas \emph{E. coli} big does not produce formate (Figure \hyperref[fig:ecoresg]{\ref{fig:ecoresg}}).
+Furthermore, the smaller \emph{E. coli} model produces overall more fermentation products relative to CO$_2$. This can be explained by the additional pathways present in the more representative larger \emph{E. coli} model, which make the complete mineralization of glucose to CO$_2$ more preferable in the fba optimization.
+Since the complete mineralization of glucose would be more preferable in the larger \emph{E. coli} model, the applied uptake constraints (Table \hyperref[ab:const]{\ref{tab:const}}) allowed the production of fermentation products.
+
+The growth of \emph{M. barkeri} (Figure \hyperref[fig:barkerisg]{\ref{fig:barkerisg}}) can be explained by the fermentation of methanol to methane with
+\[
+  4\textrm{CH}_{3}\textrm{OH} \rightarrow 3\textrm{CH}_{4} + \textrm{CO}_{2} + 2\textrm{H}_{2}\textrm{O}
+\]
+where 4 molecules of methanol are consumed to produce 3 molecules of methane, 2 of water and 1 molecule CO$_2$.
+The stochiometry of this was fulfilled by the higher production of methane compared to CO$_2$ (Figure \hyperref[fig:barkerisg]{\ref{fig:barkerisg}}). However, water was, similar to methane, produced in high amounts, which can be explained by additional reactions in the model, which might lead to water production.
+In experimental studies the stationary phase of \emph{M. barkeri} under the consumption of methanol is reached after 72\;h \cite{Hippe79} which is in concordance to our observed time of approximately 80\;h. 
+
+\textit{C. beijerinckii} is able to ferment glucose to various fermentation products 
 
 \subsection{Interactions in mixed communities}
 \textit{M. barkeri} and \textit{C. beijerinckii} are possible syntrophic organisms.
