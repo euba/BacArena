@@ -14,8 +14,8 @@
 \usepackage{float}
 
 \usepackage[ruled,noline]{algorithm2e}
-%\providecommand{\SetAlgoLined}{\SetLine}
-%\providecommand{\DontPrintSemicolon}{\dontprintsemicolon}
+\providecommand{\SetAlgoLined}{\SetLine}
+\providecommand{\DontPrintSemicolon}{\dontprintsemicolon}
 
 %quotatation with source
 \def\signed #1{{\leavevmode\unskip\nobreak\hfil\penalty50\hskip2em
@@ -36,14 +36,14 @@
 \setbeamertemplate{itemize items}[default]
 \setbeamertemplate{enumerate items}[default]
 \setbeamertemplate{sections/subsections in toc}[circle]
-\setbeamercolor{section number projected}{bg=darkred,fg=white}
-\setbeamercolor{enumerate item}{fg=darkred}
-\setbeamercolor{enumerate subitem}{fg=darkred}
-\setbeamercolor{enumerate subsubitem}{fg=darkred}
-\setbeamercolor{itemize item}{fg=darkred}
-\setbeamercolor{itemize subitem}{fg=darkred}
-\setbeamercolor{itemize subsubitem}{fg=darkred}
-\setbeamercolor{caption name}{fg=darkred}
+\setbeamercolor{section number projected}{bg=darkgray,fg=white}
+\setbeamercolor{enumerate item}{fg=darkgray}
+\setbeamercolor{enumerate subitem}{fg=darkgray}
+\setbeamercolor{enumerate subsubitem}{fg=darkgray}
+\setbeamercolor{itemize item}{fg=darkgray}
+\setbeamercolor{itemize subitem}{fg=darkgray}
+\setbeamercolor{itemize subsubitem}{fg=darkgray}
+\setbeamercolor{caption name}{fg=darkgray}
 
 
 \captionsetup[figure]{font=scriptsize}
@@ -108,10 +108,13 @@
 }
 
 \frame{
-  \frametitle{Constrained based modeling}
+  \frametitle{Rules applied to each agent}
   \begin{itemize}
   \setlength{\itemsep}{20pt}
-    \item fba
+    \item species specific fba calculations with substrate concentrations as contraints
+    \item diffusion of substrates to neighbours with lower concentrations
+    \item random movement on the grid environment
+    \item growth according to accumulated biomass
   \end{itemize}
 }
 
@@ -120,13 +123,37 @@
   \begin{itemize}
   \setlength{\itemsep}{20pt}
     \item Reproducible Simulations
-    \item Modularity
+    \begin{itemize}
+    		\item setting seed for random number generation
+    \end{itemize}
+    \item Modularity ($\rightarrow$ easily extendable)
+    \begin{itemize}
+    		\item division of different functions
+    		\item additional SBML models
+    \end{itemize}
   \end{itemize}
 
 }
 
 \frame{
-  \frametitle{Growth of \textit{M. barkeri}}
+  \frametitle{Growth of \textit{Escherichia coli}}
+  \begin{columns}
+  \centering
+  \begin{column}{.48\textwidth}
+
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed911_subs.pdf}
+  \end{column}
+  \hfill
+  \begin{column}{.48\textwidth}
+
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed911_growth.pdf}
+  \end{column}
+  \end{columns}
+}
+
+
+\frame{
+  \frametitle{Growth of \textit{Methanosarcina barkeri}}
   \begin{columns}
   \centering
   \begin{column}{.48\textwidth}
@@ -140,6 +167,39 @@
   \end{column}
   \end{columns}
 }
+
+\frame{
+  \frametitle{Growth of \textit{Clostridium beijerinckii}}
+  \begin{columns}
+  \centering
+  \begin{column}{.48\textwidth}
+
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_subs.pdf}
+  \end{column}
+  \hfill
+  \begin{column}{.48\textwidth}
+
+    \includegraphics[width=\textwidth]{../results/img/beijerinckii_20x20_seed943_growth.pdf}
+  \end{column}
+  \end{columns}
+}
+
+\frame{
+  \frametitle{Growth of \textit{Escherichia coli}}
+  \begin{columns}
+  \centering
+  \begin{column}{.48\textwidth}
+
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed911_subs.pdf}
+  \end{column}
+  \hfill
+  \begin{column}{.48\textwidth}
+
+    \includegraphics[width=\textwidth]{../results/img/Bcoli_20x20_seed911_growth.pdf}
+  \end{column}
+  \end{columns}
+}
+
 
 \end{document}
 
