@@ -49,7 +49,7 @@ For certain bacterial species, published genome-wide metabolic reconstruction we
 
 According to experimental studies the metabolite fluxes as well as the growth (GAM) and non growth associated maintenance (NGAM) of the models were set to biologically relevant constraints. Those adjusted flux constraints for each model and the respective reference can be found in Table \hyperref[ab:const]{\ref{tab:const}}.
 
-\begin{table}[h!]\centering\scriptsize
+\begin{table}[h!]\centering\footnotesize
 \caption{Flux constraints as well as the growth (GAM) and non growth associated maintenance (NGAM) set for each model according to the respective reference. Values are given in $\frac{\mathrm{mmol}}{\mathrm{h}}$.}
 \begin{tabular}{lllll}
 \toprule
@@ -147,11 +147,10 @@ The solution flux vector of the fba optimization was taken to redefine the metab
 To represent the biomass the individually determined growth rates $[\frac{\mathrm{mmol}}{\mathrm{g_{DW} \cdot \mathrm{h}}}]$, defined by the flux through the biomass function according to the available substrates, were added to the existing biomass of each microbe. Therefore, the biomass accumulated in each time step (1\;h).
 
 \paragraph{Hashing}
-As a possibility to speed up fba calculations, we implemented a hashing function.
-We set up a table with \textit{md5} hashes from the substrate vector as entries.
-Connected with this entries were the updated substrate vector after fba finished.
-By this ,,calculation memory'' it was possible to use former calculation again to avoid reoccurring identical linear optimization cases.
-
+As a possibility to speed up fba computations, we implemented a hashing function.
+We set up a table with \textit{md5} hashes connected with the fba results as entries.
+%Connected with this entries were the updated substrate vector after fba finished.
+By this ,,calculatory memory'' it was possible to use former calculations again, to avoid reoccurring identical linear optimization cases.
 
 \subsubsection{Growth}
 Microbial growth was considered as the output of the fba-optimized biomass function. In case the fba did not find a solution, we considered a starvation phase, in which biomass was consumed. 

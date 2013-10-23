@@ -53,7 +53,13 @@
 
 \section*{Abstract}
 Microbial communities are essential for global ecosystems and human health.
+Computational modeling of microbial consortia is thus a major goal in systems biology and microbial ecology. 
 
+\texttt{BacArena} is a project to simulate bacterial behaviour in communities. A lot of progress is done in the last years to gain genome wide metabolic reconstructions of certain organisms, which open a wide field of mathematical analysis.
+One of this new methods is flux balanced analysis (fba) to estimate optimal metabolic fluxes under certain constraints. By this work advanced models are possible, which are available in a defined, exchangeable format (\emph{SBML}). The idea of this project is to use this existing reconstructions and put them in a spatial and temporal environment to study their possible interactions.
+This is achieved by the combination of agent based modeling with fba. Each bacterium is considered as an agent with individual states, own properties and rules to act. Agents are located on a grid where they can move and interact via metabolic exchanges computed by fba.
+
+The starting point for our project is curiosity of what could be done with this huge models. We just throw those models into an arena to see what kind of actions will evolve.
 \newpage
 
 \tableofcontents
