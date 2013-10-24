@@ -3,7 +3,7 @@ BacArena
 
 BacArena is an agent based modeling framework for microbial communities.
 
-See <a href="./doc/documentation.pdf">Documentation</a>
+See <a href="./doc/documentation.pdf" type="application/pdf">Documentation</a>
 
 
 Microbial communities are essential for global ecosystems and human health.
