@@ -2,26 +2,27 @@
 ###################################### GRID ############################################################
 ########################################################################################################
 
-n <- 20
-m <- 20
-iter <- 400
+n <- 50
+m <- 50
+iter <- 1000
 smax <- 70 # substrate start concentration
-seed <- 6764 # reproduction of random variables
-#seed <- sample(1:9999,1)
+#seed <- 6764 # reproduction of random variables
+seed <- sample(1:9999,1)
+epsilon <- 10^-3 # accuracy in substrate representation
 
 ########################################################################################################
 ###################################### BACTERIA ########################################################
 ########################################################################################################
 
-#source(file="ecoli_iAF1260.R")
-source(file="ecoli.R")
+source(file="ecoli_iAF1260.R")
+#source(file="ecoli.R")
 #source(file="barkeri.R")
 #source(file="beijerinckii.R")
 
-bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
+#bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="ecoli", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
-#bac <- data.frame(x=round(n/2), y=round(m/2),type="Bcoli", growth=1) # one cell in the centre
+bac <- data.frame(x=round(n/2), y=round(m/2),type="Bcoli", growth=1) # one cell in the centre
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="beijerinckii", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
 #bac <- rbind(data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1),data.frame(x=round(n/2+1), y=round(m/2+1),type="barkeri", growth=1))
@@ -41,8 +42,8 @@ substrat <- lapply(s, function(x, n, m){
   #matrix(c(rep(100, 2*n), rep(0, n*m-2*n)), nrow=n, ncol=m) # downstairs substrate
   #matrix(c(rep(0,(n*m-2*n)/2), rep(smax,2*n), rep(0,(n*m-2*n)/2)), nrow=n, ncol=m) # substrate in the middle of our street (ohooo)
   #matrix(smax,n,m) # homogen substrate distribution
-  matrix(c(smax, rep(0,m*n-1)), nrow=n, ncol=m) # one peak in top left
-  #matrix(0,n,m) # no substrate distribution
+  #matrix(c(smax, rep(0,m*n-1)), nrow=n, ncol=m) # one peak in top left
+  matrix(0,n,m) # no substrate distribution
 }, n=n, m=m)
 names(substrat) <- s
 substrat[["iphosphate"]] <- matrix(smax,n,m)

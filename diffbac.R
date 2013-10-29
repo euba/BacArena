@@ -100,17 +100,17 @@ for(time in 1:iter){
     # Hashing to reuse old fba results
     #
     
-#       hash_spos <- digest(floor(unlist(spos))) # rounding!!
-#       if(exists(hash_spos, envir=fba_hash)) {
-#         growth <- fba_hash[[hash_spos]]
-#         hash_uses <- hash_uses + 1
-#       #  stop("ATTENTION: TAKING HASH!!!!")
-#       }
-#       else {
-#         growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
-#         assign(hash_spos, growth, envir=fba_hash)
-#       }
-    growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+      hash_spos <- digest(floor(unlist(spos))) # rounding!!
+      if(exists(hash_spos, envir=fba_hash)) {
+        growth <- fba_hash[[hash_spos]]
+        hash_uses <- hash_uses + 1
+      #  stop("ATTENTION: TAKING HASH!!!!")
+      }
+      else {
+        growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+        assign(hash_spos, growth, envir=fba_hash)
+      }
+    #growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
     
     time_fba <- time_fba + proc.time() - time_tmp3
     time_tmp4 <- proc.time()
@@ -142,7 +142,7 @@ for(time in 1:iter){
             # rounding to avoid gray bug (different variable accuracy leads to artefacts -> very small negative differences from zero which produces a gray plot)
             #
             #substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
-            substrat[[x]][i,j] <<- round(substrat[[x]][i,j] + growth[[sub_ex[[x]]]], digits=3) # "<<-" is necessary for extern variable modification
+            substrat[[x]][i,j] <<- round(substrat[[x]][i,j] + growth[[sub_ex[[x]]]], digits=-log10(epsilon)) # "<<-" is necessary for extern variable modification
             
             if(substrat[[x]][i,j] < 0){
               print (growth[[sub_ex[[x]]]])
@@ -220,11 +220,12 @@ for(time in 1:iter){
   #
   # diagnostic plots 
   #
-  diag_plot(BacArena_data, time)
+  #diag_plot(BacArena_data, time)
     
   #print interation status
-  iter_print <- c(time, no_fba_found, time_tot[3], dim(bac)[1], hash_uses, seed)
-  names(iter_print) <- c("iteration", "no_fba/growth", "time_elapsed", "#bacs", "#hashing", "seed")
+  baccounter <- table(bac$type)
+  iter_print <- c(time, no_fba_found, time_tot[3], hash_uses, seed, unname(baccounter))
+  names(iter_print) <- c("iteration", "no_fba/growth", "time_elapsed", "#hashing", "seed", names(baccounter))
   print(iter_print)
 }
 
