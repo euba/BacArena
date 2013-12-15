@@ -88,13 +88,13 @@ ub[which(colnames(stoch)==get_maintenancef(type))] <- get_ngam(type)
 linp <- make.lp(0, dim(stoch)[2])
 #lp.control(linp,sense='max',verbose='full', anti.degen="none")
 lp.control(linp,sense='max',verbose='important')
-row.add.mode(linp, "on") # performance improvement!
+#row.add.mode(linp, "on") # performance improvement!
 set.objfn(linp, cs)
 for(i in 1:nrow(stoch)){
   # only add constraint if it's not an external metabolite!!
   if(ex[i] == -1) add.constraint(linp, stoch[i,], "=", 0) 
 }
-row.add.mode(linp, "off") # performance improvement!
+#row.add.mode(linp, "off") # performance improvement!
 set.bounds(linp,lower=lb)
 set.bounds(linp,upper=ub)
 
@@ -125,7 +125,7 @@ sapply(names(sapply(substrat, names)),function(x,substrat){
   if(x %in% names(sub_ex)) { # only update substrate which are metabolic relevant for current organism
     #if(round(as.numeric(substrat[x]),2) < -round(flux[[sub_ex[[x]]]],2)){ # test for negative fba return
     # workaround because round is too slow!
-    if(as.numeric(substrat[x]) + 0.001 < -flux[[sub_ex[[x]]]]){ # test for negative fba return
+    if(as.numeric(substrat[x]) + epsilon < -flux[[sub_ex[[x]]]]){ # test for negative fba return
       print(t(flux))
       print("")
       print("lower bound")
@@ -175,5 +175,89 @@ return(flux)
 
 }
 
-#tmp <- read.sbml("data/ecoli_core.xml")
-#fba("substrat", tmp$stoch, tmp$lb, tmp$ub)
+
+starvation_fees <-function(type){
+  biomassf <- get_biomassf(type)
+  maintenancef <- get_maintenancef(type)
+  sbml <- get_sbml(type)
+  stoch <- sbml$stoch
+  ub <- get_upper_bound(type)
+  lb <- get_lower_bound(type)
+  sub_ex <- get_sub_ex(type)
+  
+  # add an input for all biomass metabolites
+  iseq <- which (stoch[,biomassf] < 0)
+  for (j in iseq){
+    stoch <- cbind(stoch, c(rep(0, j-1), 1, rep(0, nrow(stoch) - j)))
+    stoch <- rbind(stoch, c(rep(0, ncol(stoch)-1), -1))
+    ub <- c(ub, -stoch[,biomassf][j])
+    #lb <- c(lb, 0)
+    lb <- c(lb, -1e+30)
+  }
+  
+  # only biomassf as input/substrat
+  for(x in sub_ex){
+  #  lb[which(colnames(stoch)==x)] <- 0
+    ub[which(colnames(stoch)==x)] <- 0
+  #  print(x)
+  }
+  
+  lb[which(colnames(sbml$stoch)==biomassf)] <- 0
+  #ub[which(colnames(sbml$stoch)==biomassf)] <- 1
+  
+  #sbml$stoch[,biomassf]["M_atp_c"] <- 0
+  max_ngam <- 0
+
+  # complete successive a new biomassfunction (prevent accumulation of certain biomass components)
+  #sbml$stoch[,biomassf] <- c(rep(0, j-1), biomassf_org[j], rep(0, nrow(sbml$stoch) - j))
+
+  
+  # objective function
+  cs <- rep(0, dim(stoch)[2])
+  cs[which(colnames(stoch)==maintenancef)] <- 1 
+  
+  # linear programming
+  linp <- make.lp(0, dim(stoch)[2])
+  lp.control(linp,sense='max',verbose='important')
+  set.objfn(linp, cs)
+  for(i in 1:nrow(sbml$stoch)){
+    # only add constraint if it's not an external metabolite!!
+    if (sbml$ex[i] == -1 ) add.constraint(linp, stoch[i,], "=", 0)
+    #add.constraint(linp, stoch[i,], "=", 0)
+    
+    #if (i %in% iseq){
+    #  add.constraint(linp, sbml$stoch[,i], ">=", 0)
+    #  add.constraint(linp, sbml$stoch[,i], "<=", abs(sbml$stoch[,biomassf][i]))
+    #} 
+    #else add.constraint(linp, sbml$stoch[i,], "=", 0)
+  }
+  set.bounds(linp,lower=lb)
+  set.bounds(linp,upper=ub)
+  
+  #Solve opt problem
+  status <- solve(linp)
+  print(status)
+  #if(status==0) {
+    value <- get.objective(linp)
+    print(value)
+    #get opt fluxes
+    flux <- get.variables(linp)
+    names(flux) <- sbml$reac
+    max_ngam <- max_ngam + flux[[maintenancef]]
+  #}
+ 
+  #print(max_ngam)
+  
+  x <- stoch %*% flux
+  names(x) <- rownames(stoch)
+  #x[which(x < 0.1)]
+  flux[which(flux > 0.1)]
+  flux[which(flux < -0.1)]
+  
+  print(flux[[maintenancef]])
+  #get.constraints(linp)
+  
+  write.lp(linp,"test", NULL) # debug 
+  
+  return (max_ngam)
+}

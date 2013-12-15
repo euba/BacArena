@@ -2,9 +2,9 @@
 ###################################### GRID ############################################################
 ########################################################################################################
 
-n <- 50
-m <- 50
-iter <- 1000
+n <- 75
+m <- 75
+iter <- 10000
 smax <- 70 # substrate start concentration
 #seed <- 6764 # reproduction of random variables
 seed <- sample(1:9999,1)
@@ -14,18 +14,18 @@ epsilon <- 10^-3 # accuracy in substrate representation
 ###################################### BACTERIA ########################################################
 ########################################################################################################
 
-source(file="ecoli_iAF1260.R")
+#source(file="ecoli_iAF1260.R")
 #source(file="ecoli.R")
-#source(file="barkeri.R")
-#source(file="beijerinckii.R")
+source(file="barkeri.R")
+source(file="beijerinckii.R")
 
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="ecoli", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
-bac <- data.frame(x=round(n/2), y=round(m/2),type="Bcoli", growth=1) # one cell in the centre
+#bac <- data.frame(x=round(n/2), y=round(m/2),type="Bcoli", growth=1) # one cell in the centre
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="beijerinckii", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
-#bac <- rbind(data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1),data.frame(x=round(n/2+1), y=round(m/2+1),type="barkeri", growth=1))
+bac <- rbind(data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1),data.frame(x=round(n/2+1), y=round(m/2+1),type="barkeri", growth=5))
 #bac <- data.frame() # empty grid
 #bac <- rbind(data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1),data.frame(x=round(n/2+1), y=round(m/2+1),type="Bcoli", growth=1))
 #bac <- rbind(data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1),data.frame(x=round(n/2+1), y=round(m/2+1),type="Bcoli", growth=1))

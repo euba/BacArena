@@ -79,7 +79,7 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
     scale_fill_gradient(low = "gray90", high = "darkgreen", limits=c(0, ymax)) +
     scale_x_continuous(labels = function(x){round(x)}) +
     scale_y_continuous(labels = function(x){round(x)}) +
-    ggtitle(paste(sub,"concentration in mM")) +
+    ggtitle(paste(sub," mM")) +
     ylab("") +
     xlab("") +
     theme(plot.title = element_text(size=rel(2), vjust=0.2),
@@ -95,7 +95,7 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
     scale_fill_gradient(low = "gray90", high = "darkred", limits=c(0, ymax)) +
     scale_x_continuous(labels = function(x){round(x)}) +
     scale_y_continuous(labels = function(x){round(x)}) +
-    ggtitle(paste(sub2,"concentration in mM")) +
+    ggtitle(paste(sub2," mM")) +
     ylab("") +
     xlab("") +
     theme(plot.title = element_text(size=rel(2), vjust=0.2),
@@ -111,7 +111,7 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
     scale_fill_gradient(low = "gray90", high = "blue", limits=c(0, ymax)) +
     scale_x_continuous(labels = function(x){round(x)}) +
     scale_y_continuous(labels = function(x){round(x)}) +
-    ggtitle(paste(sub3,"concentration in mM")) +
+    ggtitle(paste(sub3," mM")) +
     ylab("") +
     xlab("") +
     theme(plot.title = element_text(size=rel(2), vjust=0.2),
@@ -127,7 +127,7 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
     scale_fill_gradient(low = "gray90", high = "steelblue", limits=c(0, ymax)) +
     scale_x_continuous(labels = function(x){round(x)}) +
     scale_y_continuous(labels = function(x){round(x)}) +
-    ggtitle(paste(prod,"concentration in mM")) +
+    ggtitle(paste(prod," mM")) +
     ylab("") +
     xlab("") +
     theme(plot.title = element_text(size=rel(2), vjust=0.2),
@@ -191,7 +191,7 @@ plot.bacs.cool <- function(substrat=substrat, sub_his=substrat_history,
     #geom_tile(aes(fill=value))
     scale_x_continuous(labels = function(x){round(x)}) +
     scale_y_continuous(labels = function(x){round(x)}) +
-    ggtitle("bacterial movement") +
+    ggtitle("bacs") +
     ylab("") +
     xlab("") +
     theme(plot.title = element_text(size=rel(2), vjust=0.2),

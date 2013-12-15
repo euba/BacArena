@@ -100,16 +100,16 @@ for(time in 1:iter){
     # Hashing to reuse old fba results
     #
     
-      hash_spos <- digest(floor(unlist(spos))) # rounding!!
-      if(exists(hash_spos, envir=fba_hash)) {
-        growth <- fba_hash[[hash_spos]]
-        hash_uses <- hash_uses + 1
-      #  stop("ATTENTION: TAKING HASH!!!!")
-      }
-      else {
+#      hash_spos <- digest(floor(unlist(spos))) # rounding!!
+#      if(exists(hash_spos, envir=fba_hash)) {
+#        growth <- fba_hash[[hash_spos]]
+#        hash_uses <- hash_uses + 1
+#      #  stop("ATTENTION: TAKING HASH!!!!")
+#      }
+#      else {
         growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
-        assign(hash_spos, growth, envir=fba_hash)
-      }
+#        assign(hash_spos, growth, envir=fba_hash)
+#      }
     #growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
     
     time_fba <- time_fba + proc.time() - time_tmp3
