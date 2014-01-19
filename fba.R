@@ -175,6 +175,37 @@ return(flux)
 
 }
 
+starvation_fees2 <-function(type){
+  biomassf <- get_biomassf(type)
+  maintenancef <- get_maintenancef(type)
+  sbml <- get_sbml(type)
+  stoch <- sbml$stoch
+  ub <- get_upper_bound(type)
+  lb <- get_lower_bound(type)
+  sub_ex <- get_sub_ex(type)
+
+  lb[which(colnames(sbml$stoch)==biomassf)] <- 1
+  ub[which(colnames(sbml$stoch)==biomassf)] <- 1
+  
+  stoch[,biomassf] <- stoch[,biomassf] * -1
+  
+  # objective function
+  cs <- rep(0, dim(stoch)[2])
+  cs[which(colnames(stoch)==maintenancef)] <- 1 
+  
+  linp <- make.lp(0, dim(stoch)[2])
+  lp.control(linp,sense='max',verbose='important')
+  set.objfn(linp, cs)
+  
+  set.bounds(linp,lower=lb)
+  set.bounds(linp,upper=ub)
+  
+  #Solve opt problem
+  status <- solve(linp)
+  value <- get.objective(linp)
+  print(value)
+}
+
 
 starvation_fees <-function(type){
   biomassf <- get_biomassf(type)
