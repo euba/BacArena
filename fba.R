@@ -205,8 +205,8 @@ starvation_fees3 <- function(type){
 
   max_ngam <- 0
   
-  #for(j in 1:length(metbio)){
-  for(j in 1:5){
+  for(j in 1:length(which(stoch[,biomassf] > 0))){
+  #for(j in 1:5){
     print(j)
     comet <- combn(names(which(stoch[,biomassf] > 0)), j)
     #print(stoch[,biomassf])
