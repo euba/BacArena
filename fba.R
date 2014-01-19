@@ -234,14 +234,16 @@ starvation_fees3 <- function(type){
       flux <- get.variables(linp)
       
       if(status ==0) {
-        max_ngam <- max(max_ngam, value)
+        max_ngam <<- max(max_ngam, value)
         #print(x)
         #print(value)
         #print(flux)
       }
       rm(linp)
     }, stoch=stoch, biomassf=biomassf)
+    print(max_ngam)
   }
+  print(max_ngam)
 }
 
 
