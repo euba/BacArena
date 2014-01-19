@@ -228,21 +228,17 @@ maintenancef <- get_maintenancef("ecoli")
 sbml <- get_sbml("ecoli")
 stoch <- sbml$stoch
 
-bio <- stoch[,biomassf]
 metbio = vector(mode="numeric")
 for(i in 1:length(bio)){
   if(bio[i]!=0){
     metbio = c(metbio, bio[i])
   }
 }
-stoch_or <- stoch
 for(j in 1:length(metbio)){
   comet <- combn(names(metbio), j)
-  #print(stoch[,biomassf])
-  apply(comet, 2, function(x){
-    stoch[,biomassf][x[1]] <<- 0
-  }, stoch=stoch, biomassf=biomassf)
-  #stoch <- stoch_or
+  for(k in 1:dim(comet)){
+    stoch[,biomassf][comet[,k]] <- 0
+  }
 }
 
 starvation_fees <-function(type){
