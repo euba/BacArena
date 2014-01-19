@@ -195,6 +195,7 @@ starvation_fees2 <-function(type){
   ub[which(colnames(sbml$stoch)==biomassf)] <- 1
   
   stoch[,biomassf] <- stoch[,biomassf] * -1
+  biomassf_bak <- stoch[,biomassf]
   
   # objective function
   cs <- rep(0, dim(stoch)[2])
@@ -206,7 +207,8 @@ starvation_fees2 <-function(type){
   
   for(i in 1:nrow(sbml$stoch)){
     # only add constraint if it's not an external metabolite!!
-    if (sbml$ex[i] == -1 ) add.constraint(linp, stoch[i,], "=", 0)
+    #if (sbml$ex[i] == -1 && stoch[,i] != stoch[,biomassf]) add.constraint(linp, stoch[i,], "=", 0)
+    if (sbml$ex[i] == -1) add.constraint(linp, stoch[i,], "=", 0)
   }
   set.bounds(linp,lower=lb)
   set.bounds(linp,upper=ub)
@@ -239,7 +241,20 @@ for(j in 1:length(metbio)){
   for(k in 1:dim(comet)){
     stoch[,biomassf][comet[,k]] <- 0
   }
+  #print(stoch[,biomassf])
+#  apply(comet, 2, function(x,stoch, biomassf){
+#    print(x)
+#    stoch[,biomassf][x[1]] <<- 0
+#  }, stoch=stoch, biomassf=biomassf)
+#  stoch <- stoch_or
 }
+
+
+
+
+
+
+
 
 starvation_fees <-function(type){
   biomassf <- get_biomassf(type)
