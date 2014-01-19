@@ -241,11 +241,19 @@ stoch_or <- stoch
 for(j in 1:length(metbio)){
   comet <- combn(names(metbio), j)
   #print(stoch[,biomassf])
-  apply(comet, 2, function(x){
+  apply(comet, 2, function(x,stoch, biomassf){
+    print(x)
     stoch[,biomassf][x[1]] <<- 0
   }, stoch=stoch, biomassf=biomassf)
-  #stoch <- stoch_or
+  stoch <- stoch_or
 }
+
+
+
+
+
+
+
 
 starvation_fees <-function(type){
   biomassf <- get_biomassf(type)
