@@ -222,7 +222,9 @@ starvation_fees2 <-function(type){
   }
   for(j in 1:length(metbio)){
     comet <- combn(names(metbio), j)
-    apply()
+    apply(comet, 2, function(x){
+      stoch[,biomassf][x[1]] <<- 0
+    }, stoch=stoch, biomassf=biomassf)
   }
   #print(stoch[,biomassf])
   
@@ -244,8 +246,11 @@ for(i in 1:length(bio)){
 }
 for(j in 1:length(metbio)){
   comet <- combn(names(metbio), j)
-  apply()
+  apply(comet, 2, function(x){
+    stoch[,biomassf][x[1]] <<- 0
+  }, stoch=stoch, biomassf=biomassf)
 }
+stoch[,biomassf][x[1]] <<- 0
 
 starvation_fees <-function(type){
   biomassf <- get_biomassf(type)
