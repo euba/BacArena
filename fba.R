@@ -208,7 +208,7 @@ starvation_fees3 <- function(type){
   #for(j in 1:length(metbio)){
   for(j in 1:5){
     print(j)
-    comet <- combn(names(metbio), j)
+    comet <- combn(names(which(stoch[,biomassf] > 0)), j)
     #print(stoch[,biomassf])
     apply(comet, 2, function(x,stoch, biomassf){
       stoch_tmp <- stoch
