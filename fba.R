@@ -236,10 +236,13 @@ for(i in 1:length(bio)){
     metbio = c(metbio, bio[i])
   }
 }
+
+stoch_or <- stoch
 for(j in 1:length(metbio)){
   comet <- combn(names(metbio), j)
-  for(k in 1:dim(comet)){
+  for(k in 1:dim(comet)[2]){
     stoch[,biomassf][comet[,k]] <- 0
+    stoch <- stoch_or
   }
   #print(stoch[,biomassf])
 #  apply(comet, 2, function(x,stoch, biomassf){
@@ -248,12 +251,6 @@ for(j in 1:length(metbio)){
 #  }, stoch=stoch, biomassf=biomassf)
 #  stoch <- stoch_or
 }
-
-
-
-
-
-
 
 
 starvation_fees <-function(type){
