@@ -175,7 +175,79 @@ return(flux)
 
 }
 
-starvation_fees2 <-function(type){
+
+
+starvation_fees3 <- function(type){
+  biomassf <- get_biomassf(type)
+  maintenancef <- get_maintenancef(type)
+  sbml <- get_sbml(type)
+  stoch <- sbml$stoch
+  ub <- get_upper_bound(type)
+  lb <- get_lower_bound(type)
+  sub_ex <- get_sub_ex(type)
+  
+  # only biomassf as input/substrat
+  for(x in sub_ex){
+    lb[which(colnames(stoch)==x)] <- 0
+    #ub[which(colnames(stoch)==x)] <- 0
+    #  print(x)
+  }
+  
+  lb[which(colnames(sbml$stoch)==biomassf)] <- 1
+  ub[which(colnames(sbml$stoch)==biomassf)] <- 1
+  
+  stoch[,biomassf] <- stoch[,biomassf] * -1
+  biomassf_bak <- stoch[,biomassf]
+  
+  # objective function
+  cs <- rep(0, dim(stoch)[2])
+  cs[which(colnames(stoch)==maintenancef)] <- 1 
+
+  linp <- make.lp(0, dim(stoch)[2])
+  lp.control(linp,sense='max',verbose='important')
+  set.objfn(linp, cs)
+
+  stoch_or <- stoch
+  #for(j in 1:length(metbio)){
+  for(j in 1:5){
+    print(j)
+    comet <- combn(names(metbio), j)
+    #print(stoch[,biomassf])
+    apply(comet, 2, function(x,stoch, biomassf){
+      print(x)
+      
+      test_biomassf <- stoch[,biomassf]
+      
+      stoch[,biomassf][x[1]] <<- 0
+      
+  
+      for(i in 1:nrow(sbml$stoch)){
+        # only add constraint if it's not an external metabolite!!
+        #if (sbml$ex[i] == -1 && stoch[,i] != stoch[,biomassf]) add.constraint(linp, stoch[i,], "=", 0)
+        if (sbml$ex[i] == -1) add.constraint(linp, stoch[i,], "=", 0)
+      }
+      set.bounds(linp,lower=lb)
+      set.bounds(linp,upper=ub)
+      #print(stoch[,biomassf])
+      
+      #Solve opt problem
+      status <- solve(linp)
+      value <- get.objective(linp)
+      flux <- get.variables(linp)
+      
+      if(status ==0) {
+        print(value)
+        print(flux)
+      }      
+    }, stoch=stoch, biomassf=biomassf)
+    stoch <- stoch_or 
+  }
+}
+
+
+
+
+starvation_fees2 <- function(type){
   biomassf <- get_biomassf(type)
   maintenancef <- get_maintenancef(type)
   sbml <- get_sbml(type)
@@ -201,77 +273,50 @@ starvation_fees2 <-function(type){
   cs <- rep(0, dim(stoch)[2])
   cs[which(colnames(stoch)==maintenancef)] <- 1 
   
-  linp <- make.lp(0, dim(stoch)[2])
-  lp.control(linp,sense='max',verbose='important')
-  set.objfn(linp, cs)
+  bio <- stoch[,biomassf]
+  metbio = vector(mode="numeric")
+  for(i in 1:length(bio)){
+    if(bio[i]!=0){
+      metbio = c(metbio, bio[i])
+    }
+  }
   
   stoch_or <- stoch
-  #for(j in 1:length(metbio)){
-  for(j in 1:5){
-    print(j)
+  for(j in 1:length(metbio)){
     comet <- combn(names(metbio), j)
-    #print(stoch[,biomassf])
-    apply(comet, 2, function(x,stoch, biomassf){
-      print(x)
+    for(k in 1:dim(comet)[2]){
+      stoch[,biomassf][comet[,k]] <- 0
+      linp <- make.lp(0, dim(stoch)[2])
+      lp.control(linp,sense='max',verbose='important')
+      set.objfn(linp, cs)
       
-      test_biomassf <- stoch[,biomassf]
-      
-      
-      stoch[,biomassf][x[1]] <<- 0
-    
-      for(i in 1:nrow(sbml$stoch)){
-        # only add constraint if it's not an external metabolite!!
-        #if (sbml$ex[i] == -1 && stoch[,i] != stoch[,biomassf]) add.constraint(linp, stoch[i,], "=", 0)
-        if (sbml$ex[i] == -1) add.constraint(linp, stoch[i,], "=", 0)
+      if(status==0){
+        break
       }
-      set.bounds(linp,lower=lb)
-      set.bounds(linp,upper=ub)
-      #print(stoch[,biomassf])
-      
-      #Solve opt problem
-      status <- solve(linp)
-      value <- get.objective(linp)
-      flux <- get.variables(linp)
-      if(status ==0) {
-        print(value)
-        print(flux)
-      }      
-    }, stoch=stoch, biomassf=biomassf)
-    stoch <- stoch_or
-  
+      stoch <- stoch_or
+    }
+    print(j)
+    if(status==0){
+      break
+    }
+    #print(stoch[,biomassf])
+    #  apply(comet, 2, function(x,stoch, biomassf){
+    #    print(x)
+    #    stoch[,biomassf][x[1]] <<- 0
+    #  }, stoch=stoch, biomassf=biomassf)
+    #  stoch <- stoch_or
   }
+  print (status)
+  print(value)
   #return(stoch[,biomassf])
 }
-starvation_fees2("ecoli")
+#starvation_fees2("ecoli")
+
 
 biomassf <- get_biomassf("ecoli")
 maintenancef <- get_maintenancef("ecoli")
 sbml <- get_sbml("ecoli")
 stoch <- sbml$stoch
-
-bio <- stoch[,biomassf]
-metbio = vector(mode="numeric")
-for(i in 1:length(bio)){
-  if(bio[i]!=0){
-    metbio = c(metbio, bio[i])
-  }
-}
-stoch_or <- stoch
-for(j in 1:length(metbio)){
-  comet <- combn(names(metbio), j)
-  #print(stoch[,biomassf])
-  apply(comet, 2, function(x,stoch, biomassf){
-    print(x)
-    stoch[,biomassf][x[1]] <<- 0
-  }, stoch=stoch, biomassf=biomassf)
-  stoch <- stoch_or
-}
-
-
-
-
-
-
 
 
 starvation_fees <-function(type){
