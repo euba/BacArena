@@ -213,7 +213,7 @@ starvation_fees3 <- function(type){
     apply(comet, 2, function(x,stoch, biomassf){
       stoch_tmp <- stoch
       stoch_tmp[,biomassf] <- 0
-      stoch_tmp[,biomassf][x] <- 1
+      stoch_tmp[,biomassf][x] <- stoch[,biomassf][x]
       
       linp <- make.lp(0, dim(stoch)[2])
       lp.control(linp,sense='max',verbose='important')
