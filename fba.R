@@ -205,22 +205,41 @@ starvation_fees2 <-function(type){
   lp.control(linp,sense='max',verbose='important')
   set.objfn(linp, cs)
   
-  for(i in 1:nrow(sbml$stoch)){
-    # only add constraint if it's not an external metabolite!!
-    #if (sbml$ex[i] == -1 && stoch[,i] != stoch[,biomassf]) add.constraint(linp, stoch[i,], "=", 0)
-    if (sbml$ex[i] == -1) add.constraint(linp, stoch[i,], "=", 0)
+  stoch_or <- stoch
+  #for(j in 1:length(metbio)){
+  for(j in 1:5){
+    print(j)
+    comet <- combn(names(metbio), j)
+    #print(stoch[,biomassf])
+    apply(comet, 2, function(x,stoch, biomassf){
+      print(x)
+      
+      test_biomassf <- stoch[,biomassf]
+      
+      
+      stoch[,biomassf][x[1]] <<- 0
+    
+      for(i in 1:nrow(sbml$stoch)){
+        # only add constraint if it's not an external metabolite!!
+        #if (sbml$ex[i] == -1 && stoch[,i] != stoch[,biomassf]) add.constraint(linp, stoch[i,], "=", 0)
+        if (sbml$ex[i] == -1) add.constraint(linp, stoch[i,], "=", 0)
+      }
+      set.bounds(linp,lower=lb)
+      set.bounds(linp,upper=ub)
+      #print(stoch[,biomassf])
+      
+      #Solve opt problem
+      status <- solve(linp)
+      value <- get.objective(linp)
+      flux <- get.variables(linp)
+      if(status ==0) {
+        print(value)
+        print(flux)
+      }      
+    }, stoch=stoch, biomassf=biomassf)
+    stoch <- stoch_or
+  
   }
-  set.bounds(linp,lower=lb)
-  set.bounds(linp,upper=ub)
-  #print(stoch[,biomassf])
-  
-  #Solve opt problem
-  status <- solve(linp)
-  value <- get.objective(linp)
-  flux <- get.variables(linp)
-  print (status)
-  print(value)
-  
   #return(stoch[,biomassf])
 }
 starvation_fees2("ecoli")
