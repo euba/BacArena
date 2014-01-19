@@ -211,13 +211,39 @@ starvation_fees2 <-function(type){
   set.bounds(linp,lower=lb)
   set.bounds(linp,upper=ub)
   
+  bio <- stoch[,biomassf]
+  metbio = vector(mode="numeric")
+  for(i in 1:length(bio)){
+    if(bio[i]!=0){
+      metbio = c(metbio, bio[i])
+    }
+  }
+  for(j in 1:length(metbio)){
+    comet <- combn(names(metbio), j)
+    apply()
+  }
+  #print(stoch[,biomassf])
+  
   #Solve opt problem
   status <- solve(linp)
   value <- get.objective(linp)
   flux <- get.variables(linp)
+  print (status)
   print(value)
+  #return(stoch[,biomassf])
 }
+starvation_fees2("ecoli")
 
+metbio = vector(mode="numeric")
+for(i in 1:length(bio)){
+  if(bio[i]!=0){
+    metbio = c(metbio, bio[i])
+  }
+}
+for(j in 1:length(metbio)){
+  comet <- combn(names(metbio), j)
+  apply()
+}
 
 starvation_fees <-function(type){
   biomassf <- get_biomassf(type)
