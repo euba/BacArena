@@ -176,6 +176,65 @@ return(flux)
 }
 
 
+starvation_fees4 <- function(type){
+  biomassf <- get_biomassf(type)
+  maintenancef <- get_maintenancef(type)
+  sbml <- get_sbml(type)
+  stoch <- sbml$stoch
+  ub <- get_upper_bound(type)
+  lb <- get_lower_bound(type)
+  sub_ex <- get_sub_ex(type)
+  
+  # only biomassf as input/substrat
+  for(x in sub_ex){
+    lb[which(colnames(stoch)==x)] <- 0
+    #ub[which(colnames(stoch)==x)] <- 0
+    #  print(x)
+  }
+  
+  lb[which(colnames(sbml$stoch)==biomassf)] <- 1
+  ub[which(colnames(sbml$stoch)==biomassf)] <- 1
+  
+  stoch[,biomassf] <- stoch[,biomassf] * -1
+  biomassf_bak <- stoch[,biomassf]
+  
+  # objective function
+  cs <- rep(0, dim(stoch)[2])
+  cs[which(colnames(stoch)==maintenancef)] <- 1 
+  
+  max_ngam <- 0
+  
+  linp <- make.lp(0, dim(stoch)[2])
+  lp.control(linp,sense='max',verbose='important')
+  set.objfn(linp, cs)
+      
+  for(i in 1:nrow(stoch)){
+    # only add constraint if it's not an external metabolite!!
+    if (sbml$ex[i] == -1){
+    #if (sbml$ex[i] == -1 && !(names(stoch[i,]) %in% names(stoch[,biomassf]))) add.constraint(linp, stoch[i,], "=", 0)
+    #if (sbml$ex[i] == -1 && !(rownames(stoch)[i] %in% names(which(stoch[,biomassf] > 0)))) {
+    #if (sbml$ex[i] == -1 && !(rownames(stoch)[i] != "M_atp_c")) {
+      print(rownames(stoch)[i])
+      add.constraint(linp, stoch[i,], "=", 0)
+    }
+  }
+  set.bounds(linp,lower=lb)
+  set.bounds(linp,upper=ub)
+      
+  #Solve opt problem
+  status <- solve(linp)
+  value <- get.objective(linp)
+  flux <- get.variables(linp)
+  
+  print(status)
+  print(value)
+      
+  rm(linp)
+
+}
+
+
+
 
 starvation_fees3 <- function(type){
   biomassf <- get_biomassf(type)
@@ -204,6 +263,7 @@ starvation_fees3 <- function(type){
   cs[which(colnames(stoch)==maintenancef)] <- 1 
 
   max_ngam <- 0
+  max_ngam_subs <- ""
   
   for(j in 1:length(which(stoch[,biomassf] > 0))){
   #for(j in 1:5){
@@ -234,7 +294,10 @@ starvation_fees3 <- function(type){
       flux <- get.variables(linp)
       
       if(status ==0) {
-        max_ngam <<- max(max_ngam, value)
+        if(max_ngam < value){
+          max_ngam <<- value
+          max_ngam_subs <<- x
+        }
         #print(x)
         #print(value)
         #print(flux)
@@ -242,8 +305,11 @@ starvation_fees3 <- function(type){
       rm(linp)
     }, stoch=stoch, biomassf=biomassf)
     print(max_ngam)
+    print(max_ngam_subs)
   }
+  print("best ngam results:")
   print(max_ngam)
+  print(max_ngam_subs)
 }
 
 
@@ -406,3 +472,4 @@ starvation_fees <-function(type){
   
   return (max_ngam)
 }
+
