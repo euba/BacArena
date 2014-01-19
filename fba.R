@@ -381,12 +381,6 @@ starvation_fees2 <- function(type){
 #starvation_fees2("ecoli")
 
 
-biomassf <- get_biomassf("ecoli")
-maintenancef <- get_maintenancef("ecoli")
-sbml <- get_sbml("ecoli")
-stoch <- sbml$stoch
-
-
 starvation_fees <-function(type){
   biomassf <- get_biomassf(type)
   maintenancef <- get_maintenancef(type)
