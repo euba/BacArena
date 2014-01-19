@@ -264,6 +264,7 @@ starvation_fees3 <- function(type){
 
   max_ngam <- 0
   max_ngam_subs <- ""
+  max_ngam_flux <- ""
   
   for(j in 1:length(which(stoch[,biomassf] > 0))){
   #for(j in 1:5){
@@ -297,6 +298,7 @@ starvation_fees3 <- function(type){
         if(max_ngam < value){
           max_ngam <<- value
           max_ngam_subs <<- x
+          max_ngam_flux <<- flux
         }
         #print(x)
         #print(value)
@@ -306,10 +308,12 @@ starvation_fees3 <- function(type){
     }, stoch=stoch, biomassf=biomassf)
     print(max_ngam)
     print(max_ngam_subs)
+    print(max_ngam_flux)
   }
   print("best ngam results:")
   print(max_ngam)
   print(max_ngam_subs)
+  print(max_ngam_flux)
 }
 
 
