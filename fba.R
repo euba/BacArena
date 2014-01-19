@@ -212,20 +212,6 @@ starvation_fees2 <-function(type){
   }
   set.bounds(linp,lower=lb)
   set.bounds(linp,upper=ub)
-  
-  bio <- stoch[,biomassf]
-  metbio = vector(mode="numeric")
-  for(i in 1:length(bio)){
-    if(bio[i]!=0){
-      metbio = c(metbio, bio[i])
-    }
-  }
-  for(j in 1:length(metbio)){
-    comet <- combn(names(metbio), j)
-    apply(comet, 2, function(x){
-      stoch[,biomassf][x[1]] <<- 0
-    }, stoch=stoch, biomassf=biomassf)
-  }
   #print(stoch[,biomassf])
   
   #Solve opt problem
@@ -234,23 +220,32 @@ starvation_fees2 <-function(type){
   flux <- get.variables(linp)
   print (status)
   print(value)
+  
   #return(stoch[,biomassf])
 }
 starvation_fees2("ecoli")
 
+biomassf <- get_biomassf("ecoli")
+maintenancef <- get_maintenancef("ecoli")
+sbml <- get_sbml("ecoli")
+stoch <- sbml$stoch
+
+bio <- stoch[,biomassf]
 metbio = vector(mode="numeric")
 for(i in 1:length(bio)){
   if(bio[i]!=0){
     metbio = c(metbio, bio[i])
   }
 }
+stoch_or <- stoch
 for(j in 1:length(metbio)){
   comet <- combn(names(metbio), j)
+  #print(stoch[,biomassf])
   apply(comet, 2, function(x){
     stoch[,biomassf][x[1]] <<- 0
   }, stoch=stoch, biomassf=biomassf)
+  #stoch <- stoch_or
 }
-stoch[,biomassf][x[1]] <<- 0
 
 starvation_fees <-function(type){
   biomassf <- get_biomassf(type)
