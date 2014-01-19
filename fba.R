@@ -184,6 +184,13 @@ starvation_fees2 <-function(type){
   lb <- get_lower_bound(type)
   sub_ex <- get_sub_ex(type)
 
+  # only biomassf as input/substrat
+  for(x in sub_ex){
+    lb[which(colnames(stoch)==x)] <- 0
+    #ub[which(colnames(stoch)==x)] <- 0
+    #  print(x)
+  }
+  
   lb[which(colnames(sbml$stoch)==biomassf)] <- 1
   ub[which(colnames(sbml$stoch)==biomassf)] <- 1
   
@@ -197,12 +204,17 @@ starvation_fees2 <-function(type){
   lp.control(linp,sense='max',verbose='important')
   set.objfn(linp, cs)
   
+  for(i in 1:nrow(sbml$stoch)){
+    # only add constraint if it's not an external metabolite!!
+    if (sbml$ex[i] == -1 ) add.constraint(linp, stoch[i,], "=", 0)
+  }
   set.bounds(linp,lower=lb)
   set.bounds(linp,upper=ub)
   
   #Solve opt problem
   status <- solve(linp)
   value <- get.objective(linp)
+  flux <- get.variables(linp)
   print(value)
 }
 
