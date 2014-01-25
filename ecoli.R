@@ -24,6 +24,9 @@ sname <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate",
 ecoli_sub_ex <- react_id(findExchReact(mod))
 names(ecoli_sub_ex) <- sname
 
+ecoli_ngam <- 8.39
+ecoli_gam <- 59.81
+
 #
 # set lower bounds to current substrat concentration in cell
 #
@@ -32,7 +35,7 @@ names(ecoli_sub_ex) <- sname
 #the maximum aerobic glucose utilization rate (10.5 mmol of Glc per g [dryweight] per h), the maximum anaerobic glucose utilization rate (18.5 mmol of Glc per g [dry weight] per h),  
 #the non-growth-associated maintenance requirements (7.6 mmol of ATP per g [dry weight] per h), and the growth-associated maintenance requirements (13 mmol of ATP per g of biomass).
 
-ecoli_set_lower_bound <- function(substrat){ 
+ecoli_set_lower_bound <- function(substrat, mod){ 
   #lowbnd(mod) = rep(0, length(lowbnd(mod))) #define growth media
   sapply(names(substrat), function(x, y, z, substrat, ecoli_sub_ex){
     rxn <- ecoli_sub_ex[x]

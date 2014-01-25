@@ -30,6 +30,14 @@ BacArena_data<- list()
 ########################################################################################################
 ###################################### MAIN LOOP #######################################################
 ########################################################################################################
+s <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate", "glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate", "h2", "methanol", "methane", "acetone", "butyrate", "butanol")
+substrat <- lapply(s, function(x, n, m){
+  matrix(0,n,m) # no substrate distribution
+}, n=n, m=m)
+names(substrat) <- s
+substrat[["iphosphate"]] <- matrix(smax,n,m)
+substrat[["glucose"]] <- matrix(smax,n,m)
+substrat[["o2"]] <- matrix(smax,n,m)
 
 for(time in 1:iter){
   #speed test
@@ -80,7 +88,7 @@ for(time in 1:iter){
     #
     #sbml <- get_sbml(bac[l,]$type) # get sbml according to bac type
     #biomassf <- get_biomassf(bac[l,]$type)
-    #sub_ex <- get_sub_ex(bac[l,]$type)
+    sub_ex <- get_sub_ex(bac[[l]]$type)
         
     i <- bac[[l]]$x
     j <- bac[[l]]$y
@@ -94,7 +102,17 @@ for(time in 1:iter){
     ########################################### FBA ########################################################
     ########################################################################################################
     
-    
+    #changeBounds(mod, rxn, lb=-substrat[[x]][y,z])
+    mod=bac[[l]]$model
+    sapply(names(substrat), function(x, y, z, substrat, sub_ex){
+      rxn <- sub_ex[x]
+      if(!is.na(rxn)){
+        mod <<- changeBounds(mod, rxn, lb=-substrat[[x]][y,z])
+      }
+    }, substrat=substrat, y=1, z=1, sub_ex=sub_ex)
+    mod <- changeBounds(mod, c(ecoli_sub_ex["glucose"], ecoli_sub_ex["o2"]), lb=-c(11, 18.2))
+    bac[[l]]$model=mod
+    lowbnd(bac[[l]]$model)
     #time_tmp3 <- proc.time()
 
     #
@@ -108,7 +126,7 @@ for(time in 1:iter){
 #      #  stop("ATTENTION: TAKING HASH!!!!")
 #      }
 #      else {
-        growth <- optimizeProb(mod, algorithm = "fba", retOptSol = F, solver = "clpAPI")$obj #test objective
+        growth <- optimizeProb(bac[[l]]$model, algorithm = "fba", retOptSol = F, solver = "glpkAPI") #test objective
         #growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
 #        assign(hash_spos, growth, envir=fba_hash)
 #      }
@@ -119,22 +137,26 @@ for(time in 1:iter){
     #
     # check prog solutions first!
     #
-    if(growth<0){ # <=> if(growth == "DEAD"){
+    if(growth$obj<0){ # <=> if(growth == "DEAD"){
       #no_fba_found <- no_fba_found+1
        # new growth rate according to advanced magic calculation *muah*
        starving_growth <- -(get_ngam(bac[[l]]$type)/get_gam(bac[[l]]$type)) 
        bac[[l]]$growth <- starving_growth + bac[[l]]$growth
        #growth_vec[l] <- starving_growth  # for diagnostic plot
+       print("ok")
     }
     #
     # if there is a feasable fba solution continue:
     #
     else{
-      growth_vec[l] <- growth[[biomassf]] # for diagnostic plot
-      if(growth[[biomassf]] != 0){ # continue only if there is growth !
-        bac[l,][1,4] <- bac[l,][1,4] + growth[[biomassf]]
+      #growth_vec[l] <- growth$obj # for diagnostic plot
+      if(growth$obj != 0){ # continue only if there is growth !
+        bac[[l]]$growth <- bac[[l]]$growth + growth$obj
+        fluxes <- growth$fluxes
+        names(fluxes) = react_id(bac[[l]]$model)
         
-        sapply(names(sapply(substrat, names)),function(x,i,j,substrat){
+        sapply(names(sapply(substrat, names)), function(x,i,j,substrat){
+          #print(x)
           if(x %in% names(sub_ex)) { # only update substrate which are metabolic relevant for current organism
             #print(substrat[[x]][i,j])
             #print(growth[[sub_ex[[x]]]])
@@ -143,50 +165,54 @@ for(time in 1:iter){
             # rounding to avoid gray bug (different variable accuracy leads to artefacts -> very small negative differences from zero which produces a gray plot)
             #
             #substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
-            substrat[[x]][i,j] <<- round(substrat[[x]][i,j] + growth[[sub_ex[[x]]]], digits=-log10(epsilon)) # "<<-" is necessary for extern variable modification
-            
+            #substrat[[x]][i,j] <<- round(substrat[[x]][i,j] + growth[[sub_ex[[x]]]], digits=-log10(epsilon)) # "<<-" is necessary for extern variable modification
+            substrat[[x]][i,j] <<- substrat[[x]][i,j] + fluxes[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
+            #print(substrat[[x]][i,j])
+            #print(fluxes[[sub_ex[[x]]]])
             if(substrat[[x]][i,j] < 0){
-              print (growth[[sub_ex[[x]]]])
+              substrat[[x]][i,j] = 0
+              print (fluxes[[sub_ex[[x]]]])
               print (substrat[[x]][i,j])
-              stop("negative stubstrate!")
+              print(growth$obj)
+              #stop("negative substrate!")
             } 
           }
         },i=i,j=j,substrat=substrat)
       }
     }
-    time_unk <- time_unk + proc.time() - time_tmp4
+    #time_unk <- time_unk + proc.time() - time_tmp4
 ########################################################################################################
 ###################################### MOVEMENT & DOUBLING #############################################
 ########################################################################################################
     
-    time_tmp2 <- proc.time()
-    dupli <- F # boolean variable to test for duplication
-    a <- (i + xr[l])
-    b <- (j + yr[l])
-    if(a == 0){a = n}
-    if(b == 0){b = m}
-    if(a == n+1){a = 1}
-    if(b == m+1){b = 1}
-    test <- apply(bac[,1:2], 1, function(x, p){
-      if(sum(x==p)==2){
-        return(T)
-      }else{
-        return(F)
-      }
-    }, p=c(a,b))
-    if(bac[l,]$growth>2){ # test for duplication
-      bac[l,]$growth <- bac[l,]$growth/2
-      bac <- rbind(bac, bac[l,])
-      dupli <- T
-    }
-    if(!(sum(test)>=1)){ # if empty go for it!
-      bac[l,1:2] <- c(a,b)
-    }else{
-      if(dupli){ # if neighbour not empty and cell duplicated, kill doughter cell
-        bac <- bac[-(dim(bac)[1]),]
-      }
-    }
-    time_mov <- time_mov + proc.time() - time_tmp2
+    #time_tmp2 <- proc.time()
+    #dupli <- F # boolean variable to test for duplication
+    #a <- (i + xr[l])
+    #b <- (j + yr[l])
+    #if(a == 0){a = n}
+    #if(b == 0){b = m}
+    #if(a == n+1){a = 1}
+    #if(b == m+1){b = 1}
+    #test <- apply(bac[,1:2], 1, function(x, p){
+    #  if(sum(x==p)==2){
+    #    return(T)
+    #  }else{
+    #    return(F)
+    #  }
+    #}, p=c(a,b))
+    #if(bac[l,]$growth>2){ # test for duplication
+    #  bac[l,]$growth <- bac[l,]$growth/2
+    #  bac <- rbind(bac, bac[l,])
+    #  dupli <- T
+    #}
+    #if(!(sum(test)>=1)){ # if empty go for it!
+    #  bac[l,1:2] <- c(a,b)
+    #}else{
+    #  if(dupli){ # if neighbour not empty and cell duplicated, kill doughter cell
+    #    bac <- bac[-(dim(bac)[1]),]
+    #  }
+    #}
+    #time_mov <- time_mov + proc.time() - time_tmp2
   }
   
   
@@ -194,29 +220,29 @@ for(time in 1:iter){
 ##################################### TO BE OR NOT TO BE ###############################################
 ########################################################################################################
   
-  time_tmp4 <- proc.time()
+  #time_tmp4 <- proc.time()
   #
-  bac <- bac[!(bac$growth<0),] #death
+  #bac <- bac[!(bac$growth<0),] #death
   #
-  if(dim(bac)[1]==0){
-    print("ALL BACTERIA DIED")
-    break
-  }
-  time_unk <- time_unk + proc.time() - time_tmp4
+  #if(dim(bac)[1]==0){
+  #  print("ALL BACTERIA DIED")
+  #  break
+  #}
+  #time_unk <- time_unk + proc.time() - time_tmp4
   
-  growth_vec_history[[time]] <- growth_vec # for diagnostic plot
+  #growth_vec_history[[time]] <- growth_vec # for diagnostic plot
   
-  time_tot <- proc.time() - time_tmp
-  time_cur <- cbind(time_tot[3], time_diff[3], time_mov[3], time_fba[3], time_unk[3])
-  colnames(time_cur) <- c("total", "diffusion", "movement", "fba", "unknown")
+  #time_tot <- proc.time() - time_tmp
+  #time_cur <- cbind(time_tot[3], time_diff[3], time_mov[3], time_fba[3], time_unk[3])
+  #colnames(time_cur) <- c("total", "diffusion", "movement", "fba", "unknown")
   #print(time_cur)
-  time_history[[time]] <- time_cur
+  #time_history[[time]] <- time_cur
   
   ########################################################################################################
   ##################################### DATA GENERATION ##################################################
   ########################################################################################################
   
-  BacArena_data[[time]] <- list(substrat=substrat, bac=bac)
+  #BacArena_data[[time]] <- list(substrat=substrat, bac=bac)
   
   #
   # diagnostic plots 
@@ -224,24 +250,25 @@ for(time in 1:iter){
   #diag_plot(BacArena_data, time)
     
   #print interation status
-  baccounter <- table(bac$type)
-  iter_print <- c(time, no_fba_found, time_tot[3], hash_uses, seed, unname(baccounter))
-  names(iter_print) <- c("iteration", "no_fba/growth", "time_elapsed", "#hashing", "seed", names(baccounter))
-  print(iter_print)
+  #baccounter <- table(bac$type)
+  #iter_print <- c(time, no_fba_found, time_tot[3], hash_uses, seed, unname(baccounter))
+  #names(iter_print) <- c("iteration", "no_fba/growth", "time_elapsed", "#hashing", "seed", names(baccounter))
+  print(growth$obj)
+  print(time)
 }
 
 #plot time consumption #save as 6 × 6 inch
-m <- do.call(rbind, time_history)
-plot(1:dim(m)[1], m[,1], type="l", col=1, pch=1, , ylab="computation time", xlab="time") #set max y-value to highest product conentration
-for(i in 2:(dim(m)[2])){
-  lines(1:dim(m)[1], m[,i], col=i, pch=i, type="l")
-}
-legend("topleft", colnames(time_cur), pch=1, col=c(1:dim(m)[2]), cex=0.64, bty="n")
-plot(1:dim(m)[1], m[,1], ylim=c(0,1), type="n", col=1, pch=1, , ylab="rel. computation time", xlab="time") #set max y-value to highest product conentration
-for(i in 2:(dim(m)[2])){
-  lines(1:dim(m)[1], m[,i]/m[,1], col=i, pch=i, type="l")
-}
-legend("left", colnames(time_cur), pch=1, col=c(1:dim(m)[2]), cex=0.64, bty="n")
+#m <- do.call(rbind, time_history)
+#plot(1:dim(m)[1], m[,1], type="l", col=1, pch=1, , ylab="computation time", xlab="time") #set max y-value to highest product conentration
+#for(i in 2:(dim(m)[2])){
+#  lines(1:dim(m)[1], m[,i], col=i, pch=i, type="l")
+#}
+#legend("topleft", colnames(time_cur), pch=1, col=c(1:dim(m)[2]), cex=0.64, bty="n")
+#plot(1:dim(m)[1], m[,1], ylim=c(0,1), type="n", col=1, pch=1, , ylab="rel. computation time", xlab="time") #set max y-value to highest product conentration
+#for(i in 2:(dim(m)[2])){
+#  lines(1:dim(m)[1], m[,i]/m[,1], col=i, pch=i, type="l")
+#}
+#legend("left", colnames(time_cur), pch=1, col=c(1:dim(m)[2]), cex=0.64, bty="n")
 
 #save data
-save(BacArena_data, file = "BacArena_data.RData")
+#save(BacArena_data, file = "BacArena_data.RData")

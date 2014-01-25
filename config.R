@@ -4,7 +4,7 @@
 
 n <- 1
 m <- 1
-iter <- 10000
+iter <- 10
 smax <- 70 # substrate start concentration
 #seed <- 6764 # reproduction of random variables
 seed <- sample(1:9999,1)
@@ -21,8 +21,8 @@ source(file="ecoli.R")
 #source(file="beijerinckii.R")
 
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
-lpobj <- optimizeProb(mod, algorithm = "fba", retOptSol = F, solver = "clpAPI")
-bac <- list(list(x=round(n/2), y=round(m/2),type="ecoli", growth=lpobj$obj,
+lpobj <- optimizeProb(mod, algorithm = "fba", retOptSol = F, solver = "glpkAPI")
+bac <- list(list(x=1, y=1,type="ecoli", growth=lpobj$obj,
                  model=mod, lpobj=lpobj)) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="ecoli", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
