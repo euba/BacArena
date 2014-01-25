@@ -45,10 +45,12 @@ findExchReact(mod)
 changeBounds(mod, ecoli_sub_ex[intersect(names(ecoli_sub_ex), names(substrat))], lb = -substrat[[x]])
 
 
-sapply(names(substrat), function(x, y, z, mod, substrat){
-  ecoli_sub_ex[x]
-  changeBounds(mod, ecoli_sub_ex[x], lb=substrat[[x]][y,z])
-}, mod=mod, substrat=substrat, y=2, z=2)
+sapply(names(substrat), function(x, y, z, mod, substrat, ecoli_sub_ex){
+  rxn <- ecoli_sub_ex[x]
+  if(!is.na(rxn)){
+    mod <<- changeBounds(mod, rxn, lb=substrat[[x]][y,z])
+  }
+}, mod=mod, substrat=substrat, y=2, z=2, ecoli_sub_ex=ecoli_sub_ex)
 
 react_id(findExchReact(mod){
   ecoli_sub_ex[]
