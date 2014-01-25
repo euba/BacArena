@@ -2,6 +2,8 @@ if(!exists("ecoli_sbml", mode="list")) ecoli_sbml <- read.sbml("data/ecoli_core.
 # last delivered variable is regexpr for filtering external species (special handling necessary for equilibrium condition in fba)
 
 library(sybil)
+library(sybilSBML)
+setwd("~/BacArena")
 mod <- readSBMLmod("data/ecoli_core.xml", bndCond = FALSE)
 
 
