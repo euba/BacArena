@@ -1,11 +1,5 @@
-if(!exists("ecoli_sbml", mode="list")) ecoli_sbml <- read.sbml("data/ecoli_core.xml", "_b$")
-# last delivered variable is regexpr for filtering external species (special handling necessary for equilibrium condition in fba)
-
-library(sybil)
-library(sybilSBML)
-setwd("~/BacArena")
 mod <- readSBMLmod("data/ecoli_core.xml", bndCond = FALSE)
-
+findExchReact(mod)
 
 ecoli_biomassf <- "R_Biomass_Ecoli_core_N__w_GAM_"
 
@@ -34,7 +28,7 @@ ecoli_stochmatrix <- ecoli_sbml$stoch
 #ecoli_sub_ex[["succinate"]]       <- "R_EX_succ_e_"
 
 sname <- c("acetate","aketoglutarate", "co2", "ethanol", "formiate", "fumarate","glucose", "h2o", "proton", "lactate","o2", "iphosphate", "pyruvate", "succinate")
-ecoli_sub_ex <- c("R_EX_ac_e_", "R_EX_akg_e_", "R_EX_co2_e_", "R_EX_etoh_e_", "R_EX_for_e_", "R_EX_fum_e_",  "R_EX_glc_e_", "R_EX_h2o_e_", "R_EX_h_e_", "R_EX_lac_D_e_", "R_EX_o2_e_", "R_EX_pi_e_", "R_EX_pyr_e_", "R_EX_succ_e_")
+ecoli_sub_ex <- react_id(findExchReact(mod))
 names(ecoli_sub_ex) <- sname
 
 ecoli_lower_bound <- ecoli_sbml$lb
@@ -42,6 +36,23 @@ ecoli_upper_bound <- ecoli_sbml$ub
 
 ecoli_ngam <- 8.39
 ecoli_gam <- 59.81
+
+obj <- optimizeProb(mod, algorithm = "fba", retOptSol = F, solver = "clpAPI")
+lowbnd(mod)[23] = -20
+optimizeProb(mod, algorithm = "fba", retOptSol = F, solver = "clpAPI")$obj
+findExchReact(mod)
+
+changeBounds(mod, ecoli_sub_ex[intersect(names(ecoli_sub_ex), names(substrat))], lb = -substrat[[x]])
+
+
+sapply(names(substrat), function(x, y, z, mod, substrat){
+  ecoli_sub_ex[x]
+  changeBounds(mod, ecoli_sub_ex[x], lb=substrat[[x]][y,z])
+}, mod=mod, substrat=substrat, y=2, z=2)
+
+react_id(findExchReact(mod){
+  ecoli_sub_ex[]
+})
 
 #
 # set lower bounds to current substrat concentration in cell
@@ -80,5 +91,6 @@ ecoli_set_lower_bound <- function(substrat){
   if(substrat[["lactate"]] > 16) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["lactate"]])] <- -16
   if(substrat[["succinate"]] > 16) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["succinate"]])] <- -16
   
+  changeBounds(model, react, lb = NULL, ub = NULL)
   return(ecoli_lower_bound)
 }
