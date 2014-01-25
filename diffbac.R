@@ -33,37 +33,38 @@ BacArena_data<- list()
 
 for(time in 1:iter){
   #speed test
-  time_fba    <- 0
-  time_diff   <- 0
-  time_mov    <- 0
-  time_total  <- 0
-  time_plot   <- 0
-  time_tmp    <- proc.time()
-  time_unk    <- 0
+  #time_fba    <- 0
+  #time_diff   <- 0
+  #time_mov    <- 0
+  #time_total  <- 0
+  #time_plot   <- 0
+  #time_tmp    <- proc.time()
+  #time_unk    <- 0
   
   #iterration status
-  no_fba_found <- 0
-  hash_uses <- 0
+  #no_fba_found <- 0
+  #hash_uses <- 0
   
-  growth_vec <- vector(mode="numeric") # for diagnostic plot
-  substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
-  rownames(substrat_history) <- names(substrat)
+  #growth_vec <- vector(mode="numeric") # for diagnostic plot
+  #substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
+  #rownames(substrat_history) <- names(substrat)
 
-  bacnum <- dim(bac)[1]
+  #bacnum <- dim(bac)[1]
+  bacnum <- length(bac)
   
   #time_tmp4 <- proc.time()
   #time_unk <- time_unk + proc.time() - time_tmp4
   
-  time_tmp3 <- proc.time()
-    min_tmp <- min(unlist(lapply(substrat, min)))
-    diffusion(substrat)
-    min_diff <- min(unlist(lapply(substrat, min)))
-    if(min_diff < 0) {
-      print(min_tmp)
-      print(min_diff)
-      stop("diffusion -> negative substrate")
-    }
-  time_diff <- proc.time() - time_tmp3
+  #time_tmp3 <- proc.time()
+  #  min_tmp <- min(unlist(lapply(substrat, min)))
+  #  diffusion(substrat)
+  #  min_diff <- min(unlist(lapply(substrat, min)))
+  #  if(min_diff < 0) {
+  #    print(min_tmp)
+  #    print(min_diff)
+  #    stop("diffusion -> negative substrate")
+  #  }
+  #time_diff <- proc.time() - time_tmp3
   
   xr <- round(runif(bacnum, min = -1, max = 1))
   yr <- round(runif(bacnum, min = -1, max = 1))
@@ -73,28 +74,28 @@ for(time in 1:iter){
   ########################################################################################################
   
   for(l in 1:bacnum){     
-    time_tmp4 <- proc.time()
+    #time_tmp4 <- proc.time()
     #
     # get variables according to bac type
     #
-    sbml <- get_sbml(bac[l,]$type) # get sbml according to bac type
-    biomassf <- get_biomassf(bac[l,]$type)
-    sub_ex <- get_sub_ex(bac[l,]$type)
+    #sbml <- get_sbml(bac[l,]$type) # get sbml according to bac type
+    #biomassf <- get_biomassf(bac[l,]$type)
+    #sub_ex <- get_sub_ex(bac[l,]$type)
         
-    i <- bac[l,][1,1]
-    j <- bac[l,][1,2]
+    i <- bac[[l]]$x
+    j <- bac[[l]]$y
         
     spos <- lapply(substrat, function(x, i, j){ # get current substrat vector
       return(x[i,j])
     },i=i, j=j)
-    time_unk <- time_unk + proc.time() - time_tmp4
+    #time_unk <- time_unk + proc.time() - time_tmp4
     
     ########################################################################################################
     ########################################### FBA ########################################################
     ########################################################################################################
     
     
-    time_tmp3 <- proc.time()
+    #time_tmp3 <- proc.time()
 
     #
     # Hashing to reuse old fba results
@@ -107,23 +108,23 @@ for(time in 1:iter){
 #      #  stop("ATTENTION: TAKING HASH!!!!")
 #      }
 #      else {
-        growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
+        growth <- optimizeProb(mod, algorithm = "fba", retOptSol = F, solver = "clpAPI")$obj #test objective
+        #growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
 #        assign(hash_spos, growth, envir=fba_hash)
 #      }
     #growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
     
-    time_fba <- time_fba + proc.time() - time_tmp3
-    time_tmp4 <- proc.time()
+    #time_fba <- time_fba + proc.time() - time_tmp3
+    #time_tmp4 <- proc.time()
     #
     # check prog solutions first!
     #
-    if(length(growth)==1){ # <=> if(growth == "DEAD"){
-      no_fba_found <- no_fba_found+1
-
+    if(growth<0){ # <=> if(growth == "DEAD"){
+      #no_fba_found <- no_fba_found+1
        # new growth rate according to advanced magic calculation *muah*
-       starving_growth <- -(get_ngam(bac[l,]$type)/get_gam(bac[l,]$type)) 
-       bac[l,]$growth <- starving_growth + bac[l,]$growth
-       growth_vec[l] <- starving_growth  # for diagnostic plot
+       starving_growth <- -(get_ngam(bac[[l]]$type)/get_gam(bac[[l]]$type)) 
+       bac[[l]]$growth <- starving_growth + bac[[l]]$growth
+       #growth_vec[l] <- starving_growth  # for diagnostic plot
     }
     #
     # if there is a feasable fba solution continue:

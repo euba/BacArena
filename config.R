@@ -2,8 +2,8 @@
 ###################################### GRID ############################################################
 ########################################################################################################
 
-n <- 75
-m <- 75
+n <- 1
+m <- 1
 iter <- 10000
 smax <- 70 # substrate start concentration
 #seed <- 6764 # reproduction of random variables
@@ -21,12 +21,15 @@ source(file="ecoli.R")
 #source(file="beijerinckii.R")
 
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
+lpobj <- optimizeProb(mod, algorithm = "fba", retOptSol = F, solver = "clpAPI")
+bac <- list(list(x=round(n/2), y=round(m/2),type="ecoli", growth=lpobj$obj,
+                 model=mod, lpobj=lpobj)) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="ecoli", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="Bcoli", growth=1) # one cell in the centre
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="beijerinckii", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
-bac <- rbind(data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1),data.frame(x=round(n/2+1), y=round(m/2+1),type="barkeri", growth=5))
+#bac <- rbind(data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1),data.frame(x=round(n/2+1), y=round(m/2+1),type="barkeri", growth=5))
 #bac <- data.frame() # empty grid
 #bac <- rbind(data.frame(x=round(n/2), y=round(m/2),type="beijerinckii", growth=1),data.frame(x=round(n/2+1), y=round(m/2+1),type="Bcoli", growth=1))
 #bac <- rbind(data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1),data.frame(x=round(n/2+1), y=round(m/2+1),type="Bcoli", growth=1))
@@ -61,7 +64,7 @@ substrat[["glucose"]] <- matrix(smax,n,m)
 #substrat[["ethanol"]] <- matrix(0,n,m)
 #substrat[["aketoglutarate"]] <- matrix(0,n,m)
 #substrat[["formiate"]] <- matrix(0,n,m)
-#substrat[["o2"]] <- matrix(smax,n,m)
+substrat[["o2"]] <- matrix(smax,n,m)
 #substrat[["succinate"]] <- matrix(0,n,m)
 #substrat[["acetone"]] <- matrix(0,n,m)
 #substrat[["butyrate"]] <- matrix(0,n,m)
