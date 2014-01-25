@@ -1,5 +1,6 @@
 library(libSBML)
 library(lpSolveAPI)
+library(sybil)
 
 
 #
