@@ -4,7 +4,13 @@
   # install libsbml http://sourceforge.net/projects/sbml/files/libsbml/5.8.0/stable/Linux/64-bit/R%20interface/
   # R CMD INSTALL libSBML_5.8.0_R_x86_64-pc-linux-gnu.tar.gz
 * Installation for R 3.0:
-  #see help in http://www.sbml.org/Forums/index.php?t=rview&goto=8138&th=2170
+  # libsbml-5.9.0-core-plus-packages-src.tar.gz
+    - mkdir build && cd build
+    - cmake -DWITH_R=ON ../
+    - cd src/bindings/r
+    - make
+    - R CMD INSTALL libSBML_5.9.0_R_x86_64-pc-linux-gnu.tar.gz
+  # see help in http://www.sbml.org/Forums/index.php?t=rview&goto=8138&th=2170
 * Test
   - library(libSBML)
   - doc <- readSBML("ecoli_orth2011_msb201165-s3.xml")
