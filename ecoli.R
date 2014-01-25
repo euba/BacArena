@@ -1,6 +1,10 @@
 if(!exists("ecoli_sbml", mode="list")) ecoli_sbml <- read.sbml("data/ecoli_core.xml", "_b$")
 # last delivered variable is regexpr for filtering external species (special handling necessary for equilibrium condition in fba)
 
+library(sybil)
+mod <- readSBMLmod("data/ecoli_core.xml", bndCond = FALSE)
+
+
 ecoli_biomassf <- "R_Biomass_Ecoli_core_N__w_GAM_"
 
 ecoli_maintenancef <- "R_ATPM"
