@@ -2,10 +2,10 @@
 ###################################### GRID ############################################################
 ########################################################################################################
 
-n <- 1
-m <- 1
-iter <- 30
-smax <- 70 # substrate start concentration
+n <- 10
+m <- 10
+iter <- 100
+smax <- 20 # substrate start concentration
 #seed <- 6764 # reproduction of random variables
 seed <- sample(1:9999,1)
 epsilon <- 10^-3 # accuracy in substrate representation
@@ -20,9 +20,9 @@ source(file="ecoli.R")
 #source(file="barkeri.R")
 #source(file="beijerinckii.R")
 #mod <- readSBMLmod("data/ecoli_core.xml", bndCond = FALSE)
-#bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
-lpobj <- optimizeProb(mod, algorithm = "fba", retOptSol = F)
-bac <- list(list(x=1, y=1,type="ecoli", growth=lpobj$obj,
+#bacd <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
+lpobj <- optimizeProb(mod, algorithm = "fba")
+bac <- list(list(x=round(n/2), y=round(m/2),type="ecoli", growth=lpobj@lp_obj,
                  model=mod, lpobj=lpobj)) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="ecoli", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1) # one cell in the centre
@@ -51,26 +51,26 @@ substrat <- lapply(s, function(x, n, m){
 }, n=n, m=m)
 names(substrat) <- s
 substrat[["iphosphate"]] <- matrix(smax,n,m)
-#substrat[["h2o"]] <- matrix(smax,n,m)
-#substrat[["proton"]] <- matrix(smax,n,m)
+  #substrat[["h2o"]] <- matrix(smax,n,m)
+  #substrat[["proton"]] <- matrix(smax,n,m)
 substrat[["glucose"]] <- matrix(smax,n,m)
-#substrat[["pyruvate"]] <- matrix(smax,n,m)
-#substrat[["h2"]] <- matrix(smax,n,m)
-#substrat[["co2"]] <- matrix(smax,n,m)
-#substrat[["methanol"]] <- matrix(smax,n,m)
-#substrat[["methane"]] <- matrix(0,n,m)
-#substrat[["acetate"]] <- matrix(smax,n,m)
-#substrat[["butanol"]] <- matrix(0,n,m)
-#substrat[["ethanol"]] <- matrix(0,n,m)
-#substrat[["aketoglutarate"]] <- matrix(0,n,m)
-#substrat[["formiate"]] <- matrix(0,n,m)
+  #substrat[["pyruvate"]] <- matrix(smax,n,m)
+  #substrat[["h2"]] <- matrix(smax,n,m)
+  #substrat[["co2"]] <- matrix(smax,n,m)
+  #substrat[["methanol"]] <- matrix(smax,n,m)
+  #substrat[["methane"]] <- matrix(0,n,m)
+  #substrat[["acetate"]] <- matrix(smax,n,m)
+  #substrat[["butanol"]] <- matrix(0,n,m)
+  #substrat[["ethanol"]] <- matrix(0,n,m)
+  #substrat[["aketoglutarate"]] <- matrix(0,n,m)
+  #substrat[["formiate"]] <- matrix(0,n,m)
 substrat[["o2"]] <- matrix(smax,n,m)
-#substrat[["succinate"]] <- matrix(0,n,m)
-#substrat[["acetone"]] <- matrix(0,n,m)
-#substrat[["butyrate"]] <- matrix(0,n,m)
-#substrat[["butanol"]] <- matrix(0,n,m)
-#substrat[["lactate"]] <- matrix(0,n,m)
-#substrat[["fumarate"]] <- matrix(0,n,m)
-#matr<-matrix(0, n, m)
-#matr[round(n/2),round(m/2)]=smax
-#substrat[["methanol"]] <- matrix(0,n,m) # one cell in the centre
+  #substrat[["succinate"]] <- matrix(0,n,m)
+  #substrat[["acetone"]] <- matrix(0,n,m)
+  #substrat[["butyrate"]] <- matrix(0,n,m)
+  #substrat[["butanol"]] <- matrix(0,n,m)
+  #substrat[["lactate"]] <- matrix(0,n,m)
+  #substrat[["fumarate"]] <- matrix(0,n,m)
+  #matr<-matrix(0, n, m)
+  #matr[round(n/2),round(m/2)]=smax
+  #substrat[["methanol"]] <- matrix(0,n,m) # one cell in the centre

@@ -15,10 +15,10 @@ source(file="config.R")
 
 #set.seed(seed)
 
-#if(!exists("movement", mode="function")){ #test if function already exists -> saves time for testing source code
+if(!exists("movement", mode="function")){ #test if function already exists -> saves time for testing source code
 #movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame", seed = "integer"), body = src_movement, plugin="Rcpp")
-#diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
-#}
+diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
+}
 
 
 # variables for diagnostic plot
@@ -57,9 +57,9 @@ for(time in 1:iter){
   #no_fba_found <- 0
   #hash_uses <- 0
   
-  #growth_vec <- vector(mode="numeric") # for diagnostic plot
-  #substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
-  #rownames(substrat_history) <- names(substrat)
+  growth_vec <- vector(mode="numeric") # for diagnostic plot
+  substrat_history[,time] <- unlist(lapply(substrat,FUN=mean))
+  rownames(substrat_history) <- names(substrat)
 
   #bacnum <- dim(bac)[1]
   bacnum <- length(bac)
@@ -69,7 +69,7 @@ for(time in 1:iter){
   
   #time_tmp3 <- proc.time()
   #  min_tmp <- min(unlist(lapply(substrat, min)))
-  #  diffusion(substrat)
+    diffusion(substrat)
   #  min_diff <- min(unlist(lapply(substrat, min)))
   #  if(min_diff < 0) {
   #    print(min_tmp)
@@ -106,18 +106,7 @@ for(time in 1:iter){
     ########################################### FBA ########################################################
     ########################################################################################################
     
-    #changeBounds(mod, rxn, lb=-substrat[[x]][y,z])
-    #mod=bac[[l]]$model
-    #sapply(names(substrat), function(x, y, z, substrat, sub_ex){
-    #  rxn <- sub_ex[x]
-    #  if(!is.na(rxn)){
-    #    mod <<- changeBounds(mod, rxn, lb=-substrat[[x]][y,z])
-    #  }
-    #}, substrat=substrat, y=1, z=1, sub_ex=sub_ex)
-    #mod <- changeBounds(mod, c(ecoli_sub_ex["glucose"], ecoli_sub_ex["o2"]), lb=-c(11, 18.2))
-    #bac[[l]]$model=mod
     bac[[l]]$model=ecoli_set_lower_bound(substrat, bac[[l]]$model)
-    #lowbnd(bac[[l]]$model)
     #time_tmp3 <- proc.time()
 
     #
@@ -130,19 +119,15 @@ for(time in 1:iter){
 #        hash_uses <- hash_uses + 1
 #      #  stop("ATTENTION: TAKING HASH!!!!")
 #      }
-#      else {
-        growth <- optimizeProb(bac[[l]]$model, algorithm = "fba", retOptSol = F) #test objective
-        #growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
-#        assign(hash_spos, growth, envir=fba_hash)
-#      }
-    #growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
-    
+    growth <- optimizeProb(bac[[l]]$model, algorithm = "fba") #test objective
+              #to speed up functions using the solutions of fba return object should be a list (can be done with retOptSol=F)
+              #faster access than with oop...
     #time_fba <- time_fba + proc.time() - time_tmp3
     #time_tmp4 <- proc.time()
     #
     # check prog solutions first!
     #
-    if(growth$obj<0){ # <=> if(growth == "DEAD"){
+    if(growth@lp_ok != 0){ # <=> if(growth == "DEAD"){
       #no_fba_found <- no_fba_found+1
        # new growth rate according to advanced magic calculation *muah*
        starving_growth <- -(get_ngam(bac[[l]]$type)/get_gam(bac[[l]]$type)) 
@@ -154,17 +139,14 @@ for(time in 1:iter){
     # if there is a feasable fba solution continue:
     #
     else{
-      #growth_vec[l] <- growth$obj # for diagnostic plot
-      if(growth$obj != 0){ # continue only if there is growth !
-        bac[[l]]$growth <- bac[[l]]$growth + growth$obj
-        fluxes <- growth$fluxes
+      #growth_vec[l] <- lp_obj(growth) # for diagnostic plot
+      if(growth@lp_obj != 0){ # continue only if there is growth !
+        bac[[l]]$growth <- bac[[l]]$growth + growth@lp_obj
+        fluxes <- as.vector(growth@fluxdist@fluxes)
         names(fluxes) = react_id(bac[[l]]$model)
         
-        sapply(names(sapply(substrat, names)), function(x,i,j,substrat){
-          #print(x)
+        sapply(names(substrat), function(x,i,j,substrat){
           if(x %in% names(sub_ex)) { # only update substrate which are metabolic relevant for current organism
-            #print(substrat[[x]][i,j])
-            #print(growth[[sub_ex[[x]]]])
             
             #
             # rounding to avoid gray bug (different variable accuracy leads to artefacts -> very small negative differences from zero which produces a gray plot)
@@ -178,7 +160,7 @@ for(time in 1:iter){
               #substrat[[x]][i,j] = 0
               print (fluxes[[sub_ex[[x]]]])
               print (substrat[[x]][i,j])
-              print(growth$obj)
+              print(growth@lp_obj)
               stop("negative substrate!")
             } 
           }
@@ -191,32 +173,34 @@ for(time in 1:iter){
 ########################################################################################################
     
     #time_tmp2 <- proc.time()
-    #dupli <- F # boolean variable to test for duplication
-    #a <- (i + xr[l])
-    #b <- (j + yr[l])
-    #if(a == 0){a = n}
-    #if(b == 0){b = m}
-    #if(a == n+1){a = 1}
-    #if(b == m+1){b = 1}
-    #test <- apply(bac[,1:2], 1, function(x, p){
-    #  if(sum(x==p)==2){
-    #    return(T)
-    #  }else{
-    #    return(F)
-    #  }
-    #}, p=c(a,b))
-    #if(bac[l,]$growth>2){ # test for duplication
-    #  bac[l,]$growth <- bac[l,]$growth/2
-    #  bac <- rbind(bac, bac[l,])
-    #  dupli <- T
-    #}
-    #if(!(sum(test)>=1)){ # if empty go for it!
-    #  bac[l,1:2] <- c(a,b)
-    #}else{
-    #  if(dupli){ # if neighbour not empty and cell duplicated, kill doughter cell
-    #    bac <- bac[-(dim(bac)[1]),]
-    #  }
-    #}
+#     bacmat <- do.call(rbind, lapply(bac2, function(x) cbind(x$x, x$y))) #create, so old function dont have to be changed...
+#     dupli <- F # boolean variable to test for duplication
+#     a <- (i + xr[l])
+#     b <- (j + yr[l])
+#     if(a == 0){a = n}
+#     if(b == 0){b = m}
+#     if(a == n+1){a = 1}
+#     if(b == m+1){b = 1}
+#     test <- apply(bacmat, 1, function(x, p){
+#       if(sum(x==p)==2){
+#         return(T)
+#       }else{
+#         return(F)
+#       }
+#     }, p=c(a,b))
+#     if(bac[[l]]$growth>2){ # test for duplication
+#       bac[[l]]$growth <- bac[[l]]$growth/2
+#       bac[[length(bac)+1]] <- bac[[l]]
+#       dupli <- T 
+#     }
+#     if(!(sum(test)>=1)){ # if empty go for it!
+#       bac[[l]]$x <- a
+#       bac[[l]]$y <- b
+#     }else{
+#       if(dupli){ # if neighbour not empty and cell duplicated, kill doughter cell
+#         bac <- bac[[-length(bac)]]
+#       }
+#     }
     #time_mov <- time_mov + proc.time() - time_tmp2
   }
   
@@ -227,12 +211,17 @@ for(time in 1:iter){
   
   #time_tmp4 <- proc.time()
   #
+  lapply(bac, function(x){
+    if(x$growth<0){
+      bac <<- bac[-x]
+    }
+  })
   #bac <- bac[!(bac$growth<0),] #death
   #
-  #if(dim(bac)[1]==0){
-  #  print("ALL BACTERIA DIED")
-  #  break
-  #}
+  if(length(bac)==0){
+    print("ALL BACTERIA DIED")
+    break
+  }
   #time_unk <- time_unk + proc.time() - time_tmp4
   
   #growth_vec_history[[time]] <- growth_vec # for diagnostic plot
@@ -258,7 +247,7 @@ for(time in 1:iter){
   #baccounter <- table(bac$type)
   #iter_print <- c(time, no_fba_found, time_tot[3], hash_uses, seed, unname(baccounter))
   #names(iter_print) <- c("iteration", "no_fba/growth", "time_elapsed", "#hashing", "seed", names(baccounter))
-  print(growth$obj)
+  print(growth@lp_obj)
   print(time)
 }
 
