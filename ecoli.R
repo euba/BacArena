@@ -1,6 +1,10 @@
-mod <- readSBMLmod("data/ecoli_core.xml", bndCond = FALSE)
+#mod <- readSBMLmod("data/ecoli_core.xml", bndCond = FALSE)
+load("data/ecore_model.R")
+mod <- model
+#mod_desc(mod)
+names(attributes(mod))
+attributes(mod)$react_id
 
-#
 # associate each substrate with an exchange reaction (sbml specific!!)
 #
 #ecoli_sub_ex <- character(length(s))

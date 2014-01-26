@@ -1,0 +1,14 @@
+=OOP and package creating literature=
+
+==Sybil realted docs==
+* Sybil Paper: http://www.biomedcentral.com/1752-0509/7/125
+* Sybil vignette: http://r.meteo.uni.wroc.pl/web/packages/sybil/vignettes/sybil.pdf
+* Sybil function overview: http://cran.r-project.org/web/packages/sybil/sybil.pdf
+
+==R package creation==
+* Creating R packages: http://cran.r-project.org/doc/contrib/Leisch-CreatingPackages.pdf
+
+==R oop definitions==
+* S4 and S3 classes: http://www.r-project.org/conferences/useR-2004/Keynotes/Leisch.pdf
+* newer tutorial for S4: http://www.bioconductor.org/help/course-materials/2011/AdvancedRFeb2011Seattle/S4Overview-slides.pdf
+* https://www.rmetrics.org/files/Meielisalp2009/Presentations/Chalabi1.pdf
