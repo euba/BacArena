@@ -16,12 +16,12 @@ epsilon <- 10^-3 # accuracy in substrate representation
 
 #setwd("~/BacArena")
 #source(file="ecoli_iAF1260.R")
-#source(file="ecoli.R")
+source(file="ecoli.R")
 #source(file="barkeri.R")
 #source(file="beijerinckii.R")
-mod <- readSBMLmod("data/ecoli_core.xml", bndCond = FALSE)
+#mod <- readSBMLmod("data/ecoli_core.xml", bndCond = FALSE)
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
-lpobj <- optimizeProb(mod, algorithm = "fba", retOptSol = F, solver = "glpkAPI")
+lpobj <- optimizeProb(mod, algorithm = "fba", retOptSol = F)
 bac <- list(list(x=1, y=1,type="ecoli", growth=lpobj$obj,
                  model=mod, lpobj=lpobj)) # one cell in the centre
 #bac <- rbind(data.frame(x=round(n), y=round(m),type="ecoli", growth=1),data.frame(x=round(n/2), y=round(m/2),type="barkeri", growth=1))

@@ -1,11 +1,12 @@
 library(Rcpp)
 library(inline)
 library(sybil)
-library(sybilSBML)
+SYBIL_SETTINGS("SOLVER", "clpAPI")
+#library(sybilSBML)
 #library(rbenchmark)
 #library(digest) # hashes
 
-#setwd("~/BacArena")
+setwd("~/BacArena")
 #source(file="fba.R")
 source(file="cpp_source.R")
 source(file="baggage.R")
@@ -130,7 +131,7 @@ for(time in 1:iter){
 #      #  stop("ATTENTION: TAKING HASH!!!!")
 #      }
 #      else {
-        growth <- optimizeProb(bac[[l]]$model, algorithm = "fba", retOptSol = F, solver = "glpkAPI") #test objective
+        growth <- optimizeProb(bac[[l]]$model, algorithm = "fba", retOptSol = F) #test objective
         #growth <- fba(spos, sbml$stoch, sbml$ex, sbml$reac, bac[l,][1,4], sub_ex, bac[l,]$type)
 #        assign(hash_spos, growth, envir=fba_hash)
 #      }
@@ -170,14 +171,14 @@ for(time in 1:iter){
             #
             #substrat[[x]][i,j] <<- substrat[[x]][i,j] + growth[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
             #substrat[[x]][i,j] <<- round(substrat[[x]][i,j] + growth[[sub_ex[[x]]]], digits=-log10(epsilon)) # "<<-" is necessary for extern variable modification
-            substrat[[x]][i,j] <<- substrat[[x]][i,j] + fluxes[[sub_ex[[x]]]] # "<<-" is necessary for extern variable modification
+            substrat[[x]][i,j] <<- round(substrat[[x]][i,j] + fluxes[[sub_ex[[x]]]], digits=-log10(epsilon)) # "<<-" is necessary for extern variable modification
             #print(substrat[[x]][i,j])
             #print(fluxes[[sub_ex[[x]]]])
             if(substrat[[x]][i,j] < 0){
               #substrat[[x]][i,j] = 0
-              #print (fluxes[[sub_ex[[x]]]])
-              #print (substrat[[x]][i,j])
-              #print(growth$obj)
+              print (fluxes[[sub_ex[[x]]]])
+              print (substrat[[x]][i,j])
+              print(growth$obj)
               stop("negative substrate!")
             } 
           }
