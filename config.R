@@ -4,7 +4,7 @@
 
 n <- 1
 m <- 1
-iter <- 10
+iter <- 30
 smax <- 70 # substrate start concentration
 #seed <- 6764 # reproduction of random variables
 seed <- sample(1:9999,1)
@@ -14,12 +14,12 @@ epsilon <- 10^-3 # accuracy in substrate representation
 ###################################### BACTERIA ########################################################
 ########################################################################################################
 
-setwd("~/BacArena")
+#setwd("~/BacArena")
 #source(file="ecoli_iAF1260.R")
-source(file="ecoli.R")
+#source(file="ecoli.R")
 #source(file="barkeri.R")
 #source(file="beijerinckii.R")
-
+mod <- readSBMLmod("data/ecoli_core.xml", bndCond = FALSE)
 #bac <- data.frame(x=round(n/2), y=round(m/2),type="ecoli", growth=1) # one cell in the centre
 lpobj <- optimizeProb(mod, algorithm = "fba", retOptSol = F, solver = "glpkAPI")
 bac <- list(list(x=1, y=1,type="ecoli", growth=lpobj$obj,

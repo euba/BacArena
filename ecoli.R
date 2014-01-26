@@ -43,7 +43,6 @@ ecoli_set_lower_bound <- function(substrat, mod){
       mod <<- changeBounds(mod, rxn, lb=-substrat[[x]][y,z])
     }
   }, substrat=substrat, y=1, z=1, ecoli_sub_ex=ecoli_sub_ex)
-  mod <- changeBounds(mod, c(ecoli_sub_ex["glucose"], ecoli_sub_ex["o2"]), lb=-c(11, 18.2))
   
   #
   # lower/upper bound is init in read.sbml because of irreversible reactions => lb=0
@@ -67,12 +66,25 @@ ecoli_set_lower_bound <- function(substrat, mod){
   #}
   
   #Feist et al 2007:
+  if(substrat[["glucose"]] > 11){
+    mod <- changeBounds(mod, ecoli_sub_ex["glucose"], lb=-11)
+  }
+  if(substrat[["o2"]] > 18.2){
+    mod <- changeBounds(mod, ecoli_sub_ex["o2"], lb=-18.2)
+  }
   #if(substrat[["glucose"]] > 11) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["glucose"]])] <- -11
   #if(substrat[["o2"]] > 18.2) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["o2"]])] <- -18.2
   #Orth et al 2011:
+  if(substrat[["lactate"]] > 16){
+    mod <- changeBounds(mod, ecoli_sub_ex["lactate"], lb=-16)
+  }
+  if(substrat[["succinate"]] > 16){
+    mod <- changeBounds(mod, ecoli_sub_ex["succinate"], lb=-16)
+  }
   #if(substrat[["lactate"]] > 16) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["lactate"]])] <- -16
   #if(substrat[["succinate"]] > 16) ecoli_lower_bound[which(colnames(ecoli_stochmatrix)==ecoli_sub_ex[["succinate"]])] <- -16
   #return(ecoli_lower_bound)
+  return(mod)
 }
 
-optimizeProb(mod, algorithm = "fba", retOptSol = F, solver = "clpAPI")$obj #test objective
+#optimizeProb(mod, algorithm = "fba", retOptSol = F, solver = "clpAPI")$obj #test objective

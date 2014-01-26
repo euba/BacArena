@@ -1,26 +1,29 @@
 library(Rcpp)
 library(inline)
-library(rbenchmark)
-library(digest) # hashes
+library(sybil)
+library(sybilSBML)
+#library(rbenchmark)
+#library(digest) # hashes
 
-setwd("~/BacArena")
-source(file="fba.R")
+#setwd("~/BacArena")
+#source(file="fba.R")
 source(file="cpp_source.R")
 source(file="baggage.R")
+source(file="ecoli.R")
 source(file="config.R")
 
-set.seed(seed)
+#set.seed(seed)
 
-if(!exists("movement", mode="function")){ #test if function already exists -> saves time for testing source code
-movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame", seed = "integer"), body = src_movement, plugin="Rcpp")
-diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
-}
+#if(!exists("movement", mode="function")){ #test if function already exists -> saves time for testing source code
+#movement <- cxxfunction(signature(input_matrix = "matrix", input_frame = "data.frame", seed = "integer"), body = src_movement, plugin="Rcpp")
+#diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
+#}
 
 
 # variables for diagnostic plot
 growth_vec_history <- list()
 substrat_history <- matrix(data=0, nrow=length(substrat), ncol=iter)
-bac_history <- sapply(levels(bac[,3]), function(x){list()[[x]]}) # init list with entry for each bac type
+#bac_history <- sapply(levels(bac[,3]), function(x){list()[[x]]}) # init list with entry for each bac type
 
 time_history <- list(mode="numeric") # time comsumption
 fba_hash <-new.env() # hash fba results to improve performance
@@ -103,16 +106,17 @@ for(time in 1:iter){
     ########################################################################################################
     
     #changeBounds(mod, rxn, lb=-substrat[[x]][y,z])
-    mod=bac[[l]]$model
-    sapply(names(substrat), function(x, y, z, substrat, sub_ex){
-      rxn <- sub_ex[x]
-      if(!is.na(rxn)){
-        mod <<- changeBounds(mod, rxn, lb=-substrat[[x]][y,z])
-      }
-    }, substrat=substrat, y=1, z=1, sub_ex=sub_ex)
-    mod <- changeBounds(mod, c(ecoli_sub_ex["glucose"], ecoli_sub_ex["o2"]), lb=-c(11, 18.2))
-    bac[[l]]$model=mod
-    lowbnd(bac[[l]]$model)
+    #mod=bac[[l]]$model
+    #sapply(names(substrat), function(x, y, z, substrat, sub_ex){
+    #  rxn <- sub_ex[x]
+    #  if(!is.na(rxn)){
+    #    mod <<- changeBounds(mod, rxn, lb=-substrat[[x]][y,z])
+    #  }
+    #}, substrat=substrat, y=1, z=1, sub_ex=sub_ex)
+    #mod <- changeBounds(mod, c(ecoli_sub_ex["glucose"], ecoli_sub_ex["o2"]), lb=-c(11, 18.2))
+    #bac[[l]]$model=mod
+    bac[[l]]$model=ecoli_set_lower_bound(substrat, bac[[l]]$model)
+    #lowbnd(bac[[l]]$model)
     #time_tmp3 <- proc.time()
 
     #
@@ -170,11 +174,11 @@ for(time in 1:iter){
             #print(substrat[[x]][i,j])
             #print(fluxes[[sub_ex[[x]]]])
             if(substrat[[x]][i,j] < 0){
-              substrat[[x]][i,j] = 0
-              print (fluxes[[sub_ex[[x]]]])
-              print (substrat[[x]][i,j])
-              print(growth$obj)
-              #stop("negative substrate!")
+              #substrat[[x]][i,j] = 0
+              #print (fluxes[[sub_ex[[x]]]])
+              #print (substrat[[x]][i,j])
+              #print(growth$obj)
+              stop("negative substrate!")
             } 
           }
         },i=i,j=j,substrat=substrat)
