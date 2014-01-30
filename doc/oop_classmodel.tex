@@ -16,7 +16,7 @@
   \node (Arena) [hierarchy1, rectangle split, rectangle split parts=2]
   {
     \textbf{ARENA}
-    \nodepart{second} grid \\posmatrix
+    \nodepart{second} n = numeric \\ m = numeric \\ iter = numeric \\ smax = numeric \\ seed = numeric \\ epsilon = numeric
   };
   
   \node (Substance) [hierarchy2, rectangle split, rectangle split parts=2, below left=of Arena]
@@ -28,9 +28,8 @@
   \node (Organism) [hierarchy2, rectangle split, rectangle split parts=2, below right= of Arena]
   {
     \textbf{ORGANISM}
-    \nodepart{second} objectives \\ model
+    \nodepart{second} x = numeric \\ y = numeric \\ objective = character \\ model = modelorg
   };
-
 
   \draw[myarrow] (Substance.north) -- ++(0,0.8) -| (Arena.south);
   \draw[line] (Substance.north) -- ++(0,0.8) -| (Organism.north);
