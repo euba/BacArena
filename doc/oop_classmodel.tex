@@ -18,7 +18,7 @@
   \node (Arena) [hierarchy1, rectangle split, rectangle split parts=2]
   {
     \textbf{ARENA}
-    \nodepart{second} n = numeric \\ m = numeric \\ iter = numeric \\ smax = numeric \\ seed = numeric \\ epsilon = numeric
+    \nodepart{second} n = numeric \\ m = numeric \\ iter = numeric \\ smax = numeric \\ seed = numeric \\ epsilon = numeric \\ plot() \\ evaluate()
   };
   
   \node (Substance) [hierarchy2, rectangle split, rectangle split parts=2, below left=of Arena]
@@ -30,13 +30,19 @@
   \node (Organism) [hierarchy2, rectangle split, rectangle split parts=2, below right= of Arena]
   {
     \textbf{ORGANISM}
-    \nodepart{second} x = numeric \\ y = numeric \\ objective = character \\ model = modelorg \\ optimize() \\ evaluate()
+    \nodepart{second} x = numeric \\ y = numeric \\ objective = character \\ model = modelorg \\ optimize() \\ constrain() \\ getExRxn()
   };
 
-  \node (Bac) [hierarchy3, rectangle split, rectangle split parts=2, below= of Organism]
+  \node (Bac) [hierarchy3, rectangle split, rectangle split parts=2, below left = of Organism]
   {
     \textbf{BAC}
-    \nodepart{second} bug 
+    \nodepart{second} biomass = numeric \\ move() \\ grow() \\ divide()
+  };
+  
+  \node (Epithelia) [hierarchy3, rectangle split, rectangle split parts=2, below right = of Organism]
+  {
+    \textbf{EPITHELIA}
+    \nodepart{second} transport()
   };
 
 
@@ -44,6 +50,7 @@
   \draw[line] (Substance.north) -- ++(0,0.8) -| (Organism.north);
 
   \draw[myarrow] (Bac.north) -- ++(0,0.8) -| (Organism.south);
+  \draw[line] (Epithelia.north) -- ++(0,0.8) -| (Bac.north);
 \end{tikzpicture}
 \end{center}
 \end{document}
