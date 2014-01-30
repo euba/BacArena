@@ -5,11 +5,11 @@
 
 \begin{document}
 \tikzstyle{hierarchy1}=[rectangle, draw=black, rounded corners, fill=gray!40, drop shadow,
-        text centered, anchor=north, text=black, text width=3cm]
+        text centered, anchor=north, text=black, text width=4cm]
 \tikzstyle{hierarchy2}=[rectangle, draw=black, rounded corners, fill=white, drop shadow,
-        text centered, anchor=north, text=black, text width=3cm]
+        text centered, anchor=north, text=black, text width=4cm]
 \tikzstyle{hierarchy3}=[rectangle, draw=black, rounded corners, fill=white, drop shadow,
-        text centered, anchor=north, text=black, text width=3cm]
+        text centered, anchor=north, text=black, text width=4cm]
 \tikzstyle{myarrow}=[->, >=open triangle 90, thick]
 \tikzstyle{line}=[-, thick]
         
@@ -24,13 +24,13 @@
   \node (Substance) [hierarchy2, rectangle split, rectangle split parts=2, below left=of Arena]
   {
     \textbf{SUBSTANCES}
-    \nodepart{second} diffconst
+    \nodepart{second} diffconst = numeric \\ diffmatrix = numeric \\ diffusion() \\ getConc()
   };
 
   \node (Organism) [hierarchy2, rectangle split, rectangle split parts=2, below right= of Arena]
   {
     \textbf{ORGANISM}
-    \nodepart{second} x = numeric \\ y = numeric \\ objective = character \\ model = modelorg
+    \nodepart{second} x = numeric \\ y = numeric \\ objective = character \\ model = modelorg \\ optimize() \\ evaluate()
   };
 
   \node (Bac) [hierarchy3, rectangle split, rectangle split parts=2, below= of Organism]
