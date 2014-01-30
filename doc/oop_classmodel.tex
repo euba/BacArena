@@ -8,6 +8,8 @@
         text centered, anchor=north, text=black, text width=3cm]
 \tikzstyle{hierarchy2}=[rectangle, draw=black, rounded corners, fill=white, drop shadow,
         text centered, anchor=north, text=black, text width=3cm]
+\tikzstyle{hierarchy3}=[rectangle, draw=black, rounded corners, fill=white, drop shadow,
+        text centered, anchor=north, text=black, text width=3cm]
 \tikzstyle{myarrow}=[->, >=open triangle 90, thick]
 \tikzstyle{line}=[-, thick]
         
@@ -31,9 +33,17 @@
     \nodepart{second} x = numeric \\ y = numeric \\ objective = character \\ model = modelorg
   };
 
+  \node (Bac) [hierarchy3, rectangle split, rectangle split parts=2, below= of Organism]
+  {
+    \textbf{BAC}
+    \nodepart{second} bug 
+  };
+
+
   \draw[myarrow] (Substance.north) -- ++(0,0.8) -| (Arena.south);
   \draw[line] (Substance.north) -- ++(0,0.8) -| (Organism.north);
 
+  \draw[myarrow] (Bac.north) -- ++(0,0.8) -| (Organism.south);
 \end{tikzpicture}
 \end{center}
 \end{document}
