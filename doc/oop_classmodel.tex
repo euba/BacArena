@@ -1,0 +1,40 @@
+\documentclass{minimal}
+\usepackage[a4paper,margin=1cm,landscape]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes,shadows,arrows}
+
+\begin{document}
+\tikzstyle{hierarchy1}=[rectangle, draw=black, rounded corners, fill=gray!40, drop shadow,
+        text centered, anchor=north, text=black, text width=3cm]
+\tikzstyle{hierarchy2}=[rectangle, draw=black, rounded corners, fill=white, drop shadow,
+        text centered, anchor=north, text=black, text width=3cm]
+\tikzstyle{myarrow}=[->, >=open triangle 90, thick]
+\tikzstyle{line}=[-, thick]
+        
+\begin{center}
+\begin{tikzpicture}[node distance=2cm]
+  \node (Arena) [hierarchy1, rectangle split, rectangle split parts=2]
+  {
+    \textbf{ARENA}
+    \nodepart{second} grid \\posmatrix
+  };
+  
+  \node (Substance) [hierarchy2, rectangle split, rectangle split parts=2, below left=of Arena]
+  {
+    \textbf{SUBSTANCES}
+    \nodepart{second} diffconst
+  };
+
+  \node (Organism) [hierarchy2, rectangle split, rectangle split parts=2, below right= of Arena]
+  {
+    \textbf{ORGANISM}
+    \nodepart{second} objectives \\ model
+  };
+
+
+  \draw[myarrow] (Substance.north) -- ++(0,0.8) -| (Arena.south);
+  \draw[line] (Substance.north) -- ++(0,0.8) -| (Organism.north);
+
+\end{tikzpicture}
+\end{center}
+\end{document}
