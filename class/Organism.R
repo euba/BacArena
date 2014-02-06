@@ -34,7 +34,6 @@ Organism <- function(x, y, model, type=mod_desc(model), objlp="", algorithm = "f
 ###################################### METHODS #########################################################
 ########################################################################################################
 
-
 setGeneric("changeObj", function(mod, newobj) standardGeneric("changeObj"))
 setMethod("changeObj", "Organism",
           function(mod, newobj){ # changes the objective function of a model according to the given reaction id

@@ -8,20 +8,19 @@ setClass("Arena",
          representation(
            n        = "numeric",  # grid size
            m        = "numeric",  # grid size
-           iter     = "numeric",  # iterations
-           smax     = "numeric",  # substrate start concentration
+           iter    = "numeric",  # iterations
            seed     = "numeric",  # reproducible random numbers
            epsilon  = "numeric"   # accuracy in substrate representation
          )
 )
 
-
-
 ########################################################################################################
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Arena <- function(n, m, iter, smax, seed, epsilon){
-  new("Arena", n=n, m=m, iter=iter, smax=smax, seed=seed, epsilon=epsilon)
+Arena <- function(n, m, iter, seed, epsilon){
+  new("Arena", n=n, m=m, iter=iter, seed=seed, epsilon=epsilon)
 }
 
+#testing constructor
+arena1 <- Arena(n=1,m=1,iter=1,seed=1,epsilon=1)
