@@ -35,5 +35,4 @@ Organism <- function(x, y, model, type=mod_desc(model), objlp="", algorithm = "f
 ########################################################################################################
 
 
-#testing constructor
-org1 <- Organism(x=1, y=2, model=mod)
+

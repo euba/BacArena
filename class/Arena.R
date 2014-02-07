@@ -1,11 +1,3 @@
-# load libraries and other R files to have everything in place
-library(Rcpp)
-library(inline)
-library(sybil)
-SYBIL_SETTINGS("SOLVER", "clpAPI")
-setwd("~/BacArena")
-source(file="class/class_baggage.R")
-
 # Arena is the main class from which all others inherit
 
 ########################################################################################################
@@ -16,9 +8,10 @@ setClass("Arena",
          representation(
            n        = "numeric",  # grid size
            m        = "numeric",  # grid size
-           iter    = "numeric",  # iterations
+           iter     = "numeric",  # iterations
            seed     = "numeric",  # reproducible random numbers
-           epsilon  = "numeric"   # accuracy in substrate representation
+           epsilon  = "numeric",  # accuracy in substrate representation
+           #orglist  = "list",     # list with Organism objects
          )
 )
 
@@ -30,5 +23,3 @@ Arena <- function(n, m, iter, seed, epsilon){
   new("Arena", n=n, m=m, iter=iter, seed=seed, epsilon=epsilon)
 }
 
-#testing constructor
-arena1 <- Arena(n=1,m=1,iter=1,seed=1,epsilon=1)

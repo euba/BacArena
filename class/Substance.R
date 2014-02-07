@@ -32,5 +32,4 @@ Substance <- function(diffconst, n, m, smax, gradient=matrix(0,0,0)){
   new("Substance", smax=smax, diffconst=diffconst, diffmat=diffmat, gradient=gradient)
 }
 
-#testing constructor
-sub1 <- Substance(diffconst=5, n=5, m=5, smax=5)
+

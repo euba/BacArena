@@ -32,10 +32,3 @@ Bac <- function(x, y, model, growth, ...){
 #           }
 # )
 
-#testing constructor
-bac1 = Bac(x=1, y=1, model=mod, growth=1)
-#bac1@model = changeObj(bac1@model, "ATPM")
-#org1 <- Organism(x=1, y=2, model=mod)
-#org1@model = org1@changeObj(org1@model, "ATPM")
-
-#bac1 = Bac(org1, growth=1) #this does not work, but would be cool if...
