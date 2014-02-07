@@ -1,3 +1,11 @@
+# load libraries and other R files to have everything in place
+library(Rcpp)
+library(inline)
+library(sybil)
+SYBIL_SETTINGS("SOLVER", "clpAPI")
+setwd("~/BacArena")
+source(file="class/class_baggage.R")
+
 # Arena is the main class from which all others inherit
 
 ########################################################################################################
