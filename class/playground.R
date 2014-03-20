@@ -22,7 +22,12 @@ mod <- model
 
 #testing constructor
 bac1 = Bac(x=1, y=1, model=mod, growth=1)
-bac1 = Bac(x=1, y=1, model=mod, growth=1, objlp="ATPM")
+bac1 = Bac(x=1, y=1, model=mod, growth=1, fobj="ATPM")
+
+constrain(bac1, "EX_o2(e)", lb=0, ub=0)
+optimizeLP(bac1)
+bac1@lpobj
+
 #bac1@model = changeObj(bac1@model, "ATPM")
 #org1 <- Organism(x=1, y=2, model=mod)
 #org1@model = org1@changeObj(org1@model, "ATPM")
@@ -38,6 +43,13 @@ org1@lpobj
 changeFobj(org1, "ATPM")
 org1@lpobj
 
+#testing linear growth of bacteria
+growLin(bac1)
+bac1@growth
+for(i in 1:100){
+  growLin(bac1)
+  print(bac1@growth)
+}
 
 #testing constructor
 sub1 <- Substance(diffconst=5, n=5, m=5, smax=5)
