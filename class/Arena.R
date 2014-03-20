@@ -10,7 +10,7 @@ setClass("Arena",
            m        = "numeric",  # grid size
            iter     = "numeric",  # iterations
            seed     = "numeric",  # reproducible random numbers
-           epsilon  = "numeric",  # accuracy in substrate representation
+           epsilon  = "numeric"  # accuracy in substrate representation
            #orglist  = "list",     # list with Organism objects
          )
 )

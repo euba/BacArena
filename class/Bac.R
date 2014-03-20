@@ -31,4 +31,3 @@ Bac <- function(x, y, model, growth, ...){
 #             print(names(attributes(object)))
 #           }
 # )
-

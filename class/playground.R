@@ -2,12 +2,13 @@
 # the main goal of this file is to construct a basic framework for BacArena, which can then be merged with diffbac
 # it is actually a little bit like diffbac.R, but for the current oop version of BacArena
 
+setwd("..")
+
 # load libraries and other R files to have everything in place
 library(Rcpp)
 library(inline)
 library(sybil)
 SYBIL_SETTINGS("SOLVER", "clpAPI")
-setwd("~/BacArena")
 #load class definitions
 source(file="class/class_baggage.R")
 source(file="class/Arena.R")
@@ -29,6 +30,15 @@ bac1 = Bac(x=1, y=1, model=mod, growth=1, objlp="ATPM")
 #bac1 = Bac(org1, growth=1) #this does not work, but would be cool if...
 #testing constructor
 org1 <- Organism(x=1, y=2, model=mod)
+#checking the organisms functions
+org1@lpobj
+constrain(org1, "EX_o2(e)", lb=0, ub=0)
+optimizeLP(org1)
+org1@lpobj
+changeFobj(org1, "ATPM")
+org1@lpobj
+
+
 #testing constructor
 sub1 <- Substance(diffconst=5, n=5, m=5, smax=5)
 #testing constructor
