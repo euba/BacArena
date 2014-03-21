@@ -3,6 +3,7 @@
 # it is actually a little bit like diffbac.R, but for the current oop version of BacArena
 
 setwd("..")
+setwd("C:/Users/eugen.bauer/Documents/GitHub/BacArena")
 
 # load libraries and other R files to have everything in place
 library(Rcpp)
@@ -10,6 +11,7 @@ library(inline)
 library(sybil)
 SYBIL_SETTINGS("SOLVER", "clpAPI")
 #load class definitions
+source(file="cpp_source.R")
 source(file="class/class_baggage.R")
 source(file="class/Arena.R")
 source(file="class/Substance.R")
@@ -21,8 +23,8 @@ load("data/ecore_model.R")
 mod <- model
 
 #testing constructor
-bac1 = Bac(x=1, y=1, model=mod, growth=1)
-bac1 = Bac(x=1, y=1, model=mod, growth=1, fobj="ATPM")
+bac1 = Bac(x=1, y=1, model=mod, growth=1, n=1, m=1, seed=100, iter=100, epsilon=2)
+#bac1 = Bac(x=1, y=1, model=mod, growth=1, fobj="ATPM")
 
 constrain(bac1, "EX_o2(e)", lb=0, ub=0)
 optimizeLP(bac1)
@@ -34,7 +36,7 @@ bac1@lpobj
 
 #bac1 = Bac(org1, growth=1) #this does not work, but would be cool if...
 #testing constructor
-org1 <- Organism(x=1, y=2, model=mod)
+org1 <- Organism(x=1, y=2, model=mod, n=1, m=1)
 #checking the organisms functions
 org1@lpobj
 constrain(org1, "EX_o2(e)", lb=0, ub=0)

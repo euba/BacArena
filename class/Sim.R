@@ -1,13 +1,11 @@
-# Arena is the main class from which all others inherit
+# Simulation class for the binding and interaction of the different classes 
 
 ########################################################################################################
 ###################################### ARENA CLASS #####################################################
 ########################################################################################################
 
-setClass("Arena",
+setClass("Sim",
          representation(
-           n        = "numeric",  # grid size
-           m        = "numeric",  # grid size
            iter     = "numeric",  # iterations
            seed     = "numeric",  # reproducible random numbers
            epsilon  = "numeric"  # accuracy in substrate representation
@@ -19,12 +17,11 @@ setClass("Arena",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Arena <- function(n, m, iter, seed, epsilon){
-  new("Arena", n=n, m=m, iter=iter, seed=seed, epsilon=epsilon)
+Sim <- function(iter, seed, epsilon){
+  new("Sim", iter=iter, seed=seed, epsilon=epsilon)
 }
 
 ########################################################################################################
 ###################################### METHODS #########################################################
 ########################################################################################################
-
 

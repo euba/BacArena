@@ -1,7 +1,15 @@
 # this .R file contains functions, which are usefull for all classes (therefore not class methods) to perform simple tasks
 
-changeObj <- function(mod, newobj){ # changes the objective function of a model according to the given reaction id
-            mod@obj_coef <- rep(0, length(mod@obj_coef))
-            mod@obj_coef[which(mod@react_id==newobj)] <- 1
-            return(mod)
-            }
+initArena <- function(specs, #list with species models to analyze
+                      #distri, #distribution that bacteria should have on the grid
+                      n, m, iter, seed, epsilon, #Arena attributes
+                      smax, diffconst, diffmat, gradient, #Substrate attributes
+                      model, growth #Bac/Organism attributes
+                      ){
+  lapply(specs, function(x, n, m, iter, seed, epsilon, growth){ #initialize the bacterial population
+    x <- runif(1, 1, n)
+    y <- runif(1, 1, m)
+    growth <- rnorm()
+    return(Bac(x=x, y=y, model=x, growth=1, n=1, m=1, seed=100, iter=100, epsilon=2))
+  }, n=n, m=m, iter=iter, seed=seed, epsilon=epsilon, growth=growth)
+}
