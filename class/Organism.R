@@ -59,3 +59,18 @@ setMethod("changeFobj", "Organism", function(object, new_fobj){
   eval.parent(substitute(object@model <- changeObj(object@model, new_fobj)))
   eval.parent(substitute(object@lpobj <- optimizeProb(object@model))) #the lp object has to be updated according to the new objective
 })
+
+#function for finding uptake reactions of a model for getting the media conditions
+
+setGeneric("findUpt", function(object, flag=F, ex="EX"){standardGeneric("findUpt")})
+setMethod("findUpt", "Organism", function(object, flag=F, ex="EX"){
+  if(flag){
+    ex <- findExchReact(object@model)
+    upt <- uptReact(ex)
+  }else{
+    allreact <- react_id(bac1@model)
+    upt <- allreact[grep(ex, allreact)]
+  }
+  return(upt)
+})
+

@@ -13,3 +13,13 @@ initArena <- function(specs, #list with species models to analyze
     return(Bac(x=x, y=y, model=x, growth=1, n=1, m=1, seed=100, iter=100, epsilon=2))
   }, n=n, m=m, iter=iter, seed=seed, epsilon=epsilon, growth=growth)
 }
+
+
+findMedia <- function(specs){
+  allupts <- unique(unlist(lapply(specs, function(x){
+    ex <- findExchReact(x)
+    upt <- uptReact(ex)
+    return(upt)
+  })))
+  return(allupts)
+}
