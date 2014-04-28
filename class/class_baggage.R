@@ -23,3 +23,6 @@ findMedia <- function(specs){
   })))
   return(allupts)
 }
+
+
+constructBacs <- function()

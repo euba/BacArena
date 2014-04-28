@@ -2,9 +2,11 @@
 # the main goal of this file is to construct a basic framework for BacArena, which can then be merged with diffbac
 # it is actually a little bit like diffbac.R, but for the current oop version of BacArena
 
-setwd("..")
 setwd("C:/Users/eugen.bauer/Documents/GitHub/BacArena")
 setwd("C:/Users/User/Documents/GitHub/BacArena")
+setwd("P:/BACARENA/diffusion")
+setwd("P:/BACARENA/movement")
+
 
 # load libraries and other R files to have everything in place
 library(Rcpp)
@@ -24,7 +26,7 @@ load("data/ecore_model.R")
 mod <- model
 
 #testing constructor
-bac1 = Bac(x=1, y=1, model=mod, growth=1, n=1, m=1, seed=100, iter=100, epsilon=2)
+bac1 = Bac(x=1, y=1, model=mod, growth=1, n=1, m=1, type="test")
 #bac1 = Bac(x=1, y=1, model=mod, growth=1, fobj="ATPM")
 
 findUpt(bac1, flag=F)
@@ -37,7 +39,7 @@ optimizeLP(bac1)
 bac1@lpobj
 
 bac1@model = changeFobj(bac1@model, "ATPM")
-org1 <- Organism(x=1, y=2, model=mod)
+org1 <- Organism(x=1, y=2, model=mod, n=1, m=1)
 #org1@model = org1@changeObj(org1@model, "ATPM")
 
 #bac1 = Bac(org1, growth=1) #this does not work, but would be cool if...
@@ -60,14 +62,41 @@ for(i in 1:100){
 }
 
 #testing constructor
-sub1 <- Substance(diffconst=5, n=50, m=30, smax=50)
+n=200
+m=200
+smax=50
+diffmat = matrix(smax, nrow=n, ncol=m)
+diffmat[(n/2-n/4):(n/2+n/4), (m/2-m/4):(m/2+m/4)] = 0
+sub1 <- Substance(diffconst=5, n=200, m=200, smax=50, diffmat=diffmat)
+#jpeg(paste("plot", formatC(1, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
 image(sub1@diffmat)
-for(i in 1:100){
+#dev.off()
+for(i in 2:500){
   diffuseNaive(sub1)
   dmat = sub1@diffmat
+  #jpeg(paste("plot", formatC(i, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
   image(dmat)
+  #dev.off()
+  print(i)
 }
 
 
+specs3 = list(specs[[1]], specs[[2]], specs[[3]])
+specs=list()
+specs[[1]]=mod
+
+pop = Population(specs, specn=rep(5, length(specs)), n=200, m=200)
+jpeg(paste("plot", formatC(1, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
+image(pop2mat(pop))
+dev.off()
+for(i in 2:200){
+  moveRand(pop)
+  jpeg(paste("plot", formatC(i, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
+  image(pop2mat(pop))
+  dev.off()
+  print(i)
+}
+
 #testing constructor
 arena1 <- Arena(n=1,m=1,iter=1,seed=1,epsilon=1)
+

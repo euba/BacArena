@@ -22,9 +22,10 @@ setClass("Substance",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Substance <- function(diffconst, n, m, smax, gradient=matrix(0,0,0), ...){
-  diffmat = matrix(smax, nrow=n, ncol=m)
-  diffmat[(n/2-n/4):(n/2+n/4), (m/2-m/4):(m/2+m/4)] = 0
+Substance <- function(diffconst, n, m, smax, diffmat={}, ...){
+  if(length(diffmat)==0){
+    diffmat = matrix(smax, nrow=n, ncol=m)
+  }
   #if(sum(dim(gradient)) != 0){
   #  apply(gradient, function(x, diffmat){
   #    diffmat[x[1],x[2]] <<- x[3]

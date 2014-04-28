@@ -22,12 +22,12 @@ setClass("Organism",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Organism <- function(x, y, model, type=mod_desc(model), fobj={}, algorithm = "fba", n, m, iter, seed, epsilon, ...){
+Organism <- function(x, y, model, type=mod_desc(model), fobj={}, algorithm = "fba", n, m, ...){
   if(length(fobj) != 0){ # test if the objective was changed, or still default value
     model <- changeObj(model, fobj)
   }
   lpobj <- optimizeProb(model, ...)
-  new("Organism", Arena(n=n, m=m, iter=iter, seed=seed, epsilon=epsilon), x=x, y=y, model=model, type=mod_desc(model), fobj=model@react_id[which(model@obj_coef==1)], lpobj=lpobj, ...)
+  new("Organism", Arena(n=n, m=m), x=x, y=y, model=model, type=mod_desc(model), fobj=model@react_id[which(model@obj_coef==1)], lpobj=lpobj, ...)
 }
 
 ########################################################################################################
