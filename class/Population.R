@@ -11,7 +11,7 @@ setClass("Population",
          representation(
            orglist= "list", # list of organisms objects in the Arena
            orgn= "numeric", # number of organisms in orglist
-           media= "character", # media composition of mixed organisms
+           media= "list", # media composition of mixed organisms
            feat= "data.frame" # data frame with features of the organisms, first column should contain the class (e.g Bac, Organism)
          )
 )
@@ -20,8 +20,8 @@ setClass("Population",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Population <- function(specs, specn, n, m, media={}, feat=data.frame("Type"=rep("Bac", length(specs)), 
-                                                     "Motility"=rep("random", length(specs))), ...){
+Population <- function(specs, specn, n, m, mediac={}, feat=data.frame("Type"=rep("Bac", length(specs)), 
+                                                     "Motility"=rep("random", length(specs))), smax=20, ...){
   if(sum(specn) > n*m){
     stop("More individual than space on the grid")
   }
@@ -41,8 +41,14 @@ Population <- function(specs, specn, n, m, media={}, feat=data.frame("Type"=rep(
       orglist=c(orglist, specI)
     }
   }
-  media <- unique(unlist(lapply(orglist, function(x){findUpt(x, ...)}, ...))) # defining media as the union of Exchange reactions 
-                                                                              # (can also be changed by altering the flag argument)
+  if(length(mediac)==0){
+    mediac <- unique(unlist(lapply(orglist, function(x){findUpt(x, ...)}, ...))) # defining media as the union of Exchange reactions 
+                                                                                # (can also be changed by altering the flag argument)
+  }
+  media = list()
+  sapply(mediac, function(x, smax, n, m){
+    media[[x]] <<- Substance(n, m, smax, name=x)
+    }, smax=smax, n=n, m=m)
   new("Population", Arena(n=n, m=m), orglist=orglist, orgn=length(orglist), media=media, feat=feat, ...)
 }
 
@@ -135,3 +141,74 @@ setMethod("moveRand", "Population", function(object){
   eval.parent(substitute(object@orglist <- bdat))
 })
 
+#function for replication and death for the individuals in the population
+
+setGeneric("repliDie", function(object, ...){standardGeneric("repliDie")})
+setMethod("repliDie", "Population", function(object, ...){
+  object2 <- object
+  n <- object2@n
+  m <- object2@m
+  bmat <- pop2imat(object2)
+  bmatn <- matrix(NA, nrow=n+2, ncol=m+2) #define environment with boundary conditions
+  bmatn[2:(n+1), 2:(m+1)] <- bmat #put the values into the environment
+  specs <- object2@orglist
+  for(i in seq_along(object2@orglist)){
+    bmatn[2:(n+1), 2:(m+1)] <- bmat #put the values into the environment
+    spec <- specs[[i]] # isolate the specific Bac object
+    ic = spec@x
+    jc = spec@y
+    
+    ## first let them grow and eat
+    upts <- findUpt(spec)#, ...)
+    constrain(spec, upts, lb=0) #define the medium in the next step
+    mediaspec <- object2@media[upts]
+    tmp <- lapply(mediaspec, function(x){ #constrain according to media composition
+      spec@model <<- constrain(spec, x@name, lb=-x@diffmat[spec@x,spec@y])
+      })
+    optimizeLP(spec) #run fba
+    growLin(spec) #linear growth
+    mediaspec <- lapply(mediaspec, function(x, bac){consume(bac, x)}, bac=spec) #account for the consumption of metbaolites
+    object2@media[names(mediaspec)] <- mediaspec #update media composition in the original object
+    specs[[i]] <- spec #update the species list
+    
+    ## now let them die
+    if(spec@growth < 0.1){
+      specs <- specs[-i]
+      bmat[ic, jc] <- 0
+      next
+    }
+    
+    ## now let them replicate
+    if(spec@growth > 2){ #test if they are able to replicate (enough accumulated biomass)
+      neighbours <- c(bmatn[ic,jc], 
+                      bmatn[ic+1,jc], 
+                      bmatn[ic+2,jc], 
+                      bmatn[ic+2,jc+1],
+                      bmatn[ic+2,jc+2], 
+                      bmatn[ic+1,jc+2],
+                      bmatn[ic,jc+2],
+                      bmatn[ic,jc+1])
+      pos <- which(neighbours==0)
+      if(length(pos) > 1){
+        pos = sample(pos, 1)
+      }else{
+        if(length(pos) == 0){
+          repli(specs[[i]], 0, 0, bd=T)
+          next
+        }
+      }
+      switch(pos,
+            {bmat[ic-1,jc-1] <- bmat[ic,jc]; specs[[length(specs)+1]] <- repli(specs[[i]], ic-1, jc-1)},
+            {bmat[ic,jc-1] <- bmat[ic,jc]; specs[[length(specs)+1]] <- repli(specs[[i]], ic, jc-1)},
+            {bmat[ic+1,jc-1] <- bmat[ic,jc]; specs[[length(specs)+1]] <- repli(specs[[i]], ic+1, jc-1)},
+            {bmat[ic+1,jc] <- bmat[ic,jc]; specs[[length(specs)+1]] <- repli(specs[[i]], ic+1, jc)},
+            {bmat[ic+1,jc+1] <- bmat[ic,jc]; specs[[length(specs)+1]] <- repli(specs[[i]], ic+1, jc+1)},
+            {bmat[ic,jc+1] <- bmat[ic,jc]; specs[[length(specs)+1]] <- repli(specs[[i]], ic, jc+1)},
+            {bmat[ic-1,jc+1] <- bmat[ic,jc]; specs[[length(specs)+1]] <- repli(specs[[i]], ic-1, jc+1)},
+            {bmat[ic-1,jc] <- bmat[ic,jc]; specs[[length(specs)+1]] <- repli(specs[[i]], ic-1, jc)})
+    }
+  }
+  object2@orglist <- specs
+  object2@orgn <- length(specs)
+  eval.parent(substitute(object <- object2)) #subsitute the original object with the new one
+})

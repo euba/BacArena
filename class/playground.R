@@ -20,6 +20,7 @@ source(file="class/Arena.R")
 source(file="class/Substance.R")
 source(file="class/Organism.R")
 source(file="class/Bac.R")
+source(file="class/Population.R")
 
 #load ecoli core model to play around
 load("data/ecore_model.R")
@@ -67,7 +68,7 @@ m=200
 smax=50
 diffmat = matrix(smax, nrow=n, ncol=m)
 diffmat[(n/2-n/4):(n/2+n/4), (m/2-m/4):(m/2+m/4)] = 0
-sub1 <- Substance(diffconst=5, n=200, m=200, smax=50, diffmat=diffmat)
+sub1 <- Substance(n=200, m=200, smax=50, name="test")
 #jpeg(paste("plot", formatC(1, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
 image(sub1@diffmat)
 #dev.off()
@@ -85,18 +86,29 @@ specs3 = list(specs[[1]], specs[[2]], specs[[3]])
 specs=list()
 specs[[1]]=mod
 
-pop = Population(specs, specn=rep(5, length(specs)), n=200, m=200)
-jpeg(paste("plot", formatC(1, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
+pop = Population(specs3, specn=rep(5, length(specs3)), n=20, m=20)
+repliDie(pop)
+#jpeg(paste("plot", formatC(1, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
 image(pop2mat(pop))
-dev.off()
+#dev.off()
 for(i in 2:200){
   moveRand(pop)
-  jpeg(paste("plot", formatC(i, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
+  #jpeg(paste("plot", formatC(i, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
   image(pop2mat(pop))
-  dev.off()
+  #dev.off()
   print(i)
 }
 
-#testing constructor
-arena1 <- Arena(n=1,m=1,iter=1,seed=1,epsilon=1)
 
+pop = Population(specs, specn=10, n=20, m=20)
+for(i in 1:20){
+  moveRand(pop)
+  repliDie(pop)
+  for(j in seq_along(pop@media)){
+    diffuseNaive(pop@media[[j]])
+  }
+  dmat <- pop@media[["EX_glc(e)"]]@diffmat
+  image(dmat)
+  #image(pop2mat(pop))
+  print(i)
+}

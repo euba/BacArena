@@ -42,3 +42,18 @@ setMethod("growLin", "Bac", function(object){
   grow_accum <- grow_val + object@growth
   eval.parent(substitute(object@growth <- grow_accum)) #(pseudo) call by reference implementation
 })
+
+#function for letting bacteria replicate to the specified position by returning doughter cell
+
+setGeneric("repli", function(object, x, y, bd=F){standardGeneric("repli")})
+setMethod("repli", "Bac", function(object, x, y, bd=F){
+  doughter <- object
+  newg <- object@growth/2
+  doughter@growth <- newg
+  doughter@x <- x
+  doughter@y <- y
+  eval.parent(substitute(object@growth <- newg))
+  if(!bd){
+    return(doughter)
+  }
+})

@@ -68,9 +68,18 @@ setMethod("findUpt", "Organism", function(object, flag=F, ex="EX"){
     ex <- findExchReact(object@model)
     upt <- uptReact(ex)
   }else{
-    allreact <- react_id(bac1@model)
+    allreact <- react_id(object@model)
     upt <- allreact[grep(ex, allreact)]
   }
   return(upt)
+})
+
+#function to account for the consumption and production of Substances
+
+setGeneric("consume", function(object, sub){standardGeneric("consume")})
+setMethod("consume", "Organism", function(object, sub){
+  flux <- as.numeric(object@lpobj@fluxdist@fluxes[which(react_id(object@model) == sub@name),])
+  sub@diffmat[object@x, object@y] <- sub@diffmat[object@x, object@y] + flux
+  return(sub)
 })
 

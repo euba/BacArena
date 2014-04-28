@@ -14,15 +14,3 @@ initArena <- function(specs, #list with species models to analyze
   }, n=n, m=m, iter=iter, seed=seed, epsilon=epsilon, growth=growth)
 }
 
-
-findMedia <- function(specs){
-  allupts <- unique(unlist(lapply(specs, function(x){
-    ex <- findExchReact(x)
-    upt <- uptReact(ex)
-    return(upt)
-  })))
-  return(allupts)
-}
-
-
-constructBacs <- function()

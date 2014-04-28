@@ -10,8 +10,9 @@ setClass("Substance",
          contains="Arena",
          representation(
            smax     = "numeric",  # substrate start concentration
-           diffconst= "numeric",  # diffusion constant
-           diffmat  = "matrix"   # matrix containing concentrations
+           diffmat  = "matrix",   # matrix containing concentrations
+           name  = "character"   # String describing object
+           #diffconst= "numeric",  # diffusion constant
            #gradient = "matrix"    # gradient matrix containing infos about how substrate conc is distributed
            # on Arena. Different objects (substrates) may contain different gradients.
          )
@@ -22,7 +23,7 @@ setClass("Substance",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Substance <- function(diffconst, n, m, smax, diffmat={}, ...){
+Substance <- function(n, m, smax, diffmat={}, name, ...){
   if(length(diffmat)==0){
     diffmat = matrix(smax, nrow=n, ncol=m)
   }
@@ -31,12 +32,19 @@ Substance <- function(diffconst, n, m, smax, diffmat={}, ...){
   #    diffmat[x[1],x[2]] <<- x[3]
   #  })
   #}
-  new("Substance", smax=smax, diffconst=diffconst, diffmat=diffmat, ...)
+  new("Substance", smax=smax, diffmat=diffmat, name=name, ...)
 }
 
 ########################################################################################################
 ###################################### METHODS #########################################################
 ########################################################################################################
+
+#function for changing the mediacomposition and gradients
+
+setGeneric("changeSub", function(object, diffmat){standardGeneric("changeSub")})
+setMethod("changeSub", "Organism", function(object, diffmat){
+  eval.parent(substitute(object@diffmat <- diffmat)) #(pseudo) call by reference implementation
+})
 
 #function for constraining the models based on metabolite concentrations (can be given as vectors or single reaction)
 #requires as input: organism object, reaction name, lowerbound, upperbound -> either lowerbound or upperbound can be omitted
