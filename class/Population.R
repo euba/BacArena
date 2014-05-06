@@ -28,7 +28,7 @@ Population <- function(specs, specn, n, m, mediac={}, feat=data.frame("Type"=rep
   orglist = list()
   pamat = matrix(0, nrow=n, ncol=m)
   for(i in seq_along(specs)){
-    switch(feat[i,1],
+    switch(as.character(feat[i,1]),
            "Bac"= {specI <- Bac(x=sample(1:n, 1), y=sample(1:m, 1), model=specs[[i]], growth=1, n=n, m=m)},
            "Organism"= {specI <- Organism(x=sample(1:n, 1), y=sample(1:m, 1), model=specs[[i]], n=n, m=m)},
            stop("Your Organism class is not defined yet."))
