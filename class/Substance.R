@@ -42,15 +42,14 @@ Substance <- function(n, m, smax, diffmat={}, name, ...){
 #function for changing the mediacomposition and gradients
 
 setGeneric("changeSub", function(object, diffmat){standardGeneric("changeSub")})
-setMethod("changeSub", "Organism", function(object, diffmat){
+setMethod("changeSub", "Substance", function(object, diffmat){
   eval.parent(substitute(object@diffmat <- diffmat)) #(pseudo) call by reference implementation
 })
 
-#function for constraining the models based on metabolite concentrations (can be given as vectors or single reaction)
-#requires as input: organism object, reaction name, lowerbound, upperbound -> either lowerbound or upperbound can be omitted
+#R function for naive diffusion (neighbourhood) of the Substance matrix
 
-setGeneric("diffuseNaive", function(object){standardGeneric("diffuseNaive")})
-setMethod("diffuseNaive", "Substance", function(object){
+setGeneric("diffuseNaiveR", function(object){standardGeneric("diffuseNaiveR")})
+setMethod("diffuseNaiveR", "Substance", function(object){
   smat <- object@diffmat
   smatn <- matrix(NA, nrow=dim(smat)[1]+2, ncol=dim(smat)[2]+2) #define environment with boundary conditions
   smatn[2:(dim(smat)[1]+1), 2:(dim(smat)[2]+1)] <- smat #put the values into the environment
@@ -87,3 +86,12 @@ setMethod("diffuseNaive", "Substance", function(object){
   eval.parent(substitute(object@diffmat <- smat))
 })
 
+#R function for naive diffusion (neighbourhood) of the Substance matrix
+
+diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
+setGeneric("diffuseNaive", function(object){standardGeneric("diffuseNaive")})
+setMethod("diffuseNaive", "Substance", function(object){
+  smat <- object@diffmat
+  diffusion(list(smat))
+  eval.parent(substitute(object@diffmat <- smat))
+})

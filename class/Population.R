@@ -28,7 +28,7 @@ Population <- function(specs, specn, n, m, mediac={}, feat=data.frame("Type"=rep
   orglist = list()
   pamat = matrix(0, nrow=n, ncol=m)
   for(i in seq_along(specs)){
-    switch(feat[i,1],
+    switch(as.character(feat[i,1]),
            "Bac"= {specI <- Bac(x=sample(1:n, 1), y=sample(1:m, 1), model=specs[[i]], growth=1, n=n, m=m)},
            "Organism"= {specI <- Organism(x=sample(1:n, 1), y=sample(1:m, 1), model=specs[[i]], n=n, m=m)},
            stop("Your Organism class is not defined yet."))
@@ -71,6 +71,16 @@ setMethod("pop2dat", "Population", function(object){
   return(popdat)
 })
 
+#function for converting Population object into a position/object data.frame of all organisms involved
+
+setGeneric("pop2dat2", function(object){standardGeneric("pop2dat2")})
+setMethod("pop2dat2", "Population", function(object){
+  tmp <- lapply(object@orglist, function(x){return(c(x@x, x@y, x))})
+  tmp <- t(as.data.frame(tmp))
+  popdat <- data.frame("x"=as.numeric(tmp[,1]), "y"=as.numeric(tmp[,2]), "type"=as.factor(tmp[,3]), row.names=1:nrow(tmp))
+  return(popdat)
+})
+
 #function for converting Population object into a presence/absence matrix of all organisms involved
 
 setGeneric("pop2mat", function(object){standardGeneric("pop2mat")})
@@ -82,6 +92,7 @@ setMethod("pop2mat", "Population", function(object){
   }, types=levels(popdat$type))
   return(popmat)
 })
+
 
 #function for converting Population object into a presence/absence matrix of all individuals involved
 
@@ -211,4 +222,18 @@ setMethod("repliDie", "Population", function(object, ...){
   object2@orglist <- specs
   object2@orgn <- length(specs)
   eval.parent(substitute(object <- object2)) #subsitute the original object with the new one
+})
+
+
+# cpp movement
+movement_cpp <- cxxfunction(signature(input_frame = "data.frame", seed = "integer", length_n = "integer", length_m = "integer"), body = src_movement, plugin="Rcpp")
+setMethod("movement", "Population", function(object){
+  pop <- object
+  bac <- pop2dat2(pop)
+  
+  new_bac <- movement_cpp(bac, 123, 10, 10)
+  lapply(new_bac, function(x){return(x$type)})
+  
+  lapply()
+  eval.parent(substitute(object <- pop))
 })

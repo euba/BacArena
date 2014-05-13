@@ -2,17 +2,16 @@
 # the main goal of this file is to construct a basic framework for BacArena, which can then be merged with diffbac
 # it is actually a little bit like diffbac.R, but for the current oop version of BacArena
 
-#setwd("C:/Users/eugen.bauer/Documents/GitHub/BacArena")
-#setwd("C:/Users/User/Documents/GitHub/BacArena")
-#setwd("P:/BACARENA/diffusion")
-#setwd("P:/BACARENA/movement")
-setwd("/home/johannes/BacArena")
+setwd("~/BacArena")
+
+optimizeProb(bac1@model, solverParm = list(PRESOLVE = "GLP_ON"))
+
 
 # load libraries and other R files to have everything in place
 library(Rcpp)
 library(inline)
 library(sybil)
-SYBIL_SETTINGS("SOLVER", "glpkAPI")
+SYBIL_SETTINGS("SOLVER", "clpAPI")
 #load class definitions
 source(file="cpp_source.R")
 source(file="class/class_baggage.R")
@@ -32,14 +31,16 @@ bac1 = Bac(x=1, y=1, model=mod, growth=1, n=1, m=1, type="test")
 
 findUpt(bac1, flag=F)
 
-constrain(bac1, findUpt(bac1), lb=-10, ub=1000)
+constrain(bac1, findUpt(bac1), lb=0, ub=1000)
+
 optimizeLP(bac1)
+
 optimizeProb(bac1@model, solverParm = list(PRESOLVE = GLP_ON))
 optimizeProb(bac1@model, solverParm = list(warmUpGLPK = GLP_ON))
 bac1@lpobj
 optimizer(bac1@model)
 
-
+checkOptSol(bac1@lpobj)
 
 constrain(bac1, "EX_o2(e)", lb=-1000, ub=0)
 optimizeLP(bac1)
@@ -69,23 +70,33 @@ for(i in 1:100){
 }
 
 #testing constructor
-n=200
-m=200
+n=100
+m=100
 smax=50
 diffmat = matrix(smax, nrow=n, ncol=m)
 diffmat[(n/2-n/4):(n/2+n/4), (m/2-m/4):(m/2+m/4)] = 0
-sub1 <- Substance(n=200, m=200, smax=50, name="test")
-#jpeg(paste("plot", formatC(1, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
-image(sub1@diffmat)
-#dev.off()
-for(i in 2:500){
+sub1 <- Substance(n=n, mm, smax=smax, name="test", diffmat=diffmat)
+jpeg(paste("plot", formatC(1, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
+image(sub1@diffmat, axes=FALSE, col=rev(heat.colors(200)))
+dev.off()
+diffuseNaive(sub1)
+diffuseNaiveR(sub1)
+substrate=list()
+dmat = sub1@diffmat
+substrate[[1]] <- dmat
+for(i in 2:100){
   diffuseNaive(sub1)
-  dmat = sub1@diffmat
+  #dmat = sub1@diffmat
   #jpeg(paste("plot", formatC(i, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
-  image(dmat)
+  #image(dmat, axes=FALSE, col=rev(heat.colors(200)))
+  #jpeg(paste("plot", formatC(i, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
+  image(sub1@diffmat, axes=FALSE, col=rev(heat.colors(200)))
   #dev.off()
   print(i)
 }
+diffusion(list(dmat))
+
+substrate <- list()
 
 
 specs3 = list(specs[[1]], specs[[2]], specs[[3]])
@@ -106,15 +117,17 @@ for(i in 2:200){
 }
 
 
-pop = Population(specs, specn=10, n=20, m=20)
-for(i in 1:20){
+pop = Population(specs, specn=10, n=10, m=10)
+for(i in 1:50){
   moveRand(pop)
   repliDie(pop)
   for(j in seq_along(pop@media)){
     diffuseNaive(pop@media[[j]])
   }
   dmat <- pop@media[["EX_glc(e)"]]@diffmat
-  #image(dmat)
+  image(dmat)
   image(pop2mat(pop))
   print(i)
+  print(sum(unlist(lapply(pop@orglist, function(x){print(x@growth)}))))
+  print(pop@orgn)
 }
