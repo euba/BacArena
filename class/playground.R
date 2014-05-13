@@ -2,11 +2,11 @@
 # the main goal of this file is to construct a basic framework for BacArena, which can then be merged with diffbac
 # it is actually a little bit like diffbac.R, but for the current oop version of BacArena
 
-setwd("C:/Users/eugen.bauer/Documents/GitHub/BacArena")
-setwd("C:/Users/User/Documents/GitHub/BacArena")
-setwd("P:/BACARENA/diffusion")
-setwd("P:/BACARENA/movement")
-
+#setwd("C:/Users/eugen.bauer/Documents/GitHub/BacArena")
+#setwd("C:/Users/User/Documents/GitHub/BacArena")
+#setwd("P:/BACARENA/diffusion")
+#setwd("P:/BACARENA/movement")
+setwd("/home/johannes/BacArena")
 
 # load libraries and other R files to have everything in place
 library(Rcpp)
@@ -18,8 +18,8 @@ source(file="cpp_source.R")
 source(file="class/class_baggage.R")
 source(file="class/Arena.R")
 source(file="class/Substance.R")
-source(file="class/Organism.R")
 source(file="class/Bac.R")
+source(file="class/Organism.R")
 source(file="class/Population.R")
 
 #load ecoli core model to play around
@@ -34,7 +34,13 @@ findUpt(bac1, flag=F)
 
 constrain(bac1, findUpt(bac1), lb=-10, ub=1000)
 optimizeLP(bac1)
+optimizeProb(bac1@model, solverParm = list(PRESOLVE = GLP_ON))
+optimizeProb(bac1@model, solverParm = list(warmUpGLPK = GLP_ON))
 bac1@lpobj
+optimizer(bac1@model)
+
+
+
 constrain(bac1, "EX_o2(e)", lb=-1000, ub=0)
 optimizeLP(bac1)
 bac1@lpobj
@@ -108,7 +114,7 @@ for(i in 1:20){
     diffuseNaive(pop@media[[j]])
   }
   dmat <- pop@media[["EX_glc(e)"]]@diffmat
-  image(dmat)
-  #image(pop2mat(pop))
+  #image(dmat)
+  image(pop2mat(pop))
   print(i)
 }
