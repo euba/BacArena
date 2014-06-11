@@ -22,14 +22,6 @@ for(i in 1:1000){
   #print(sol@lp_obj)
 })
 
-source(file="class/Organism.R")
-org1 <- Bac(x=1, y=2, model=mod, n=1, m=1)
-system.time(
-for(i in 1:1000){
-  constrain(org1, "EX_o2(e)", lb=0)
-  optimizeLP(org1)
-})
-
 test <- optimizeProb(fba)
 optimizeProb(test)
 
@@ -52,10 +44,6 @@ source(file="class/Population.R")
 #load ecoli core model to play around
 load("data/ecore_model.R")
 mod <- model
-
-org1 = Organism(x=1, y=1, model=mod, n=1, m=1)
-optimizeLP(org1)
-org1@fbasol$obj
 
 #testing constructor
 bac1 = Bac(x=1, y=1, model=mod, growth=1, n=1, m=1, type="test")

@@ -14,9 +14,7 @@ setClass("Organism",
            model="modelorg", # sybil model object
            type="character", # description of the organism
            fobj="character", # name of the objective fundtion to be optimized
-           lpobj="sysBiolAlg_fba", # sybil optimization object
-           lbounds="numeric", # lower bounds of the model, which can change dynamically
-           fbasol="list" # fba solution
+           lpobj="optsol" # sybil optimization object
          )
 )
 
@@ -28,11 +26,8 @@ Organism <- function(x, y, model, type=mod_desc(model), fobj={}, algorithm = "fb
   if(length(fobj) != 0){ # test if the objective was changed, or still default value
     model <- changeObj(model, fobj)
   }
-  lpobj <- sysBiolAlg(mod, algorithm = "fba")
-  fbasol = optimizeProb(lpobj)
-  new("Organism", Arena(n=n, m=m), x=x, y=y, model=model, type=mod_desc(model),
-      fobj=model@react_id[which(model@obj_coef==1)], lpobj=lpobj, lbounds=mod@lowbnd,
-      fbasol=fbasol, ...)
+  lpobj <- optimizeProb(model, ...)
+  new("Organism", Arena(n=n, m=m), x=x, y=y, model=model, type=mod_desc(model), fobj=model@react_id[which(model@obj_coef==1)], lpobj=lpobj, ...)
 }
 
 ########################################################################################################
@@ -42,12 +37,9 @@ Organism <- function(x, y, model, type=mod_desc(model), fobj={}, algorithm = "fb
 #function for constraining the models based on metabolite concentrations (can be given as vectors or single reaction)
 #requires as input: organism object, reaction name, lowerbound, upperbound -> either lowerbound or upperbound can be omitted
 
-setGeneric("constrain", function(object, reacts, lb){standardGeneric("constrain")})
-setMethod("constrain", "Organism", function(object, reacts, lb){
-  model=object@model
-  newlb=object@lbounds
-  newlb[which(react_id(model) %in% reacts)] <- lb 
-  eval.parent(substitute(object@lbounds <- newlb)) #(pseudo) call by reference implementation
+setGeneric("constrain", function(object, reacts, lb, ub){standardGeneric("constrain")})
+setMethod("constrain", "Organism", function(object, reacts, lb, ub){
+  eval.parent(substitute(object@model <- changeBounds(object@model, reacts, lb=lb, ub=ub))) #(pseudo) call by reference implementation
 })
 
 #function for computing the linear programming according to the model structure -> this can be changed for comp. speed (warmstart)
@@ -55,8 +47,7 @@ setMethod("constrain", "Organism", function(object, reacts, lb){
 
 setGeneric("optimizeLP", function(object){standardGeneric("optimizeLP")})
 setMethod("optimizeLP", "Organism", function(object){
-  solfba = optimizeProb(object@lpobj, lb=object@lbounds)
-  eval.parent(substitute(object@fbasol <- solfba)) #(pseudo) call by reference implementation
+  eval.parent(substitute(object@lpobj <- optimizeProb(object@model))) #(pseudo) call by reference implementation
 })
 
 #function for changing the objective function of the model -> might be interesting for dynamic changes in varying environments
@@ -66,7 +57,7 @@ setGeneric("changeFobj", function(object, new_fobj){standardGeneric("changeFobj"
 setMethod("changeFobj", "Organism", function(object, new_fobj){
   eval.parent(substitute(object@fobj <- new_fobj)) #(pseudo) call by reference implementation
   eval.parent(substitute(object@model <- changeObj(object@model, new_fobj)))
-  eval.parent(substitute(object@lpobj <- sysBiolAlg(mod, algorithm = "fba"))) #the lp object has to be updated according to the new objective
+  eval.parent(substitute(object@lpobj <- optimizeProb(object@model))) #the lp object has to be updated according to the new objective
 })
 
 #function for finding uptake reactions of a model for getting the media conditions
@@ -87,7 +78,7 @@ setMethod("findUpt", "Organism", function(object, flag=F, ex="EX"){
 
 setGeneric("consume", function(object, sub){standardGeneric("consume")})
 setMethod("consume", "Organism", function(object, sub){
-  flux <- object@lpobj$fluxes[which(react_id(object@model) == sub@name),]
+  flux <- as.numeric(object@lpobj@fluxdist@fluxes[which(react_id(object@model) == sub@name),])
   sub@diffmat[object@x, object@y] <- sub@diffmat[object@x, object@y] + flux
   return(sub)
 })
