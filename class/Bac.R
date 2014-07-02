@@ -35,9 +35,10 @@ Bac <- function(x, y, model, growth=1, ...){
 #function for letting bacteria grow by adding the calculated growthrate to the already present growth value -> linear growth
 #requires as input: organism object
 
-setGeneric("growLin", function(object){standardGeneric("growLin")})
-setMethod("growLin", "Bac", function(object){
-  grow_accum <- object@lpobj$obj + object@growth
+setGeneric("growLin", function(object, dfactor){standardGeneric("growLin")})
+setMethod("growLin", "Bac", function(object, dfactor){
+  grow_accum <- spec@fbasol$obj + object@growth
+  grow_accum <- grow_accum - dfactor
   eval.parent(substitute(object@growth <- grow_accum)) #(pseudo) call by reference implementation
 })
 

@@ -56,7 +56,9 @@ setMethod("constrain", "Organism", function(object, reacts, lb){
 setGeneric("optimizeLP", function(object){standardGeneric("optimizeLP")})
 setMethod("optimizeLP", "Organism", function(object){
   solfba = optimizeProb(object@lpobj, lb=object@lbounds)
-  eval.parent(substitute(object@fbasol <- solfba)) #(pseudo) call by reference implementation
+  object@fbasol <- solfba
+  return(object)
+  #eval.parent(substitute(object@fbasol <- solfba)) #(pseudo) call by reference implementation
 })
 
 #function for changing the objective function of the model -> might be interesting for dynamic changes in varying environments
@@ -87,7 +89,7 @@ setMethod("findUpt", "Organism", function(object, flag=F, ex="EX"){
 
 setGeneric("consume", function(object, sub){standardGeneric("consume")})
 setMethod("consume", "Organism", function(object, sub){
-  flux <- object@lpobj$fluxes[which(react_id(object@model) == sub@name),]
+  flux <- object@fbasol$fluxes[which(react_id(object@model) == sub@name)]
   sub@diffmat[object@x, object@y] <- sub@diffmat[object@x, object@y] + flux
   return(sub)
 })

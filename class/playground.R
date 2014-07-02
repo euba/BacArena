@@ -2,6 +2,30 @@
 # the main goal of this file is to construct a basic framework for BacArena, which can then be merged with diffbac
 # it is actually a little bit like diffbac.R, but for the current oop version of BacArena
 
+ltest <- list()
+for(i in 1:1000){
+  #ltest[[i]] <- sysBiolAlg(mod, algorithm = "fba")
+  mod = changeBounds(mod, "EX_o2(e)", lb=runif(1, min = -100, max = 0))
+  ltest[[i]] <- mod
+  #ltest[[i]] <- org1
+}
+
+cl <- makeCluster(4, type = "SOCK")
+clusterExport(cl, list("ltest", "optimizeProb"))
+#clusterApply(cl, library(sybil))
+#clusterCall(cl, optimizeLP, org1)
+#clusterCall(cl, optimizeProb, org1@model)
+#system.time(
+  #parLapply(cl, ltest, function(x){print(optimizeProb(x))})
+  test <- parLapply(cl, ltest, optimizeProb)
+  #parLapply(cl, ltest, optimizeLP)
+#)
+stopCluster(cl)
+
+system.time(
+  lapply(ltest, optimizeProb)
+)
+
 setwd("~/BacArena")
 
 optimizeProb(bac1@model, solverParm = list(PRESOLVE = "GLP_ON"))
@@ -9,16 +33,18 @@ optimizeProb(bac1@model, solverParm = list(PRESOLVE = "GLP_ON"))
 fba <- sysBiolAlg(mod, algorithm = "fba")
 system.time(
 for(i in 1:1000){
-  lb_new = mod@lowbnd
-  lb_new[which(react_id(mod)=="EX_o2(e)")] = 0
-  sol = optimizeProb(fba, lb=lb_new)
+  #lb_new = mod@lowbnd
+  #lb_new[which(react_id(mod)=="EX_o2(e)")] = 0
+  #sol = optimizeProb(fba, lb=lb_new)
+  sol = optimizeProb(fba)
   #print(sol$obj)
 })
 system.time(
 for(i in 1:1000){
-  lb_new = mod@lowbnd
-  lb_new[which(react_id(mod)=="EX_o2(e)")] = 0
-  sol = optimizeProb(mod, lb=lb_new)
+  #lb_new = mod@lowbnd
+  #lb_new[which(react_id(mod)=="EX_o2(e)")] = 0
+  #sol = optimizeProb(mod, lb=lb_new)
+  sol = optimizeProb(mod)
   #print(sol@lp_obj)
 })
 
@@ -36,6 +62,7 @@ optimizeProb(test)
 promptSysBiolAlg()
 
 # load libraries and other R files to have everything in place
+library(snow)
 library(Rcpp)
 library(inline)
 library(sybil)
@@ -54,7 +81,7 @@ load("data/ecore_model.R")
 mod <- model
 
 org1 = Organism(x=1, y=1, model=mod, n=1, m=1)
-optimizeLP(org1)
+org1  = optimizeLP(org1)
 org1@fbasol$obj
 
 #testing constructor
@@ -163,3 +190,90 @@ for(i in 1:50){
   print(sum(unlist(lapply(pop@orglist, function(x){print(x@growth)}))))
   print(pop@orgn)
 }
+
+
+####################################
+
+pop = Population(list(mod), specn=50, n=20, m=20, smax=0)
+
+cl <- makeCluster(4, type = "SOCK")
+clusterExport(cl, list("optimizeProb"))
+#system.time(
+for(i in 1:50){
+  moveRand(pop)
+  pop@media <- lapply(pop@media, function(x){
+    diffuseNaiveR(x)
+    return(x)})
+  dmat <- pop@media[["EX_glc(e)"]]@diffmat
+  image(dmat)
+  image(pop2mat(pop))
+  
+  
+  fbares = parLapply(cl, pop@orglist, function(x){
+    return(optimizeProb(x@model, retOptSol=F))
+    })
+  n <- pop@n
+  m <- pop@m
+  bmat <- pop2imat(pop)
+  bmatn <- matrix(NA, nrow=n+2, ncol=m+2) #define environment with boundary conditions
+  bmatn[2:(n+1), 2:(m+1)] <- bmat #put the values into the environment
+  spes <- pop@orglist
+  for(j in seq_along(fbares)){
+    spec <- spes[[j]]
+    spec@fbasol = fbares[[j]]
+    ic = spec@x
+    jc = spec@y
+    upts <- findUpt(spec)
+    constrain(spec, upts, lb=0) #define the medium in the next step
+    mediaspec <- pop@media[upts]
+    tmp <- lapply(mediaspec, function(x, spect){ #constrain according to media composition
+      constrain(spect, x@name, lb=-x@diffmat[spect@x,spect@y])
+      spec <<- spect
+    }, spect=spec)
+    growLin(spec, 0.1) #linear growth
+    mediaspec <- lapply(mediaspec, function(x, bac){consume(bac, x)}, bac=spec) #account for the consumption of metbaolites
+    pop@media[names(mediaspec)] <- mediaspec #update media composition in the original object
+    spes[[j]] <- spec #update the species list
+    ## now let them die
+    if(spec@growth < 0.1){
+      spes <- spes[-i]
+      bmat[ic, jc] <- 0
+      next
+    }
+    ## now let them replicate
+    if(spec@growth > 2){ #test if they are able to replicate (enough accumulated biomass)
+      neighbours <- c(bmatn[ic,jc], 
+                      bmatn[ic+1,jc], 
+                      bmatn[ic+2,jc], 
+                      bmatn[ic+2,jc+1],
+                      bmatn[ic+2,jc+2], 
+                      bmatn[ic+1,jc+2],
+                      bmatn[ic,jc+2],
+                      bmatn[ic,jc+1])
+      pos <- which(neighbours==0)
+      if(length(pos) > 1){
+        pos = sample(pos, 1)
+      }else{
+        if(length(pos) == 0){
+          repli(spes[[i]], 0, 0, bd=T)
+          next
+        }
+      }
+      switch(pos,
+            {bmat[ic-1,jc-1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic-1, jc-1)},
+            {bmat[ic,jc-1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic, jc-1)},
+            {bmat[ic+1,jc-1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic+1, jc-1)},
+            {bmat[ic+1,jc] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic+1, jc)},
+            {bmat[ic+1,jc+1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic+1, jc+1)},
+            {bmat[ic,jc+1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic, jc+1)},
+            {bmat[ic-1,jc+1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic-1, jc+1)},
+            {bmat[ic-1,jc] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic-1, jc)})
+    } 
+    bmatn[2:(n+1), 2:(m+1)] <- bmat #put the values into the environment
+  }
+  pop@orglist <- spes
+  pop@orgn <- length(spes)
+  print(length(pop@orglist))
+}
+#)
+stopCluster(cl)
