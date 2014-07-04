@@ -201,7 +201,7 @@ View(cbind(mod@lowbnd,pop@orglist[[1]]@model@lowbnd))
 #source(file="class/Population.R")
 pop = Population(list(mod), specn=10, n=20, m=20, smax=50)
 
-cl <- makeCluster(8, type = "SOCK")
+cl <- makeCluster(6, type = "SOCK")
 clusterExport(cl, list("optimizeProb"))
 #system.time(
 for(i in 1:50){
@@ -212,6 +212,7 @@ for(i in 1:50){
   #dmat <- pop@media[["EX_glc(e)"]]@diffmat
   #image(dmat)
   #image(pop2mat(pop))
+
   fbares = parLapply(cl, pop@orglist, function(x){
     return(optimizeProb(x@model, retOptSol=F))
     })
@@ -224,7 +225,12 @@ for(i in 1:50){
   sprm <- rep(0, length(spes))
   for(j in seq_along(fbares)){
     spec <- spes[[j]]
-    spec@fbasol = fbares[[j]]
+    if(is.na(fbares[[j]]$obj)){
+      fbares[[j]]$obj = 0
+      spec@fbasol = fbares[[j]]
+    }else{
+      spec@fbasol = fbares[[j]]
+    }
     ic = spec@x
     jc = spec@y
     upts <- findUpt(spec)
@@ -242,7 +248,7 @@ for(i in 1:50){
     pop@media[names(mediaspec)] <- mediaspec #update media composition in the original object
     spes[[j]] <- spec #update the species list
     ## now let them die
-    if(spec@growth < 0.1){
+    if(spec@growth < 0.2){
       sprm[j] = 1
       bmat[ic, jc] <- 0
       next
@@ -262,24 +268,25 @@ for(i in 1:50){
         pos = sample(pos, 1)
       }else{
         if(length(pos) == 0){
-          repli(spes[[i]], 0, 0, bd=T)
+          repli(spec, 0, 0, bd=T)
           next
         }
       }
       switch(pos,
-            {bmat[ic-1,jc-1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic-1, jc-1)},
-            {bmat[ic,jc-1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic, jc-1)},
-            {bmat[ic+1,jc-1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic+1, jc-1)},
-            {bmat[ic+1,jc] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic+1, jc)},
-            {bmat[ic+1,jc+1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic+1, jc+1)},
-            {bmat[ic,jc+1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic, jc+1)},
-            {bmat[ic-1,jc+1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic-1, jc+1)},
-            {bmat[ic-1,jc] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spes[[i]], ic-1, jc)})
+            {bmat[ic-1,jc-1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spec, ic-1, jc-1)},
+            {bmat[ic,jc-1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spec, ic, jc-1)},
+            {bmat[ic+1,jc-1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spec, ic+1, jc-1)},
+            {bmat[ic+1,jc] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spec, ic+1, jc)},
+            {bmat[ic+1,jc+1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spec, ic+1, jc+1)},
+            {bmat[ic,jc+1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spec, ic, jc+1)},
+            {bmat[ic-1,jc+1] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spec, ic-1, jc+1)},
+            {bmat[ic-1,jc] <- bmat[ic,jc]; spes[[length(spes)+1]] <- repli(spec, ic-1, jc)})
     } 
-    bmatn[2:(n+1), 2:(m+1)] <- bmat #put the values into the environment
   }
   if(sum(sprm)!=0){
     pop@orglist <- spes[-which(sprm==1)]
+  }else{
+    pop@orglist <- spes
   }
   pop@orgn <- length(spes)
   if(length(pop@orglist)==0){

@@ -51,8 +51,8 @@ Population <- function(specs, specn, n, m, mediac={}, feat=data.frame("Type"=rep
     }, smax=smax, n=n, m=m)
   for(i in seq_along(orglist)){
     spec <- orglist[[i]]
-    for(k in seq_along(mediaspec)){
-      constrain(spec, mediaspec[[k]]@name, lb=-mediaspec[[k]]@diffmat[spec@x,spec@y])
+    for(k in seq_along(media)){
+      constrain(spec, media[[k]]@name, lb=-media[[k]]@diffmat[spec@x,spec@y])
     }
     orglist[[i]] <- spec
   }
@@ -135,23 +135,26 @@ setMethod("moveRand", "Population", function(object){
                     bmatn[ic+1,jc+2],
                     bmatn[ic,jc+2],
                     bmatn[ic,jc+1])
+    neighbours = ifelse(is.na(neighbours),1,neighbours)
     pos <- which(neighbours==0)
-    if(length(pos) > 1){
-      pos = sample(pos, 1)
+    if(length(pos) >= 1){
+      if(length(pos)!=1){
+        pos = sample(pos, 1)
+      }
+      switch(pos,
+            {bmat[ic-1,jc-1] <- bmat[ic,jc]; bmat[ic,jc] <- 0},
+            {bmat[ic,jc-1] <- bmat[ic,jc]; bmat[ic,jc] <- 0},
+            {bmat[ic+1,jc-1] <- bmat[ic,jc]; bmat[ic,jc] <- 0},
+            {bmat[ic+1,jc] <- bmat[ic,jc]; bmat[ic,jc] <- 0},
+            {bmat[ic+1,jc+1] <- bmat[ic,jc]; bmat[ic,jc] <- 0},
+            {bmat[ic,jc+1] <- bmat[ic,jc]; bmat[ic,jc] <- 0},
+            {bmat[ic-1,jc+1] <- bmat[ic,jc]; bmat[ic,jc] <- 0},
+            {bmat[ic-1,jc] <- bmat[ic,jc]; bmat[ic,jc] <- 0})
     }else{
       if(length(pos) == 0){
         next
       }
     }
-    switch(pos,
-          {bmat[ic-1,jc-1] <- bmat[ic,jc]; bmat[ic,jc] <- 0},
-          {bmat[ic,jc-1] <- bmat[ic,jc]; bmat[ic,jc] <- 0},
-          {bmat[ic+1,jc-1] <- bmat[ic,jc]; bmat[ic,jc] <- 0},
-          {bmat[ic+1,jc] <- bmat[ic,jc]; bmat[ic,jc] <- 0},
-          {bmat[ic+1,jc+1] <- bmat[ic,jc]; bmat[ic,jc] <- 0},
-          {bmat[ic,jc+1] <- bmat[ic,jc]; bmat[ic,jc] <- 0},
-          {bmat[ic-1,jc+1] <- bmat[ic,jc]; bmat[ic,jc] <- 0},
-          {bmat[ic-1,jc] <- bmat[ic,jc]; bmat[ic,jc] <- 0})
     newpos <- which(bmat==i, arr.ind=T)
     bdat[[i]]@x <- newpos[1]
     bdat[[i]]@y <- newpos[2]
