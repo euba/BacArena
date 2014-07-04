@@ -23,7 +23,7 @@ setClass("Population",
 Population <- function(specs, specn, n, m, mediac={}, feat=data.frame("Type"=rep("Bac", length(specs)), 
                                                      "Motility"=rep("random", length(specs))), smax=20, ...){
   if(sum(specn) > n*m){
-    stop("More individual than space on the grid")
+    stop("More individuals than space on the grid")
   }
   orglist = list()
   pamat = matrix(0, nrow=n, ncol=m)
@@ -49,6 +49,13 @@ Population <- function(specs, specn, n, m, mediac={}, feat=data.frame("Type"=rep
   sapply(mediac, function(x, smax, n, m){
     media[[x]] <<- Substance(n, m, smax, name=x)
     }, smax=smax, n=n, m=m)
+  for(i in seq_along(orglist)){
+    spec <- orglist[[i]]
+    for(k in seq_along(mediaspec)){
+      constrain(spec, mediaspec[[k]]@name, lb=-mediaspec[[k]]@diffmat[spec@x,spec@y])
+    }
+    orglist[[i]] <- spec
+  }
   new("Population", Arena(n=n, m=m), orglist=orglist, orgn=length(orglist), media=media, feat=feat, ...)
 }
 

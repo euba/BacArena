@@ -193,10 +193,15 @@ for(i in 1:50){
 
 
 ####################################
+View(cbind(mod@lowbnd,pop@orglist[[1]]@model@lowbnd))
 
-pop = Population(list(mod), specn=50, n=20, m=20, smax=0)
 
-cl <- makeCluster(4, type = "SOCK")
+#source(file="class/Organism.R")
+#source(file="class/Bac.R")
+#source(file="class/Population.R")
+pop = Population(list(mod), specn=10, n=20, m=20, smax=50)
+
+cl <- makeCluster(8, type = "SOCK")
 clusterExport(cl, list("optimizeProb"))
 #system.time(
 for(i in 1:50){
@@ -204,11 +209,9 @@ for(i in 1:50){
   pop@media <- lapply(pop@media, function(x){
     diffuseNaiveR(x)
     return(x)})
-  dmat <- pop@media[["EX_glc(e)"]]@diffmat
-  image(dmat)
-  image(pop2mat(pop))
-  
-  
+  #dmat <- pop@media[["EX_glc(e)"]]@diffmat
+  #image(dmat)
+  #image(pop2mat(pop))
   fbares = parLapply(cl, pop@orglist, function(x){
     return(optimizeProb(x@model, retOptSol=F))
     })
@@ -218,6 +221,7 @@ for(i in 1:50){
   bmatn <- matrix(NA, nrow=n+2, ncol=m+2) #define environment with boundary conditions
   bmatn[2:(n+1), 2:(m+1)] <- bmat #put the values into the environment
   spes <- pop@orglist
+  sprm <- rep(0, length(spes))
   for(j in seq_along(fbares)){
     spec <- spes[[j]]
     spec@fbasol = fbares[[j]]
@@ -226,17 +230,20 @@ for(i in 1:50){
     upts <- findUpt(spec)
     constrain(spec, upts, lb=0) #define the medium in the next step
     mediaspec <- pop@media[upts]
-    tmp <- lapply(mediaspec, function(x, spect){ #constrain according to media composition
-      constrain(spect, x@name, lb=-x@diffmat[spect@x,spect@y])
-      spec <<- spect
-    }, spect=spec)
+    for(k in seq_along(mediaspec)){
+      constrain(spec, mediaspec[[k]]@name, lb=-mediaspec[[k]]@diffmat[spec@x,spec@y])
+    }
+    
+    ######################################################################################
     growLin(spec, 0.1) #linear growth
+    ######################################################################################
+    
     mediaspec <- lapply(mediaspec, function(x, bac){consume(bac, x)}, bac=spec) #account for the consumption of metbaolites
     pop@media[names(mediaspec)] <- mediaspec #update media composition in the original object
     spes[[j]] <- spec #update the species list
     ## now let them die
     if(spec@growth < 0.1){
-      spes <- spes[-i]
+      sprm[j] = 1
       bmat[ic, jc] <- 0
       next
     }
@@ -271,9 +278,16 @@ for(i in 1:50){
     } 
     bmatn[2:(n+1), 2:(m+1)] <- bmat #put the values into the environment
   }
-  pop@orglist <- spes
+  if(sum(sprm)!=0){
+    pop@orglist <- spes[-which(sprm==1)]
+  }
   pop@orgn <- length(spes)
+  if(length(pop@orglist)==0){
+    print("All are Dead")
+    break
+  }
   print(length(pop@orglist))
+  #save()
 }
 #)
 stopCluster(cl)

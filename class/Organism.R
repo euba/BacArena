@@ -15,7 +15,7 @@ setClass("Organism",
            type="character", # description of the organism
            fobj="character", # name of the objective fundtion to be optimized
            lpobj="sysBiolAlg_fba", # sybil optimization object
-           lbounds="numeric", # lower bounds of the model, which can change dynamically
+           #lbounds="numeric", # lower bounds of the model, which can change dynamically
            fbasol="list" # fba solution
          )
 )
@@ -31,7 +31,7 @@ Organism <- function(x, y, model, type=mod_desc(model), fobj={}, algorithm = "fb
   lpobj <- sysBiolAlg(mod, algorithm = "fba")
   fbasol = optimizeProb(lpobj)
   new("Organism", Arena(n=n, m=m), x=x, y=y, model=model, type=mod_desc(model),
-      fobj=model@react_id[which(model@obj_coef==1)], lpobj=lpobj, lbounds=mod@lowbnd,
+      fobj=model@react_id[which(model@obj_coef==1)], lpobj=lpobj, #lbounds=mod@lowbnd,
       fbasol=fbasol, ...)
 }
 
@@ -44,10 +44,10 @@ Organism <- function(x, y, model, type=mod_desc(model), fobj={}, algorithm = "fb
 
 setGeneric("constrain", function(object, reacts, lb){standardGeneric("constrain")})
 setMethod("constrain", "Organism", function(object, reacts, lb){
-  model=object@model
-  newlb=object@lbounds
-  newlb[which(react_id(model) %in% reacts)] <- lb 
-  eval.parent(substitute(object@lbounds <- newlb)) #(pseudo) call by reference implementation
+  mod <- object@model
+  ex <- findExchReact(mod)
+  mod = changeBounds(mod, ex[reacts], lb)
+  eval.parent(substitute(object@model <- mod)) #(pseudo) call by reference implementation
 })
 
 #function for computing the linear programming according to the model structure -> this can be changed for comp. speed (warmstart)
@@ -55,7 +55,7 @@ setMethod("constrain", "Organism", function(object, reacts, lb){
 
 setGeneric("optimizeLP", function(object){standardGeneric("optimizeLP")})
 setMethod("optimizeLP", "Organism", function(object){
-  solfba = optimizeProb(object@lpobj, lb=object@lbounds)
+  solfba = optimizeProb(object@lpobj, lb=object@model@lowbnd)
   object@fbasol <- solfba
   return(object)
   #eval.parent(substitute(object@fbasol <- solfba)) #(pseudo) call by reference implementation
