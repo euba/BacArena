@@ -13,8 +13,6 @@ setClass("Substance",
            diffmat  = "matrix",   # matrix containing concentrations
            name  = "character"   # String describing object
            #diffconst= "numeric",  # diffusion constant
-           #gradient = "matrix"    # gradient matrix containing infos about how substrate conc is distributed
-           # on Arena. Different objects (substrates) may contain different gradients.
          )
 )
 
@@ -27,11 +25,6 @@ Substance <- function(n, m, smax, diffmat={}, name, ...){
   if(length(diffmat)==0){
     diffmat = matrix(smax, nrow=n, ncol=m)
   }
-  #if(sum(dim(gradient)) != 0){
-  #  apply(gradient, function(x, diffmat){
-  #    diffmat[x[1],x[2]] <<- x[3]
-  #  })
-  #}
   new("Substance", smax=smax, diffmat=diffmat, name=name, ...)
 }
 

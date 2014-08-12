@@ -13,7 +13,7 @@ setClass("Organism",
            y="numeric", # y position on grid
            model="modelorg", # sybil model object
            type="character", # description of the organism
-           fobj="character", # name of the objective fundtion to be optimized
+           fobj="character", # name of the objective function to be optimized
            lpobj="sysBiolAlg_fba", # sybil optimization object
            #lbounds="numeric", # lower bounds of the model, which can change dynamically
            fbasol="list" # fba solution
@@ -30,7 +30,8 @@ Organism <- function(x, y, model, type=mod_desc(model), fobj={}, algorithm = "fb
   }
   lpobj <- sysBiolAlg(mod, algorithm = "fba")
   fbasol = optimizeProb(lpobj)
-  new("Organism", Arena(n=n, m=m), x=x, y=y, model=model, type=mod_desc(model),
+  #fbasol = list()
+  new("Organism", n=n, m=m, x=x, y=y, model=model, type=mod_desc(model),
       fobj=model@react_id[which(model@obj_coef==1)], lpobj=lpobj, #lbounds=mod@lowbnd,
       fbasol=fbasol, ...)
 }
@@ -76,10 +77,10 @@ setMethod("changeFobj", "Organism", function(object, new_fobj){
 setGeneric("findUpt", function(object, flag=F, ex="EX"){standardGeneric("findUpt")})
 setMethod("findUpt", "Organism", function(object, flag=F, ex="EX"){
   if(flag){
-    ex <- findExchReact(object@model)
+    ex <- findExchReact(object@model) #sybil function looks for bounds
     upt <- uptReact(ex)
   }else{
-    allreact <- react_id(object@model)
+    allreact <- react_id(object@model) #uses flags to find exchange reactions
     upt <- allreact[grep(ex, allreact)]
   }
   return(upt)

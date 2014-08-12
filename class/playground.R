@@ -4,7 +4,7 @@
 
 ltest <- list()
 for(i in 1:1000){
-  #ltest[[i]] <- sysBiolAlg(mod, algorithm = "fba")
+  ltest[[i]] <- sysBiolAlg(mod, algorithm = "fba")
   mod = changeBounds(mod, "EX_o2(e)", lb=runif(1, min = -100, max = 0))
   ltest[[i]] <- mod
   #ltest[[i]] <- org1
@@ -37,7 +37,6 @@ for(i in 1:1000){
   #lb_new[which(react_id(mod)=="EX_o2(e)")] = 0
   #sol = optimizeProb(fba, lb=lb_new)
   sol = optimizeProb(fba)
-  #print(sol$obj)
 })
 system.time(
 for(i in 1:1000){
@@ -49,12 +48,20 @@ for(i in 1:1000){
 })
 
 source(file="class/Organism.R")
-org1 <- Bac(x=1, y=2, model=mod, n=1, m=1)
-system.time(
-for(i in 1:1000){
-  constrain(org1, "EX_o2(e)", lb=0)
-  optimizeLP(org1)
-})
+
+sf = vector()
+so = vector()
+sb = vector()
+org1 <- Organism(x=1, y=2, model=mod, n=1, m=1)
+bac1 <- Bac(x=1, y=2, model=mod, n=1, m=1)
+fba <- sysBiolAlg(mod, algorithm = "fba")
+for(j in 1:20){
+  sf[j] = system.time(for(i in 1:1000){sol = optimizeProb(fba)})
+  so[j] = system.time(for(i in 1:1000){optimizeLP(org1)})[1]
+  sb[j] = system.time(for(i in 1:1000){optimizeLP(bac1)})[1]
+}
+
+boxplot(cbind(sf,so,sb))
 
 test <- optimizeProb(fba)
 optimizeProb(test)
@@ -135,21 +142,22 @@ smax=50
 diffmat = matrix(smax, nrow=n, ncol=m)
 diffmat[(n/2-n/4):(n/2+n/4), (m/2-m/4):(m/2+m/4)] = 0
 sub1 <- Substance(n=n, mm, smax=smax, name="test", diffmat=diffmat)
-jpeg(paste("plot", formatC(1, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
-image(sub1@diffmat, axes=FALSE, col=rev(heat.colors(200)))
-dev.off()
+#jpeg(paste("plot", formatC(1, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
+#image(sub1@diffmat, axes=FALSE, col=rev(heat.colors(200)))
+#dev.off()
 diffuseNaive(sub1)
 diffuseNaiveR(sub1)
 substrate=list()
 dmat = sub1@diffmat
 substrate[[1]] <- dmat
 for(i in 2:100){
-  diffuseNaive(sub1)
+  diffuseNaiveR(sub1)
+  #diffuseNaive(sub1)
   #dmat = sub1@diffmat
   #jpeg(paste("plot", formatC(i, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
   #image(dmat, axes=FALSE, col=rev(heat.colors(200)))
   #jpeg(paste("plot", formatC(i, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
-  image(sub1@diffmat, axes=FALSE, col=rev(heat.colors(200)))
+  #image(sub1@diffmat, axes=FALSE, col=rev(heat.colors(200)))
   #dev.off()
   print(i)
 }
@@ -162,10 +170,11 @@ specs3 = list(specs[[1]], specs[[2]], specs[[3]])
 specs=list()
 specs[[1]]=mod
 
-pop = Population(specs3, specn=rep(5, length(specs3)), n=20, m=20)
+system.time(Population(specs, specn=rep(100, length(specs)), n=100, m=100))
 repliDie(pop)
 #jpeg(paste("plot", formatC(1, width = 4, format = "d", flag = "0"), ".jpg"  ,sep=""), width = 800, height = 800)
 image(pop2mat(pop))
+image(pop@media$EX_for@diffmat)
 #dev.off()
 for(i in 2:200){
   moveRand(pop)
