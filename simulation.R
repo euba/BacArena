@@ -39,12 +39,27 @@ for(i in 1:20){
     optimizeLP(bac)
     #print(bac@fbasol$fluxes[which(react_id(bac@model) == "EX_glc(e)")])
     #pop@orglist[[j]]@model@lowbnd
+    
+    #
+    # growth
+    #
+    bac@growth <- bac@growth + bac@growth * bac@fbasol$obj
+    print(bac@growth)
+    if(bac@growth > 2){
+      print("life ... goes on")
+      child <- Bac(x=bac@x-1, y=bac@y-1, model=bac@model, growth=bac@growth/2, n=bac@n, m=bac@m)
+      pop@orglist=c(pop@orglist, child)
+    }
+    else if(bac@growth < 0.1){
+      print("echoes, dying, dying, dying")
+      pop@orglist <- pop@orglist[[-j]]
+    }
   }))
   
   #dmat <- pop@media[["EX_glc(e)"]]@diffmat
   #image(dmat)
   #image(pop2mat(pop))
-  print(i)
+  print(paste("iter:", i, "bacs:",length(pop@orglist)))
   #print(pop@media[["EX_glc(e)"]]@diffmat)
   #print(sum(unlist(lapply(pop@orglist, function(x){print(x@growth)}))))
   #print(pop@orgn)
