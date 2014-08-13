@@ -34,10 +34,11 @@ for(i in 1:2){
     bac <- bacs[[j]]
     for(k in seq_along(media)){
       constrain(bac, media[[k]]@name, lb=-media[[k]]@diffmat[bac@x,bac@y])
-      consume(bac, pop@media[[k]])
+      pop@media[[k]] <- consume(bac, media[[k]])
     }
-    print(bac@)
     optimizeLP(bac)
+    print(bac@fbasol$fluxes[which(react_id(bac@model) == "EX_glc(e)")])
+    #pop@orglist[[j]]@model@lowbnd
   }
   
   #dmat <- pop@media[["EX_glc(e)"]]@diffmat
