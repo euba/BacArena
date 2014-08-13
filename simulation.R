@@ -20,32 +20,32 @@ mod <- model
 specs=list()
 specs[[1]]=mod
 
-pop = Population(specs, specn=rep(1, length(specs)), n=2, m=2)
-
-for(i in 1:2){
-  moveRand(pop)
+pop = Population(specs, specn=rep(1000, length(specs)), n=100, m=100)
+for(i in 1:20){
+  print(system.time(moveRand(pop)))
   #lapply(pop@media, diffuseNaive)
-  for(j in seq_along(pop@media)){
+  print(system.time(for(j in seq_along(pop@media)){
     diffuseNaive(pop@media[[j]])
-  }
+  }))
+  #print(system.time(lapply(pop@media, diffuseNaiveR)))
   bacs <- pop@orglist
   media <- pop@media
-  for(j in seq_along(bacs)){
+  print(system.time(for(j in seq_along(bacs)){
     bac <- bacs[[j]]
-    for(k in seq_along(media)){
-      constrain(bac, media[[k]]@name, lb=-media[[k]]@diffmat[bac@x,bac@y])
-      pop@media[[k]] <- consume(bac, media[[k]])
-    }
+    #for(k in seq_along(media)){
+    #  constrain(bac, media[[k]]@name, lb=-media[[k]]@diffmat[bac@x,bac@y])
+    #  pop@media[[k]] <- consume(bac, media[[k]])
+    #}
     optimizeLP(bac)
-    print(bac@fbasol$fluxes[which(react_id(bac@model) == "EX_glc(e)")])
+    #print(bac@fbasol$fluxes[which(react_id(bac@model) == "EX_glc(e)")])
     #pop@orglist[[j]]@model@lowbnd
-  }
+  }))
   
   #dmat <- pop@media[["EX_glc(e)"]]@diffmat
   #image(dmat)
-  image(pop2mat(pop))
+  #image(pop2mat(pop))
   print(i)
-  print(pop@media[["EX_glc(e)"]]@diffmat)
+  #print(pop@media[["EX_glc(e)"]]@diffmat)
   #print(sum(unlist(lapply(pop@orglist, function(x){print(x@growth)}))))
   #print(pop@orgn)
 }
