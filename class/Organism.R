@@ -45,10 +45,7 @@ Organism <- function(x, y, model, type=mod_desc(model), fobj={}, algorithm = "fb
 
 setGeneric("constrain", function(object, reacts, lb){standardGeneric("constrain")})
 setMethod("constrain", "Organism", function(object, reacts, lb){
-  mod <- object@model
-  #ex <- findExchReact(mod)
-  mod = changeBounds(mod, reacts, lb)
-  eval.parent(substitute(object@model <- mod)) #(pseudo) call by reference implementation
+  eval.parent(substitute(object@model <- changeBounds(object@model , reacts, lb))) #(pseudo) call by reference implementation
 })
 
 #function for computing the linear programming according to the model structure -> this can be changed for comp. speed (warmstart)
@@ -56,9 +53,7 @@ setMethod("constrain", "Organism", function(object, reacts, lb){
 
 setGeneric("optimizeLP", function(object){standardGeneric("optimizeLP")})
 setMethod("optimizeLP", "Organism", function(object){
-  solfba = optimizeProb(object@lpobj, lb=object@model@lowbnd)
-  object@fbasol <- solfba
-  return(object)
+  eval.parent(substitute(object@fbasol <- optimizeProb(object@lpobj, lb=object@model@lowbnd)))
   #eval.parent(substitute(object@fbasol <- solfba)) #(pseudo) call by reference implementation
 })
 
@@ -77,11 +72,9 @@ setMethod("changeFobj", "Organism", function(object, new_fobj){
 setGeneric("findUpt", function(object, flag=F, ex="EX"){standardGeneric("findUpt")})
 setMethod("findUpt", "Organism", function(object, flag=F, ex="EX"){
   if(flag){
-    ex <- findExchReact(object@model) #sybil function looks for bounds
-    upt <- uptReact(ex)
+    upt <- uptReact(findExchReact(object@model)) #sybil function looks for bounds
   }else{
-    allreact <- react_id(object@model) #uses flags to find exchange reactions
-    upt <- allreact[grep(ex, allreact)]
+    upt <- react_id(object@model)[grep(ex, allreact)] #uses flags to find exchange reactions
   }
   return(upt)
 })
@@ -90,14 +83,11 @@ setMethod("findUpt", "Organism", function(object, flag=F, ex="EX"){
 
 setGeneric("consume", function(object, sub){standardGeneric("consume")})
 setMethod("consume", "Organism", function(object, sub){
-  xp = object@x
-  yp = object@y
-  flux <- object@fbasol$fluxes[which(react_id(object@model) == sub@name)]
-  consump <- sub@diffmat[xp, yp] + flux
+  consump <- sub@diffmat[object@x,object@y] + object@fbasol$fluxes[which(react_id(object@model) == sub@name)]
   if(consump<=0){
     sub@diffmat[object@x, object@y] <- 0
   }else{
-    sub@diffmat[xp, yp] <- consump
+    sub@diffmat[object@x, object@y] <- consump
   }
   return(sub)
 })
