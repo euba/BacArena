@@ -37,10 +37,21 @@ Bac <- function(x, y, model, growth=1, ...){
 
 setGeneric("growLin", function(object, dfactor){standardGeneric("growLin")})
 setMethod("growLin", "Bac", function(object, dfactor){
-  grow_accum <- spec@fbasol$obj + object@growth
+  grow_accum <- object@fbasol$obj + object@growth
   grow_accum <- grow_accum - dfactor
   eval.parent(substitute(object@growth <- grow_accum)) #(pseudo) call by reference implementation
 })
+
+#function for letting bacteria grow by adding the calculated growthrate multiplied with the current growth plus to the already present growth value -> exp growth
+#requires as input: organism object
+
+setGeneric("growExp", function(object, dfactor){standardGeneric("growExp")})
+setMethod("growExp", "Bac", function(object, dfactor){
+  grow_accum <- object@fbasol$obj * object@growth + object@growth
+  grow_accum <- grow_accum - dfactor
+  eval.parent(substitute(object@growth <- grow_accum)) #(pseudo) call by reference implementation
+})
+
 
 #function for letting bacteria replicate to the specified position by returning doughter cell
 
