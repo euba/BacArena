@@ -113,6 +113,14 @@ setMethod("pop2imat", "Population", function(object){
   return(popmat)
 })
 
+#function for getting a vector of media concentrations for a specific position
+
+setGeneric("getmed", function(object, xp, yp){standardGeneric("getmed")})
+setMethod("getmed", "Population", function(object, xp, yp){
+  return(unlist(lapply(object@media, function(x, xp, yp){return(x@diffmat[xp,yp])}, xp=xp, yp=yp)))
+})
+
+
 #function for random walk (movement) of the whole population through the grid space
 
 setGeneric("moveRand", function(object){standardGeneric("moveRand")})

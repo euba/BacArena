@@ -46,8 +46,8 @@ Organism <- function(x, y, model, type=mod_desc(model), fobj={}, algorithm = "fb
 setGeneric("constrain", function(object, reacts, lb){standardGeneric("constrain")})
 setMethod("constrain", "Organism", function(object, reacts, lb){
   mod <- object@model
-  ex <- findExchReact(mod)
-  mod = changeBounds(mod, ex[reacts], lb)
+  #ex <- findExchReact(mod)
+  mod = changeBounds(mod, reacts, lb)
   eval.parent(substitute(object@model <- mod)) #(pseudo) call by reference implementation
 })
 
@@ -90,12 +90,14 @@ setMethod("findUpt", "Organism", function(object, flag=F, ex="EX"){
 
 setGeneric("consume", function(object, sub){standardGeneric("consume")})
 setMethod("consume", "Organism", function(object, sub){
+  xp = object@x
+  yp = object@y
   flux <- object@fbasol$fluxes[which(react_id(object@model) == sub@name)]
-  consump <- sub@diffmat[object@x, object@y] + flux
+  consump <- sub@diffmat[xp, yp] + flux
   if(consump<=0){
     sub@diffmat[object@x, object@y] <- 0
   }else{
-    sub@diffmat[object@x, object@y] <- consump
+    sub@diffmat[xp, yp] <- consump
   }
   return(sub)
 })
