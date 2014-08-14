@@ -2,6 +2,10 @@
 # the main goal of this file is to construct a basic framework for BacArena, which can then be merged with diffbac
 # it is actually a little bit like diffbac.R, but for the current oop version of BacArena
 
+medcon = getmed(pop,bac@x,bac@y)
+constrain(bac, names(medcon), lb=-medcon)
+
+
 ltest <- list()
 for(i in 1:1000){
   ltest[[i]] <- sysBiolAlg(mod, algorithm = "fba")
