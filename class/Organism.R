@@ -83,12 +83,13 @@ setMethod("findUpt", "Organism", function(object, flag=F, ex="EX"){
 
 setGeneric("consume", function(object, sub){standardGeneric("consume")})
 setMethod("consume", "Organism", function(object, sub){
-  consump <- sub@diffmat[object@x,object@y] + object@fbasol$fluxes[which(react_id(object@model) == sub@name)]
-  if(consump<=0){
-    sub@diffmat[object@x, object@y] <- 0
-  }else{
-    sub@diffmat[object@x, object@y] <- consump
-  }
+  #consump <- sub@diffmat[object@x,object@y] + object@fbasol$fluxes[which(react_id(object@model) == sub@name)]
+  sub@diffmat[object@x, object@y]  <- sub@diffmat[object@x,object@y] + object@fbasol$fluxes[which(react_id(object@model) == sub@name)]
+  #if(consump<=0){
+  #  sub@diffmat[object@x, object@y] <- 0
+  #}else{
+  #  sub@diffmat[object@x, object@y] <- consump
+  #}
   return(sub)
 })
 

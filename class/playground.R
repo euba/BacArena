@@ -2,9 +2,18 @@
 # the main goal of this file is to construct a basic framework for BacArena, which can then be merged with diffbac
 # it is actually a little bit like diffbac.R, but for the current oop version of BacArena
 
-medcon = getmed(pop,bac@x,bac@y)
-constrain(bac, names(medcon), lb=-medcon)
-
+print(sum(pop@media[[7]]@diffmat))
+pop@media[[7]] <- consume(pop@orglist[[j]], pop@media[[7]])
+medcon = getmed(pop,pop@orglist[[j]]@x,pop@orglist[[j]]@y)
+pop@orglist[[j]]@model@lowbnd[23]
+constrain(pop@orglist[[j]], names(medcon), lb=-medcon)
+pop@orglist[[j]]@model@lowbnd[23]
+#pop@orglist[[j]]@fbasol <- optimizeProb(pop@orglist[[j]]@model, lb=pop@orglist[[j]]@model@lowbnd, retOptSol=F)
+pop@orglist[[j]]@fbasol <- optimizeProb(pop@orglist[[j]]@lpobj,
+                                        lb=pop@orglist[[j]]@model@lowbnd,
+                                        prCmd=list("LP_PROB"),
+                                        poCmd=list("LP_PROB@oobj@lp"))
+print(sum(pop@media[[7]]@diffmat))
 
 ltest <- list()
 for(i in 1:1000){
