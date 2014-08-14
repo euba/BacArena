@@ -30,23 +30,21 @@ for(i in 1:20){
   #print(system.time(lapply(pop@media, diffuseNaiveR)))
   media <- pop@media
   print(system.time(for(j in seq_along(pop@orglist)){
-    bac <- pop@orglist[[j]]
+    medcon = getmed(pop,pop@orglist[[j]]@x,pop@orglist[[j]]@y)
+    constrain(pop@orglist[[j]], names(medcon), lb=-medcon)
     #for(k in seq_along(media)){
-    #  constrain(bac, media[[k]]@name, lb=-media[[k]]@diffmat[bac@x,bac@y])
-    #  pop@media[[k]] <- consume(bac, media[[k]])
+    #  pop@media[[k]] <- consume(pop@orglist[[j]], media[[k]])
     #}
     optimizeLP(pop@orglist[[j]])
-    #print(bac@fbasol$fluxes[which(react_id(bac@model) == "EX_glc(e)")])
-    #pop@orglist[[j]]@model@lowbnd
-    
+    #print(pop@orglist[[j]]@fbasol$fluxes[which(react_id(pop@orglist[[j]]@model) == "EX_glc(e)")])
+        
     #
     # growth
     #
-    #pop@orglist[[j]] <- bac@growth + bac@growth * bac@fbasol$obj
-    #print(bac@growth)
+    #print(pop@orglist[[j]]@growth)
     growExp(pop@orglist[[j]], 0.1)
     if(pop@orglist[[j]]@growth > 2){
-      print("life ... goes on")
+      #print("life ... goes on")
       pop@orglist=c(pop@orglist, repli(pop@orglist[[j]], 1, 1))
     }
     else if(pop@orglist[[j]]@growth < 0.1){
