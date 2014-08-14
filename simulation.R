@@ -37,20 +37,8 @@ for(i in 1:20){
     #}
     optimizeLP(pop@orglist[[j]])
     #print(pop@orglist[[j]]@fbasol$fluxes[which(react_id(pop@orglist[[j]]@model) == "EX_glc(e)")])
-        
-    #
-    # growth
-    #
     #print(pop@orglist[[j]]@growth)
-    growExp(pop@orglist[[j]], 0.1)
-    if(pop@orglist[[j]]@growth > 2){
-      #print("life ... goes on")
-      pop@orglist=c(pop@orglist, repli(pop@orglist[[j]], 1, 1))
-    }
-    else if(pop@orglist[[j]]@growth < 0.1){
-      print("echoes, dying, dying, dying")
-      pop@orglist <- pop@orglist[[-j]]
-    }
+    growth(pop@orglist[[j]], j, pop)
   }))
   
   #dmat <- pop@media[["EX_glc(e)"]]@diffmat
