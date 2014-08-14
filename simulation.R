@@ -28,29 +28,28 @@ for(i in 1:20){
     diffuseNaive(pop@media[[j]])
   }))
   #print(system.time(lapply(pop@media, diffuseNaiveR)))
-  bacs <- pop@orglist
   media <- pop@media
-  print(system.time(for(j in seq_along(bacs)){
-    bac <- bacs[[j]]
+  print(system.time(for(j in seq_along(pop@orglist)){
+    bac <- pop@orglist[[j]]
     #for(k in seq_along(media)){
     #  constrain(bac, media[[k]]@name, lb=-media[[k]]@diffmat[bac@x,bac@y])
     #  pop@media[[k]] <- consume(bac, media[[k]])
     #}
-    optimizeLP(bac)
+    optimizeLP(pop@orglist[[j]])
     #print(bac@fbasol$fluxes[which(react_id(bac@model) == "EX_glc(e)")])
     #pop@orglist[[j]]@model@lowbnd
     
     #
     # growth
     #
-    bac@growth <- bac@growth + bac@growth * bac@fbasol$obj
-    print(bac@growth)
-    if(bac@growth > 2){
+    #pop@orglist[[j]] <- bac@growth + bac@growth * bac@fbasol$obj
+    #print(bac@growth)
+    growExp(pop@orglist[[j]], 0.1)
+    if(pop@orglist[[j]]@growth > 2){
       print("life ... goes on")
-      child <- Bac(x=bac@x-1, y=bac@y-1, model=bac@model, growth=bac@growth/2, n=bac@n, m=bac@m)
-      pop@orglist=c(pop@orglist, child)
+      pop@orglist=c(pop@orglist, repli(pop@orglist[[j]], 1, 1))
     }
-    else if(bac@growth < 0.1){
+    else if(pop@orglist[[j]]@growth < 0.1){
       print("echoes, dying, dying, dying")
       pop@orglist <- pop@orglist[[-j]]
     }
