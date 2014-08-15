@@ -52,10 +52,14 @@ setMethod("constrain", "Organism", function(object, reacts, lb){
 #requires as input: organism object -> changes the optimization object slot
 
 setGeneric("optimizeLP", function(object){standardGeneric("optimizeLP")})
-setMethod("optimizeLP", "Organism", function(object){
-  #eval.parent(substitute(object@fbasol <- optimizeProb(object@lpobj, lb=object@model@lowbnd)))
-  eval.parent(substitute(object@fbasol <- optimizeProb(sysBiolAlg(changeBounds(object@model, object@model@react_id,
-                                                                               lb=object@model@lowbnd),algorithm="fba"))))
+setMethod("optimizeLP", "Organism", function(object){ #this function has to be extended to contain also additional solvers
+  switch(problem(object@lpobj)@solver,
+         glpkAPI=setColsBndsGLPK(problem(object@lpobj)@oobj, 1:object@model@react_num, #specific for GLPK!
+                                    lb=object@model@lowbnd, ub=object@model@uppbnd),
+         clpAPI=chgColLowerCLP(problem(object@lpobj)@oobj, lb=object@model@lowbnd))
+  eval.parent(substitute(object@fbasol <- optimizeProb(object@lpobj)))
+  #eval.parent(substitute(object@fbasol <- optimizeProb(sysBiolAlg(changeBounds(object@model, object@model@react_id,
+  #                                                                             lb=object@model@lowbnd),algorithm="fba"))))
   #eval.parent(substitute(object@fbasol <- solfba)) #(pseudo) call by reference implementation
 })
 

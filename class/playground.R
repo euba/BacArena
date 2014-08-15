@@ -9,9 +9,22 @@ sol = optimizeProb(fba, lb=lb_new)
 sol = optimizeProb(sysBiolAlg(changeBounds(mod, "EX_o2(e)", lb=-1), algorithm="fba"))
 sol$obj
 
+setRowsBndsGLPK(problem(fba)@oobj, 1:length(lb_new), lb=lb_new, ub=mod@uppbnd, type=rep(GLP_UP, length(lb_new)))
+
+setColsBndsGLPK(problem(fba)@oobj, 1:length(lb_new), lb=lb_new, ub=mod@uppbnd)
+
+test = problem(fba)
+setRowsBndsGLPK(problem(fba)@oobj, 1:length(lb_new[1:62]), lb=lb_new[1:62], ub=mod@uppbnd[1:62], type=rep(GLP_UP, length(lb_new[1:62])))
+sol = optimizeProb(fba)
+sol$obj
+
+solveSimplexGLPK(problem(fba)@oobj)
+getObjValGLPK(problem(fba)@oobj)
+
+
 system.time(for(i in 1:1000){
-  optimizeProb(sysBiolAlg(changeBounds(mod, "EX_o2(e)", lb=-1), algorithm="fba"))
-  #optimizeProb(fba)
+  #optimizeProb(sysBiolAlg(changeBounds(mod, "EX_o2(e)", lb=-1), algorithm="fba"))
+  optimizeProb(fba)
   #optimizeProb(mod)
 })
 
@@ -22,11 +35,8 @@ medcon = getmed(pop,pop@orglist[[j]]@x,pop@orglist[[j]]@y)
 pop@orglist[[j]]@model@lowbnd[23]
 constrain(pop@orglist[[j]], names(medcon), lb=-medcon)
 pop@orglist[[j]]@model@lowbnd[23]
+optimizeLP(pop@orglist[[j]])
 #pop@orglist[[j]]@fbasol <- optimizeProb(pop@orglist[[j]]@model, lb=pop@orglist[[j]]@model@lowbnd, retOptSol=F)
-pop@orglist[[j]]@fbasol <- optimizeProb(pop@orglist[[j]]@lpobj,
-                                        lb=pop@orglist[[j]]@model@lowbnd,
-                                        prCmd=list("LP_PROB"),
-                                        poCmd=list("LP_PROB@oobj@lp"))
 print(sum(pop@media[[7]]@diffmat))
 
 ltest <- list()
