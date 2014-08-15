@@ -76,26 +76,25 @@ setMethod("changeFobj", "Organism", function(object, new_fobj){
 #function for finding uptake reactions of a model for getting the media conditions
 
 setGeneric("findUpt", function(object, flag=F, ex="EX"){standardGeneric("findUpt")})
-setMethod("findUpt", "Organism", function(object, flag=F, ex="EX"){
-  if(flag){
-    upt <- uptReact(findExchReact(object@model)) #sybil function looks for bounds
-  }else{
-    upt <- react_id(object@model)[grep(ex, allreact)] #uses flags to find exchange reactions
-  }
-  return(upt)
+setMethod("findUpt", "Organism", function(object, ex="EX"){
+  #if(flag){
+  #  upt <- uptReact(findExchReact(object@model)) #sybil function looks for bounds
+  #}else{
+  #  upt <- react_id(object@model)[grep(ex, allreact)] #uses flags to find exchange reactions
+  #}
+  return(react_id(object@model)[grep(ex, allreact)]) #uses flags to find exchange reactions
 })
 
 #function to account for the consumption and production of Substances
 
-setGeneric("consume", function(object, sub){standardGeneric("consume")})
-setMethod("consume", "Organism", function(object, sub){
-  #consump <- sub@diffmat[object@x,object@y] + object@fbasol$fluxes[which(react_id(object@model) == sub@name)]
-  sub@diffmat[object@x, object@y]  <- sub@diffmat[object@x,object@y] + object@fbasol$fluxes[which(react_id(object@model) == sub@name)]
-  #if(consump<=0){
-  #  sub@diffmat[object@x, object@y] <- 0
-  #}else{
-  #  sub@diffmat[object@x, object@y] <- consump
-  #}
-  return(sub)
+setGeneric("consume", function(object, subs){standardGeneric("consume")})
+setMethod("consume", "Organism", function(object, subs){
+  sublist = lapply(subs, function(sub,org){
+    sub@diffmat[org@x,org@y]<-sub@diffmat[org@x,org@y]+org@fbasol$fluxes[which(react_id(org@model)==sub@name)]
+    return(sub)
+  },org=object)
+  #sub@diffmat[object@x, object@y]  <- sub@diffmat[object@x,object@y] + object@fbasol$fluxes[which(react_id(object@model) == sub@name)]
+  #return(sub)
+  return(sublist)
 })
 

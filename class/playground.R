@@ -2,6 +2,8 @@
 # the main goal of this file is to construct a basic framework for BacArena, which can then be merged with diffbac
 # it is actually a little bit like diffbac.R, but for the current oop version of BacArena
 
+pop@media = consume(pop@orglist[[j]],pop@media)
+
 fba <- sysBiolAlg(mod, algorithm="fba")
 lb_new = mod@lowbnd
 lb_new[which(react_id(mod)=="EX_o2(e)")] = -1
