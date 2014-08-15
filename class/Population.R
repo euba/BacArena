@@ -12,8 +12,9 @@ setClass("Population",
            orglist= "list", # list of organisms objects in the Arena
            orgn= "numeric", # number of organisms in orglist
            media= "list", # media composition of mixed organisms
-           feat= "data.frame" # data frame with features of the organisms, first column should contain the class (e.g Bac, Organism)
-         )
+           feat= "data.frame", # data frame with features of the organisms, first column should contain the class (e.g Bac, Organism)
+           occmat="matrix"    # occupacy matrix (showing which cells have bacs 
+        )
 )
 
 ########################################################################################################
@@ -26,7 +27,7 @@ Population <- function(specs, specn, n, m, mediac={}, feat=data.frame("Type"=rep
     stop("More individuals than space on the grid")
   }
   orglist = list()
-  pamat = matrix(0, nrow=n, ncol=m) #presence absence matrix with Organism position
+  occmat = matrix(0, nrow=n, ncol=m) #presence absence matrix with Organism position
   if(length(mediac)==0){
     mediac = unique(unlist(lapply(specs, function(x,ex){
       allreact <- react_id(x) #uses flags to find exchange reactions
@@ -44,11 +45,11 @@ Population <- function(specs, specn, n, m, mediac={}, feat=data.frame("Type"=rep
     constrain(specI, upt, lb=0) #constrain the uptake reaction to zero to define medium in next step
     constrain(specI, mediac, lb=-smax)
     for(j in 1:specn[i]){
-      while(pamat[specI@x,specI@y] != 0){
+      while(occmat[specI@x,specI@y] != 0){
         specI@x <- sample(1:n, 1)
         specI@y <- sample(1:m, 1)
       }
-      pamat[specI@x,specI@y]=1
+      occmat[specI@x,specI@y]=i
       orglist=c(orglist, specI)
     }
   }
@@ -56,7 +57,7 @@ Population <- function(specs, specn, n, m, mediac={}, feat=data.frame("Type"=rep
    sapply(mediac, function(x, smax, n, m){
      media[[x]] <<- Substance(n, m, smax, name=x)
      }, smax=smax, n=n, m=m)
-  new("Population", Arena(n=n, m=m), orglist=orglist, orgn=length(orglist), media=media, feat=feat, ...)
+  new("Population", Arena(n=n, m=m), orglist=orglist, orgn=length(orglist), media=media, feat=feat, occmat=occmat,...)
 }
 
 ########################################################################################################

@@ -57,21 +57,18 @@ setMethod("growExp", "Bac", function(object, dfactor){
 
 setGeneric("getHood", function(object, population){standardGeneric("getHood")})
 setMethod("getHood", "Bac", function(object, population){
-  return(pop2mat(population)[,(object@y-1):(object@y+1)][(object@x-1):(object@x+1),])
+  return(population@occmat[,(object@y-1):(object@y+1)][(object@x-1):(object@x+1),])
 })
 
 
 #function to check if the there is some free place in the neighbourhood
 
-setGeneric("emptyHood", function(object, j, population){standardGeneric("emptyHood")})
+setGeneric("emptyHood", function(object, population){standardGeneric("emptyHood")})
 setMethod("emptyHood", "Bac", function(object, population){
   hood <- getHood(object, population)
-  rnd <- sample(1:2, 16, replace=T)-1
-  for(i in rnd[1:8]){
-    for(j in rnd[9:16])
-      if(hood[i,j]==0) return(c(i,j))
-  }
-  return(-1)
+  free <- which(hood==0, arr.ind = T)
+  if(length(free) == 0 ) return(-1)
+  else return(free[sample(length(free[,1]),1),])
 })
 
 
@@ -87,8 +84,8 @@ setMethod("growth", "Bac", function(object, j, population, exp=T){
       doughter <- population@orglist[[j]]
       newg <- population@orglist[[j]]@growth/2
       doughter@growth <- newg
-      doughter@x <- hood[1]
-      doughter@y <- hood[2]
+      doughter@x <- object@x + hood[1]
+      doughter@y <- object@y + hood[2]
       eval.parent(substitute(object@growth <- newg))
       eval.parent(substitute(population@orglist <- c(population@orglist, doughter)))
     }
