@@ -53,7 +53,9 @@ setMethod("constrain", "Organism", function(object, reacts, lb){
 
 setGeneric("optimizeLP", function(object){standardGeneric("optimizeLP")})
 setMethod("optimizeLP", "Organism", function(object){
-  eval.parent(substitute(object@fbasol <- optimizeProb(object@lpobj, lb=object@model@lowbnd)))
+  #eval.parent(substitute(object@fbasol <- optimizeProb(object@lpobj, lb=object@model@lowbnd)))
+  eval.parent(substitute(object@fbasol <- optimizeProb(sysBiolAlg(changeBounds(object@model, object@model@react_id,
+                                                                               lb=object@model@lowbnd),algorithm="fba"))))
   #eval.parent(substitute(object@fbasol <- solfba)) #(pseudo) call by reference implementation
 })
 

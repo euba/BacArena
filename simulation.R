@@ -4,7 +4,7 @@ library(snow) # parallel computing
 library(Rcpp)
 library(inline)
 library(sybil)
-SYBIL_SETTINGS("SOLVER", "clpAPI")
+SYBIL_SETTINGS("SOLVER", "glpkAPI")
 #load class definitions
 source(file="cpp_source.R")
 source(file="class/class_baggage.R")
@@ -38,7 +38,8 @@ for(i in 1:20){
     optimizeLP(pop@orglist[[j]])
     #print(pop@orglist[[j]]@fbasol$fluxes[which(react_id(pop@orglist[[j]]@model) == "EX_glc(e)")])
     #print(pop@orglist[[j]]@growth)
-    growth(pop@orglist[[j]], j, pop)
+    
+    #growth(pop@orglist[[j]], j, pop) #here is a bug
   }))
   
   #dmat <- pop@media[["EX_glc(e)"]]@diffmat
@@ -50,6 +51,6 @@ for(i in 1:20){
   #print(pop@orgn)
 }
 
-
-
+o1 = pop@orglist[[1]]
+optimizeLP(o1)
 

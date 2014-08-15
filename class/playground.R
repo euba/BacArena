@@ -2,6 +2,20 @@
 # the main goal of this file is to construct a basic framework for BacArena, which can then be merged with diffbac
 # it is actually a little bit like diffbac.R, but for the current oop version of BacArena
 
+fba <- sysBiolAlg(mod, algorithm="fba")
+lb_new = mod@lowbnd
+lb_new[which(react_id(mod)=="EX_o2(e)")] = -1
+sol = optimizeProb(fba, lb=lb_new)
+sol = optimizeProb(sysBiolAlg(changeBounds(mod, "EX_o2(e)", lb=-1), algorithm="fba"))
+sol$obj
+
+system.time(for(i in 1:1000){
+  optimizeProb(sysBiolAlg(changeBounds(mod, "EX_o2(e)", lb=-1), algorithm="fba"))
+  #optimizeProb(fba)
+  #optimizeProb(mod)
+})
+
+
 print(sum(pop@media[[7]]@diffmat))
 pop@media[[7]] <- consume(pop@orglist[[j]], pop@media[[7]])
 medcon = getmed(pop,pop@orglist[[j]]@x,pop@orglist[[j]]@y)
@@ -46,10 +60,10 @@ optimizeProb(bac1@model, solverParm = list(PRESOLVE = "GLP_ON"))
 fba <- sysBiolAlg(mod, algorithm = "fba")
 system.time(
 for(i in 1:1000){
-  #lb_new = mod@lowbnd
-  #lb_new[which(react_id(mod)=="EX_o2(e)")] = 0
-  #sol = optimizeProb(fba, lb=lb_new)
-  sol = optimizeProb(fba)
+  lb_new = mod@lowbnd
+  lb_new[which(react_id(mod)=="EX_o2(e)")] = 0
+  sol = optimizeProb(fba, lb=lb_new)
+  #sol = optimizeProb(fba)
 })
 system.time(
 for(i in 1:1000){
