@@ -37,9 +37,8 @@ Bac <- function(x, y, model, growth=1, ...){
 
 setGeneric("growLin", function(object, dfactor){standardGeneric("growLin")})
 setMethod("growLin", "Bac", function(object, dfactor){
-  grow_accum <- object@fbasol$obj + object@growth
-  grow_accum <- grow_accum - dfactor
-  eval.parent(substitute(object@growth <- grow_accum)) #(pseudo) call by reference implementation
+  grow_accum <- object@fbasol$obj + object@growth - dfactor
+  return(grow_accum)
 })
 
 #function for letting bacteria grow by adding the calculated growthrate multiplied with the current growth plus to the already present growth value -> exp growth
@@ -47,17 +46,22 @@ setMethod("growLin", "Bac", function(object, dfactor){
 
 setGeneric("growExp", function(object, dfactor){standardGeneric("growExp")})
 setMethod("growExp", "Bac", function(object, dfactor){
-  grow_accum <- object@fbasol$obj * object@growth + object@growth
-  grow_accum <- grow_accum - dfactor
-  eval.parent(substitute(object@growth <- grow_accum)) #(pseudo) call by reference implementation
+  grow_accum <- (object@fbasol$obj * object@growth + object@growth) - dfactor
+  return(grow_accum)
 })
 
 
-#function to get moore-neighbourhood of a bac
+#function to get moore-neighbourhood of a bac together with its relative position
 
 setGeneric("getHood", function(object, population){standardGeneric("getHood")})
 setMethod("getHood", "Bac", function(object, population){
-  return(population@occmat[,(object@y-1):(object@y+1)][(object@x-1):(object@x+1),])
+  x=object@x
+  y=object@y
+  if(x-1==0) dx=0 else dx=1
+  if(x+1>pop@n) dx2=0 else dx2=1
+  if(y-1==0) dy=0 else dy=1
+  if(y+1>pop@m) dy2=0 else dy2=1
+  return(list(population@occmat[,(y-dy):(y+dy2)][(x-dx):(x+dx2),], c(1+dx,1+dy)))
 })
 
 
@@ -66,34 +70,53 @@ setMethod("getHood", "Bac", function(object, population){
 setGeneric("emptyHood", function(object, population){standardGeneric("emptyHood")})
 setMethod("emptyHood", "Bac", function(object, population){
   hood <- getHood(object, population)
-  free <- which(hood==0, arr.ind = T)
-  if(length(free) == 0 ) return(-1)
-  else return(free[sample(length(free[,1]),1),])
+  free <- which(hood[[1]]==0, arr.ind = T)
+  if(length(free) == 0) return(NULL)
+  else {
+    abs <- free[sample(length(free[,1]),1),]
+    abs[1] <- abs[1] - hood[[2]][1] + object@x
+    abs[2] <- abs[2] - hood[[2]][2] + object@y
+    return(abs)
+  }
 })
 
 
 # function with the growth model of a bac (biomass growth, replication, death)
 
-setGeneric("growth", function(object, j, population, exp=T){standardGeneric("growth")})
-setMethod("growth", "Bac", function(object, j, population, exp=T){
-  if(exp) growExp(object, 0.1)
-  else growLin(object, 0.1)
+setGeneric("growth", function(object, population, j, exp=T, lifecosts=0.1, repli=2){standardGeneric("growth")})
+setMethod("growth", "Bac", function(object, population, j, exp=T, lifecosts=0.1, repli=2){
+  newpoplist <- population@orglist
+  if(exp) object@growth <-growExp(object, 0.1) 
+  else object@growth <- growLin(object, 0.1)
   if(object@growth > 2){
-    hood <- emptyHood(object, population)
-    if(hood != -1){
-      doughter <- population@orglist[[j]]
-      newg <- population@orglist[[j]]@growth/2
+    hood <- emptyHood(newpoplist[[j]], population)
+    if(length(hood) != 0){
+      doughter <- object
+      newg <- object@growth/2.0
       doughter@growth <- newg
-      doughter@x <- object@x + hood[1]
-      doughter@y <- object@y + hood[2]
-      eval.parent(substitute(object@growth <- newg))
-      eval.parent(substitute(population@orglist <- c(population@orglist, doughter)))
+      doughter@x <- hood[1]
+      doughter@y <- hood[2]
+      newpoplist[[j]]@growth = newg
+      newpoplist <- c(population@orglist, doughter)
     }
+    eval.parent(substitute(population@orglist <- newpoplist))
+    #eval.parent(substitute(population@orglist[[j]]@growth <- newg))
   }
-  else if(object@growth < 0.1){
-    val.parent(substitute(population@orglist <- population@orglist[[j]]))
+  else if(population@orglist[[j]]@growth < 0.1){
+    newpoplist <- population@orglist[-j]
+    eval.parent(substitute(population@orglist <- newpoplist))
   }
 })
-  
 
+
+setGeneric("move", function(object, population){standardGeneric("move")})
+setMethod("move", "Bac", function(object, population){
+  hood <- emptyHood(object, population)
+  if(length(hood) != 0){
+    xp = hood[1]
+    yp = hood[2]
+    eval.parent(substitute(object@x <- xp))
+    eval.parent(substitute(object@y <- yp))
+  }
+})
 

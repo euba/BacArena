@@ -75,7 +75,7 @@ setMethod("changeFobj", "Organism", function(object, new_fobj){
 
 #function for finding uptake reactions of a model for getting the media conditions
 
-setGeneric("findUpt", function(object, flag=F, ex="EX"){standardGeneric("findUpt")})
+setGeneric("findUpt", function(object, ex="EX"){standardGeneric("findUpt")})
 setMethod("findUpt", "Organism", function(object, ex="EX"){
   #if(flag){
   #  upt <- uptReact(findExchReact(object@model)) #sybil function looks for bounds

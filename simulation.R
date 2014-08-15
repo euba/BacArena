@@ -4,7 +4,8 @@ library(snow) # parallel computing
 library(Rcpp)
 library(inline)
 library(sybil)
-SYBIL_SETTINGS("SOLVER", "glpkAPI")
+#SYBIL_SETTINGS("SOLVER", "glpkAPI")
+SYBIL_SETTINGS("SOLVER", "clpAPI")
 #load class definitions
 source(file="cpp_source.R")
 source(file="class/class_baggage.R")
@@ -21,25 +22,24 @@ specs=list()
 specs[[1]]=mod
 
 pop = Population(specs, specn=rep(1000, length(specs)), n=100, m=100)
-for(i in 1:20){
-  print(system.time(moveRand(pop)))
+for(i in 1:1){
+  #print(system.time(moveRand(pop)))
   #lapply(pop@media, diffuseNaive)
   print(system.time(for(j in seq_along(pop@media)){
     diffuseNaive(pop@media[[j]])
   }))
   #print(system.time(lapply(pop@media, diffuseNaiveR)))
-  media <- pop@media
-  print(system.time(for(j in seq_along(pop@orglist)){
+  max <- seq_along(pop@orglist)
+  print(system.time(for(j in max){
+    #move(pop@orglist[[j]],pop)
     medcon = getmed(pop,pop@orglist[[j]]@x,pop@orglist[[j]]@y)
     constrain(pop@orglist[[j]], names(medcon), lb=-medcon)
-    #for(k in seq_along(media)){
-    #  pop@media[[k]] <- consume(pop@orglist[[j]], media[[k]])
-    #}
+    pop@media = consume(pop@orglist[[j]],pop@media)
     optimizeLP(pop@orglist[[j]])
     #print(pop@orglist[[j]]@fbasol$fluxes[which(react_id(pop@orglist[[j]]@model) == "EX_glc(e)")])
     #print(pop@orglist[[j]]@growth)
-    
-    #growth(pop@orglist[[j]], j, pop) #here is a bug
+    #pop@orglist=growth(pop@orglist[[j]], pop, j)
+    growth(pop@orglist[[j]], pop, j)
   }))
   
   #dmat <- pop@media[["EX_glc(e)"]]@diffmat

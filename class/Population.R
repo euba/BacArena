@@ -165,10 +165,14 @@ setMethod("moveRand", "Population", function(object){
       }
     }
     newpos <- which(bmat==i, arr.ind=T)
+    tmp <- object@occmat[[bdat[[i]]@x,bdat[[i]]@y]]
+    object@occmat[[bdat[[i]]@x,bdat[[i]]@y]] <- 0
     bdat[[i]]@x <- newpos[1]
     bdat[[i]]@y <- newpos[2]
+    object@occmat[[bdat[[i]]@x,bdat[[i]]@y]] <- tmp
   }
   eval.parent(substitute(object@orglist <- bdat))
+  eval.parent(substitute(object@occmat <- object@occmat))
 })
 
 #function for replication and death for the individuals in the population
@@ -257,3 +261,5 @@ setMethod("movement", "Population", function(object){
   lapply()
   eval.parent(substitute(object <- pop))
 })
+
+
