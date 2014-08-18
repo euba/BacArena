@@ -32,12 +32,15 @@ Bac <- function(x, y, model, growth=1, ...){
 #           }
 # )
 
+
+
 #function for letting bacteria grow by adding the calculated growthrate to the already present growth value -> linear growth
 #requires as input: organism object
 
 setGeneric("growLin", function(object, dfactor){standardGeneric("growLin")})
 setMethod("growLin", "Bac", function(object, dfactor){
-  grow_accum <- object@fbasol$obj + object@growth - dfactor
+  if(object@fbasol$obj > 0) grow_accum <- object@fbasol$obj + object@growth - dfactor
+  else grow_accum <- object@growth - dfactor
   return(grow_accum)
 })
 
@@ -46,7 +49,8 @@ setMethod("growLin", "Bac", function(object, dfactor){
 
 setGeneric("growExp", function(object, dfactor){standardGeneric("growExp")})
 setMethod("growExp", "Bac", function(object, dfactor){
-  grow_accum <- (object@fbasol$obj * object@growth + object@growth) - dfactor
+  if(object@fbasol$obj > 0) grow_accum <- (object@fbasol$obj * object@growth + object@growth) - dfactor
+  else grow_accum <- object@growth - dfactor
   return(grow_accum)
 })
 
@@ -86,13 +90,14 @@ setMethod("emptyHood", "Bac", function(object, population){
 setGeneric("growth", function(object, population, j, exp=T, lifecosts=0.1, repli=2){standardGeneric("growth")})
 setMethod("growth", "Bac", function(object, population, j, exp=T, lifecosts=0.1, repli=2){
   newpoplist <- population@orglist
-  if(exp) newpoplist[[j]]@growth <-growExp(newpoplist[[j]], 0.1) 
-  else newpoplist[[j]]@growth <- growLin(newpoplist[[j]], 0.1)
-  if(newpoplist[[j]]@growth > 2){
+  if(exp) newpoplist[[j]]@growth <-growExp(newpoplist[[j]], lifecosts) 
+  else newpoplist[[j]]@growth <- growLin(newpoplist[[j]], lifecosts)
+  print(paste("growth: ",newpoplist[[j]]@growth))
+  if(newpoplist[[j]]@growth > repli){
     hood <- emptyHood(newpoplist[[j]], population)
     if(length(hood) != 0){
       doughter <- newpoplist[[j]]
-      newg <- newpoplist[[j]]@growth/2.0
+      newg <- newpoplist[[j]]@growth/2
       doughter@growth <- newg
       doughter@x <- hood[1]
       doughter@y <- hood[2]
@@ -103,14 +108,13 @@ setMethod("growth", "Bac", function(object, population, j, exp=T, lifecosts=0.1,
       #print(paste("bac", newpoplist[[j]]@x, newpoplist[[j]]@y, " replicates:", doughter@x, doughter@y))
       #print(population@occmat)
     }
-    eval.parent(substitute(population@orglist <- newpoplist))
   }
-  else if(population@orglist[[j]]@growth < 0.1){
+  else if(population@orglist[[j]]@growth < lifecosts){
     print("bac dies")
     newpoplist <- population@orglist[-j]
-    eval.parent(substitute(population@orglist <- newpoplist))
     eval.parent(substitute(population@occmat[newpoplist[[j]]@x,newpoplist[[j]]@y] <- 0))
   }
+  eval.parent(substitute(population@orglist <- newpoplist))
 })
 
 

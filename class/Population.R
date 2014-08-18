@@ -55,7 +55,9 @@ Population <- function(specs, specn, n, m, mediac={}, feat=data.frame("Type"=rep
   }
    media = list()
    sapply(mediac, function(x, smax, n, m){
-     media[[x]] <<- Substance(n, m, smax, name=x)
+     #media[[x]] <<- Substance(n, m, smax, name=x)
+     #media[[x]] <<- Substance(n, m, smax, name=x)
+     media[[x]] <<- Substance(n, m, 0, name=x)
      }, smax=smax, n=n, m=m)
   new("Population", Arena(n=n, m=m), orglist=orglist, orgn=length(orglist), media=media, feat=feat, occmat=occmat,...)
 }
@@ -68,6 +70,14 @@ Population <- function(specs, specn, n, m, mediac={}, feat=data.frame("Type"=rep
 #setMethod("show", "Population", function(object){
 #  cat("Object of class Population with", object@orgn, "Individuals of types", levels(object@feat[,1]))
 #})
+
+setGeneric("addSub", function(object, subname, value){standardGeneric("addSub")})
+setMethod("addSub", "Population", function(object, subname, value){
+  if (subname %in% names(object@media)) eval.parent(substitute(object@media[subname] <- Substance(object@n, object@m, smax=value, name=subname)))
+    #return(Substance(object@n, object@m, smax=value, name=subname))
+  else stop("Substance does not exist in medium")
+})
+
 
 #function for converting Population object into a position/type data.frame of all organisms involved
 

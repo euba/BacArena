@@ -48,6 +48,21 @@ setMethod("constrain", "Organism", function(object, reacts, lb){
   eval.parent(substitute(object@model <- changeBounds(object@model , reacts, lb))) #(pseudo) call by reference implementation
 })
 
+
+setGeneric("getExch", function(object){standardGeneric("getExch")})
+setMethod("getExch", "Organism", function(object){
+  a <- object@fbasol$fluxes
+  names(a) <- react_id(object@model)
+  #print(a[which(a, <0)])
+  ex <- findExchReact(object@model)
+  #ex_nr <- met_pos(ex) sybil bug ....
+  ex_nr <- seq(17,30)
+  b <- a[ex_nr]
+  print(c("input", round(b[which(b <0)],1) ))
+  print(c("output",round(b[which(b >0)],1) ))
+})
+
+
 #function for computing the linear programming according to the model structure -> this can be changed for comp. speed (warmstart)
 #requires as input: organism object -> changes the optimization object slot
 

@@ -23,8 +23,12 @@ mod <- model
 specs=list()
 specs[[1]]=mod
 
-pop = Population(specs, specn=rep(20, length(specs)), n=10, m=5)
-for(i in 1:100){
+pop = Population(specs, specn=rep(1, length(specs)), n=1, m=1)
+addSub(pop, "EX_glc(e)", 20)
+addSub(pop, "EX_h2o(e)", 20)
+addSub(pop, "EX_o2(e)", 20)
+addSub(pop, "EX_pi(e)", 20)
+for(i in 1:1){
   #print(system.time(moveRand(pop)))
   #lapply(pop@media, diffuseNaive)
   
@@ -44,7 +48,7 @@ for(i in 1:100){
     #print(pop@orglist[[j]]@fbasol$fluxes[which(react_id(pop@orglist[[j]]@model) == "EX_glc(e)")])
     #print(pop@orglist[[j]]@growth)
     #pop@orglist=growth(pop@orglist[[j]], pop, j)
-    growth(pop@orglist[[j]], pop, j)
+    growth(pop@orglist[[j]], pop, j,lifecosts=0.6)
   }))
   
   #dmat <- pop@media[["EX_glc(e)"]]@diffmat
