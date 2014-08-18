@@ -76,15 +76,5 @@ setMethod("diffuseNaiveR", "Substance", function(object){
       }
     }
   }
-  eval.parent(substitute(object@diffmat <- smat))
-})
-
-#R function for naive diffusion (neighbourhood) of the Substance matrix
-
-diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
-setGeneric("diffuseNaive", function(object){standardGeneric("diffuseNaive")})
-setMethod("diffuseNaive", "Substance", function(object){
-  smat <- object@diffmat
-  diffusion(list(smat))
-  eval.parent(substitute(object@diffmat <- smat))
+  #eval.parent(substitute(object@diffmat <- smat))
 })
