@@ -23,24 +23,19 @@ mod <- model
 specs=list()
 specs[[1]]=mod
 
-pop = Population(specs, specn=rep(1, length(specs)), n=1, m=1)
+pop = Population(specs, specn=rep(1000, length(specs)), n=100, m=100)
 addSub(pop, "EX_glc(e)", 20)
 addSub(pop, "EX_h2o(e)", 20)
 addSub(pop, "EX_o2(e)", 20)
 addSub(pop, "EX_pi(e)", 20)
-for(i in 1:10){
-  #print(system.time(moveRand(pop)))
-  #lapply(pop@media, diffuseNaive)
-  
+for(i in 1:100){
   print(system.time(for(j in seq_along(pop@media)){
     #diffuseNaiveR(pop@media[[j]])
     diffuseNaiveCpp(pop@media[[j]]@diffmat, donut=FALSE)
   }))
-  #print(system.time(lapply(pop@media, diffuseNaiveR)))
-  max <- seq_along(pop@orglist)
-  #dtime<-Sys.time()
-  print(system.time(for(j in max){
-    #print(sum(ifelse(pop@media[[7]]@diffmat<0,T,F)))
+  j = 0
+  print(system.time(while(j+1 <= length(pop@orglist)){
+    j<-j+1
     move(pop@orglist[[j]],pop)
     medcon = getmed(pop,pop@orglist[[j]]@x,pop@orglist[[j]]@y)
     constrain(pop@orglist[[j]], names(medcon), lb=-medcon)

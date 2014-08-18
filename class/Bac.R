@@ -109,7 +109,7 @@ setMethod("growth", "Bac", function(object, population, j, exp=T, lifecosts=0.1,
     }
   }
   else if(population@orglist[[j]]@growth < lifecosts){
-    print("bac dies")
+    #print("bac dies")
     eval.parent(substitute(population@occmat[newpoplist[[j]]@x,newpoplist[[j]]@y] <- 0))
     newpoplist <- population@orglist[-j]
   }
