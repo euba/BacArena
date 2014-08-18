@@ -121,9 +121,9 @@ setMethod("move", "Bac", function(object, population){
   if(length(hood) != 0){
     xp = hood[1]
     yp = hood[2]
-    type <- population@occmat[x,y]
-    eval.parrent(substitute(population@occmat[x,y] <- 0))
-    eval.parrent(substitute(population@occmat[xp,yp] <- type))
+    type <- population@occmat[object@x,object@y]
+    eval.parent(substitute(population@occmat[object@x,object@y] <- 0))
+    eval.parent(substitute(population@occmat[xp,yp] <- type))
     eval.parent(substitute(object@x <- xp))
     eval.parent(substitute(object@y <- yp))
   }
