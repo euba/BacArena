@@ -21,28 +21,29 @@ mod <- model
 specs=list()
 specs[[1]]=mod
 
-pop = Population(specs, specn=rep(5, length(specs)), n=5, m=5)
+
+pop = Population(specs, specn=rep(1, length(specs)), n=10, m=10)
 for(i in 1:100){
   #print(system.time(moveRand(pop)))
   #lapply(pop@media, diffuseNaive)
+  
   print(system.time(for(j in seq_along(pop@media)){
     diffuseNaive(pop@media[[j]])
   }))
+  
   #print(system.time(lapply(pop@media, diffuseNaiveR)))
   max <- seq_along(pop@orglist)
   print(system.time(for(j in max){
-    #move(pop@orglist[[j]],pop)
+    #print(sum(ifelse(pop@media[[7]]@diffmat<0,T,F)))
+    move(pop@orglist[[j]],pop)
     medcon = getmed(pop,pop@orglist[[j]]@x,pop@orglist[[j]]@y)
     constrain(pop@orglist[[j]], names(medcon), lb=-medcon)
-    pop@media = consume(pop@orglist[[j]],pop@media)
     optimizeLP(pop@orglist[[j]])
+    pop@media = consume(pop@orglist[[j]],pop@media)
     #print(pop@orglist[[j]]@fbasol$fluxes[which(react_id(pop@orglist[[j]]@model) == "EX_glc(e)")])
     #print(pop@orglist[[j]]@growth)
     #pop@orglist=growth(pop@orglist[[j]], pop, j)
     growth(pop@orglist[[j]], pop, j)
-    if(length(pop@orglist) > pop@n*pop@m){
-      break()
-    }
   }))
   
   #dmat <- pop@media[["EX_glc(e)"]]@diffmat
@@ -53,7 +54,3 @@ for(i in 1:100){
   #print(sum(unlist(lapply(pop@orglist, function(x){print(x@growth)}))))
   #print(pop@orgn)
 }
-
-o1 = pop@orglist[[1]]
-optimizeLP(o1)
-
