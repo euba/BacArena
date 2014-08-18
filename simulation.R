@@ -32,18 +32,10 @@ for(i in 1:100){
     #diffuseNaiveR(pop@media[[j]])
     diffuseNaiveCpp(pop@media[[j]]@diffmat)
   }))
-<<<<<<< HEAD
-  diffuseNaive(pop@media)
-  #print(system.time(lapply(pop@media, diffuseNaiveR)))
-  max <- seq_along(pop@orglist)
-  print(system.time(for(j in max){
-=======
-  
   #print(system.time(lapply(pop@media, diffuseNaiveR)))
   max <- seq_along(pop@orglist)
   print(system.time(for(j in max){
     #print(sum(ifelse(pop@media[[7]]@diffmat<0,T,F)))
->>>>>>> f2e005b361abd2cd41feac6df55c902598cdc6f5
     move(pop@orglist[[j]],pop)
     medcon = getmed(pop,pop@orglist[[j]]@x,pop@orglist[[j]]@y)
     constrain(pop@orglist[[j]], names(medcon), lb=-medcon)
