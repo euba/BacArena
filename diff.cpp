@@ -3,7 +3,7 @@ using namespace Rcpp;
 
 
 // [[Rcpp::export]]
-void diffuseNaiveCpp(Rcpp::NumericMatrix y){
+void diffuseNaiveCpp(Rcpp::NumericMatrix y, bool donut){
   int n = y.ncol();
   int m = y.nrow();
   int l = 0;
@@ -15,11 +15,21 @@ void diffuseNaiveCpp(Rcpp::NumericMatrix y){
     std::vector<std::pair<int,int> > list_min; //list containing minima
     for(int l=-1; l<=1; l++){
       for(int o=-1; o<=1; o++){
-        int pos_i = (i + l) % m;
-        int pos_j = (j + o) % n;
-        //if (pos_i>=0 && pos_i<n && pos_j>=0 && pos_j<m){ //boundary check
-        if (pos_i == -1) pos_i = m-1;
-        if (pos_j == -1) pos_j = n-1;
+        int pos_i;
+        int pos_j;
+        if (donut==true){
+          pos_i = (i + l) % m;
+          pos_j = (j + o) % n;
+          //if (pos_i>=0 && pos_i<n && pos_j>=0 && pos_j<m){ //boundary check
+          if (pos_i == -1) pos_i = m-1;
+          if (pos_j == -1) pos_j = n-1;
+        }
+        else{ // in case of bounds (no donut) ignore unavaible neighbours
+          pos_i = i + l;
+          pos_j = j + o;
+          if (pos_i == -1 || pos_i == m) pos_i = i;
+          if (pos_j == -1 || pos_j == n) pos_j = j;
+        }
         if (y(pos_i,pos_j) < min) {
           //std::cout << y(pos_i,pos_j);
           min = y(pos_i,pos_j);

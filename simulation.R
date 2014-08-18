@@ -30,7 +30,7 @@ for(i in 1:100){
   
   print(system.time(for(j in seq_along(pop@media)){
     #diffuseNaiveR(pop@media[[j]])
-    diffuseNaiveCpp(pop@media[[j]]@diffmat)
+    diffuseNaiveCpp(pop@media[[j]]@diffmat, donut=FALSE)
   }))
   #print(system.time(lapply(pop@media, diffuseNaiveR)))
   max <- seq_along(pop@orglist)
