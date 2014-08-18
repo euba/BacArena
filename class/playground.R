@@ -2,6 +2,9 @@
 # the main goal of this file is to construct a basic framework for BacArena, which can then be merged with diffbac
 # it is actually a little bit like diffbac.R, but for the current oop version of BacArena
 
+Rcpp::sourceCpp("diff.cpp")
+
+
 pop@media = consume(pop@orglist[[j]],pop@media)
 
 fba <- sysBiolAlg(mod, algorithm="fba")
@@ -346,3 +349,12 @@ for(i in 1:50){
 }
 #)
 stopCluster(cl)
+
+#R function for naive diffusion (neighbourhood) of the Substance matrix
+
+#diffusion <- cxxfunction(signature(A = "numeric"), body = src_diffusion, plugin="Rcpp")
+setGeneric("diffuseNaive", function(object){standardGeneric("diffuseNaive")})
+setMethod("diffuseNaive", "Substance", function(object){
+  diffusion(object@diffmat)
+  eval.parent(substitute(object@diffmat <- smat))
+})
