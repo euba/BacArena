@@ -100,11 +100,10 @@ setMethod("growth", "Bac", function(object, population, j, exp=T, lifecosts=0.1,
       newpoplist <- c(newpoplist, doughter)
       type <- population@occmat[newpoplist[[j]]@x,newpoplist[[j]]@y]
       eval.parent(substitute(population@occmat[doughter@x,doughter@y] <- type))
-      print(paste("bac", newpoplist[[j]]@x, newpoplist[[j]]@y, " replicates:", doughter@x, doughter@y))
-      print(population@occmat)
+      #print(paste("bac", newpoplist[[j]]@x, newpoplist[[j]]@y, " replicates:", doughter@x, doughter@y))
+      #print(population@occmat)
     }
     eval.parent(substitute(population@orglist <- newpoplist))
-    #eval.parent(substitute(population@orglist[[j]]@growth <- newg))
   }
   else if(population@orglist[[j]]@growth < 0.1){
     print("bac dies")

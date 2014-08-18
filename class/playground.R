@@ -26,6 +26,7 @@ sol$obj
 solveSimplexGLPK(problem(fba)@oobj)
 getObjValGLPK(problem(fba)@oobj)
 
+print(sum(ifelse(pop@media[[7]]@diffmat<0, T, F)))
 
 system.time(for(i in 1:1000){
   #optimizeProb(sysBiolAlg(changeBounds(mod, "EX_o2(e)", lb=-1), algorithm="fba"))

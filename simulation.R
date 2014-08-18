@@ -27,14 +27,23 @@ pop = Population(specs, specn=rep(20, length(specs)), n=10, m=5)
 for(i in 1:100){
   #print(system.time(moveRand(pop)))
   #lapply(pop@media, diffuseNaive)
+  
   print(system.time(for(j in seq_along(pop@media)){
     #diffuseNaiveR(pop@media[[j]])
     diffuseNaiveCpp(pop@media[[j]]@diffmat)
   }))
+<<<<<<< HEAD
   diffuseNaive(pop@media)
   #print(system.time(lapply(pop@media, diffuseNaiveR)))
   max <- seq_along(pop@orglist)
   print(system.time(for(j in max){
+=======
+  
+  #print(system.time(lapply(pop@media, diffuseNaiveR)))
+  max <- seq_along(pop@orglist)
+  print(system.time(for(j in max){
+    #print(sum(ifelse(pop@media[[7]]@diffmat<0,T,F)))
+>>>>>>> f2e005b361abd2cd41feac6df55c902598cdc6f5
     move(pop@orglist[[j]],pop)
     medcon = getmed(pop,pop@orglist[[j]]@x,pop@orglist[[j]]@y)
     constrain(pop@orglist[[j]], names(medcon), lb=-medcon)
@@ -54,7 +63,3 @@ for(i in 1:100){
   #print(sum(unlist(lapply(pop@orglist, function(x){print(x@growth)}))))
   #print(pop@orgn)
 }
-
-o1 = pop@orglist[[1]]
-optimizeLP(o1)
-

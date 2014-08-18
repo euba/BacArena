@@ -58,6 +58,11 @@ setMethod("optimizeLP", "Organism", function(object){ #this function has to be e
                                     lb=object@model@lowbnd, ub=object@model@uppbnd),
          clpAPI=chgColLowerCLP(problem(object@lpobj)@oobj, lb=object@model@lowbnd))
   eval.parent(substitute(object@fbasol <- optimizeProb(object@lpobj)))
+  #fbasolnew <- optimizeProb(object@lpobj)
+  #fbasolnew$fluxes <- round(fbasolnew$fluxes,2)
+  #fbasolnew$obj <- round(fbasolnew$obj,2)
+  #eval.parent(substitute(object@fbasol <- fbasolnew))
+  
   #eval.parent(substitute(object@fbasol <- optimizeProb(sysBiolAlg(changeBounds(object@model, object@model@react_id,
   #                                                                             lb=object@model@lowbnd),algorithm="fba"))))
   #eval.parent(substitute(object@fbasol <- solfba)) #(pseudo) call by reference implementation
@@ -89,12 +94,14 @@ setMethod("findUpt", "Organism", function(object, ex="EX"){
 
 setGeneric("consume", function(object, subs){standardGeneric("consume")})
 setMethod("consume", "Organism", function(object, subs){
-  sublist = lapply(subs, function(sub,org){
-    sub@diffmat[org@x,org@y]<-sub@diffmat[org@x,org@y]+org@fbasol$fluxes[which(react_id(org@model)==sub@name)]
-    return(sub)
-  },org=object)
-  #sub@diffmat[object@x, object@y]  <- sub@diffmat[object@x,object@y] + object@fbasol$fluxes[which(react_id(object@model) == sub@name)]
-  #return(sub)
-  return(sublist)
+  if(object@fbasol$obj>=0){
+    subs = lapply(subs, function(sub,org){
+      sub@diffmat[org@x,org@y]<-sub@diffmat[org@x,org@y]+org@fbasol$fluxes[which(react_id(org@model)==sub@name)]
+      return(sub)
+    },org=object)
+    #sub@diffmat[object@x, object@y]  <- sub@diffmat[object@x,object@y] + object@fbasol$fluxes[which(react_id(object@model) == sub@name)]
+    #return(sub)
+  }
+  return(subs)
 })
 
