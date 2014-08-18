@@ -21,8 +21,8 @@ mod <- model
 specs=list()
 specs[[1]]=mod
 
-pop = Population(specs, specn=rep(1000, length(specs)), n=100, m=100)
-for(i in 1:1){
+pop = Population(specs, specn=rep(5, length(specs)), n=5, m=5)
+for(i in 1:100){
   #print(system.time(moveRand(pop)))
   #lapply(pop@media, diffuseNaive)
   print(system.time(for(j in seq_along(pop@media)){
@@ -40,6 +40,9 @@ for(i in 1:1){
     #print(pop@orglist[[j]]@growth)
     #pop@orglist=growth(pop@orglist[[j]], pop, j)
     growth(pop@orglist[[j]], pop, j)
+    if(length(pop@orglist) > pop@n*pop@m){
+      break()
+    }
   }))
   
   #dmat <- pop@media[["EX_glc(e)"]]@diffmat

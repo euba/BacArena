@@ -61,7 +61,7 @@ setMethod("getHood", "Bac", function(object, population){
   if(x+1>pop@n) dx2=0 else dx2=1
   if(y-1==0) dy=0 else dy=1
   if(y+1>pop@m) dy2=0 else dy2=1
-  return(list(population@occmat[,(y-dy):(y+dy2)][(x-dx):(x+dx2),], c(1+dx,1+dy)))
+  return(list(as.matrix(population@occmat[,(y-dy):(y+dy2)])[(x-dx):(x+dx2),], c(1+dx,1+dy)))
 })
 
 
@@ -86,25 +86,31 @@ setMethod("emptyHood", "Bac", function(object, population){
 setGeneric("growth", function(object, population, j, exp=T, lifecosts=0.1, repli=2){standardGeneric("growth")})
 setMethod("growth", "Bac", function(object, population, j, exp=T, lifecosts=0.1, repli=2){
   newpoplist <- population@orglist
-  if(exp) object@growth <-growExp(object, 0.1) 
-  else object@growth <- growLin(object, 0.1)
-  if(object@growth > 2){
+  if(exp) newpoplist[[j]]@growth <-growExp(newpoplist[[j]], 0.1) 
+  else newpoplist[[j]]@growth <- growLin(newpoplist[[j]], 0.1)
+  if(newpoplist[[j]]@growth > 2){
     hood <- emptyHood(newpoplist[[j]], population)
     if(length(hood) != 0){
-      doughter <- object
-      newg <- object@growth/2.0
+      doughter <- newpoplist[[j]]
+      newg <- newpoplist[[j]]@growth/2.0
       doughter@growth <- newg
       doughter@x <- hood[1]
       doughter@y <- hood[2]
       newpoplist[[j]]@growth = newg
-      newpoplist <- c(population@orglist, doughter)
+      newpoplist <- c(newpoplist, doughter)
+      type <- population@occmat[newpoplist[[j]]@x,newpoplist[[j]]@y]
+      eval.parent(substitute(population@occmat[doughter@x,doughter@y] <- type))
+      print(paste("bac", newpoplist[[j]]@x, newpoplist[[j]]@y, " replicates:", doughter@x, doughter@y))
+      print(population@occmat)
     }
     eval.parent(substitute(population@orglist <- newpoplist))
     #eval.parent(substitute(population@orglist[[j]]@growth <- newg))
   }
   else if(population@orglist[[j]]@growth < 0.1){
+    print("bac dies")
     newpoplist <- population@orglist[-j]
     eval.parent(substitute(population@orglist <- newpoplist))
+    eval.parent(substitute(population@occmat[newpoplist[[j]]@x,newpoplist[[j]]@y] <- 0))
   }
 })
 
@@ -115,6 +121,9 @@ setMethod("move", "Bac", function(object, population){
   if(length(hood) != 0){
     xp = hood[1]
     yp = hood[2]
+    type <- population@occmat[x,y]
+    eval.parrent(substitute(population@occmat[x,y] <- 0))
+    eval.parrent(substitute(population@occmat[xp,yp] <- type))
     eval.parent(substitute(object@x <- xp))
     eval.parent(substitute(object@y <- yp))
   }
