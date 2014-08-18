@@ -28,7 +28,7 @@ addSub(pop, "EX_glc(e)", 20)
 addSub(pop, "EX_h2o(e)", 20)
 addSub(pop, "EX_o2(e)", 20)
 addSub(pop, "EX_pi(e)", 20)
-for(i in 1:1){
+for(i in 1:10){
   #print(system.time(moveRand(pop)))
   #lapply(pop@media, diffuseNaive)
   
@@ -38,6 +38,7 @@ for(i in 1:1){
   }))
   #print(system.time(lapply(pop@media, diffuseNaiveR)))
   max <- seq_along(pop@orglist)
+  #dtime<-Sys.time()
   print(system.time(for(j in max){
     #print(sum(ifelse(pop@media[[7]]@diffmat<0,T,F)))
     move(pop@orglist[[j]],pop)
@@ -50,11 +51,15 @@ for(i in 1:1){
     #pop@orglist=growth(pop@orglist[[j]], pop, j)
     growth(pop@orglist[[j]], pop, j,lifecosts=0.6)
   }))
-  
+  if(length(pop@orglist)==0){
+    print("All bacs dead!")
+    break
+  } 
+  #print(Sys.time-dtime)
   #dmat <- pop@media[["EX_glc(e)"]]@diffmat
   #image(dmat)
   #image(pop2mat(pop))
-  print(paste("iter:", i, "bacs:",length(pop@orglist)))
+  cat("iter:", i, "bacs:",length(pop@orglist),"\n\n")
   #print(pop@media[["EX_glc(e)"]]@diffmat)
   #print(sum(unlist(lapply(pop@orglist, function(x){print(x@growth)}))))
   #print(pop@orgn)

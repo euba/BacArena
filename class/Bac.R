@@ -92,7 +92,6 @@ setMethod("growth", "Bac", function(object, population, j, exp=T, lifecosts=0.1,
   newpoplist <- population@orglist
   if(exp) newpoplist[[j]]@growth <-growExp(newpoplist[[j]], lifecosts) 
   else newpoplist[[j]]@growth <- growLin(newpoplist[[j]], lifecosts)
-  print(paste("growth: ",newpoplist[[j]]@growth))
   if(newpoplist[[j]]@growth > repli){
     hood <- emptyHood(newpoplist[[j]], population)
     if(length(hood) != 0){
@@ -111,8 +110,8 @@ setMethod("growth", "Bac", function(object, population, j, exp=T, lifecosts=0.1,
   }
   else if(population@orglist[[j]]@growth < lifecosts){
     print("bac dies")
-    newpoplist <- population@orglist[-j]
     eval.parent(substitute(population@occmat[newpoplist[[j]]@x,newpoplist[[j]]@y] <- 0))
+    newpoplist <- population@orglist[-j]
   }
   eval.parent(substitute(population@orglist <- newpoplist))
 })
