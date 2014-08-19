@@ -1,21 +1,8 @@
-# load libraries and other R files to have everything in place
 setwd("~/BacArena")
-library(snow) # parallel computing
-library(Rcpp)
-library(inline)
-library(sybil)
-#SYBIL_SETTINGS("SOLVER", "glpkAPI")
-SYBIL_SETTINGS("SOLVER", "clpAPI")
-#load class definitions
-source(file="cpp_source.R")
-source(file="class/class_baggage.R")
 source(file="class/Arena.R")
-source(file="class/Substance.R")
-source(file="class/Bac.R")
-source(file="class/Organism.R")
-source(file="class/Population.R")
 
-Rcpp::sourceCpp("diff.cpp")
+arena = Arena(n=10, m=10)
+addBac(arena, amount=50)
 
 #load ecoli core model to play around
 load("data/ecore_model.R")
@@ -25,11 +12,12 @@ specs[[1]]=mod
 
 simlist <- list()
 
-pop = Population(specs, specn=rep(10, length(specs)), n=100, m=100)
 addSub(pop, "EX_glc(e)", 20)
 addSub(pop, "EX_h2o(e)", 20)
 addSub(pop, "EX_o2(e)", 20)
 addSub(pop, "EX_pi(e)", 20)
+
+#pop = Population(specs, specn=rep(10, length(specs)), n=100, m=100)
 
 for(i in 1:100){
   simlist[[i]] <- pop
