@@ -1,4 +1,4 @@
-source(file="class/Arena.R")
+source(file="class/Grid.R")
 
 # Organism is the class which contains the metabolic model and other features of the organisms in the arena
 
@@ -7,7 +7,7 @@ source(file="class/Arena.R")
 ########################################################################################################
 
 setClass("Organism",
-         contains="Arena",
+         contains="Grid",
          representation(
            x="numeric", # x position on grid
            y="numeric", # y position on grid

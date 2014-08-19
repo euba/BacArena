@@ -1,13 +1,13 @@
-source(file="class/Arena.R")
+source(file="class/Grid.R")
 
-# Population is the class, that contains a list of of all organisms in the Arena
+# Arena is the class, that contains a list of of all organisms in the Arena
 
 ########################################################################################################
-###################################### Population CLASS ################################################
+###################################### Arena CLASS ################################################
 ########################################################################################################
 
-setClass("Population",
-         contains="Arena",
+setClass("Arena",
+         contains="Grid",
          representation(
            orglist= "list", # list of organisms objects in the Arena
            orgn= "numeric", # number of organisms in orglist
@@ -21,7 +21,7 @@ setClass("Population",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Population <- function(specs, specn, n, m, mediac={}, feat=data.frame("Type"=rep("Bac", length(specs)), 
+Arena <- function(specs, specn, n, m, mediac={}, feat=data.frame("Type"=rep("Bac", length(specs)), 
                                             "Motility"=rep("random", length(specs))), smax=20, ex="EX", ...){
   if(sum(specn) > n*m){
     stop("More individuals than space on the grid")
@@ -59,7 +59,7 @@ Population <- function(specs, specn, n, m, mediac={}, feat=data.frame("Type"=rep
      #media[[x]] <<- Substance(n, m, smax, name=x)
      media[[x]] <<- Substance(n, m, 0, name=x)
      }, smax=smax, n=n, m=m)
-  new("Population", Arena(n=n, m=m), orglist=orglist, orgn=length(orglist), media=media, feat=feat, occmat=occmat,...)
+  new("Arena", Grid(n=n, m=m), orglist=orglist, orgn=length(orglist), media=media, feat=feat, occmat=occmat,...)
 }
 
 ########################################################################################################
@@ -67,42 +67,42 @@ Population <- function(specs, specn, n, m, mediac={}, feat=data.frame("Type"=rep
 ########################################################################################################
 
 #setGeneric("show", function(object){standardGeneric("show")})
-#setMethod("show", "Population", function(object){
-#  cat("Object of class Population with", object@orgn, "Individuals of types", levels(object@feat[,1]))
+#setMethod("show", "Arena", function(object){
+#  cat("Object of class Arena with", object@orgn, "Individuals of types", levels(object@feat[,1]))
 #})
 
 setGeneric("addSub", function(object, subname, value){standardGeneric("addSub")})
-setMethod("addSub", "Population", function(object, subname, value){
+setMethod("addSub", "Arena", function(object, subname, value){
   if (subname %in% names(object@media)) eval.parent(substitute(object@media[subname] <- Substance(object@n, object@m, smax=value, name=subname)))
     #return(Substance(object@n, object@m, smax=value, name=subname))
   else stop("Substance does not exist in medium")
 })
 
 
-#function for converting Population object into a position/type data.frame of all organisms involved
+#function for converting Arena object into a position/type data.frame of all organisms involved
 
 setGeneric("pop2dat", function(object){standardGeneric("pop2dat")})
-setMethod("pop2dat", "Population", function(object){
+setMethod("pop2dat", "Arena", function(object){
   tmp <- lapply(object@orglist, function(x){return(c(x@x, x@y, x@type))})
   tmp <- t(as.data.frame(tmp))
   popdat <- data.frame("x"=as.numeric(tmp[,1]), "y"=as.numeric(tmp[,2]), "type"=as.factor(tmp[,3]), row.names=1:nrow(tmp))
   return(popdat)
 })
 
-#function for converting Population object into a position/object data.frame of all organisms involved
+#function for converting Arena object into a position/object data.frame of all organisms involved
 
 setGeneric("pop2dat2", function(object){standardGeneric("pop2dat2")})
-setMethod("pop2dat2", "Population", function(object){
+setMethod("pop2dat2", "Arena", function(object){
   tmp <- lapply(object@orglist, function(x){return(c(x@x, x@y, x))})
   tmp <- t(as.data.frame(tmp))
   popdat <- data.frame("x"=as.numeric(tmp[,1]), "y"=as.numeric(tmp[,2]), "type"=as.factor(tmp[,3]), row.names=1:nrow(tmp))
   return(popdat)
 })
 
-#function for converting Population object into a presence/absence matrix of all organisms involved
+#function for converting Arena object into a presence/absence matrix of all organisms involved
 
 setGeneric("pop2mat", function(object){standardGeneric("pop2mat")})
-setMethod("pop2mat", "Population", function(object){
+setMethod("pop2mat", "Arena", function(object){
   popdat <- pop2dat(object)
   popmat <- matrix(0, object@n, object@m)
   apply(popdat, 1, function(x, types){
@@ -112,10 +112,10 @@ setMethod("pop2mat", "Population", function(object){
 })
 
 
-#function for converting Population object into a presence/absence matrix of all individuals involved
+#function for converting Arena object into a presence/absence matrix of all individuals involved
 
 setGeneric("pop2imat", function(object){standardGeneric("pop2imat")})
-setMethod("pop2imat", "Population", function(object){
+setMethod("pop2imat", "Arena", function(object){
   popdat <- pop2dat(object)
   popmat <- matrix(0, object@n, object@m)
   for(i in 1:nrow(popdat)){
@@ -127,15 +127,15 @@ setMethod("pop2imat", "Population", function(object){
 #function for getting a vector of media concentrations for a specific position
 
 setGeneric("getmed", function(object, xp, yp){standardGeneric("getmed")})
-setMethod("getmed", "Population", function(object, xp, yp){
+setMethod("getmed", "Arena", function(object, xp, yp){
   return(unlist(lapply(object@media, function(x, xp, yp){return(x@diffmat[xp,yp])}, xp=xp, yp=yp)))
 })
 
 
-#function for random walk (movement) of the whole population through the grid space
+#function for random walk (movement) of the whole Arena through the grid space
 
 setGeneric("moveRand", function(object){standardGeneric("moveRand")})
-setMethod("moveRand", "Population", function(object){
+setMethod("moveRand", "Arena", function(object){
   n <- object@n
   m <- object@m
   bmat <- pop2imat(object)
@@ -185,10 +185,10 @@ setMethod("moveRand", "Population", function(object){
   eval.parent(substitute(object@occmat <- object@occmat))
 })
 
-#function for replication and death for the individuals in the population
+#function for replication and death for the individuals in the Arena
 # 
 # setGeneric("repliDie", function(object, ...){standardGeneric("repliDie")})
-# setMethod("repliDie", "Population", function(object, ...){
+# setMethod("repliDie", "Arena", function(object, ...){
 #   object2 <- object
 #   n <- object2@n
 #   m <- object2@m
@@ -261,7 +261,7 @@ setMethod("moveRand", "Population", function(object){
 # cpp movement
 movement_cpp <- cxxfunction(signature(input_frame = "data.frame", seed = "integer", length_n = "integer", length_m = "integer"), body = src_movement, plugin="Rcpp")
 setGeneric("movement", function(object){standardGeneric("movement")})
-setMethod("movement", "Population", function(object){
+setMethod("movement", "Arena", function(object){
   pop <- object
   bac <- pop2dat2(pop)
   

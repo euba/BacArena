@@ -1,13 +1,13 @@
-source(file="class/Arena.R")
+source(file="class/Grid.R")
 
-# Substance inherits from Arena and contains the matrices with concentrations
+# Substance inherits from Grid and contains the matrices with concentrations
 
 ########################################################################################################
 ###################################### SUBSTANCE CLASS #################################################
 ########################################################################################################
 
 setClass("Substance",
-         contains="Arena",
+         contains="Grid",
          representation(
            smax     = "numeric",  # substrate start concentration
            diffmat  = "matrix",   # matrix containing concentrations
