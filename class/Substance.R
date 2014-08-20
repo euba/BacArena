@@ -32,12 +32,6 @@ Substance <- function(n, m, smax, diffmat={}, name, ...){
 ###################################### METHODS #########################################################
 ########################################################################################################
 
-#function for changing the mediacomposition and gradients
-
-setGeneric("changeSub", function(object, diffmat){standardGeneric("changeSub")})
-setMethod("changeSub", "Substance", function(object, diffmat){
-  eval.parent(substitute(object@diffmat <- diffmat)) #(pseudo) call by reference implementation
-})
 
 #R function for naive diffusion (neighbourhood) of the Substance matrix
 
