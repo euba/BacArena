@@ -20,16 +20,16 @@ for(i in 1:100){
     diffuseNaiveCpp(arena@media[[j]]@diffmat, donut=FALSE)
   }))
   j = 0
-  orgl <- length(arena@orglist)
-  print(system.time(while(j+1 <= orgl){
+  print(system.time(while(j+1 <= length(arena@orglist)){
     j<-j+1
     move(arena@orglist[[j]],arena)
     medcon = getmed(arena,arena@orglist[[j]]@x,arena@orglist[[j]]@y)
     constrain(arena@orglist[[j]], names(medcon), lb=-medcon)
     optimizeLP(arena@orglist[[j]])
     arena@media = consume(arena@orglist[[j]],arena@media)
-    growth(arena@orglist[[j]], arena, j,lifecosts=0.6)
+    neworglist <- growth(arena@orglist[[j]], arena, j,lifecosts=0.6)
   }))
+  arena@orglist <- neworglist
   if(length(arena@orglist)==0){
     print("All bacs dead!")
     break
