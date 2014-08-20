@@ -1,32 +1,27 @@
 setwd("~/BacArena")
 source(file="class/Arena.R")
-
-arena = Arena(n=10, m=10)
-addBac(arena, amount=50)
-
-#load ecoli core model to play around
 load("data/ecore_model.R")
 mod <- model
-specs=list()
-specs[[1]]=mod
+
+arena = Arena(n=100, m=100)
+addBac(arena, amount=1)
+addSubs(arena, 0)
+changeSub(arena, "EX_glc(e)", 20)
+changeSub(arena, "EX_h2o(e)", 20)
+changeSub(arena, "EX_o2(e)", 20)
+changeSub(arena, "EX_pi(e)", 20)
+
 
 simlist <- list()
-
-addSub(pop, "EX_glc(e)", 20)
-addSub(pop, "EX_h2o(e)", 20)
-addSub(pop, "EX_o2(e)", 20)
-addSub(pop, "EX_pi(e)", 20)
-
-#pop = Population(specs, specn=rep(10, length(specs)), n=100, m=100)
-
-for(i in 1:10){
+for(i in 1:100){
   simlist[[i]] <- arena
   print(system.time(for(j in seq_along(arena@media)){
     #diffuseNaiveR(arena@media[[j]])
     diffuseNaiveCpp(arena@media[[j]]@diffmat, donut=FALSE)
   }))
   j = 0
-  print(system.time(while(j+1 <= length(arena@orglist)){
+  orgl <- length(arena@orglist)
+  print(system.time(while(j+1 <= orgl){
     j<-j+1
     move(arena@orglist[[j]],arena)
     medcon = getmed(arena,arena@orglist[[j]]@x,arena@orglist[[j]]@y)
