@@ -4,7 +4,7 @@ load("data/ecore_model.R")
 mod <- model
 
 arena = Arena(n=100, m=100)
-addBac(arena, amount=1)
+addBac(arena, amount=10)
 addSubs(arena, 0)
 changeSub(arena, "EX_glc(e)", 20)
 changeSub(arena, "EX_h2o(e)", 20)
@@ -20,16 +20,16 @@ for(i in 1:100){
     diffuseNaiveCpp(arena@media[[j]]@diffmat, donut=FALSE)
   }))
   j = 0
-  print(system.time(while(j+1 <= length(arena@orglist)){
+  orgl <- arena@orglist
+  print(system.time(while(j+1 <= length(orgl) && j+1 <= length(arena@orglist)){
     j<-j+1
     move(arena@orglist[[j]],arena)
     medcon = getmed(arena,arena@orglist[[j]]@x,arena@orglist[[j]]@y)
     constrain(arena@orglist[[j]], names(medcon), lb=-medcon)
     optimizeLP(arena@orglist[[j]])
     arena@media = consume(arena@orglist[[j]],arena@media)
-    neworglist <- growth(arena@orglist[[j]], arena, j,lifecosts=0.6)
+    growth(arena@orglist[[j]], arena, j,lifecosts=0.1)
   }))
-  arena@orglist <- neworglist
   if(length(arena@orglist)==0){
     print("All bacs dead!")
     break
