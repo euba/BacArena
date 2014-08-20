@@ -62,9 +62,9 @@ setMethod("getHood", "Bac", function(object, population){
   x=object@x
   y=object@y
   if(x-1==0) dx=0 else dx=1
-  if(x+1>pop@n) dx2=0 else dx2=1
+  if(x+1>population@n) dx2=0 else dx2=1
   if(y-1==0) dy=0 else dy=1
-  if(y+1>pop@m) dy2=0 else dy2=1
+  if(y+1>population@m) dy2=0 else dy2=1
   return(list(as.matrix(population@occmat[,(y-dy):(y+dy2)])[(x-dx):(x+dx2),], c(1+dx,1+dy)))
 })
 

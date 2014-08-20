@@ -62,10 +62,13 @@ Arena <- function(n, m,  ex="EX", ...){
 
 # Add all substances defined by exchange reactions of the available bacs
 
-setGeneric("addSubs", function(object, smax=20){standardGeneric("addSubs")})
-setMethod("addSubs", "Arena", function(object, smax=20){
-  media = object@media
+setGeneric("addSubs", function(object, smax=20, ex="EX"){standardGeneric("addSubs")})
+setMethod("addSubs", "Arena", function(object, smax=20, ex="EX"){
+  newmedia = object@media
   specs = object@specs
+  mediac = object@mediac
+  n = object@n
+  m = object@m
   
   if(length(mediac)==0){
     mediac = unique(unlist(lapply(specs, function(x,ex){
@@ -75,10 +78,10 @@ setMethod("addSubs", "Arena", function(object, smax=20){
     }, ex=ex)))
   }
   sapply(mediac, function(x, smax, n, m){
-    media[[x]] <<- Substance(n, m, 0, name=x)
+    newmedia[[x]] <<- Substance(n, m, smax, name=x)
   }, smax=smax, n=n, m=m)
   
-  eval.parent(substitute(object@media <- media))
+  eval.parent(substitute(object@media <- newmedia))
 })
 
 
@@ -90,48 +93,48 @@ setMethod("changeSub", "Arena", function(object, subname, value){
 })
 
 
-setGeneric("addBac", function(object, mediac={}, bacfile="data/ecore_model.R", amount, feat=data.frame("Type"=rep("Bac", length(specs)), 
-                                                                       "Motility"=rep("random", length(specs)))){standardGeneric("addBac")})
-setMethod("addBac", "Arena", function(object, mediac={}, bacfile="data/ecore_model.R", amount, feat=data.frame("Type"=rep("Bac", length(specs)), 
-                                                                               "Motility"=rep("random", length(specs)))){
-  if(amount > object@n*object@m){
+setGeneric("addBac", function(object, mediac={}, bacfile="data/ecore_model.R", amount, ex="EX",feat=data.frame("Type"=rep("Bac", length(newspecs)), 
+                                                                       "Motility"=rep("random", length(newspecs)))){standardGeneric("addBac")})
+setMethod("addBac", "Arena", function(object, mediac={}, bacfile="data/ecore_model.R", amount, ex="EX", feat=data.frame("Type"=rep("Bac", length(newspecs)), 
+                                                                               "Motility"=rep("random", length(newspecs)))){
+  if(amount+object@orgn > object@n*object@m){
     stop("More individuals than space on the grid")
   }
   
   load(bacfile)
   mod <- model
-  specs = c(object@specs, mod)
-  specn=rep(amount, length(specs))
-  orglist = object@orglist
-  occmat = object@occmat
+  newspecs = unique(c(object@specs, mod))
+  specn=rep(amount, length(newspecs))
+  neworglist = object@orglist
+  newoccmat = object@occmat
   media = object@media
   mediac= object@mediac
   n = object@n
   m = object@m
   
   if(length(mediac)==0){
-    mediac = unique(unlist(lapply(specs, function(x,ex){
+    mediac = unique(unlist(lapply(newspecs, function(x,ex){
       allreact <- react_id(x) #uses flags to find exchange reactions
       upt <- allreact[grep(ex, allreact)]
       return(upt)
     }, ex=ex)))
   }
-  for(i in seq_along(specs)){
+  for(i in seq_along(newspecs)){
     switch(as.character(feat[i,1]),
-           "Bac"= {specI <- Bac(x=sample(1:n, 1), y=sample(1:m, 1), model=specs[[i]], growth=1, n=n, m=m)},
-           "Organism"= {specI <- Organism(x=sample(1:n, 1), y=sample(1:m, 1), model=specs[[i]], n=n, m=m)},
+           "Bac"= {specI <- Bac(x=sample(1:n, 1), y=sample(1:m, 1), model=newspecs[[i]], growth=1, n=n, m=m)},
+           "Organism"= {specI <- Organism(x=sample(1:n, 1), y=sample(1:m, 1), model=newspecs[[i]], n=n, m=m)},
            stop("Your Organism class is not defined yet."))
     exs <- findExchReact(specI@model) #sybil function looks for bounds
     upt <- uptReact(exs)
     constrain(specI, upt, lb=0) #constrain the uptake reaction to zero to define medium in next step
-    constrain(specI, mediac, lb=-smax)
+    #constrain(specI, mediac, lb=-smax)
     for(j in 1:specn[i]){
-      while(occmat[specI@x,specI@y] != 0){
+      while(newoccmat[specI@x,specI@y] != 0){
         specI@x <- sample(1:n, 1)
         specI@y <- sample(1:m, 1)
       }
-      occmat[specI@x,specI@y]=i
-      orglist=c(orglist, specI)
+      newoccmat[specI@x,specI@y]=i
+      neworglist=c(neworglist, specI)
     }
   }
   sapply(mediac, function(x, smax, n, m){
@@ -140,9 +143,10 @@ setMethod("addBac", "Arena", function(object, mediac={}, bacfile="data/ecore_mod
     media[[x]] <<- Substance(n, m, 0, name=x)
   }, smax=smax, n=n, m=m)
   
-  eval.parent(substitute(object@orglist <- orglist))
-  eval.parent(substitute(object@occmat <- occmat))
-  eval.parent(substitute(object@orgn <- length(orglist)))
+  eval.parent(substitute(object@orglist <- neworglist))
+  eval.parent(substitute(object@occmat <- newoccmat))
+  eval.parent(substitute(object@orgn <- length(neworglist)))
+  eval.parent(substitute(object@specs <- newspecs))
 })
 
 

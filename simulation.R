@@ -19,25 +19,25 @@ addSub(pop, "EX_pi(e)", 20)
 
 #pop = Population(specs, specn=rep(10, length(specs)), n=100, m=100)
 
-for(i in 1:100){
-  simlist[[i]] <- pop
-  print(system.time(for(j in seq_along(pop@media)){
-    #diffuseNaiveR(pop@media[[j]])
-    diffuseNaiveCpp(pop@media[[j]]@diffmat, donut=FALSE)
+for(i in 1:10){
+  simlist[[i]] <- arena
+  print(system.time(for(j in seq_along(arena@media)){
+    #diffuseNaiveR(arena@media[[j]])
+    diffuseNaiveCpp(arena@media[[j]]@diffmat, donut=FALSE)
   }))
   j = 0
-  print(system.time(while(j+1 <= length(pop@orglist)){
+  print(system.time(while(j+1 <= length(arena@orglist)){
     j<-j+1
-    move(pop@orglist[[j]],pop)
-    medcon = getmed(pop,pop@orglist[[j]]@x,pop@orglist[[j]]@y)
-    constrain(pop@orglist[[j]], names(medcon), lb=-medcon)
-    optimizeLP(pop@orglist[[j]])
-    pop@media = consume(pop@orglist[[j]],pop@media)
-    growth(pop@orglist[[j]], pop, j,lifecosts=0.6)
+    move(arena@orglist[[j]],arena)
+    medcon = getmed(arena,arena@orglist[[j]]@x,arena@orglist[[j]]@y)
+    constrain(arena@orglist[[j]], names(medcon), lb=-medcon)
+    optimizeLP(arena@orglist[[j]])
+    arena@media = consume(arena@orglist[[j]],arena@media)
+    growth(arena@orglist[[j]], arena, j,lifecosts=0.6)
   }))
-  if(length(pop@orglist)==0){
+  if(length(arena@orglist)==0){
     print("All bacs dead!")
     break
   } 
-  cat("iter:", i, "bacs:",length(pop@orglist),"\n\n")
+  cat("iter:", i, "bacs:",length(arena@orglist),"\n\n")
 }
