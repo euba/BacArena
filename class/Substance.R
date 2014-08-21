@@ -1,4 +1,4 @@
-source(file="class/Grid.R")
+#source(file="class/Grid.R")
 
 # Substance inherits from Grid and contains the matrices with concentrations
 
@@ -7,7 +7,7 @@ source(file="class/Grid.R")
 ########################################################################################################
 
 setClass("Substance",
-         contains="Grid",
+         #contains="Grid",
          representation(
            smax     = "numeric",  # substrate start concentration
            diffmat  = "matrix",   # matrix containing concentrations

@@ -1,4 +1,4 @@
-source(file="class/Grid.R")
+#source(file="class/Grid.R")
 
 # Organism is the class which contains the metabolic model and other features of the organisms in the arena
 
@@ -7,7 +7,7 @@ source(file="class/Grid.R")
 ########################################################################################################
 
 setClass("Organism",
-         contains="Grid",
+         #contains="Grid",
          representation(
            x="numeric", # x position on grid
            y="numeric", # y position on grid
@@ -24,14 +24,14 @@ setClass("Organism",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Organism <- function(x, y, model, type=mod_desc(model), fobj={}, algorithm = "fba", n, m, ...){
+Organism <- function(x, y, model, type=mod_desc(model), fobj={}, algorithm = "fba", ...){
   if(length(fobj) != 0){ # test if the objective was changed, or still default value
     model <- changeObj(model, fobj)
   }
-  lpobj <- sysBiolAlg(mod, algorithm = "fba")
+  lpobj <- sysBiolAlg(model, algorithm = "fba")
   fbasol = optimizeProb(lpobj)
   #fbasol = list()
-  new("Organism", n=n, m=m, x=x, y=y, model=model, type=mod_desc(model),
+  new("Organism", x=x, y=y, model=model, type=mod_desc(model),
       fobj=model@react_id[which(model@obj_coef==1)], lpobj=lpobj, #lbounds=mod@lowbnd,
       fbasol=fbasol, ...)
 }

@@ -121,8 +121,8 @@ setMethod("addBac", "Arena", function(object, mediac={}, bacfile="data/ecore_mod
   }
   for(i in seq_along(newspecs)){
     switch(as.character(feat[i,1]),
-           "Bac"= {specI <- Bac(x=sample(1:n, 1), y=sample(1:m, 1), model=newspecs[[i]], growth=1, n=n, m=m)},
-           "Organism"= {specI <- Organism(x=sample(1:n, 1), y=sample(1:m, 1), model=newspecs[[i]], n=n, m=m)},
+           "Bac"= {specI <- Bac(x=sample(1:n, 1), y=sample(1:m, 1), model=newspecs[[i]], growth=1)},
+           "Organism"= {specI <- Organism(x=sample(1:n, 1), y=sample(1:m, 1), model=newspecs[[i]])},
            stop("Your Organism class is not defined yet."))
     exs <- findExchReact(specI@model) #sybil function looks for bounds
     upt <- uptReact(exs)
@@ -157,7 +157,35 @@ setMethod("getmed", "Arena", function(object, xp, yp){
   return(unlist(lapply(object@media, function(x, xp, yp){return(x@diffmat[xp,yp])}, xp=xp, yp=yp)))
 })
 
-
+setGeneric("simulate", function(object, time){standardGeneric("simulate")})
+setMethod("simulate", "Arena", function(object, time){
+  simlist <- list()
+  arena <- object
+  for(i in 1:time){
+    simlist[[i]] <- arena
+    print(system.time(for(j in seq_along(arena@media)){
+      #diffuseNaiveR(arena@media[[j]])
+      diffuseNaiveCpp(arena@media[[j]]@diffmat, donut=FALSE)
+    }))
+    j = 0
+    orgl <- arena@orglist
+    print(system.time(while(j+1 <= length(orgl) && j+1 <= length(arena@orglist)){
+      j<-j+1
+      move(arena@orglist[[j]],arena)
+      medcon = getmed(arena,arena@orglist[[j]]@x,arena@orglist[[j]]@y)
+      constrain(arena@orglist[[j]], names(medcon), lb=-medcon)
+      optimizeLP(arena@orglist[[j]])
+      arena@media = consume(arena@orglist[[j]],arena@media)
+      growth(arena@orglist[[j]], arena, j,lifecosts=0.1)
+    }))
+    if(length(arena@orglist)==0){
+      print("All bacs dead!")
+      break
+    } 
+    cat("iter:", i, "bacs:",length(arena@orglist),"\n\n")
+  }
+  return(simlist)
+})
 
 
 
