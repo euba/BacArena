@@ -150,6 +150,61 @@ setMethod("addBac", "Arena", function(object, mediac={}, bacfile="data/ecore_mod
 })
 
 
+setGeneric("addListBac", function(object, mediac={}, baclist, amount, ex="EX",feat=data.frame("Type"=rep("Bac", length(newspecs)), 
+                                                                                                               "Motility"=rep("random", length(newspecs)))){standardGeneric("addListBac")})
+setMethod("addListBac", "Arena", function(object, mediac={}, baclist, amount, ex="EX", feat=data.frame("Type"=rep("Bac", length(newspecs)), 
+                                                                                                                        "Motility"=rep("random", length(newspecs)))){
+  if(amount+object@orgn > object@n*object@m){
+    stop("More individuals than space on the grid")
+  }
+  
+  newspecs = baclist
+  specn=rep(amount, length(baclist))
+  neworglist = object@orglist
+  newoccmat = object@occmat
+  media = object@media
+  mediac= object@mediac
+  n = object@n
+  m = object@m
+  
+  if(length(mediac)==0){
+    mediac = unique(unlist(lapply(newspecs, function(x,ex){
+      allreact <- react_id(x) #uses flags to find exchange reactions
+      upt <- allreact[grep(ex, allreact)]
+      return(upt)
+    }, ex=ex)))
+  }
+  for(i in seq_along(newspecs)){
+    cat("Adding Organism type", i, "\n")
+    switch(as.character(feat[i,1]),
+           "Bac"= {specI <- Bac(x=sample(1:n, 1), y=sample(1:m, 1), model=newspecs[[i]], growth=1)},
+           "Organism"= {specI <- Organism(x=sample(1:n, 1), y=sample(1:m, 1), model=newspecs[[i]])},
+           stop("Your Organism class is not defined yet."))
+    exs <- findExchReact(specI@model) #sybil function looks for bounds
+    upt <- uptReact(exs)
+    constrain(specI, upt, lb=0) #constrain the uptake reaction to zero to define medium in next step
+    #constrain(specI, mediac, lb=-smax)
+    for(j in 1:specn[i]){
+      while(newoccmat[specI@x,specI@y] != 0){
+        specI@x <- sample(1:n, 1)
+        specI@y <- sample(1:m, 1)
+      }
+      newoccmat[specI@x,specI@y]=i
+      neworglist=c(neworglist, specI)
+    }
+  }
+  sapply(mediac, function(x, smax, n, m){
+    #media[[x]] <<- Substance(n, m, smax, name=x)
+    #media[[x]] <<- Substance(n, m, smax, name=x)
+    media[[x]] <<- Substance(n, m, 0, name=x)
+  }, smax=smax, n=n, m=m)
+  
+  eval.parent(substitute(object@orglist <- neworglist))
+  eval.parent(substitute(object@occmat <- newoccmat))
+  eval.parent(substitute(object@orgn <- length(neworglist)))
+  eval.parent(substitute(object@specs <- newspecs))
+})
+
 #function for getting a vector of media concentrations for a specific position
 
 setGeneric("getmed", function(object, xp, yp){standardGeneric("getmed")})

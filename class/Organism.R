@@ -45,7 +45,8 @@ Organism <- function(x, y, model, type=mod_desc(model), fobj={}, algorithm = "fb
 
 setGeneric("constrain", function(object, reacts, lb){standardGeneric("constrain")})
 setMethod("constrain", "Organism", function(object, reacts, lb){
-  eval.parent(substitute(object@model <- changeBounds(object@model , reacts, lb))) #(pseudo) call by reference implementation
+  inds = which(reacts %in% react_id(object@model))
+  eval.parent(substitute(object@model <- changeBounds(object@model, reacts[inds], lb[inds]))) #(pseudo) call by reference implementation
 })
 
 
@@ -111,7 +112,9 @@ setGeneric("consume", function(object, subs){standardGeneric("consume")})
 setMethod("consume", "Organism", function(object, subs){
   if(object@fbasol$obj>=0){
     subs = lapply(subs, function(sub,org){
-      sub@diffmat[org@x,org@y]<-sub@diffmat[org@x,org@y]+org@fbasol$fluxes[which(react_id(org@model)==sub@name)]
+      if(sub@name %in% react_id(org@model)){
+        sub@diffmat[org@x,org@y]<-sub@diffmat[org@x,org@y]+org@fbasol$fluxes[which(react_id(org@model)==sub@name)]
+      }
       return(sub)
     },org=object)
     #sub@diffmat[object@x, object@y]  <- sub@diffmat[object@x,object@y] + object@fbasol$fluxes[which(react_id(object@model) == sub@name)]
