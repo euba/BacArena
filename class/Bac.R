@@ -39,7 +39,7 @@ Bac <- function(x, y, model, growth=1, ...){
 
 setGeneric("growLin", function(object, dfactor){standardGeneric("growLin")})
 setMethod("growLin", "Bac", function(object, dfactor){
-  if(object@fbasol$obj > 0) grow_accum <- object@fbasol$obj + object@growth - dfactor
+  if(object@fbasol$obj > 0) grow_accum <- object@fbasol$obj + object@growth
   else grow_accum <- object@growth - dfactor
   return(grow_accum)
 })
@@ -49,7 +49,7 @@ setMethod("growLin", "Bac", function(object, dfactor){
 
 setGeneric("growExp", function(object, dfactor){standardGeneric("growExp")})
 setMethod("growExp", "Bac", function(object, dfactor){
-  if(object@fbasol$obj > 0) grow_accum <- (object@fbasol$obj * object@growth + object@growth) - dfactor
+  if(object@fbasol$obj > 0) grow_accum <- (object@fbasol$obj * object@growth + object@growth)
   else grow_accum <- object@growth - dfactor
   return(grow_accum)
 })
