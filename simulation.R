@@ -8,7 +8,7 @@ addListBac(arena, baclist=specs, amount=1)
 #  print(i)
 #  addListBac(arena, bacmod=specs[[i]], amount=1)
 #}
-#addBac(arena, amount=10)
+addBac(arena, amount=10)
 addSubs(arena, smax=20)
 #changeSub(arena, "EX_glc(e)", 20)
 #changeSub(arena, "EX_h2o(e)", 20)
