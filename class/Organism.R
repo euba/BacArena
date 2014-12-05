@@ -50,7 +50,7 @@ setMethod("constrain", "Organism", function(object, reacts, lb){
 })
 
 
-setGeneric("getExch", function(object){standardGeneric("getExch")})
+setGeneric("getExch", function(object){standardGeneric("getExch")}) ###
 setMethod("getExch", "Organism", function(object){
   a <- object@fbasol$fluxes
   names(a) <- react_id(object@model)
@@ -123,3 +123,9 @@ setMethod("consume", "Organism", function(object, subs){
   return(subs)
 })
 
+#show function for class Organism
+
+#removeMethod(show, signature(object="Organism"))
+setMethod(show, signature(object="Organism"), function(object){
+  print(paste('Organism ',object@type,' of class Organism on position x: ',object@x,' and y: ',object@y,'.',sep=''))
+})

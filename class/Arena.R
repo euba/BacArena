@@ -27,7 +27,7 @@ setClass("Arena",
 Arena <- function(n, m,  ex="EX", ...){
   
   # load libraries and other R files to have everything in place
-  setwd("~/BacArena")
+  #setwd("~/BacArena")
   library(snow) # parallel computing
   library(Rcpp)
   library(inline)
@@ -44,8 +44,6 @@ Arena <- function(n, m,  ex="EX", ...){
   Rcpp::sourceCpp("diff.cpp")
   
   specs=list()
-
-
 
   new("Arena", n=n, m=m, specs=list(), orglist=list(), orgn=0, media=list(), mediac=vector(), feat=data.frame(), occmat=matrix(0, nrow=n, ncol=m))
 }
@@ -218,29 +216,37 @@ setMethod("simulate", "Arena", function(object, time){
   arena <- object
   for(i in 1:time){
     simlist[[i]] <- arena
-    print(system.time(for(j in seq_along(arena@media)){
+    for(j in seq_along(arena@media)){
       #diffuseNaiveR(arena@media[[j]])
       diffuseNaiveCpp(arena@media[[j]]@diffmat, donut=FALSE)
-    }))
+    }
     j = 0
     orgl <- arena@orglist
-    print(system.time(while(j+1 <= length(orgl) && j+1 <= length(arena@orglist)){
+    print(system.time(while(j+1 <= length(orgl) && j+1 <= length(arena@orglist)){ #time: 21
       j<-j+1
-      move(arena@orglist[[j]],arena)
-      medcon = getmed(arena,arena@orglist[[j]]@x,arena@orglist[[j]]@y)
-      constrain(arena@orglist[[j]], names(medcon), lb=-medcon)
-      optimizeLP(arena@orglist[[j]])
-      arena@media = consume(arena@orglist[[j]],arena@media)
-      growth(arena@orglist[[j]], arena, j,lifecosts=0.1)
-    }))
+      move(arena@orglist[[j]],arena) #time: 2
+      medcon = getmed(arena,arena@orglist[[j]]@x,arena@orglist[[j]]@y) #time: 1
+      constrain(arena@orglist[[j]], names(medcon), lb=-medcon) #time: 5
+      optimizeLP(arena@orglist[[j]]) #time: 2
+      arena@media = consume(arena@orglist[[j]],arena@media) #time: 1
+      growth(arena@orglist[[j]], arena, j,lifecosts=0.1) #time: 15 -> Problem: overwriting of orglist (is too big)
+    })) #background time: 0
+    
     if(length(arena@orglist)==0){
       print("All bacs dead!")
       break
     } 
-    cat("iter:", i, "bacs:",length(arena@orglist),"\n\n")
+    #cat("iter:", i, "bacs:",length(arena@orglist),"\n\n")
   }
   return(simlist)
 })
 
+#show function for class Arena
+
+removeMethod(show, "Arena")
+setMethod(show, "Arena", function(object){
+  print(paste('Arena of size ',object@n,'x',object@m,' with ',sum(object@occmat),
+              ' organisms of ',length(object@specs),' species.',sep=''))
+})
 
 

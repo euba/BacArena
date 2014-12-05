@@ -114,6 +114,8 @@ setMethod("growth", "Bac", function(object, population, j, exp=T, lifecosts=0.1,
     newpoplist <- population@orglist[-j]
   }
   eval.parent(substitute(population@orglist <- newpoplist))
+  #population@orglist <- newpoplist
+  #return(population)
 })
 
 
@@ -129,5 +131,12 @@ setMethod("move", "Bac", function(object, population){
     eval.parent(substitute(object@x <- xp))
     eval.parent(substitute(object@y <- yp))
   }
+})
+
+#show function for class Bac
+
+#removeMethod(show, signature(object="Bac"))
+setMethod(show, signature(object="Bac"), function(object){
+  print(paste('Bacterium ',object@type,' of class Bac with a weight of ',round(object@growth,4),' g on position x: ',object@x,' and y: ',object@y,'.',sep=''))
 })
 

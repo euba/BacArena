@@ -72,3 +72,11 @@ setMethod("diffuseNaiveR", "Substance", function(object){
   }
   #eval.parent(substitute(object@diffmat <- smat))
 })
+
+#show function for class Substance
+
+removeMethod(show, signature(object="Substance"))
+setMethod(show, signature(object="Substance"), function(object){
+  print(paste('Compound ',object@name,' of class Substance with a total concentration of ',
+              round(sum(object@diffmat)/length(c(object@diffmat)),4),' mmol per gridcell.',sep=''))
+})
