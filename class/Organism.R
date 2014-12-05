@@ -56,7 +56,7 @@ setMethod("constrain", "Organism", function(object, reacts, lb){
 
 
 setGeneric("getExch", function(object, exn){standardGeneric("getExch")}) ###
-setMethod("getExch", "Organism", function(object, exn){
+setMethod("getExch", "Organism", function(object, exn='EX_'){
   a <- object@fbasol$fluxes
   rnam <- names(object@lbnd)
   names(a) <- rnam
@@ -102,8 +102,8 @@ setMethod("optimizeLP", "Organism", function(object){ #this function has to be e
 
 #function for finding uptake reactions of a model for getting the media conditions
 
-setGeneric("findUpt", function(object, ex="EX"){standardGeneric("findUpt")})
-setMethod("findUpt", "Organism", function(object, ex="EX"){
+setGeneric("findUpt", function(object, ex="EX_"){standardGeneric("findUpt")})
+setMethod("findUpt", "Organism", function(object, ex="EX_"){
   #if(flag){
   #  upt <- uptReact(findExchReact(object@model)) #sybil function looks for bounds
   #}else{
@@ -117,10 +117,9 @@ setMethod("findUpt", "Organism", function(object, ex="EX"){
 setGeneric("consume", function(object, subs){standardGeneric("consume")})
 setMethod("consume", "Organism", function(object, subs){
   if(object@fbasol$obj>=0){
+    subs = subs[intersect(names(subs), names(object@lbnd))]
     subs = lapply(subs, function(sub,org){
-      if(sub@name %in% names(org@lbnd)){
-        sub@diffmat[org@x,org@y]<-sub@diffmat[org@x,org@y]+org@fbasol$fluxes[which(names(org@lbnd)==sub@name)]
-      }
+      sub@diffmat[org@x,org@y]<-sub@diffmat[org@x,org@y]+org@fbasol$fluxes[which(names(org@lbnd)==sub@name)]
       return(sub)
     },org=object)
     #sub@diffmat[object@x, object@y]  <- sub@diffmat[object@x,object@y] + object@fbasol$fluxes[which(react_id(object@model) == sub@name)]

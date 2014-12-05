@@ -2,13 +2,13 @@ setwd("~/BacArena") #have to update orgn after deletion of bacteria?
 source(file="class/Arena.R")
 #load("/home/eugen/specsm.RData")
 
-load("data/ecore_model.R")
+load("data/Bcoli_model.R")
 specs = model
 
-org = Organism(1,2,specs) #69352 bytes -> 17576 bytes
+#org = Organism(1,2,specs) #69352 bytes -> 17576 bytes
 
-arena = Arena(n=50, m=50)
-addListBac(arena, baclist=list(specs), amount=50)
+arena = Arena(n=100, m=100)
+addBac(arena, baclist=list(specs), amount=100*100)
 #for(i in seq_along(specs)){
 #  print(i)
 #  addListBac(arena, bacmod=specs[[i]], amount=1)
@@ -22,7 +22,7 @@ arena@orglist[[1]]
 #changeSub(arena, "EX_h2o(e)", 20)
 #changeSub(arena, "EX_o2(e)", 20)
 #changeSub(arena, "EX_pi(e)", 20)
-simlist <- simulate(arena, time=30)
+simlist <- simulate(arena, time=5)
 
 lapply(popana@media, function(x){print(x@name)})
 
@@ -38,4 +38,8 @@ for(i in seq_along(simlist)){
   }
 }
 
-object.size
+A <- as(regMat, "sparseMatrix")       # see also `vignette("Intro2Matrix")`
+B <- Matrix(regMat, sparse = TRUE)  
+
+object.size(arena@occmat)
+object.size(Matrix(arena@occmat, sparse=TRUE))
