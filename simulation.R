@@ -5,14 +5,16 @@ source(file="class/Arena.R")
 load("data/ecore_model.R")
 specs = model
 
+org = Organism(1,2,specs) #69352 bytes -> 17576 bytes
+
 arena = Arena(n=50, m=50)
-addListBac(arena, baclist=list(specs), amount=50*50)
+addListBac(arena, baclist=list(specs), amount=50)
 #for(i in seq_along(specs)){
 #  print(i)
 #  addListBac(arena, bacmod=specs[[i]], amount=1)
 #}
 #addBac(arena, amount=10)
-addSubs(arena, smax=0)
+addSubs(arena, smax=20)
 
 arena
 arena@orglist[[1]]
@@ -35,3 +37,5 @@ for(i in seq_along(simlist)){
     growthc[i,snames[j]] <- popocc[j]
   }
 }
+
+object.size

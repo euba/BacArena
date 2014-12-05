@@ -11,7 +11,9 @@ setClass("Organism",
          representation(
            x="numeric", # x position on grid
            y="numeric", # y position on grid
-           model="modelorg", # sybil model object
+           #model="modelorg", # sybil model object -> this is superbig: takes too much space and time to process
+           lbnd="numeric", #lower bounds, which can change dynamically
+           ubnd="numeric", #upper bounds, which can change dynamically
            type="character", # description of the organism
            fobj="character", # name of the objective function to be optimized
            lpobj="sysBiolAlg_fba", # sybil optimization object
@@ -24,15 +26,18 @@ setClass("Organism",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Organism <- function(x, y, model, type=mod_desc(model), fobj={}, algorithm = "fba", ...){
+Organism <- function(x, y, model, type=mod_desc(model), fobj={}, algorithm = "fba", ...){ #the constructor requires the model, after that it is not stored anymore
   if(length(fobj) != 0){ # test if the objective was changed, or still default value
     model <- changeObj(model, fobj)
   }
   lpobj <- sysBiolAlg(model, algorithm = "fba")
   fbasol = optimizeProb(lpobj)
-  #fbasol = list()
-  new("Organism", x=x, y=y, model=model, type=mod_desc(model),
-      fobj=model@react_id[which(model@obj_coef==1)], lpobj=lpobj, #lbounds=mod@lowbnd,
+  lbnd = lowbnd(model)
+  names(lbnd) = react_id(model)
+  ubnd = uppbnd(model)
+  names(ubnd) = react_id(model)
+  new("Organism", x=x, y=y, lbnd=lbnd, ubnd=ubnd, type=mod_desc(model),
+      fobj=model@react_id[which(model@obj_coef==1)], lpobj=lpobj,
       fbasol=fbasol, ...)
 }
 
@@ -45,17 +50,18 @@ Organism <- function(x, y, model, type=mod_desc(model), fobj={}, algorithm = "fb
 
 setGeneric("constrain", function(object, reacts, lb){standardGeneric("constrain")})
 setMethod("constrain", "Organism", function(object, reacts, lb){
-  inds = which(reacts %in% react_id(object@model))
-  eval.parent(substitute(object@model <- changeBounds(object@model, reacts[inds], lb[inds]))) #(pseudo) call by reference implementation
+  #inds = which(reacts %in% names(object@lbnd))
+  eval.parent(substitute(object@lbnd[reacts] <- lb)) #(pseudo) call by reference implementation
 })
 
 
-setGeneric("getExch", function(object){standardGeneric("getExch")}) ###
-setMethod("getExch", "Organism", function(object){
+setGeneric("getExch", function(object, exn){standardGeneric("getExch")}) ###
+setMethod("getExch", "Organism", function(object, exn){
   a <- object@fbasol$fluxes
-  names(a) <- react_id(object@model)
+  rnam <- names(object@lbnd)
+  names(a) <- rnam
   #print(a[which(a, <0)])
-  ex <- findExchReact(object@model)
+  ex <- rnam[grep(exn, rnam)]
   #ex_nr <- met_pos(ex) sybil bug ....
   ex_nr <- seq(17,30)
   b <- a[ex_nr]
@@ -70,9 +76,9 @@ setMethod("getExch", "Organism", function(object){
 setGeneric("optimizeLP", function(object){standardGeneric("optimizeLP")})
 setMethod("optimizeLP", "Organism", function(object){ #this function has to be extended to contain also additional solvers
   switch(problem(object@lpobj)@solver,
-         glpkAPI=setColsBndsGLPK(problem(object@lpobj)@oobj, 1:object@model@react_num, #specific for GLPK!
-                                    lb=object@model@lowbnd, ub=object@model@uppbnd),
-         clpAPI=chgColLowerCLP(problem(object@lpobj)@oobj, lb=object@model@lowbnd))
+         glpkAPI=setColsBndsGLPK(problem(object@lpobj)@oobj, 1:length(object@lbnd), #specific for GLPK!
+                                    lb=object@lbnd, ub=object@ubnd),
+         clpAPI=chgColLowerCLP(problem(object@lpobj)@oobj, lb=object@lbnd))
   eval.parent(substitute(object@fbasol <- optimizeProb(object@lpobj)))
   #fbasolnew <- optimizeProb(object@lpobj)
   #fbasolnew$fluxes <- round(fbasolnew$fluxes,2)
@@ -86,13 +92,13 @@ setMethod("optimizeLP", "Organism", function(object){ #this function has to be e
 
 #function for changing the objective function of the model -> might be interesting for dynamic changes in varying environments
 #requires as input: organism object -> changes the model, fobj slot and lpobj of the object
-
-setGeneric("changeFobj", function(object, new_fobj){standardGeneric("changeFobj")})
-setMethod("changeFobj", "Organism", function(object, new_fobj){
-  eval.parent(substitute(object@fobj <- new_fobj)) #(pseudo) call by reference implementation
-  eval.parent(substitute(object@model <- changeObj(object@model, new_fobj)))
-  eval.parent(substitute(object@lpobj <- sysBiolAlg(mod, algorithm = "fba"))) #the lp object has to be updated according to the new objective
-})
+# -> this function hast to be implemented using the Bac constructor with another objective function
+#setGeneric("changeFobj", function(object, new_fobj){standardGeneric("changeFobj")})
+#setMethod("changeFobj", "Organism", function(object, new_fobj){
+#  eval.parent(substitute(object@fobj <- new_fobj)) #(pseudo) call by reference implementation
+#  eval.parent(substitute(object@model <- changeObj(object@model, new_fobj)))
+#  eval.parent(substitute(object@lpobj <- sysBiolAlg(mod, algorithm = "fba"))) #the lp object has to be updated according to the new objective
+#})
 
 #function for finding uptake reactions of a model for getting the media conditions
 
@@ -103,7 +109,7 @@ setMethod("findUpt", "Organism", function(object, ex="EX"){
   #}else{
   #  upt <- react_id(object@model)[grep(ex, allreact)] #uses flags to find exchange reactions
   #}
-  return(react_id(object@model)[grep(ex, allreact)]) #uses flags to find exchange reactions
+  return(names(object@lbnd)[grep(ex, names(object@lbnd))]) #uses flags to find exchange reactions
 })
 
 #function to account for the consumption and production of Substances
@@ -112,8 +118,8 @@ setGeneric("consume", function(object, subs){standardGeneric("consume")})
 setMethod("consume", "Organism", function(object, subs){
   if(object@fbasol$obj>=0){
     subs = lapply(subs, function(sub,org){
-      if(sub@name %in% react_id(org@model)){
-        sub@diffmat[org@x,org@y]<-sub@diffmat[org@x,org@y]+org@fbasol$fluxes[which(react_id(org@model)==sub@name)]
+      if(sub@name %in% names(org@lbnd)){
+        sub@diffmat[org@x,org@y]<-sub@diffmat[org@x,org@y]+org@fbasol$fluxes[which(names(org@lbnd)==sub@name)]
       }
       return(sub)
     },org=object)

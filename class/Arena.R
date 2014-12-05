@@ -91,16 +91,15 @@ setMethod("changeSub", "Arena", function(object, subname, value){
 })
 
 
-setGeneric("addBac", function(object, mediac={}, bacfile="data/ecore_model.R", amount, ex="EX",feat=data.frame("Type"=rep("Bac", length(newspecs)), 
+setGeneric("addBac", function(object, mediac={}, bac=model, amount, ex="EX",feat=data.frame("Type"=rep("Bac", length(newspecs)), 
                                                                        "Motility"=rep("random", length(newspecs)))){standardGeneric("addBac")})
-setMethod("addBac", "Arena", function(object, mediac={}, bacfile="data/ecore_model.R", amount, ex="EX", feat=data.frame("Type"=rep("Bac", length(newspecs)), 
+setMethod("addBac", "Arena", function(object, mediac={}, bac=model, amount, ex="EX", feat=data.frame("Type"=rep("Bac", length(newspecs)), 
                                                                                "Motility"=rep("random", length(newspecs)))){
   if(amount+object@orgn > object@n*object@m){
     stop("More individuals than space on the grid")
   }
   
-  load(bacfile)
-  mod <- model
+  mod <- bac
   newspecs = unique(c(object@specs, mod))
   specn=rep(amount, length(newspecs))
   neworglist = object@orglist
@@ -122,8 +121,9 @@ setMethod("addBac", "Arena", function(object, mediac={}, bacfile="data/ecore_mod
            "Bac"= {specI <- Bac(x=sample(1:n, 1), y=sample(1:m, 1), model=newspecs[[i]], growth=1)},
            "Organism"= {specI <- Organism(x=sample(1:n, 1), y=sample(1:m, 1), model=newspecs[[i]])},
            stop("Your Organism class is not defined yet."))
-    exs <- findExchReact(specI@model) #sybil function looks for bounds
-    upt <- uptReact(exs)
+    #exs <- findExchReact(specI@model) #sybil function looks for bounds
+    #upt <- uptReact(exs)
+    upt <- findUpt(specI)
     constrain(specI, upt, lb=0) #constrain the uptake reaction to zero to define medium in next step
     #constrain(specI, mediac, lb=-smax)
     for(j in 1:specn[i]){
@@ -178,8 +178,9 @@ setMethod("addListBac", "Arena", function(object, mediac={}, baclist, amount, ex
            "Bac"= {specI <- Bac(x=sample(1:n, 1), y=sample(1:m, 1), model=newspecs[[i]], growth=1)},
            "Organism"= {specI <- Organism(x=sample(1:n, 1), y=sample(1:m, 1), model=newspecs[[i]])},
            stop("Your Organism class is not defined yet."))
-    exs <- findExchReact(specI@model) #sybil function looks for bounds
-    upt <- uptReact(exs)
+    #exs <- findExchReact(specI@model) #sybil function looks for bounds
+    #upt <- uptReact(exs)
+    upt <- findUpt(specI)
     constrain(specI, upt, lb=0) #constrain the uptake reaction to zero to define medium in next step
     #constrain(specI, mediac, lb=-smax)
     for(j in 1:specn[i]){
