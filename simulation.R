@@ -1,20 +1,48 @@
-setwd("~/BacArena") #have to update orgn after deletion of bacteria?
+setwd("C:/Users/eugen.bauer/Documents/GitHub/BacArena/") #have to update orgn after deletion of bacteria?
 source(file="class/Arena.R")
 #load("/home/eugen/specsm.RData")
 
 load("data/Bcoli_model.R")
 specs = model
 
-#org = Organism(1,2,specs) #69352 bytes -> 17576 bytes
+org = Organism(1,2,specs) #69352 bytes -> 17576 bytes
 
-arena = Arena(n=100, m=100)
-addBac(arena, baclist=list(specs), amount=100*100)
+arena = Arena(n=10, m=10)
+system.time(
+addBac(arena, baclist=list(specs), amount=10*10)
+)
+format(object.size(arena),units='Mb')
+object.size(arena)
+#object.size(arena@orglist)
+#object.size(arena@orglist[[1]])
+
+#object.size(arena@orglist[[1]]@ubnd)
+#object.size(arena@orglist[[1]]@lbnd)
+addSubs(arena, smax=20)
+arena@orglist[[1]]
+simlist <- simulate(arena, time=5)
+
+#3569236768 bytes
+#2177396768 bytes
+#785556768 bytes
+#397896128 bytes
+#267256128 bytes
+#70216336 bytes
+#46456336 bytes
+
+#3568800040 bytes
+#2176960040 bytes
+#785120040 bytes
+#397440040 bytes
+#266800040 bytes
+#69760040 bytes
+#46000040 bytes
+
 #for(i in seq_along(specs)){
 #  print(i)
 #  addListBac(arena, bacmod=specs[[i]], amount=1)
 #}
 #addBac(arena, amount=10)
-addSubs(arena, smax=20)
 
 arena
 arena@orglist[[1]]
@@ -43,3 +71,15 @@ B <- Matrix(regMat, sparse = TRUE)
 
 object.size(arena@occmat)
 object.size(Matrix(arena@occmat, sparse=TRUE))
+
+object.size(simlist)
+object.size(simlist[[1]])
+object.size(simlist[[1]]@orglist)
+object.size(simlist[[1]]@orglist[[1]])
+object.size(simlist[[1]]@orglist[[1]]@lpobj)
+object.size(simlist[[1]]@orglist[[1]]@fbasol)
+object.size(simlist[[1]]@orglist[[1]]@lbnd)
+object.size(simlist[[1]]@orglist[[1]]@ubnd)
+
+
+
