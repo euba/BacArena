@@ -139,6 +139,7 @@ setMethod("simBac", "Bac", function(object, arena, j){#time relative to 50x50
   optimizeLP(object) #time: 2
   arena@media = consume(object, arena@media, fname=object@medium, arena@orgdat[j,'x'], arena@orgdat[j,'y']) #time: just first iteration!
   growth(object, arena, j) #time: 1
+  arena@orgdat[j,'phenotype']=as.integer(checkPhen(arena, object))
   return(arena)
 })
 

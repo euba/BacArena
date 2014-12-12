@@ -143,36 +143,44 @@ setMethod("getmed", "Arena", function(object, xp, yp){
 
 #function for checking if a phenotype is emergent
 
-setGeneric("checkPhen", function(object, org, ret=T){standardGeneric("checkPhen")})
-setMethod("checkPhen", "Arena", function(object, org, ret=T){
+setGeneric("checkPhen", function(object, org){standardGeneric("checkPhen")})
+setMethod("checkPhen", "Arena", function(object, org){
   ptype <- 0
   phenotypes <- object@phenotypes[[org@type]]
   phenspec <- getPhenotype(org)
-  for(i in 1:length(phenotypes)){
-    inlist <- intersect(names(phenotypes[[i]]),names(phenspec))
-    if(sum(phenotypes[[i]][inlist]==phenspec[inlist])==length(inlist)){
-      ptype=i
-      break
+  if(length(phenspec) != 0){
+    for(i in 1:length(phenotypes)){
+      inlist <- intersect(names(phenotypes[[i]]),names(phenspec))
+      if(sum(phenotypes[[i]][inlist]==phenspec[inlist])==length(inlist)){
+        ptype=i
+        break
+      }
+    }
+    if(ptype==0){
+      ptype = length(phenotypes)+1
+      phenotypes[[ptype]] <- phenspec
+      object2 <- object
+      object2@phenotypes[[org@type]] <- phenotypes
+      eval.parent(substitute(object <- object2)) #has to be like this, otherwise there is a problem with the slot name!
+      #eval.parent(substitute(object@phenotypes[[org@type]] <- phenotypes))
     }
   }
-  if(ptype==0){
-    ptype = length(phenotypes)+1
-    phenotypes[[ptype]] <- phenspec
-    eval.parent(substitute(object@phenotypes[[org@type]] <- phenotypes))
-  }
-  if(ret){
-    return(ptype)
-  }
+  return(ptype)
 })
 
 #main function for simulation of the whole arena
 
-setGeneric("simulate", function(object, time){standardGeneric("simulate")})
-setMethod("simulate", "Arena", function(object, time){
+setGeneric("simulate", function(object, time, reduce=F){standardGeneric("simulate")})
+setMethod("simulate", "Arena", function(object, time, reduce=F){
   simlist <- list()
   arena <- object
   for(i in 1:time){
     simlist[[i]] <- arena
+    if(reduce){ #drop some items to reduce the overall size of simlist
+      simlist[[i]]@specs <- list()
+      simlist[[i]]@mediac <- character()
+      simlist[[i]]@occmat <- Matrix()
+    }
     for(j in seq_along(arena@media)){
       #diffuseNaiveR(arena@media[[j]])
       submat <- as.matrix(arena@media[[j]]@diffmat)
