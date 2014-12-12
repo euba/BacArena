@@ -8,15 +8,14 @@
 
 setClass("Arena",
          representation(
-           orglist= "list", #list of organisms objects in the Arena
-           #specs=   "list", #
-           orgn= "numeric", #number of organisms in orglist
-           media= "list", #media composition of mixed organisms
-           mediac= "character",
-           feat= "list", #list of lists with features of the organisms such as the type, lpobj and contraints
-           occmat= "matrix",    #occupacy matrix (showing which cells have bacs 
-           n        = "numeric",  #grid size
-           m        = "numeric"  #grid size
+           orgdat="data.frame", # data frame of individuals in the Arena
+           specs="list", # list of organism types in the Arena
+           media="list", # media composition of mixed organisms
+           phenotypes="list", # list of unique phenotypes of the individuals
+           mediac="character",
+           occmat="Matrix", # occupacy matrix (showing which cells have bacs) -> sparse Matrix
+           n="numeric",  # grid size
+           m="numeric"  # grid size
         )
 )
 
@@ -24,7 +23,7 @@ setClass("Arena",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Arena <- function(n, m,  ex="EX_", ...){
+Arena <- function(n, m){
   
   # load libraries and other R files to have everything in place
   #setwd("~/BacArena")
@@ -42,35 +41,89 @@ Arena <- function(n, m,  ex="EX_", ...){
   source(file="class/Organism.R")
   #source(file="class/Population.R")
   Rcpp::sourceCpp("diff.cpp")
-
-  new("Arena", n=n, m=m, orglist=list(), orgn=0, media=list(), mediac=character(),
-      feat=list(), occmat=matrix(0, nrow=n, ncol=m))
+  
+  new("Arena", n=n, m=m, orgdat=data.frame(), specs=list(), media=list(), mediac=character(),
+      phenotypes=list(), occmat=Matrix(as.integer(0), nrow=n, ncol=m, sparse=T))
 }
 
 ########################################################################################################
 ###################################### METHODS #########################################################
 ########################################################################################################
 
-#setGeneric("show", function(object){standardGeneric("show")})
-#setMethod("show", "Arena", function(object){
-#  cat("Object of class Arena with", object@orgn, "Individuals of types", levels(object@feat[,1]))
-#})
+# Add Individuals to the arena
 
+setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){standardGeneric("addOrg")})
+setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){
+  if(amount+sum(object@occmat) > object@n*object@m){
+    stop("More individuals than space on the grid")
+  }
+  n <- object@n
+  m <- object@m
+  spectype <- specI@type
+  newoccmat <- object@occmat
+  neworgdat <- object@orgdat
+  newspecs <- object@specs
+  newphens <- object@phenotypes[[spectype]]
+  
+  newspecs[[spectype]] <- specI
+  if(length(newphens)!=0){
+    ptype <- checkPhen(object, specI)
+    newphens <- object@phenotypes[[spectype]]
+  }else{
+    newphens[[1]] <- getPhenotype(specI)
+    ptype=1
+  }
+  lastind <- nrow(object@orgdat)
+  if(length(x*y)==0){
+    for(i in 1:amount){
+      neworgdat[lastind+i,'growth']=growth
+      neworgdat[lastind+i,'type']=as.integer(which(names(newspecs)==spectype))
+      neworgdat[lastind+i,'phenotype']=as.integer(ptype)
+      x <- as.numeric(sample(1:n, 1))
+      y <- as.numeric(sample(1:m, 1))
+      while(newoccmat[x,y] != 0){
+        x <- as.numeric(sample(1:n, 1))
+        y <- as.numeric(sample(1:m, 1))
+      }
+      neworgdat[lastind+i,'x']=x
+      neworgdat[lastind+i,'y']=y
+      newoccmat[x,y] <- as.numeric(which(names(newspecs)==spectype))
+    }
+  }else{
+    for(i in 1:amount){
+      neworgdat[lastind+i,'growth']=growth
+      neworgdat[lastind+i,'type']=as.integer(which(names(newspecs)==spectype))
+      neworgdat[lastind+i,'phenotype']=as.integer(ptype)
+      neworgdat[lastind+i,'x']=x[i]
+      neworgdat[lastind+i,'y']=y[i]
+      newoccmat[x[i],y[i]] <- as.numeric(which(names(newspecs)==spectype))
+    }
+  }
+
+  eval.parent(substitute(object@occmat <- newoccmat))
+  eval.parent(substitute(object@orgdat <- neworgdat))
+  eval.parent(substitute(object@specs <- newspecs))
+  eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
+  eval.parent(substitute(object@mediac <- union(object@mediac, specI@medium)))
+})
 
 # Add all substances defined by exchange reactions of the available bacs
 
-setGeneric("addSubs", function(object, smax=20, ex="EX_"){standardGeneric("addSubs")})
-setMethod("addSubs", "Arena", function(object, smax=20, ex="EX_"){
+setGeneric("addSubs", function(object, smax, mediac=object@mediac){standardGeneric("addSubs")})
+setMethod("addSubs", "Arena", function(object, smax, mediac=object@mediac){
   newmedia = object@media
-  mediac = object@mediac
   n = object@n
   m = object@m
-
-  sapply(mediac, function(x, smax, n, m){
-    newmedia[[x]] <<- Substance(n, m, smax, name=x)
-  }, smax=smax, n=n, m=m)
-  
-  eval.parent(substitute(object@media <- newmedia))
+  mediac = setdiff(mediac, names(arena@media))
+  if(length(mediac)==0){
+    print("No novel compound can be included to the medium.")
+  }else{
+    sapply(mediac, function(x, smax, n, m){
+      newmedia[[x]] <<- Substance(n, m, smax, name=x)
+    }, smax=smax, n=n, m=m)
+    
+    eval.parent(substitute(object@media <- c(object@media,newmedia)))
+  }
 })
 
 
@@ -81,85 +134,36 @@ setMethod("changeSub", "Arena", function(object, subname, value){
   else stop("Substance does not exist in medium")
 })
 
-
-# Add bacteria to the arena
-
-setGeneric("addBac", function(object, baclist, amount, ex="EX_", type='Bac'){standardGeneric("addBac")})
-setMethod("addBac", "Arena", function(object, baclist, amount, ex="EX_", type='Bac'){
-  if(amount+object@orgn > object@n*object@m){
-    stop("More individuals than space on the grid")
-  }
-  
-  newspecs = baclist
-  specn=rep(amount, length(baclist))
-  neworglist = object@orglist
-  newoccmat = object@occmat
-  media = object@media
-  medias = object@mediac
-  n = object@n
-  m = object@m
-  feats = object@feat
-  
-  if(length(feats)==0){
-    for(i in seq_along(newspecs)){
-      feats[[mod_desc(newspecs[[i]])]] <- list()
-      feats[[mod_desc(newspecs[[i]])]]$type <- type
-    }
-  }
-  
-  if(length(medias)==0){
-    medias = as.character(unique(unlist(lapply(newspecs, function(x,ex){
-      allreact <- react_id(x) #uses flags to find exchange reactions
-      upt <- allreact[grep(ex, allreact)]
-      return(upt)
-    }, ex=ex))))
-  }
-  for(i in seq_along(newspecs)){
-    cat("Adding Organism type", i, "\n")
-    switch(feats[[i]]$type,
-           "Bac"= {specI <- Bac(x=sample(1:n, 1), y=sample(1:m, 1), model=newspecs[[i]], growth=1)},
-           "Organism"= {specI <- Organism(x=sample(1:n, 1), y=sample(1:m, 1), model=newspecs[[i]])},
-           stop("Your Organism class is not defined yet."))
-    #exs <- findExchReact(specI@model) #sybil function looks for bounds
-    #upt <- uptReact(exs)
-    upt <- findUpt(specI)
-    #constrain(specI, upt, lb=0) #constrain the uptake reaction to zero to define medium in next step
-    #constrain(specI, mediac, lb=-smax)
-    feats[[i]]$lbnd <- specI@lbnd
-    feats[[i]]$ubnd <- specI@ubnd
-    feats[[i]]$lpobj <- specI@lpobj
-    #feats[[i]]$upts <- upt
-    specI@fbasol$fluxes <- specI@fbasol$fluxes[which(names(specI@lbnd) %in% upt)]
-    specI@lbnd <- unname(specI@lbnd[upt])
-    #specI@ubnd <- 0
-    #specI@lpobj <- list()
-    specI@lbnd <- NULL
-    specI@ubnd <- NULL
-    specI@lpobj <- NULL
-
-    for(j in 1:specn[i]){
-      while(newoccmat[specI@x,specI@y] != 0){
-        specI@x <- sample(1:n, 1)
-        specI@y <- sample(1:m, 1)
-      }
-      newoccmat[specI@x,specI@y]=i
-      neworglist=c(neworglist, specI)
-    }
-  }
-  
-  eval.parent(substitute(object@mediac <- medias))
-  eval.parent(substitute(object@feat <- feats))
-  eval.parent(substitute(object@orglist <- neworglist))
-  eval.parent(substitute(object@occmat <- newoccmat))
-  eval.parent(substitute(object@orgn <- length(neworglist)))
-})
-
 #function for getting a vector of media concentrations for a specific position
 
 setGeneric("getmed", function(object, xp, yp){standardGeneric("getmed")})
 setMethod("getmed", "Arena", function(object, xp, yp){
   return(unlist(lapply(object@media, function(x, xp, yp){return(x@diffmat[xp,yp])}, xp=xp, yp=yp)))
 })
+
+#function for checking if a phenotype is emergent
+
+setGeneric("checkPhen", function(object, org){standardGeneric("checkPhen")})
+setMethod("checkPhen", "Arena", function(object, org){
+  ptype <- 0
+  phenotypes <- object@phenotypes[[org@type]]
+  phenspec <- getPhenotype(org)
+  for(i in 1:length(phenotypes)){
+    inlist <- intersect(names(phenotypes[[i]]),names(phenspec))
+    if(sum(phenotypes[[i]][inlist]==phenspec[inlist])==length(inlist)){
+      ptype=i
+      break
+    }
+  }
+  if(ptype==0){
+    ptype = length(phenotypes)+1
+    phenotypes[[ptype]] <- phenspec
+    eval.parent(substitute(object@phenotypes[[org@type]] <- phenotypes))
+  }
+  return(ptype)
+})
+
+#main function for simulation of the whole arena
 
 setGeneric("simulate", function(object, time){standardGeneric("simulate")})
 setMethod("simulate", "Arena", function(object, time){
@@ -169,30 +173,25 @@ setMethod("simulate", "Arena", function(object, time){
     simlist[[i]] <- arena
     for(j in seq_along(arena@media)){
       #diffuseNaiveR(arena@media[[j]])
-      diffuseNaiveCpp(arena@media[[j]]@diffmat, donut=FALSE)
+      submat <- as.matrix(arena@media[[j]]@diffmat)
+      diffuseNaiveCpp(submat, donut=FALSE)
+      arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
     }
     j = 0
-    orgl <- arena@orglist
-    print(system.time(while(j+1 <= length(orgl) && j+1 <= length(arena@orglist)){ #time: 11.2
+    orgl <- arena@orgdat
+    print(system.time(while(j+1 <= nrow(orgl) && j+1 <= nrow(arena@orgdat)){ #time: 11.2
       j <- j+1
-      orgfeat = arena@feat[[arena@orglist[[j]]@type]]
-      move(arena@orglist[[j]],arena) #time: 1
-      medcon = getmed(arena, arena@orglist[[j]]@x, arena@orglist[[j]]@y) #time: 0
-      
-      #constrain(arena@orglist[[j]], names(medcon), lb=-medcon) #time: 3
-      
-      orgfeat$lbnd[names(medcon)] = -medcon
-      optimizeLP(arena@orglist[[j]], orgfeat$lpobj, inds=which(names(orgfeat$lbnd) %in% arena@mediac),
-                 lb=orgfeat$lbnd, ub=orgfeat$ubnd) #time: 5
-      arena@media = consume(arena@orglist[[j]], arena@media, fname=arena@mediac) #time: 2
-      growth(arena@orglist[[j]], arena, j, lifecosts=0.1) #time: 7 -> Problem: overwriting of orglist (is too big)
+      org <- arena@specs[[arena@orgdat[j,'type']]]
+      switch(class(org),
+             "Bac"= {arena <- simBac(org, arena, j)},
+             stop("Simulation function for Organism object not defined yet."))
     })) #background time: 0
     
-    if(length(arena@orglist)==0){
+    if(nrow(arena@orgdat)==0){
       print("All organisms died!")
       break
     } 
-    cat("iter:", i, "bacs:",length(arena@orglist),"\n\n")
+    cat("iter:", i, "bacs:",nrow(arena@orgdat),"\n\n")
   }
   return(simlist)
 })
@@ -202,6 +201,6 @@ setMethod("simulate", "Arena", function(object, time){
 removeMethod(show, "Arena")
 setMethod(show, "Arena", function(object){
   print(paste('Arena of size ',object@n,'x',object@m,' with ',sum(object@occmat),
-              ' organisms of ',length(unique(unlist(lapply(object@orglist,function(x){return(x@type)})))),' species.',sep=''))
+              ' organisms of ',length(object@specs),' species.',sep=''))
 })
 

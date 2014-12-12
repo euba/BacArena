@@ -9,9 +9,9 @@
 setClass("Substance",
          #contains="Grid",
          representation(
-           smax     = "numeric",  # substrate start concentration
-           diffmat  = "matrix",   # matrix containing concentrations
-           name  = "character"   # String describing object
+           smax = "numeric",  # substrate start concentration
+           diffmat = "Matrix",   # matrix containing concentrations -> sparse Matrix
+           name = "character"   # String describing object
            #diffconst= "numeric",  # diffusion constant
          )
 )
@@ -23,7 +23,7 @@ setClass("Substance",
 
 Substance <- function(n, m, smax, diffmat={}, name, ...){
   if(length(diffmat)==0){
-    diffmat = matrix(smax, nrow=n, ncol=m)
+    diffmat = Matrix(smax, nrow=n, ncol=m, sparse=T)
   }
   new("Substance", smax=smax, diffmat=diffmat, name=name, ...)
 }
