@@ -80,19 +80,21 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
 
 #function to account for the consumption and production of Substances
 
-setGeneric("consume", function(object, subs, fname=names(object@lbnd), x, y){standardGeneric("consume")})
-setMethod("consume", "Organism", function(object, subs, fname=names(object@lbnd), x, y){
-  if(object@fbasol$obj>=0){
+setGeneric("consume", function(object, subs, fname=names(object@lbnd), x, y, cutoff=1e-6){standardGeneric("consume")})
+setMethod("consume", "Organism", function(object, subs, fname=names(object@lbnd), x, y, cutoff=1e-6){
+  if(object@fbasol$obj>=cutoff){
     med = intersect(names(subs), fname)
-    subs = subs[med]
     flux = object@fbasol$fluxes[med]
-    #names(flux) = med
-    subs = lapply(subs, function(sub,xcoord,ycoord,flux){
-      sub@diffmat[xcoord,ycoord]<-sub@diffmat[xcoord,ycoord]+flux[sub@name]
-      return(sub)
-    },xcoord=x,ycoord=y,flux=flux)
-    #sub@diffmat[object@x, object@y]  <- sub@diffmat[object@x,object@y] + object@fbasol$fluxes[which(react_id(object@model) == sub@name)]
-    #return(sub)
+    flux = flux[-which(abs(flux)<=cutoff)]
+    if(length(flux)==0){
+      med = names(flux)
+      subsel = subs[med]
+      subsel = lapply(subsel, function(sub,xcoord,ycoord,flux){
+        sub@diffmat[xcoord,ycoord]<-sub@diffmat[xcoord,ycoord]+flux[sub@name]
+        return(sub)
+      },xcoord=x,ycoord=y,flux=flux)
+      subs[med] = subsel
+    }
   }
   return(subs)
 })

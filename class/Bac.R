@@ -132,21 +132,13 @@ setMethod("move", "Bac", function(object, population, j){
 #function for one iteration for Bac class
 
 setGeneric("simBac", function(object, arena, j){standardGeneric("simBac")})
-setMethod("simBac", "Bac", function(object, arena, j){
-  #arena@occmat <- as.matrix(arena@occmat)
-  #print('move')
-  move(object, arena, j) #time: 1
-  #print('medcon')
+setMethod("simBac", "Bac", function(object, arena, j){#time relative to 50x50
+  move(object, arena, j) #time: 1.1
   medcon = getmed(arena, arena@orgdat[j,'x'], arena@orgdat[j,'y']) #time: 0
-  #print('constrain')
-  constrain(object, names(medcon), lb=-medcon) #time: 3
-  #print('optimizeLP')
-  optimizeLP(object) #time: 5
-  #print('consume')
-  arena@media = consume(object, arena@media, fname=object@medium, arena@orgdat[j,'x'], arena@orgdat[j,'y']) #time problems!
-  #print('growth')
-  growth(object, arena, j) #time: 7 -> Problem: overwriting of orglist (is too big)
-  #arena@occmat <- Matrix(arena@occmat, sparse=T)
+  constrain(object, names(medcon), lb=-medcon) #time: 5
+  optimizeLP(object) #time: 2
+  arena@media = consume(object, arena@media, fname=object@medium, arena@orgdat[j,'x'], arena@orgdat[j,'y']) #time: just first iteration!
+  growth(object, arena, j) #time: 1
   return(arena)
 })
 

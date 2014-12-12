@@ -143,8 +143,8 @@ setMethod("getmed", "Arena", function(object, xp, yp){
 
 #function for checking if a phenotype is emergent
 
-setGeneric("checkPhen", function(object, org){standardGeneric("checkPhen")})
-setMethod("checkPhen", "Arena", function(object, org){
+setGeneric("checkPhen", function(object, org, ret=T){standardGeneric("checkPhen")})
+setMethod("checkPhen", "Arena", function(object, org, ret=T){
   ptype <- 0
   phenotypes <- object@phenotypes[[org@type]]
   phenspec <- getPhenotype(org)
@@ -160,7 +160,9 @@ setMethod("checkPhen", "Arena", function(object, org){
     phenotypes[[ptype]] <- phenspec
     eval.parent(substitute(object@phenotypes[[org@type]] <- phenotypes))
   }
-  return(ptype)
+  if(ret){
+    return(ptype)
+  }
 })
 
 #main function for simulation of the whole arena
