@@ -134,8 +134,7 @@ setMethod("move", "Bac", function(object, population, j){
 
 setGeneric("simBac", function(object, arena, j, sublb){standardGeneric("simBac")})
 setMethod("simBac", "Bac", function(object, arena, j, sublb){#time relative to 50x50, 2500 bacs
-  #medcon = getmed(arena, fname=object@medium, arena@orgdat[j,'x'], arena@orgdat[j,'y']) #time: 200 sec
-  constrain(object, object@medium, lb=-as.vector(sublb[j,object@medium])) #time -> 0 sec
+  constrain(object, object@medium, lb=-sublb[j,object@medium]) #time -> 0 sec
   optimizeLP(object) #time: 2
   arena@media = consume(object, arena@media, fname=object@medium, arena@orgdat[j,'x'], arena@orgdat[j,'y']) #time: just first iteration! #2 sec
   dead <- growth(object, arena, j) #time: 2 sec

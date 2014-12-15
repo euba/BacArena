@@ -164,16 +164,18 @@ setMethod("simulate", "Arena", function(object, time, reduce=F){
       simlist[[i]]@mediac <- character()
       simlist[[i]]@occmat <- Matrix()
     }
-    sublb <- data.frame()
-    for(j in seq_along(arena@media)){
-      submat <- as.matrix(arena@media[[j]]@diffmat)
-      switch(arena@media[[j]]@difunc,
-             "cpp"={diffuseNaiveCpp(submat, donut=FALSE)},
-             "r"={diffuseNaiveR(arena@media[[j]])},
-             stop("Simulation function for Organism object not defined yet."))  
-      arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
-      sublb[1:nrow(arena@orgdat),arena@media[[j]]@name] <- diag(submat[arena@orgdat$x,arena@orgdat$y])
-    }
+    sublb <- matrix(0,nrow=nrow(arena@orgdat),ncol=length(arena@mediac))
+     for(j in seq_along(arena@media)){
+       submat <- as.matrix(arena@media[[j]]@diffmat)
+       switch(arena@media[[j]]@difunc,
+              "cpp"={diffuseNaiveCpp(submat, donut=FALSE)},
+              "r"={diffuseNaiveR(arena@media[[j]])},
+              stop("Simulation function for Organism object not defined yet."))  
+       arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
+       #sublb[1:nrow(arena@orgdat),arena@media[[j]]@name] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+       sublb[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+     }
+    colnames(sublb) <- arena@mediac
     rm("submat")
     j = 0
     orgl <- arena@orgdat

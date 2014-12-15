@@ -27,10 +27,10 @@ org = Organism(model=specs) #69352 bytes -> 17576 bytes
 bac = Bac(model=specs, deathrate=0.1, duplirate=1, growthlimit=2, growtype="exponential") #69352 bytes -> 17576 bytes
 baco = Bac(model=model_o, deathrate=0.1, duplirate=1, growthlimit=2, growtype="exponential") #69352 bytes -> 17576 bytes
 
-arena = Arena(n=50, m=50)
+arena = Arena(n=100, m=100)
 object.size(arena)
 #object.size(arena@occmat)
-addOrg(arena, Bac(specs, deathrate=0.1, duplirate=1.5, growthlimit=0.1, growtype='exponential'), amount=2500)
+addOrg(arena, Bac(specs, deathrate=0.1, duplirate=1.5, growthlimit=0.1, growtype='exponential'), amount=100*100)
 object.size(arena)
 #object.size(arena@occmat)
 #object.size(as.matrix(arena@occmat))
@@ -38,10 +38,10 @@ addSubs(arena, smax=20)#, mediac=names(arena@phenotypes[[1]][[1]]))
 object.size(arena)
 format(object.size(arena), units='Mb')
 
-print(system.time(simlist <- simulate(arena, time=1, reduce=T)))
+print(system.time(simlist <- simulate(arena, time=3, reduce=T)))
 format(object.size(simlist), units='Mb')
 
-print(system.time(for(i in 1:2500){optimizeLP(bac)}))
+print(system.time(for(i in 1:10000){optimizeLP(bac)}))
 format(object.size(simlist[[1]]), units='Mb')
 
 bac <- Bac(specs, deathrate=0.2, duplirate=2, growthlimit=0.1, growtype='exponential')

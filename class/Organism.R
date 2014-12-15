@@ -61,7 +61,7 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_",
 
 setGeneric("constrain", function(object, reacts, lb){standardGeneric("constrain")})
 setMethod("constrain", "Organism", function(object, reacts, lb){
-  eval.parent(substitute(object@lbnd[reacts] <- as.numeric(lb))) #(pseudo) call by reference implementation
+  eval.parent(substitute(object@lbnd[reacts] <- lb)) #(pseudo) call by reference implementation
 })
 
 #function for computing the linear programming according to the model structure -> this can be changed for comp. speed (warmstart)
