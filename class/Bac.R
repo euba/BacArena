@@ -90,7 +90,7 @@ setMethod("growth", "Bac", function(object, population, j){
          "linear"= {popvec$growth <- growLin(object, popvec$growth)},
          "exponential"= {popvec$growth <- growLin(object, popvec$growth)},
          stop("Growth type must be either linear or exponential"))
-
+  dead <- F
   if(popvec$growth > object@duplirate){
     hood <- emptyHood(object, population@occmat, popvec$x, popvec$y)
     if(length(hood) != 0){
@@ -104,13 +104,14 @@ setMethod("growth", "Bac", function(object, population, j){
       eval.parent(substitute(population@occmat[doughter$x,doughter$y] <- as.numeric(doughter$type)))
     }
   }
-  
   else if(popvec$growth < object@growthlimit){
     #print("bac dies")
     eval.parent(substitute(population@occmat[popvec$x, popvec$y] <- 0))
     neworgdat <- neworgdat[-j,]
+    dead <- T
   }
   eval.parent(substitute(population@orgdat <- neworgdat))
+  return(dead)
 })
 
 # function for random movement
@@ -131,15 +132,17 @@ setMethod("move", "Bac", function(object, population, j){
 
 #function for one iteration for Bac class
 
-setGeneric("simBac", function(object, arena, j){standardGeneric("simBac")})
-setMethod("simBac", "Bac", function(object, arena, j){#time relative to 50x50
-  move(object, arena, j) #time: 1.1
-  medcon = getmed(arena, arena@orgdat[j,'x'], arena@orgdat[j,'y']) #time: 0
-  constrain(object, names(medcon), lb=-medcon) #time: 5
+setGeneric("simBac", function(object, arena, j, sublb){standardGeneric("simBac")})
+setMethod("simBac", "Bac", function(object, arena, j, sublb){#time relative to 50x50, 2500 bacs
+  #medcon = getmed(arena, fname=object@medium, arena@orgdat[j,'x'], arena@orgdat[j,'y']) #time: 200 sec
+  constrain(object, object@medium, lb=-as.vector(sublb[j,object@medium])) #time -> 0 sec
   optimizeLP(object) #time: 2
-  arena@media = consume(object, arena@media, fname=object@medium, arena@orgdat[j,'x'], arena@orgdat[j,'y']) #time: just first iteration!
-  growth(object, arena, j) #time: 1
-  arena@orgdat[j,'phenotype']=as.integer(checkPhen(arena, object))
+  arena@media = consume(object, arena@media, fname=object@medium, arena@orgdat[j,'x'], arena@orgdat[j,'y']) #time: just first iteration! #2 sec
+  dead <- growth(object, arena, j) #time: 2 sec
+  arena@orgdat[j,'phenotype']=as.integer(checkPhen(arena, object)) #time: 2sec
+  if(!dead){
+    move(object, arena, j) #time: 1.1
+  }
   return(arena)
 })
 

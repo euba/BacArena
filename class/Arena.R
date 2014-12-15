@@ -24,24 +24,6 @@ setClass("Arena",
 ########################################################################################################
 
 Arena <- function(n, m){
-  
-  # load libraries and other R files to have everything in place
-  #setwd("~/BacArena")
-  library(snow) # parallel computing
-  library(Rcpp)
-  library(inline)
-  library(sybil)
-  #SYBIL_SETTINGS("SOLVER", "glpkAPI")
-  SYBIL_SETTINGS("SOLVER", "clpAPI")
-  source(file="cpp_source.R")
-  source(file="class/class_baggage.R")
-  #source(file="class/Arena.R")
-  source(file="class/Substance.R")
-  source(file="class/Bac.R")
-  source(file="class/Organism.R")
-  #source(file="class/Population.R")
-  Rcpp::sourceCpp("diff.cpp")
-  
   new("Arena", n=n, m=m, orgdat=data.frame(), specs=list(), media=list(), mediac=character(),
       phenotypes=list(), occmat=Matrix(as.integer(0), nrow=n, ncol=m, sparse=T))
 }
@@ -136,10 +118,11 @@ setMethod("changeSub", "Arena", function(object, subname, value){
 
 #function for getting a vector of media concentrations for a specific position
 
-setGeneric("getmed", function(object, xp, yp){standardGeneric("getmed")})
-setMethod("getmed", "Arena", function(object, xp, yp){
-  return(unlist(lapply(object@media, function(x, xp, yp){return(x@diffmat[xp,yp])}, xp=xp, yp=yp)))
-})
+#setGeneric("getmed", function(object, diffmat, sublb, subname){standardGeneric("getmed")})
+#setMethod("getmed", "Arena", function(object, diffmat, sublb, subname){
+#  sublb[,subname] <- diag(diffmat[object@orgdat$x,object@orgdat$y])
+#  return(sublb)
+#})
 
 #function for checking if a phenotype is emergent
 
@@ -181,21 +164,26 @@ setMethod("simulate", "Arena", function(object, time, reduce=F){
       simlist[[i]]@mediac <- character()
       simlist[[i]]@occmat <- Matrix()
     }
+    sublb <- data.frame()
     for(j in seq_along(arena@media)){
-      #diffuseNaiveR(arena@media[[j]])
       submat <- as.matrix(arena@media[[j]]@diffmat)
-      diffuseNaiveCpp(submat, donut=FALSE)
+      switch(arena@media[[j]]@difunc,
+             "cpp"={diffuseNaiveCpp(submat, donut=FALSE)},
+             "r"={diffuseNaiveR(arena@media[[j]])},
+             stop("Simulation function for Organism object not defined yet."))  
       arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
+      sublb[1:nrow(arena@orgdat),arena@media[[j]]@name] <- diag(submat[arena@orgdat$x,arena@orgdat$y])
     }
+    rm("submat")
     j = 0
     orgl <- arena@orgdat
-    print(system.time(while(j+1 <= nrow(orgl) && j+1 <= nrow(arena@orgdat)){ #time: 11.2
+    while(j+1 <= nrow(orgl) && j+1 <= nrow(arena@orgdat)){ #time: 11.2
       j <- j+1
       org <- arena@specs[[arena@orgdat[j,'type']]]
       switch(class(org),
-             "Bac"= {arena <- simBac(org, arena, j)},
+             "Bac"= {arena <- simBac(org, arena, j, sublb)},
              stop("Simulation function for Organism object not defined yet."))
-    })) #background time: 0
+    } #background time: 0
     
     if(nrow(arena@orgdat)==0){
       print("All organisms died!")

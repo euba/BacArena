@@ -1,3 +1,20 @@
+# load libraries and other R files to have everything in place
+#setwd("~/BacArena")
+library(snow) # parallel computing
+library(Rcpp)
+library(inline)
+library(sybil)
+#SYBIL_SETTINGS("SOLVER", "glpkAPI")
+SYBIL_SETTINGS("SOLVER", "clpAPI")
+source(file="cpp_source.R")
+source(file="class/class_baggage.R")
+#source(file="class/Arena.R")
+source(file="class/Substance.R")
+source(file="class/Bac.R")
+source(file="class/Organism.R")
+#source(file="class/Population.R")
+Rcpp::sourceCpp("diff.cpp")
+
 setwd("C:/Users/eugen.bauer/Documents/GitHub/BacArena/") #have to update orgn after deletion of bacteria?
 source(file="class/Arena.R")
 #load("/home/eugen/specsm.RData")
@@ -10,10 +27,10 @@ org = Organism(model=specs) #69352 bytes -> 17576 bytes
 bac = Bac(model=specs, deathrate=0.1, duplirate=1, growthlimit=2, growtype="exponential") #69352 bytes -> 17576 bytes
 baco = Bac(model=model_o, deathrate=0.1, duplirate=1, growthlimit=2, growtype="exponential") #69352 bytes -> 17576 bytes
 
-arena = Arena(n=100, m=100)
+arena = Arena(n=50, m=50)
 object.size(arena)
 #object.size(arena@occmat)
-addOrg(arena, Bac(specs, deathrate=0.1, duplirate=1.5, growthlimit=0.1, growtype='exponential'), amount=100)
+addOrg(arena, Bac(specs, deathrate=0.1, duplirate=1.5, growthlimit=0.1, growtype='exponential'), amount=2500)
 object.size(arena)
 #object.size(arena@occmat)
 #object.size(as.matrix(arena@occmat))
@@ -21,10 +38,11 @@ addSubs(arena, smax=20)#, mediac=names(arena@phenotypes[[1]][[1]]))
 object.size(arena)
 format(object.size(arena), units='Mb')
 
-simlist <- simulate(arena, time=3, reduce=T)
+print(system.time(simlist <- simulate(arena, time=1, reduce=T)))
+format(object.size(simlist), units='Mb')
+
 print(system.time(for(i in 1:2500){optimizeLP(bac)}))
 format(object.size(simlist[[1]]), units='Mb')
-format(object.size(simlist), units='Mb')
 
 bac <- Bac(specs, deathrate=0.2, duplirate=2, growthlimit=0.1, growtype='exponential')
 org = Organism(model=specs)
