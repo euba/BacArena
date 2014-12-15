@@ -19,18 +19,40 @@ setwd("C:/Users/eugen.bauer/Documents/GitHub/BacArena/") #have to update orgn af
 source(file="class/Arena.R")
 #load("/home/eugen/specsm.RData")
 
-load("data/Bcoli_model.R")
-specs = model
-model_o = changeBounds(model,react='EX_o2(e)',lb=0)
+load("data/ecore_model.R")
+ecore = model
+load("data/clos_model.R")
+clos = model
+load("data/barkeri_model.R")
+meth = model
 
-org = Organism(model=specs) #69352 bytes -> 17576 bytes
-bac = Bac(model=specs, deathrate=0.1, duplirate=1, growthlimit=2, growtype="exponential") #69352 bytes -> 17576 bytes
-baco = Bac(model=model_o, deathrate=0.1, duplirate=1, growthlimit=2, growtype="exponential") #69352 bytes -> 17576 bytes
+bacm = Bac(model=meth, deathrate=0.3, duplirate=1.5, growthlimit=0.05, growtype="exponential")
+bacc = Bac(model=clos, deathrate=0.3, duplirate=1.5, growthlimit=0.05, growtype="exponential", ex="ex_")
+bace = Bac(model=ecore, deathrate=0.3, duplirate=1.5, growthlimit=0.05, growtype="exponential")
 
 arena = Arena(n=100, m=100)
-object.size(arena)
-#object.size(arena@occmat)
-addOrg(arena, Bac(specs, deathrate=0.1, duplirate=1.5, growthlimit=0.1, growtype='exponential'), amount=100*100)
+#addOrg(arena, bacm, amount=1, x=25, y=25)
+#addOrg(arena, bacc, amount=1, x=24, y=25)
+addOrg(arena, bace, amount=1)
+addSubs(arena, smax=50)
+format(object.size(arena), units='Mb')
+
+simlist <- simulate(arena, time=100, reduce=F)
+
+format(object.size(simlist), units='Mb')
+
+
+
+
+
+
+
+
+
+
+
+
+
 object.size(arena)
 #object.size(arena@occmat)
 #object.size(as.matrix(arena@occmat))
@@ -38,7 +60,7 @@ addSubs(arena, smax=20)#, mediac=names(arena@phenotypes[[1]][[1]]))
 object.size(arena)
 format(object.size(arena), units='Mb')
 
-print(system.time(simlist <- simulate(arena, time=3, reduce=T)))
+print(system.time(simlist <- simulate(arena, time=1, reduce=T)))
 format(object.size(simlist), units='Mb')
 
 print(system.time(for(i in 1:10000){optimizeLP(bac)}))

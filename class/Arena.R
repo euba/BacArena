@@ -106,6 +106,11 @@ setMethod("addSubs", "Arena", function(object, smax, mediac=object@mediac){
     
     eval.parent(substitute(object@media <- c(object@media,newmedia)))
   }
+  newspecs <- lapply(object@specs, function(x,mediac){
+    x@medium = intersect(x@medium, mediac)
+    return(x)
+  }, mediac=mediac)
+  eval.parent(substitute(object@specs <- newspecs))
 })
 
 
@@ -172,26 +177,25 @@ setMethod("simulate", "Arena", function(object, time, reduce=F){
               "r"={diffuseNaiveR(arena@media[[j]])},
               stop("Simulation function for Organism object not defined yet."))  
        arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
-       #sublb[1:nrow(arena@orgdat),arena@media[[j]]@name] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
        sublb[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
      }
     colnames(sublb) <- arena@mediac
     rm("submat")
     j = 0
     orgl <- arena@orgdat
-    while(j+1 <= nrow(orgl) && j+1 <= nrow(arena@orgdat)){ #time: 11.2
+    while(j+1 <= nrow(orgl) && j+1 <= nrow(arena@orgdat)){
       j <- j+1
       org <- arena@specs[[arena@orgdat[j,'type']]]
       switch(class(org),
              "Bac"= {arena <- simBac(org, arena, j, sublb)},
              stop("Simulation function for Organism object not defined yet."))
-    } #background time: 0
+    }
     
     if(nrow(arena@orgdat)==0){
       print("All organisms died!")
       break
     } 
-    cat("iter:", i, "bacs:",nrow(arena@orgdat),"\n\n")
+    cat("iter:", i, "bacs:",nrow(arena@orgdat),"\n")
   }
   return(simlist)
 })

@@ -133,14 +133,14 @@ setMethod("move", "Bac", function(object, population, j){
 #function for one iteration for Bac class
 
 setGeneric("simBac", function(object, arena, j, sublb){standardGeneric("simBac")})
-setMethod("simBac", "Bac", function(object, arena, j, sublb){#time relative to 50x50, 2500 bacs
-  constrain(object, object@medium, lb=-sublb[j,object@medium]) #time -> 0 sec
-  optimizeLP(object) #time: 2
-  arena@media = consume(object, arena@media, fname=object@medium, arena@orgdat[j,'x'], arena@orgdat[j,'y']) #time: just first iteration! #2 sec
-  dead <- growth(object, arena, j) #time: 2 sec
-  arena@orgdat[j,'phenotype']=as.integer(checkPhen(arena, object)) #time: 2sec
+setMethod("simBac", "Bac", function(object, arena, j, sublb){
+  constrain(object, object@medium, lb=-sublb[j, object@medium])
+  optimizeLP(object)
+  arena@media = consume(object, arena@media, fname=object@medium, arena@orgdat[j,'x'], arena@orgdat[j,'y'])
+  dead <- growth(object, arena, j)
+  arena@orgdat[j,'phenotype']=as.integer(checkPhen(arena, object))
   if(!dead){
-    move(object, arena, j) #time: 1.1
+    move(object, arena, j)
   }
   return(arena)
 })
