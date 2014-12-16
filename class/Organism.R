@@ -80,23 +80,30 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
 
 #function to account for the consumption and production of Substances
 
-setGeneric("consume", function(object, subs, fname=names(object@lbnd), x, y, cutoff=1e-6){standardGeneric("consume")})
-setMethod("consume", "Organism", function(object, subs, fname=names(object@lbnd), x, y, cutoff=1e-6){
+# setGeneric("consume", function(object, subs, fname=names(object@lbnd), x, y, cutoff=1e-6){standardGeneric("consume")})
+# setMethod("consume", "Organism", function(object, subs, fname=names(object@lbnd), x, y, cutoff=1e-6){
+#   if(object@fbasol$obj>=cutoff){
+#     med = intersect(names(subs), fname)
+#     flux = object@fbasol$fluxes[med]
+#     flux = na.omit(ifelse(abs(flux)<=cutoff,NA,flux))
+#     med = names(flux)
+#     subsel = subs[med]
+#     subsel = lapply(subsel, function(sub,xcoord,ycoord,flux){
+#       sub@diffmat[xcoord,ycoord]<-as.matrix(sub@diffmat)[xcoord,ycoord]+flux[sub@name]
+#       return(sub)
+#     },xcoord=x,ycoord=y,flux=flux)
+#     subs[med] = subsel
+#   }
+#   return(subs)
+# })
+setGeneric("consume", function(object, sublb, cutoff=1e-6){standardGeneric("consume")})
+setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6){
   if(object@fbasol$obj>=cutoff){
-    med = intersect(names(subs), fname)
-    flux = object@fbasol$fluxes[med]
-    flux = flux[-which(abs(flux)<=cutoff)]
-    if(length(flux)==0){
-      med = names(flux)
-      subsel = subs[med]
-      subsel = lapply(subsel, function(sub,xcoord,ycoord,flux){
-        sub@diffmat[xcoord,ycoord]<-sub@diffmat[xcoord,ycoord]+flux[sub@name]
-        return(sub)
-      },xcoord=x,ycoord=y,flux=flux)
-      subs[med] = subsel
-    }
+    flux = object@fbasol$fluxes[object@medium]
+    flux = na.omit(ifelse(abs(flux)<=cutoff,NA,flux))
+    sublb[names(flux)] = sublb[names(flux)] + flux
   }
-  return(subs)
+  return(sublb)
 })
 
 #function to extract the phenotype (what is consumed and what produced from the medium)

@@ -19,6 +19,8 @@ setwd("C:/Users/eugen.bauer/Documents/GitHub/BacArena/") #have to update orgn af
 source(file="class/Arena.R")
 #load("/home/eugen/specsm.RData")
 
+load("data/Bcoli_model.R")
+ecoli = model
 load("data/ecore_model.R")
 ecore = model
 load("data/clos_model.R")
@@ -28,22 +30,27 @@ meth = model
 
 bacm = Bac(model=meth, deathrate=0.3, duplirate=1.5, growthlimit=0.05, growtype="exponential")
 bacc = Bac(model=clos, deathrate=0.3, duplirate=1.5, growthlimit=0.05, growtype="exponential", ex="ex_")
-bace = Bac(model=ecore, deathrate=0.3, duplirate=1.5, growthlimit=0.05, growtype="exponential")
+bace = Bac(model=ecore, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="exponential")
+#bace = Bac(model=ecoli, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="exponential")
 
-arena = Arena(n=100, m=100)
+arena = Arena(n=20, m=20)
 #addOrg(arena, bacm, amount=1, x=25, y=25)
 #addOrg(arena, bacc, amount=1, x=24, y=25)
-addOrg(arena, bace, amount=1)
-addSubs(arena, smax=50)
+addOrg(arena, bace, amount=10)
+addSubs(arena, smax=0)
 format(object.size(arena), units='Mb')
 
-simlist <- simulate(arena, time=100, reduce=F)
+print(system.time(simlist <- simulate(arena, time=20, reduce=F)))
 
 format(object.size(simlist), units='Mb')
 
 
 
-
+for(i in seq_along(simlist)){
+  #popana <- as.matrix(simlist[[i]]@occmat)
+  popana <- as.matrix(simlist[[i]]@media[['EX_for(e)']]@diffmat)
+  image(popana)
+}
 
 
 
@@ -75,7 +82,7 @@ object.size(arena@media[[1]]@diffmat)
 object.size(Matrix(arena@media[[1]]@diffmat, sparse = TRUE))
 
 system.time(
-addBac(arena, baclist=list(specs), amount=10*10)
+addBac(arena, baclist=list(specs), amount=100*100)
 )
 format(object.size(arena),units='Mb')
 object.size(arena)
@@ -86,7 +93,7 @@ object.size(arena)
 #object.size(arena@orglist[[1]]@lbnd)
 addSubs(arena, smax=20)
 arena@orglist[[1]]
-simlist <- simulate(arena, time=5)
+simlist <- simulate(arena, time=2)
 
 #3.569.236.768 bytes
 #2177396768 bytes
@@ -120,16 +127,12 @@ simlist <- simulate(arena, time=5)
 
 lapply(popana@media, function(x){print(x@name)})
 
-growthc <- data.frame(time=seq_along(simlist))
-snames <- unique(unlist(lapply(simlist[[1]]@orglist,function(x){return(x@type)})))
+#growthc <- data.frame(time=seq_along(simlist))
+#snames <- unique(unlist(lapply(simlist[[1]]@orglist,function(x){return(x@type)})))
 for(i in seq_along(simlist)){
   popana <- as.matrix(simlist[[i]]@occmat)
+  #popana <- as.matrix(simlist[[i]]@media[['EX_for(e)']]@diffmat)
   image(popana)
-  #image(popana@media[[7]]@diffmat)
-  #popocc <- table(popana@occmat)[-1]
-  #for(j in seq_along(popocc)){
-  #  growthc[i,snames[j]] <- popocc[j]
-  #}
 }
 
 A <- as(regMat, "sparseMatrix")       # see also `vignette("Intro2Matrix")`

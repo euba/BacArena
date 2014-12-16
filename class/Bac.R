@@ -72,7 +72,7 @@ setMethod("emptyHood", "Bac", function(object, occmat, x, y){
   free <- which(hood[[1]]==0, arr.ind = T)
   if(length(free) == 0) return(NULL)
   else {
-    abs <- free[sample(length(free[,1]),1),]
+    abs <- free[sample(nrow(free),1),]
     abs[1] <- abs[1] - hood[[2]][1] + x
     abs[2] <- abs[2] - hood[[2]][2] + y
     return(abs)
@@ -134,14 +134,18 @@ setMethod("move", "Bac", function(object, population, j){
 
 setGeneric("simBac", function(object, arena, j, sublb){standardGeneric("simBac")})
 setMethod("simBac", "Bac", function(object, arena, j, sublb){
-  constrain(object, object@medium, lb=-sublb[j, object@medium])
+  #print(-sublb[j,object@medium])
+  constrain(object, object@medium, lb=-sublb[j,object@medium])
   optimizeLP(object)
-  arena@media = consume(object, arena@media, fname=object@medium, arena@orgdat[j,'x'], arena@orgdat[j,'y'])
+  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,])))
+  #print(sublb[j,])
   dead <- growth(object, arena, j)
-  arena@orgdat[j,'phenotype']=as.integer(checkPhen(arena, object))
+  arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
   if(!dead){
     move(object, arena, j)
   }
+  #eval.parent(substitute(arena <- arena))
+  #eval.parent(substitute(sublb[j,] <- sublb[j,]))
   return(arena)
 })
 

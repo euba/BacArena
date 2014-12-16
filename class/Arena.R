@@ -162,40 +162,56 @@ setGeneric("simulate", function(object, time, reduce=F){standardGeneric("simulat
 setMethod("simulate", "Arena", function(object, time, reduce=F){
   simlist <- list()
   arena <- object
+  simlist[[1]] <- arena
+  
+  sublb <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
+  for(j in seq_along(arena@media)){
+    submat <- as.matrix(arena@media[[j]]@diffmat)
+    sublb[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+  }
+  sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb)
+  colnames(sublb) <- c('x','y',arena@mediac)
+  rm("submat")
+  
   for(i in 1:time){
-    simlist[[i]] <- arena
-    if(reduce){ #drop some items to reduce the overall size of simlist
-      simlist[[i]]@specs <- list()
-      simlist[[i]]@mediac <- character()
-      simlist[[i]]@occmat <- Matrix()
-    }
-    sublb <- matrix(0,nrow=nrow(arena@orgdat),ncol=length(arena@mediac))
-     for(j in seq_along(arena@media)){
-       submat <- as.matrix(arena@media[[j]]@diffmat)
-       switch(arena@media[[j]]@difunc,
-              "cpp"={diffuseNaiveCpp(submat, donut=FALSE)},
-              "r"={diffuseNaiveR(arena@media[[j]])},
-              stop("Simulation function for Organism object not defined yet."))  
-       arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
-       sublb[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
-     }
-    colnames(sublb) <- arena@mediac
-    rm("submat")
+    cat("iter:", i, "bacs:",nrow(arena@orgdat),"\n")
     j = 0
     orgl <- arena@orgdat
     while(j+1 <= nrow(orgl) && j+1 <= nrow(arena@orgdat)){
       j <- j+1
       org <- arena@specs[[arena@orgdat[j,'type']]]
       switch(class(org),
-             "Bac"= {arena <- simBac(org, arena, j, sublb)},
-             stop("Simulation function for Organism object not defined yet."))
+             "Bac"= {arena = simBac(org, arena, j, sublb)},
+             NULL=break,
+             stop("Simulation function for Organism object not defined yet.")) 
     }
-    
-    if(nrow(arena@orgdat)==0){
+    if(sum(arena@occmat)==0){
       print("All organisms died!")
       break
-    } 
-    cat("iter:", i, "bacs:",nrow(arena@orgdat),"\n")
+    }
+    sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
+    sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
+    for(j in seq_along(arena@media)){
+      submat <- as.matrix(arena@media[[j]]@diffmat)
+      apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
+      switch(arena@media[[j]]@difunc,
+             "cpp"={diffuseNaiveCpp(submat, donut=FALSE)},
+             "r"={diffuseNaiveR(arena@media[[j]])},
+             stop("Simulation function for Organism object not defined yet."))  
+      arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
+      sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+    }
+    sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
+    colnames(sublb) <- c('x','y',arena@mediac)
+    rm("sublb_tmp")
+    rm("submat")
+    
+    simlist[[i+1]] <- arena
+    if(reduce){ #drop some items to reduce the overall size of simlist
+      simlist[[i+1]]@specs <- lapply(simlist[[i]]@specs, function(x){return(NULL)})
+      simlist[[i+1]]@mediac <- character()
+      simlist[[i+1]]@occmat <- Matrix()
+    }
   }
   return(simlist)
 })
