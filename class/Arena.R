@@ -131,26 +131,28 @@ setMethod("changeSub", "Arena", function(object, subname, value){
 
 #function for checking if a phenotype is emergent
 
-setGeneric("checkPhen", function(object, org){standardGeneric("checkPhen")})
-setMethod("checkPhen", "Arena", function(object, org){
+setGeneric("checkPhen", function(object, org, cutoff=1e-6){standardGeneric("checkPhen")})
+setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
   ptype <- 0
-  phenotypes <- object@phenotypes[[org@type]]
-  phenspec <- getPhenotype(org)
-  if(length(phenspec) != 0){
-    for(i in 1:length(phenotypes)){
-      inlist <- intersect(names(phenotypes[[i]]),names(phenspec))
-      if(sum(phenotypes[[i]][inlist]==phenspec[inlist])==length(inlist)){
-        ptype=i
-        break
+  if(org@fbasol$obj>=cutoff){
+    phenotypes <- object@phenotypes[[org@type]]
+    phenspec <- getPhenotype(org, cutoff=1e-3)
+    if(length(phenspec) != 0){
+      for(i in 1:length(phenotypes)){
+        inlist <- intersect(names(phenotypes[[i]]),names(phenspec))
+        if(sum(phenotypes[[i]][inlist]==phenspec[inlist])==length(inlist)){
+          ptype=i
+          break
+        }
       }
-    }
-    if(ptype==0){
-      ptype = length(phenotypes)+1
-      phenotypes[[ptype]] <- phenspec
-      object2 <- object
-      object2@phenotypes[[org@type]] <- phenotypes
-      eval.parent(substitute(object <- object2)) #has to be like this, otherwise there is a problem with the slot name!
-      #eval.parent(substitute(object@phenotypes[[org@type]] <- phenotypes))
+      if(ptype==0){
+        ptype = length(phenotypes)+1
+        phenotypes[[ptype]] <- phenspec
+        object2 <- object
+        object2@phenotypes[[org@type]] <- phenotypes
+        eval.parent(substitute(object <- object2)) #has to be like this, otherwise there is a problem with the slot name!
+        #eval.parent(substitute(object@phenotypes[[org@type]] <- phenotypes))
+      }
     }
   }
   return(ptype)
@@ -182,12 +184,8 @@ setMethod("simulate", "Arena", function(object, time, reduce=F){
       org <- arena@specs[[arena@orgdat[j,'type']]]
       switch(class(org),
              "Bac"= {arena = simBac(org, arena, j, sublb)},
-             NULL=break,
+             NULL= break,
              stop("Simulation function for Organism object not defined yet.")) 
-    }
-    if(sum(arena@occmat)==0){
-      print("All organisms died!")
-      break
     }
     sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
     sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
@@ -211,6 +209,10 @@ setMethod("simulate", "Arena", function(object, time, reduce=F){
       simlist[[i+1]]@specs <- lapply(simlist[[i]]@specs, function(x){return(NULL)})
       simlist[[i+1]]@mediac <- character()
       simlist[[i+1]]@occmat <- Matrix()
+    }
+    if(sum(arena@occmat)==0){
+      print("All organisms died!")
+      break
     }
   }
   return(simlist)

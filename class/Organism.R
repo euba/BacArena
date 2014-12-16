@@ -101,7 +101,7 @@ setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6){
   if(object@fbasol$obj>=cutoff){
     flux = object@fbasol$fluxes[object@medium]
     flux = na.omit(ifelse(abs(flux)<=cutoff,NA,flux))
-    sublb[names(flux)] = sublb[names(flux)] + flux
+    sublb[names(flux)] = round(sublb[names(flux)]+flux, 6)
   }
   return(sublb)
 })

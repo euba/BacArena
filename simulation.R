@@ -33,22 +33,22 @@ bacc = Bac(model=clos, deathrate=0.3, duplirate=1.5, growthlimit=0.05, growtype=
 bace = Bac(model=ecore, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="exponential")
 #bace = Bac(model=ecoli, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="exponential")
 
-arena = Arena(n=20, m=20)
+arena = Arena(n=200, m=200)
 #addOrg(arena, bacm, amount=1, x=25, y=25)
 #addOrg(arena, bacc, amount=1, x=24, y=25)
 addOrg(arena, bace, amount=10)
-addSubs(arena, smax=0)
+addSubs(arena, smax=20)
 format(object.size(arena), units='Mb')
 
-print(system.time(simlist <- simulate(arena, time=20, reduce=F)))
+print(system.time(simlist <- simulate(arena, time=10, reduce=F)))
 
 format(object.size(simlist), units='Mb')
 
 
 
 for(i in seq_along(simlist)){
-  #popana <- as.matrix(simlist[[i]]@occmat)
-  popana <- as.matrix(simlist[[i]]@media[['EX_for(e)']]@diffmat)
+  popana <- as.matrix(simlist[[i]]@occmat)
+  #popana <- as.matrix(simlist[[i]]@media[['EX_for(e)']]@diffmat)
   image(popana)
 }
 
