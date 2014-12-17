@@ -37,18 +37,16 @@ arena = Arena(n=200, m=200)
 #addOrg(arena, bacm, amount=1, x=25, y=25)
 #addOrg(arena, bacc, amount=1, x=24, y=25)
 addOrg(arena, bace, amount=10)
-addSubs(arena, smax=20)
+addSubs(arena, smax=30)
 format(object.size(arena), units='Mb')
 
-print(system.time(simlist <- simulate(arena, time=10, reduce=F)))
+print(system.time(simlist <- simulate(arena, time=20)))
 
 format(object.size(simlist), units='Mb')
 
-
-
 for(i in seq_along(simlist)){
-  popana <- as.matrix(simlist[[i]]@occmat)
-  #popana <- as.matrix(simlist[[i]]@media[['EX_for(e)']]@diffmat)
+  #popana <- as.matrix(simlist[[i]]@occmat)
+  popana <- as.matrix(simlist[[i]]@media[['EX_for(e)']]@diffmat)
   image(popana)
 }
 
@@ -70,7 +68,7 @@ format(object.size(arena), units='Mb')
 print(system.time(simlist <- simulate(arena, time=1, reduce=T)))
 format(object.size(simlist), units='Mb')
 
-print(system.time(for(i in 1:10000){optimizeLP(bac)}))
+print(system.time(for(i in 1:10000){optimizeLP(bace)}))
 format(object.size(simlist[[1]]), units='Mb')
 
 bac <- Bac(specs, deathrate=0.2, duplirate=2, growthlimit=0.1, growtype='exponential')

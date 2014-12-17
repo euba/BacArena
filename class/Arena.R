@@ -160,8 +160,8 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
 
 #main function for simulation of the whole arena
 
-setGeneric("simulate", function(object, time, reduce=F){standardGeneric("simulate")})
-setMethod("simulate", "Arena", function(object, time, reduce=F){
+setGeneric("simulate", function(object, time){standardGeneric("simulate")})
+setMethod("simulate", "Arena", function(object, time){
   simlist <- list()
   arena <- object
   simlist[[1]] <- arena
@@ -177,19 +177,20 @@ setMethod("simulate", "Arena", function(object, time, reduce=F){
   
   for(i in 1:time){
     cat("iter:", i, "bacs:",nrow(arena@orgdat),"\n")
-    j = 0
-    orgl <- arena@orgdat
-    while(j+1 <= nrow(orgl) && j+1 <= nrow(arena@orgdat)){
-      j <- j+1
+    
+    print(system.time(for(j in 1:nrow(arena@orgdat)){
       org <- arena@specs[[arena@orgdat[j,'type']]]
       switch(class(org),
              "Bac"= {arena = simBac(org, arena, j, sublb)},
-             NULL= break,
              stop("Simulation function for Organism object not defined yet.")) 
-    }
+    }))
+    test <- is.na(arena@orgdat$growth)
+    if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
+    rm("test")
+    
     sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
     sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
-    for(j in seq_along(arena@media)){
+    print(system.time(for(j in seq_along(arena@media)){
       submat <- as.matrix(arena@media[[j]]@diffmat)
       apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
       switch(arena@media[[j]]@difunc,
@@ -198,18 +199,13 @@ setMethod("simulate", "Arena", function(object, time, reduce=F){
              stop("Simulation function for Organism object not defined yet."))  
       arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
       sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
-    }
+    }))
     sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
     colnames(sublb) <- c('x','y',arena@mediac)
     rm("sublb_tmp")
     rm("submat")
     
     simlist[[i+1]] <- arena
-    if(reduce){ #drop some items to reduce the overall size of simlist
-      simlist[[i+1]]@specs <- lapply(simlist[[i]]@specs, function(x){return(NULL)})
-      simlist[[i+1]]@mediac <- character()
-      simlist[[i+1]]@occmat <- Matrix()
-    }
     if(sum(arena@occmat)==0){
       print("All organisms died!")
       break

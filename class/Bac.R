@@ -88,26 +88,27 @@ setMethod("growth", "Bac", function(object, population, j){
   popvec <- neworgdat[j,]
   switch(object@growtype,
          "linear"= {popvec$growth <- growLin(object, popvec$growth)},
-         "exponential"= {popvec$growth <- growLin(object, popvec$growth)},
+         "exponential"= {popvec$growth <- growExp(object, popvec$growth)},
          stop("Growth type must be either linear or exponential"))
   dead <- F
+  neworgdat[j,'growth'] <- popvec$growth
   if(popvec$growth > object@duplirate){
     hood <- emptyHood(object, population@occmat, popvec$x, popvec$y)
     if(length(hood) != 0){
-      doughter <- popvec
-      doughter$growth <- popvec$growth/2
-      doughter$x <- hood[1]
-      doughter$y <- hood[2]
+      daughter <- popvec
+      daughter$growth <- popvec$growth/2
+      daughter$x <- hood[1]
+      daughter$y <- hood[2]
       popvec$growth = popvec$growth/2
-      neworgdat[nrow(neworgdat)+1,] <- doughter
+      neworgdat[nrow(neworgdat)+1,] <- daughter
       neworgdat[j,] <- popvec
-      eval.parent(substitute(population@occmat[doughter$x,doughter$y] <- as.numeric(doughter$type)))
+      eval.parent(substitute(population@occmat[daughter$x,daughter$y] <- as.numeric(daughter$type)))
     }
   }
   else if(popvec$growth < object@growthlimit){
     #print("bac dies")
     eval.parent(substitute(population@occmat[popvec$x, popvec$y] <- 0))
-    neworgdat <- neworgdat[-j,]
+    neworgdat[j,'growth'] <- NA
     dead <- T
   }
   eval.parent(substitute(population@orgdat <- neworgdat))
@@ -134,18 +135,14 @@ setMethod("move", "Bac", function(object, population, j){
 
 setGeneric("simBac", function(object, arena, j, sublb){standardGeneric("simBac")})
 setMethod("simBac", "Bac", function(object, arena, j, sublb){
-  #print(-sublb[j,object@medium])
   constrain(object, object@medium, lb=-sublb[j,object@medium])
   optimizeLP(object)
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,])))
-  #print(sublb[j,])
   dead <- growth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
   if(!dead){
     move(object, arena, j)
   }
-  #eval.parent(substitute(arena <- arena))
-  #eval.parent(substitute(sublb[j,] <- sublb[j,]))
   return(arena)
 })
 
