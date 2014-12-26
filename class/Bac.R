@@ -12,6 +12,7 @@ setClass("Bac",
            #growth="numeric", # growth (biomass) of the individual
            deathrate="numeric", # factor by which growth is reduced
            duplirate="numeric", # grow cut-off for test of duplication
+           speed="numeric", # speed by which bacterium is moving (given by cell ber iteration)
            growthlimit="numeric",
            growtype="character" # functional type for growth (linear or exponential)
          )
@@ -21,8 +22,8 @@ setClass("Bac",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Bac <- function(model, deathrate, duplirate, growthlimit, growtype, ...){
-  new("Bac", Organism(model=model, ...), deathrate=deathrate, duplirate=duplirate,
+Bac <- function(model, deathrate, duplirate, speed=2, growthlimit, growtype, ...){
+  new("Bac", Organism(model=model, ...), speed=speed, deathrate=deathrate, duplirate=duplirate,
       growthlimit=growthlimit, growtype=growtype)
 }
 
@@ -70,9 +71,14 @@ setGeneric("emptyHood", function(object, occmat, x, y){standardGeneric("emptyHoo
 setMethod("emptyHood", "Bac", function(object, occmat, x, y){
   hood <- getHood(object, occmat, x, y)
   free <- which(hood[[1]]==0, arr.ind = T)
-  if(length(free) == 0) return(NULL)
+  if(nrow(free) == 0) return(NULL)
   else {
+    #print(class(free))
+    #print(paste(x,' ',y))
     abs <- free[sample(nrow(free),1),]
+    #abs <- free[sample(1:nrow(free),1),]
+    #abs <- free[round(runif(1,min=1,max=nrow(free)),0),]
+    #abs <- free[1,]
     abs[1] <- abs[1] - hood[[2]][1] + x
     abs[2] <- abs[2] - hood[[2]][2] + y
     return(abs)
@@ -140,8 +146,10 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb){
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,])))
   dead <- growth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
-  if(!dead){
-    move(object, arena, j)
+  if(!dead && object@speed != 0){
+    sapply(1:object@speed,function(x){
+      move(object, arena, j)
+      arena <<- arena})
   }
   return(arena)
 })

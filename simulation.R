@@ -1,11 +1,11 @@
 # load libraries and other R files to have everything in place
-#setwd("~/BacArena")
-library(snow) # parallel computing
+setwd("~/BacArena")
+#library(snow) # parallel computing
 library(Rcpp)
 library(inline)
 library(sybil)
-#SYBIL_SETTINGS("SOLVER", "glpkAPI")
-SYBIL_SETTINGS("SOLVER", "clpAPI")
+SYBIL_SETTINGS("SOLVER", "glpkAPI")
+#SYBIL_SETTINGS("SOLVER", "clpAPI")
 source(file="cpp_source.R")
 source(file="class/class_baggage.R")
 #source(file="class/Arena.R")
@@ -15,7 +15,7 @@ source(file="class/Organism.R")
 #source(file="class/Population.R")
 Rcpp::sourceCpp("diff.cpp")
 
-setwd("C:/Users/eugen.bauer/Documents/GitHub/BacArena/") #have to update orgn after deletion of bacteria?
+#setwd("C:/Users/eugen.bauer/Documents/GitHub/BacArena/") #have to update orgn after deletion of bacteria?
 source(file="class/Arena.R")
 #load("/home/eugen/specsm.RData")
 
@@ -30,23 +30,32 @@ meth = model
 
 bacm = Bac(model=meth, deathrate=0.3, duplirate=1.5, growthlimit=0.05, growtype="exponential")
 bacc = Bac(model=clos, deathrate=0.3, duplirate=1.5, growthlimit=0.05, growtype="exponential", ex="ex_")
-bace = Bac(model=ecore, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="exponential")
+bace = Bac(model=ecore, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="exponential", speed=16)
 #bace = Bac(model=ecoli, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="exponential")
 
-arena = Arena(n=200, m=200)
+arena = Arena(n=100, m=100)
 #addOrg(arena, bacm, amount=1, x=25, y=25)
 #addOrg(arena, bacc, amount=1, x=24, y=25)
-addOrg(arena, bace, amount=10)
+addOrg(arena, bace, amount=1, x=50, y=50)
 addSubs(arena, smax=30)
 format(object.size(arena), units='Mb')
 
 print(system.time(simlist <- simulate(arena, time=20)))
+for(i in seq_along(simlist)){
+  popana <- as.matrix(simlist[[i]]@occmat)
+  #popana <- as.matrix(simlist[[i]]@media[['EX_for(e)']]@diffmat)
+  image(popana)
+}
+
+
+
+simlist[[5]]@phenotypes
 
 format(object.size(simlist), units='Mb')
 
 for(i in seq_along(simlist)){
-  #popana <- as.matrix(simlist[[i]]@occmat)
-  popana <- as.matrix(simlist[[i]]@media[['EX_for(e)']]@diffmat)
+  popana <- as.matrix(simlist[[i]]@occmat)
+  #popana <- as.matrix(simlist[[i]]@media[['EX_for(e)']]@diffmat)
   image(popana)
 }
 

@@ -136,7 +136,7 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
   ptype <- 0
   if(org@fbasol$obj>=cutoff){
     phenotypes <- object@phenotypes[[org@type]]
-    phenspec <- getPhenotype(org, cutoff=1e-3)
+    phenspec <- getPhenotype(org, cutoff=0.1)
     if(length(phenspec) != 0){
       for(i in 1:length(phenotypes)){
         inlist <- intersect(names(phenotypes[[i]]),names(phenspec))
