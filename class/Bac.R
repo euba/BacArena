@@ -12,7 +12,7 @@ setClass("Bac",
            #growth="numeric", # growth (biomass) of the individual
            deathrate="numeric", # factor by which growth is reduced
            duplirate="numeric", # grow cut-off for test of duplication
-           speed="numeric", # speed by which bacterium is moving (given by cell ber iteration)
+           speed="integer", # speed by which bacterium is moving (given by cell per iteration)
            growthlimit="numeric",
            growtype="character" # functional type for growth (linear or exponential)
          )
@@ -23,7 +23,7 @@ setClass("Bac",
 ########################################################################################################
 
 Bac <- function(model, deathrate, duplirate, speed=2, growthlimit, growtype, ...){
-  new("Bac", Organism(model=model, ...), speed=speed, deathrate=deathrate, duplirate=duplirate,
+  new("Bac", Organism(model=model, ...), speed=as.integer(speed), deathrate=deathrate, duplirate=duplirate,
       growthlimit=growthlimit, growtype=growtype)
 }
 

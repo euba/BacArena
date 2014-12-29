@@ -14,8 +14,8 @@ setClass("Arena",
            phenotypes="list", # list of unique phenotypes of the individuals
            mediac="character",
            occmat="Matrix", # occupacy matrix (showing which cells have bacs) -> sparse Matrix
-           n="numeric",  # grid size
-           m="numeric"  # grid size
+           n="integer",  # grid size
+           m="integer"  # grid size
         )
 )
 
@@ -24,7 +24,7 @@ setClass("Arena",
 ########################################################################################################
 
 Arena <- function(n, m){
-  new("Arena", n=n, m=m, orgdat=data.frame(), specs=list(), media=list(), mediac=character(),
+  new("Arena", n=as.integer(n), m=as.integer(m), orgdat=data.frame(), specs=list(), media=list(), mediac=character(),
       phenotypes=list(), occmat=Matrix(as.integer(0), nrow=n, ncol=m, sparse=T))
 }
 
@@ -61,15 +61,15 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
       neworgdat[lastind+i,'growth']=growth
       neworgdat[lastind+i,'type']=as.integer(which(names(newspecs)==spectype))
       neworgdat[lastind+i,'phenotype']=as.integer(ptype)
-      x <- as.numeric(sample(1:n, 1))
-      y <- as.numeric(sample(1:m, 1))
+      x <- as.integer(sample(1:n, 1))
+      y <- as.integer(sample(1:m, 1))
       while(newoccmat[x,y] != 0){
-        x <- as.numeric(sample(1:n, 1))
-        y <- as.numeric(sample(1:m, 1))
+        x <- as.integer(sample(1:n, 1))
+        y <- as.integer(sample(1:m, 1))
       }
       neworgdat[lastind+i,'x']=x
       neworgdat[lastind+i,'y']=y
-      newoccmat[x,y] <- as.numeric(which(names(newspecs)==spectype))
+      newoccmat[x,y] <- as.integer(which(names(newspecs)==spectype))
     }
   }else{
     for(i in 1:amount){
@@ -78,7 +78,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
       neworgdat[lastind+i,'phenotype']=as.integer(ptype)
       neworgdat[lastind+i,'x']=x[i]
       neworgdat[lastind+i,'y']=y[i]
-      newoccmat[x[i],y[i]] <- as.numeric(which(names(newspecs)==spectype))
+      newoccmat[x[i],y[i]] <- as.integer(which(names(newspecs)==spectype))
     }
   }
 
