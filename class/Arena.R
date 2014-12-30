@@ -25,7 +25,7 @@ setClass("Arena",
 
 Arena <- function(n, m){
   new("Arena", n=as.integer(n), m=as.integer(m), orgdat=data.frame(), specs=list(), media=list(), mediac=character(),
-      phenotypes=list(), occmat=Matrix(as.integer(0), nrow=n, ncol=m, sparse=T))
+      phenotypes=list(), occmat=as(Matrix(0L, nrow=n, ncol=m, sparse=T), "dgCMatrix"))
 }
 
 ########################################################################################################
@@ -46,39 +46,40 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   neworgdat <- object@orgdat
   newspecs <- object@specs
   newphens <- object@phenotypes[[spectype]]
-  
   newspecs[[spectype]] <- specI
+  type <- which(names(newspecs)==spectype)
+  
   if(length(newphens)!=0){
-    ptype <- checkPhen(object, specI)
+    ptype <- as.integer(checkPhen(object, specI))
     newphens <- object@phenotypes[[spectype]]
   }else{
     newphens[[1]] <- getPhenotype(specI)
-    ptype=1
+    ptype=as.integer(1)
   }
   lastind <- nrow(object@orgdat)
   if(length(x*y)==0){
     for(i in 1:amount){
       neworgdat[lastind+i,'growth']=growth
-      neworgdat[lastind+i,'type']=as.integer(which(names(newspecs)==spectype))
-      neworgdat[lastind+i,'phenotype']=as.integer(ptype)
-      x <- as.integer(sample(1:n, 1))
-      y <- as.integer(sample(1:m, 1))
+      neworgdat[lastind+i,'type']=type
+      neworgdat[lastind+i,'phenotype']=ptype
+      x <- sample(1:n, 1)
+      y <- sample(1:m, 1)
       while(newoccmat[x,y] != 0){
-        x <- as.integer(sample(1:n, 1))
-        y <- as.integer(sample(1:m, 1))
+        x <- sample(1:n, 1)
+        y <- sample(1:m, 1)
       }
       neworgdat[lastind+i,'x']=x
       neworgdat[lastind+i,'y']=y
-      newoccmat[x,y] <- as.integer(which(names(newspecs)==spectype))
+      newoccmat[x,y] = type
     }
   }else{
     for(i in 1:amount){
       neworgdat[lastind+i,'growth']=growth
-      neworgdat[lastind+i,'type']=as.integer(which(names(newspecs)==spectype))
-      neworgdat[lastind+i,'phenotype']=as.integer(ptype)
+      neworgdat[lastind+i,'type']=type
+      neworgdat[lastind+i,'phenotype']=ptype
       neworgdat[lastind+i,'x']=x[i]
       neworgdat[lastind+i,'y']=y[i]
-      newoccmat[x[i],y[i]] <- as.integer(which(names(newspecs)==spectype))
+      newoccmat[x[i],y[i]] = type
     }
   }
 
