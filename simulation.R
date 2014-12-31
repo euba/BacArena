@@ -2,21 +2,24 @@
 setwd("~/BacArena")
 #library(snow) # parallel computing
 library(Rcpp)
-library(inline)
 library(sybil)
+library(glpkAPI)
+library(microbenchmark)
+library(ggplot2)
+library(compiler) # byte code 
 SYBIL_SETTINGS("SOLVER", "glpkAPI")
 #SYBIL_SETTINGS("SOLVER", "clpAPI")
 source(file="cpp_source.R")
 source(file="class/class_baggage.R")
-#source(file="class/Arena.R")
+source(file="class/Arena.R")
 source(file="class/Substance.R")
 source(file="class/Bac.R")
 source(file="class/Organism.R")
 #source(file="class/Population.R")
-Rcpp::sourceCpp("diff.cpp")
+Rcpp::sourceCpp("cpp/diff.cpp")
+Rcpp::sourceCpp("cpp/addBac.cpp")
 
 #setwd("C:/Users/eugen.bauer/Documents/GitHub/BacArena/") #have to update orgn after deletion of bacteria?
-source(file="class/Arena.R")
 #load("/home/eugen/specsm.RData")
 
 load("data/Bcoli_model.R")
@@ -33,12 +36,34 @@ bacc = Bac(model=clos, deathrate=0.3, duplirate=1.5, growthlimit=0.05, growtype=
 bace = Bac(model=ecore, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="exponential", speed=16)
 #bace = Bac(model=ecoli, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="exponential")
 
-arena = Arena(n=100, m=100)
 #addOrg(arena, bacm, amount=1, x=25, y=25)
 #addOrg(arena, bacc, amount=1, x=24, y=25)
-addOrg(arena, bace, amount=1, x=50, y=50)
+arena = Arena(n=100, m=100)
+arena2 = Arena(n=100, m=100)
+b <- microbenchmark(
+  addOrg(arena, bace, amount=5000, speed=2),
+  addOrg2(arena2, bace, amount=5000, speed=2))
+autoplot(b)
+print(system.time(addOrg(arena, bace, amount=5000, speed=2)))
+print(system.time(addOrg2(arena2, bace, amount=5000, speed=2)))
+# 2.392 25.704
+# 0.008 0.356
+
+Rprof("out.out")
+addOrg(arena, bace, amount=500, speed=2)
+Rprof(NULL)
+summaryRprof("out.out")
+
 addSubs(arena, smax=30)
-format(object.size(arena), units='Mb')
+format(object.size(arena), units='b')
+#user  system elapsed 
+#2.168   0.004   2.181
+#2.160   0.004   2.180
+#2.060   0.004   2.065 
+
+#sapply(arena@orgdat, class) # check classes of df entries
+
+
 
 print(system.time(simlist <- simulate(arena, time=20)))
 for(i in seq_along(simlist)){

@@ -24,8 +24,8 @@ setClass("Arena",
 ########################################################################################################
 
 Arena <- function(n, m){
-  new("Arena", n=as.integer(n), m=as.integer(m), orgdat=data.frame(), specs=list(), media=list(), mediac=character(),
-      phenotypes=list(), occmat=as(Matrix(0L, nrow=n, ncol=m, sparse=T), "dgCMatrix"))
+  new("Arena", n=as.integer(n), m=as.integer(m), orgdat=data.frame(growth=numeric(0), type=integer(0), phenotype=integer(0), x=integer(0), y=integer(0)), specs=list(), media=list(), mediac=character(),
+      phenotypes=list(), occmat=Matrix(0L, nrow=n, ncol=m, sparse=T))
 }
 
 ########################################################################################################
@@ -89,6 +89,37 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
   eval.parent(substitute(object@mediac <- union(object@mediac, specI@medium)))
 })
+
+
+setGeneric("addOrg2", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){standardGeneric("addOrg2")})
+setMethod("addOrg2", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){
+  if(amount+sum(object@occmat) > object@n*object@m){
+    stop("More individuals than space on the grid")
+  }
+  spectype <- specI@type
+  newspecs <- object@specs
+  newphens <- object@phenotypes[[spectype]]
+  newspecs[[spectype]] <- specI
+  type <- which(names(newspecs)==spectype)
+  
+  if(length(newphens)!=0){
+    ptype <- as.integer(checkPhen(object, specI))
+    newphens <- object@phenotypes[[spectype]]
+  }else{
+    newphens[[1]] <- getPhenotype(specI)
+    ptype=as.integer(1)
+  }
+  l = addBacCpp(object@occmat, object@orgdat, amount, growth, type, ptype)
+  newoccmat = l[["occmat"]]
+  neworgdat = l[["orgdat"]]
+  
+  eval.parent(substitute(object@occmat <- newoccmat))
+  eval.parent(substitute(object@orgdat <- neworgdat))
+  eval.parent(substitute(object@specs <- newspecs))
+  eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
+  eval.parent(substitute(object@mediac <- union(object@mediac, specI@medium)))
+})
+
 
 # Add all substances defined by exchange reactions of the available bacs
 
