@@ -1,5 +1,5 @@
 # load libraries and other R files to have everything in place
-setwd("~/BacArena")
+#setwd("~/BacArena")
 #library(snow) # parallel computing
 library(Rcpp)
 library(sybil)
@@ -38,19 +38,19 @@ bace = Bac(model=ecore, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="
 
 #addOrg(arena, bacm, amount=1, x=25, y=25)
 #addOrg(arena, bacc, amount=1, x=24, y=25)
-arena = Arena(n=100, m=100)
+arena = Arena(n=50, m=50)
 arena2 = Arena(n=100, m=100)
 b <- microbenchmark(
-  addOrg(arena, bace, amount=5000, speed=2),
-  addOrg2(arena2, bace, amount=5000, speed=2))
+  addOrg(arena, bace, amount=5000),
+  addOrg2(arena2, bace, amount=5000))
 autoplot(b)
-print(system.time(addOrg(arena, bace, amount=5000, speed=2)))
-print(system.time(addOrg2(arena2, bace, amount=5000, speed=2)))
+print(system.time(addOrg(arena, bace, amount=5000)))
+print(system.time(addOrg2(arena2, bace, amount=5000)))
 # 2.392 25.704
 # 0.008 0.356
 
 Rprof("out.out")
-addOrg(arena, bace, amount=500, speed=2)
+addOrg(arena, bace, amount=1)
 Rprof(NULL)
 summaryRprof("out.out")
 
@@ -65,7 +65,7 @@ format(object.size(arena), units='b')
 
 
 
-print(system.time(simlist <- simulate(arena, time=20)))
+print(system.time(simlist <- simulate(arena, time=10)))
 for(i in seq_along(simlist)){
   popana <- as.matrix(simlist[[i]]@occmat)
   #popana <- as.matrix(simlist[[i]]@media[['EX_for(e)']]@diffmat)

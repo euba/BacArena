@@ -11,6 +11,7 @@ setClass("Organism",
            #x="numeric", # x position on grid
            #y="numeric", # y position on grid
            #model="modelorg", # sybil model object -> this is superbig: takes too much space and time to process
+           #fixlbnd="numeric", #lower bounds, which are fixed to biological relevant values
            lbnd="numeric", #lower bounds, which can change dynamically
            ubnd="numeric", #upper bounds, which can change dynamically
            type="character", # description of the organism
@@ -61,6 +62,7 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_",
 
 setGeneric("constrain", function(object, reacts, lb){standardGeneric("constrain")})
 setMethod("constrain", "Organism", function(object, reacts, lb){
+  lb <- ifelse(lb<=object@lbnd[reacts], object@lbnd[reacts], lb) #check if lower bounds in biological relevant range
   eval.parent(substitute(object@lbnd[reacts] <- lb)) #(pseudo) call by reference implementation
 })
 
