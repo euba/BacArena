@@ -14,6 +14,8 @@ setClass("Bac",
            duplirate="numeric", # grow cut-off for test of duplication
            speed="integer", # speed by which bacterium is moving (given by cell per iteration)
            growthlimit="numeric",
+           lyse="logical", #flag indicating, if bacterial lysis should be implemented
+           feat="list", #list containing conditional features for the object (contains at the momement only biomass components for lysis)
            growtype="character" # functional type for growth (linear or exponential)
          )
 )
@@ -22,9 +24,15 @@ setClass("Bac",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Bac <- function(model, deathrate, duplirate, speed=2, growthlimit, growtype, ...){
+Bac <- function(model, deathrate, duplirate, speed=2, growthlimit, growtype, lyse=F, ...){
+  feat <- list()
+  if(lyse){
+    stoch <- S(model)[,which(model@obj_coef==1)] #find stochiometry of biomass components
+    names(stoch) <- met_id(model)
+    feat[["biomass"]] <- stoch[-which(stoch==0)]
+  }
   new("Bac", Organism(model=model, ...), speed=as.integer(speed), deathrate=deathrate, duplirate=duplirate,
-      growthlimit=growthlimit, growtype=growtype)
+      growthlimit=growthlimit, lyse=lyse, feat=feat, growtype=growtype)
 }
 
 ########################################################################################################
@@ -49,6 +57,17 @@ setMethod("growExp", "Bac", function(object, growth){
   if(object@fbasol$obj > 0) grow_accum <- (object@fbasol$obj * growth + growth)
   else grow_accum <- growth - object@deathrate
   return(grow_accum)
+})
+
+#function for lysis of bacterial cells by adding biomass_compounds * growth to the medium
+
+setGeneric("lysis", function(object, medium, sublb, factor=object@growthlimit, csuffix="\\[c\\]", esuffix="(e)", ex="EX_"){standardGeneric("lysis")})
+setMethod("lysis", "Bac", function(object, medium, sublb, factor=object@growthlimit, csuffix="\\[c\\]", esuffix="(e)", ex="EX_"){
+  stoch = object@feat[["biomass"]]
+  names(stoch) <- paste(ex,gsub(csuffix, esuffix, names(stoch)),sep='')
+  lysate = round(abs(na.omit(stoch[medium]))*factor, 6)
+  sublb[names(lysate)] = sublb[names(lysate)] + lysate
+  return(sublb)
 })
 
 
@@ -146,6 +165,10 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb){
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,])))
   dead <- growth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
+  
+  if(dead && object@lyse){
+    eval.parent(substitute(sublb[j,] <- lysis(object, names(arena@media), sublb[j,])))
+  }
   if(!dead && object@speed != 0){
     sapply(1:object@speed,function(x){
       move(object, arena, j)

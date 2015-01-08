@@ -34,7 +34,7 @@ meth = model
 
 bacm = Bac(model=meth, deathrate=0.3, duplirate=1.5, growthlimit=0.05, growtype="exponential")
 bacc = Bac(model=clos, deathrate=0.3, duplirate=1.5, growthlimit=0.05, growtype="exponential", ex="ex_")
-bace = Bac(model=ecore, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="exponential", speed=2)
+bace = Bac(model=ecore, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="exponential", speed=2, lyse=T)
 #bace = Bac(model=ecoli, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="exponential")
 
 #addOrg(arena, bacm, amount=1, x=25, y=25)
