@@ -141,8 +141,8 @@ setMethod("move", "Bac", function(object, population, j){
 
 setGeneric("simBac", function(object, arena, j, sublb){standardGeneric("simBac")})
 setMethod("simBac", "Bac", function(object, arena, j, sublb){
-  constrain(object, object@medium, lb=-sublb[j,object@medium])
-  optimizeLP(object)
+  lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium])
+  optimizeLP(object, lb=lobnd)
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,])))
   dead <- growth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))

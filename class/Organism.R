@@ -62,8 +62,10 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_",
 
 setGeneric("constrain", function(object, reacts, lb){standardGeneric("constrain")})
 setMethod("constrain", "Organism", function(object, reacts, lb){
-  lb <- ifelse(lb<=object@lbnd[reacts], object@lbnd[reacts], lb) #check if lower bounds in biological relevant range
-  eval.parent(substitute(object@lbnd[reacts] <- lb)) #(pseudo) call by reference implementation
+  lobnd <- object@lbnd
+  lobnd[reacts] <- ifelse(lb<=lobnd[reacts], lobnd[reacts], lb) #check if lower bounds in biological relevant range
+  return(lobnd)
+  #eval.parent(substitute(object@lbnd[reacts] <- lb)) #(pseudo) call by reference implementation
 })
 
 #function for computing the linear programming according to the model structure -> this can be changed for comp. speed (warmstart)

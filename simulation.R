@@ -1,4 +1,5 @@
 # load libraries and other R files to have everything in place
+set.seed(5000)
 #setwd("~/BacArena")
 #library(snow) # parallel computing
 library(Rcpp)
@@ -17,7 +18,7 @@ source(file="class/Bac.R")
 source(file="class/Organism.R")
 #source(file="class/Population.R")
 Rcpp::sourceCpp("cpp/diff.cpp")
-Rcpp::sourceCpp("cpp/addBac.cpp")
+#Rcpp::sourceCpp("cpp/addBac.cpp")
 
 #setwd("C:/Users/eugen.bauer/Documents/GitHub/BacArena/") #have to update orgn after deletion of bacteria?
 #load("/home/eugen/specsm.RData")
@@ -33,26 +34,25 @@ meth = model
 
 bacm = Bac(model=meth, deathrate=0.3, duplirate=1.5, growthlimit=0.05, growtype="exponential")
 bacc = Bac(model=clos, deathrate=0.3, duplirate=1.5, growthlimit=0.05, growtype="exponential", ex="ex_")
-bace = Bac(model=ecore, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="exponential", speed=16)
+bace = Bac(model=ecore, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="exponential", speed=2)
 #bace = Bac(model=ecoli, deathrate=1, duplirate=1.5, growthlimit=0.05, growtype="exponential")
 
 #addOrg(arena, bacm, amount=1, x=25, y=25)
 #addOrg(arena, bacc, amount=1, x=24, y=25)
-arena = Arena(n=50, m=50)
-arena2 = Arena(n=100, m=100)
-b <- microbenchmark(
-  addOrg(arena, bace, amount=5000),
-  addOrg2(arena2, bace, amount=5000))
-autoplot(b)
-print(system.time(addOrg(arena, bace, amount=5000)))
-print(system.time(addOrg2(arena2, bace, amount=5000)))
+arena = Arena(n=100, m=100)
+#b <- microbenchmark(
+#  addOrg(arena, bace, amount=5000),
+#  addOrg2(arena2, bace, amount=5000))
+#autoplot(b)
+#print(system.time(addOrg(arena, bace, amount=50)))
+#print(system.time(addOrg2(arena2, bace, amount=5000)))
 # 2.392 25.704
 # 0.008 0.356
 
-Rprof("out.out")
-addOrg(arena, bace, amount=1)
-Rprof(NULL)
-summaryRprof("out.out")
+#Rprof("out.out")
+addOrg(arena, bace, amount=50)
+#Rprof(NULL)
+#summaryRprof("out.out")
 
 addSubs(arena, smax=30)
 format(object.size(arena), units='b')
