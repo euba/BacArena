@@ -226,9 +226,9 @@ setMethod("simulate", "Arena", function(object, time){
       submat <- as.matrix(arena@media[[j]]@diffmat)
       apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
       switch(arena@media[[j]]@difunc,
-             "cpp"={diffuseNaiveCpp(submat, donut=FALSE)},
-             "r"={diffuseNaiveR(arena@media[[j]])},
-             stop("Simulation function for Organism object not defined yet."))  
+             "cpp"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveCpp(submat, donut=FALSE)}},
+             "r"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveR(arena@media[[j]])}},
+             stop("Simulation function for Organism object not defined yet.")) 
       arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
       sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
     }))

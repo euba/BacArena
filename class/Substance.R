@@ -12,7 +12,8 @@ setClass("Substance",
            smax = "numeric", # substrate start concentration
            diffmat = "Matrix", # matrix containing concentrations -> sparse Matrix
            name = "character", # String describing object
-           difunc = "character" # String describing the function for diffusion
+           difunc = "character", # String describing the function for diffusion
+           difspeed = "numeric" # String describing the function for diffusion
            #diffconst= "numeric",  # diffusion constant
          )
 )
@@ -22,11 +23,11 @@ setClass("Substance",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Substance <- function(n, m, smax, diffmat={}, name, difunc="cpp", ...){
+Substance <- function(n, m, smax, diffmat={}, name, difunc="cpp", difspeed=1, ...){
   if(length(diffmat)==0){
     diffmat = Matrix(smax, nrow=n, ncol=m, sparse=T)
   }
-  new("Substance", smax=smax, diffmat=diffmat, name=name, difunc=difunc, ...)
+  new("Substance", smax=smax, diffmat=diffmat, name=name, difunc=difunc, difspeed=difspeed, ...)
 }
 
 ########################################################################################################

@@ -16,7 +16,8 @@ setClass("Bac",
            growthlimit="numeric",
            lyse="logical", #flag indicating, if bacterial lysis should be implemented
            feat="list", #list containing conditional features for the object (contains at the momement only biomass components for lysis)
-           growtype="character" # functional type for growth (linear or exponential)
+           growtype="character", # functional type for growth (linear or exponential)
+           chem='character' # name of substance which is the chemotaxis attractant
          )
 )
 
@@ -24,7 +25,7 @@ setClass("Bac",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Bac <- function(model, deathrate, duplirate, speed=2, growthlimit, growtype, lyse=F, ...){
+Bac <- function(model, deathrate, duplirate, speed=2, growthlimit, growtype, lyse=F, chem='', ...){
   feat <- list()
   if(lyse){
     stoch <- S(model)[,which(model@obj_coef==1)] #find stochiometry of biomass components
@@ -32,7 +33,7 @@ Bac <- function(model, deathrate, duplirate, speed=2, growthlimit, growtype, lys
     feat[["biomass"]] <- stoch[-which(stoch==0)]
   }
   new("Bac", Organism(model=model, ...), speed=as.integer(speed), deathrate=deathrate, duplirate=duplirate,
-      growthlimit=growthlimit, lyse=lyse, feat=feat, growtype=growtype)
+      growthlimit=growthlimit, lyse=lyse, feat=feat, growtype=growtype, chem=chem)
 }
 
 ########################################################################################################
@@ -146,7 +147,38 @@ setGeneric("move", function(object, population, j){standardGeneric("move")})
 setMethod("move", "Bac", function(object, population, j){
   popvec <- population@orgdat[j,]
   hood <- emptyHood(object, population@occmat, popvec$x, popvec$y)
+  #print(hood)
   if(length(hood) != 0){
+    xp = hood[1]
+    yp = hood[2]
+    eval.parent(substitute(population@occmat[popvec$x, popvec$y] <- 0))
+    eval.parent(substitute(population@occmat[xp,yp] <- as.numeric(popvec$type)))
+    eval.parent(substitute(population@orgdat[j,]$x <- xp))
+    eval.parent(substitute(population@orgdat[j,]$y <- yp))
+  }
+})
+
+# function for chemotaxis: go to direction with highest concentration, otherwise random movement
+
+setGeneric("chemotaxis", function(object, population, j){standardGeneric("chemotaxis")})
+setMethod("chemotaxis", "Bac", function(object, population, j){
+  popvec <- population@orgdat[j,]
+  attract <- population@media[[object@chem]]@diffmat
+  hood <- getHood(object, population@occmat, popvec$x, popvec$y)
+  free <- which(hood[[1]]==0, arr.ind = T)
+  if(nrow(free) != 0){
+    conc <- apply(free, 1, function(x, attract, popvec, hood){
+      xpos <- x[1] - hood[[2]][1] + popvec$x
+      ypos <- x[2] - hood[[2]][2] + popvec$y
+      return(attract[xpos,ypos])
+    }, attract=attract, popvec=popvec, hood=hood)
+    abs <- free[which(conc==max(conc)),]
+    if(!is.vector(abs)){
+      abs <- abs[sample(nrow(abs),1),]
+    }
+    abs[1] <- abs[1] - hood[[2]][1] + popvec$x
+    abs[2] <- abs[2] - hood[[2]][2] + popvec$y
+    hood <- abs
     xp = hood[1]
     yp = hood[2]
     eval.parent(substitute(population@occmat[popvec$x, popvec$y] <- 0))
@@ -171,7 +203,11 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb){
   }
   if(!dead && object@speed != 0){
     sapply(1:object@speed,function(x){
-      move(object, arena, j)
+      if(object@chem == ''){
+        move(object, arena, j)
+      }else{
+        chemotaxis(object, arena, j)
+      }
       arena <<- arena})
   }
   return(arena)

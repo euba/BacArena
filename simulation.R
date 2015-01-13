@@ -1,7 +1,6 @@
 # load libraries and other R files to have everything in place
 set.seed(5000)
-#setwd("~/BacArena")
-#library(snow) # parallel computing
+setwd("~/BacArena")
 library(Rcpp)
 library(sybil)
 library(glpkAPI)
@@ -9,14 +8,12 @@ library(microbenchmark)
 library(ggplot2)
 library(compiler) # byte code 
 SYBIL_SETTINGS("SOLVER", "glpkAPI")
-#SYBIL_SETTINGS("SOLVER", "clpAPI")
 source(file="cpp_source.R")
 source(file="class/class_baggage.R")
 source(file="class/Arena.R")
 source(file="class/Substance.R")
 source(file="class/Bac.R")
 source(file="class/Organism.R")
-#source(file="class/Population.R")
 Rcpp::sourceCpp("cpp/diff.cpp")
 #Rcpp::sourceCpp("cpp/addBac.cpp")
 
@@ -50,7 +47,7 @@ arena = Arena(n=100, m=100)
 # 0.008 0.356
 
 #Rprof("out.out")
-addOrg(arena, bace, amount=50)
+addOrg(arena, bace, amount=5)
 #Rprof(NULL)
 #summaryRprof("out.out")
 
@@ -61,9 +58,34 @@ format(object.size(arena), units='b')
 #2.160   0.004   2.180
 #2.060   0.004   2.065 
 
+print(system.time(simlist <- simulate(arena, time=10)))
+
 #sapply(arena@orgdat, class) # check classes of df entries
 
+for(i in 1:length(simlist)){
+  print(i)
+  popana <- as.matrix(simlist[[i]]@occmat)
+  dat <- simlist[[i]]@orgdat
+  for(j in 1:nrow(dat)){
+    popana[dat[j,]$x,dat[j,]$y] <- dat[j,]$phenotype + 1
+  }
+  image(popana, axes=F, main='Population')
+}
 
+indis=vector()
+phenos=vector()
+for(j in 1:length(levels(as.factor(simlist[[i]]@orgdat$type)))){
+  ind <- which(simlist[[i]]@orgdat$type==j)
+  phens <- levels(as.factor(simlist[[i]]@orgdat[ind,]$phenotype))
+  indis[ind] <- length(ind)
+  phenos[ind] <- length(phens)
+  print(j)
+  print(length(ind))
+  print(length(phens))
+  print('')
+}
+barplot(indis)
+barplot(phenos)
 
 print(system.time(simlist <- simulate(arena, time=10)))
 for(i in seq_along(simlist)){
