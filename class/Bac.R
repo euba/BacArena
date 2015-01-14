@@ -192,7 +192,8 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 
 setGeneric("simBac", function(object, arena, j, sublb){standardGeneric("simBac")})
 setMethod("simBac", "Bac", function(object, arena, j, sublb){
-  lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium])
+  lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium],
+                     dryweight=arena@orgdat[j,"growth"], time=arena@tstep)
   optimizeLP(object, lb=lobnd)
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,])))
   dead <- growth(object, arena, j)

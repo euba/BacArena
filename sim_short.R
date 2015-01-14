@@ -20,16 +20,16 @@ Rcpp::sourceCpp("cpp/diff.cpp")
 load("data/ecore_model.R")
 ecore = model
 
-bace = Bac(model=ecore, deathrate=0, duplirate=10000000000000000000.5, growthlimit=0.05, growtype="exponential",
-           speed=2, lyse=T, chem="EX_glc(e)")
-arena = Arena(n=100, m=100)
-#addOrg(arena, bace, amount=1, x=85, y=50)
-addOrg(arena, bace, amount=500)
+bace = Bac(model=ecore, deathrate=0.5, duplirate=1.5, growthlimit=0.05, growtype="exponential",
+           speed=1, lyse=T, chem="EX_glc(e)")
+arena = Arena(n=100, m=100, tstep=0.5)
+addOrg(arena, bace, amount=1, x=85, y=50)
+#addOrg(arena, bace, amount=500)
 addSubs(arena, smax=30)
 format(object.size(arena), units='b')
-arena@media[["EX_glc(e)"]]@diffmat <- Matrix(0, nrow=100, ncol=100)
-arena@media[["EX_glc(e)"]]@diffmat[50,50] <- 5000
-print(system.time(simlist <- simulate(arena, time=80)))
+#arena@media[["EX_glc(e)"]]@diffmat <- Matrix(0, nrow=100, ncol=100)
+#arena@media[["EX_glc(e)"]]@diffmat[50,50] <- 5000
+print(system.time(simlist <- simulate(arena, time=30)))
 
 for(i in 1:length(simlist)){
   print(i)

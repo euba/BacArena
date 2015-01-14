@@ -14,6 +14,7 @@ setClass("Arena",
            phenotypes="list", # list of unique phenotypes of the individuals
            mediac="character",
            occmat="Matrix", # occupacy matrix (showing which cells have bacs) -> sparse Matrix
+           tstep="numeric", # time steps per iteration
            n="integer",  # grid size
            m="integer"  # grid size
         )
@@ -23,8 +24,8 @@ setClass("Arena",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Arena <- function(n, m){
-  new("Arena", n=as.integer(n), m=as.integer(m), orgdat=data.frame(growth=numeric(0), type=integer(0), phenotype=integer(0), x=integer(0), y=integer(0)), specs=list(), media=list(), mediac=character(),
+Arena <- function(n, m, tstep=1){
+  new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=data.frame(growth=numeric(0), type=integer(0), phenotype=integer(0), x=integer(0), y=integer(0)), specs=list(), media=list(), mediac=character(),
       phenotypes=list(), occmat=Matrix(0L, nrow=n, ncol=m, sparse=T))
 }
 

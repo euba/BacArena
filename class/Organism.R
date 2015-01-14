@@ -60,10 +60,11 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_",
 #function for constraining the models based on metabolite concentrations (can be given as vectors or single reaction)
 #requires as input: organism object, reaction name, lowerbound, upperbound -> either lowerbound or upperbound can be omitted
 
-setGeneric("constrain", function(object, reacts, lb){standardGeneric("constrain")})
-setMethod("constrain", "Organism", function(object, reacts, lb){
+setGeneric("constrain", function(object, reacts, lb, dryweight, time){standardGeneric("constrain")})
+setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time){
   lobnd <- object@lbnd
-  lobnd[reacts] <- ifelse(lb<=lobnd[reacts], lobnd[reacts], lb) #check if lower bounds in biological relevant range
+  lobnd[reacts] <- ifelse(lb<=lobnd[reacts], lobnd[reacts], lb)*dryweight*time #check if lower bounds in biological relevant range + 
+                                                                              #costrain according to flux definition: mmol/(gDW*hr)
   return(lobnd)
   #eval.parent(substitute(object@lbnd[reacts] <- lb)) #(pseudo) call by reference implementation
 })
