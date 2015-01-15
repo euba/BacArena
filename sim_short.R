@@ -21,7 +21,7 @@ load("data/ecore_model.R")
 ecore = model
 
 bace = Bac(model=ecore, deathrate=0.5, duplirate=1.5, growthlimit=0.05, growtype="exponential",
-           speed=0, lyse=T, chem="EX_glc(e)")
+           speed=1, budge=T, lyse=T, chem="EX_glc(e)")
 arena = Arena(n=100, m=100, tstep=0.5)
 addOrg(arena, bace, amount=1, x=50, y=50)
 #addOrg(arena, bace, amount=500)
@@ -38,7 +38,11 @@ for(i in 1:length(simlist)){
   #for(j in 1:nrow(dat)){
   #  popana[dat[j,]$x,dat[j,]$y] <- dat[j,]$phenotype + 1
   #}
-  par(mfrow = c(1, 2))
-  image(popana, axes=F, main='Population')
+  par(mfrow = c(1, 2),bg = 'white')
+  plot(simlist[[i]]@orgdat[,c('x','y')],xlim=c(0,100),ylim=c(0,100),xlab='',ylab='',
+       pch=20,axes=FALSE,cex=0.4,main='Population')
+  #rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col = "gray")
+  #image(popana, axes=F, main='Population')
   image(as.matrix(simlist[[i]]@media[["EX_glc(e)"]]@diffmat), axes=F,main='Glucose')
 }
+
