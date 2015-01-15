@@ -62,9 +62,8 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_",
 
 setGeneric("constrain", function(object, reacts, lb, dryweight, time){standardGeneric("constrain")})
 setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time){
-  lobnd <- object@lbnd
-  lobnd[reacts] <- ifelse(lb<=lobnd[reacts], lobnd[reacts], lb)*dryweight*time #check if lower bounds in biological relevant range + 
-                                                                              #costrain according to flux definition: mmol/(gDW*hr)
+  lobnd <- object@lbnd*dryweight*time #costrain according to flux definition: mmol/(gDW*hr)
+  lobnd[reacts] <- ifelse(lb<=lobnd[reacts], lobnd[reacts], lb) #check if lower bounds in biological relevant range
   return(lobnd)
   #eval.parent(substitute(object@lbnd[reacts] <- lb)) #(pseudo) call by reference implementation
 })
