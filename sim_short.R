@@ -37,27 +37,5 @@ arena@media[["EX_o2(e)"]]@diffmat <- Matrix(0, nrow=100, ncol=100)
 print(system.time(simlist <- simulate(arena, time=30)))
 format(object.size(simlist), units='Mb')
 
-# simlist <- list()
-# simlist[[1]] <- simulate(arena, time=1)[[2]]
-# for(i in 2:50){
-#   print(i)
-#   simlist[[i-1]]@media[["EX_o2(e)"]]@diffmat <- Matrix(1000, nrow=100, ncol=100)
-#   simlist[[i]] <- simulate(simlist[[i-1]], time=1)[[2]]
-# }
+evalArena(simlist, plot_items=c("population","EX_ac(e)","EX_co2(e)","EX_glc(e)"), T)
 
-for(i in 1:length(simlist)){
-  print(i)
-  popana <- as.matrix(simlist[[i]]@occmat)
-  #dat <- simlist[[i]]@orgdat
-  #for(j in 1:nrow(dat)){
-  #  popana[dat[j,]$x,dat[j,]$y] <- dat[j,]$phenotype + 1
-  #}
-  par(mfrow = c(2, 2),bg = 'white')
-  plot(simlist[[i]]@orgdat[,c('x','y')],xlim=c(0,100),ylim=c(0,100),xlab='',ylab='',
-       pch=20,axes=FALSE,cex=0.4,main='Population', col=simlist[[i]]@orgdat$phenotype+1)
-  #rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col = "gray")
-  #image(popana, axes=F, main='Population')
-  image(as.matrix(simlist[[i]]@media[["EX_glc(e)"]]@diffmat), axes=F,main='Glucose')
-  image(as.matrix(simlist[[i]]@media[["EX_o2(e)"]]@diffmat), axes=F,main='Oxygen')
-  image(as.matrix(simlist[[i]]@media[["EX_ac(e)"]]@diffmat), axes=F,main='Acetate')
-}

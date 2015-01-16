@@ -196,8 +196,9 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
 
 setGeneric("simulate", function(object, time){standardGeneric("simulate")})
 setMethod("simulate", "Arena", function(object, time){
-  arena <- object
-  evaluation <- Eval(arena)
+  switch(class(object),
+         "Arena"={arena <- object; evaluation <- Eval(arena)},
+         "Eval"={arena <- getArena(object); evaluation <- object})
   
   sublb <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
   for(j in seq_along(arena@media)){
