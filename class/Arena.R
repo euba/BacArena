@@ -24,9 +24,10 @@ setClass("Arena",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Arena <- function(n, m, tstep=1){
-  new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=data.frame(growth=numeric(0), type=integer(0), phenotype=integer(0), x=integer(0), y=integer(0)), specs=list(), media=list(), mediac=character(),
-      phenotypes=list(), occmat=Matrix(0L, nrow=n, ncol=m, sparse=T))
+Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
+                  specs=list(),media=list(),mediac=character(),phenotypes=list(),occmat=Matrix(0L,nrow=n,ncol=m,sparse=T)){
+  new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs,
+      media=media, mediac=mediac, phenotypes=phenotypes, occmat=occmat)
 }
 
 ########################################################################################################
@@ -195,9 +196,8 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
 
 setGeneric("simulate", function(object, time){standardGeneric("simulate")})
 setMethod("simulate", "Arena", function(object, time){
-  simlist <- list()
   arena <- object
-  simlist[[1]] <- arena
+  evaluation <- Eval(arena)
   
   sublb <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
   for(j in seq_along(arena@media)){
@@ -238,13 +238,13 @@ setMethod("simulate", "Arena", function(object, time){
     rm("sublb_tmp")
     rm("submat")
     
-    simlist[[i+1]] <- arena
+    addEval(evaluation, arena)
     if(sum(arena@occmat)==0){
       print("All organisms died!")
       break
     }
   }
-  return(simlist)
+  return(evaluation)
 })
 
 #show function for class Arena

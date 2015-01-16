@@ -123,7 +123,7 @@ setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6){
 
 #show function for class Organism
 
-#removeMethod(show, signature(object="Organism"))
+removeMethod(show, signature(object="Organism"))
 setMethod(show, signature(object="Organism"), function(object){
   print(paste('Organism ',object@type,' of class Organism.',sep=''))
 })
