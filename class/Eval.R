@@ -65,17 +65,17 @@ setGeneric("evalArena", function(object, plot_items, phencol=F){standardGeneric(
 setMethod("evalArena", "Eval", function(object, plot_items, phencol=F){
   for(i in 1:length(object@simlist)){
     subnam <- names(object@medlist[[i]])
-    inds <- which(plot_items %in% subnam)
+    inds <- which(subnam %in% plot_items)
     if(length(plot_items)==1){
       if(length(inds)!=0){
         for(j in 1:length(inds)){
-          image(matrix(object@medlist[[i]][[inds[j]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]])
+          image(matrix(object@medlist[[i]][[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]])
         }
       }
     }else if(length(plot_items)<=6){
       par(mfrow=c(2,ceiling(length(plot_items)/2)))
       for(j in 1:length(inds)){
-        image(matrix(object@medlist[[i]][[inds[j]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]])
+        image(matrix(object@medlist[[i]][[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]])
       }
     }else{
       par(mfrow=c(3,ceiling(length(plot_items)/3)))

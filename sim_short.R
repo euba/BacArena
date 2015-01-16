@@ -37,5 +37,5 @@ arena@media[["EX_o2(e)"]]@diffmat <- Matrix(0, nrow=100, ncol=100)
 print(system.time(simlist <- simulate(arena, time=30)))
 format(object.size(simlist), units='Mb')
 
-evalArena(simlist, plot_items=c("population","EX_ac(e)","EX_co2(e)","EX_glc(e)"), T)
+evalArena(simlist, plot_items=c("population","EX_ac(e)","EX_for(e)","EX_glc(e)","EX_o2(e)","EX_pyr(e)"),T)
 
