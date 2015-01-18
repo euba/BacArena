@@ -84,7 +84,6 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
       newoccmat[x[i],y[i]] = type
     }
   }
-
   eval.parent(substitute(object@occmat <- newoccmat))
   eval.parent(substitute(object@orgdat <- neworgdat))
   eval.parent(substitute(object@specs <- newspecs))
@@ -198,7 +197,8 @@ setGeneric("simulate", function(object, time){standardGeneric("simulate")})
 setMethod("simulate", "Arena", function(object, time){
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
-         "Eval"={arena <- getArena(object); evaluation <- object})
+         "Eval"={arena <- getArena(object); evaluation <- object},
+         stop("Please supply an Arena object."))
   
   sublb <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
   for(j in seq_along(arena@media)){
