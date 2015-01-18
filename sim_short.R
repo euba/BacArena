@@ -25,11 +25,19 @@ ecore = changeBounds(ecore, c('EX_ac(e)','EX_akg(e)','EX_etoh(e)','EX_for(e)',
 
 bace = Bac(model=ecore, deathrate=0.3, duplirate=1.5, growthlimit=0.05, growtype="exponential",
            speed=2, budge=F, lyse=F, chem="EX_glc(e)")
-arena = Arena(n=100, m=100, tstep=0.5)
-addOrg(arena, bace, amount=1, x=50, y=50)
+arena = Arena(n=50, m=50, tstep=0.5, stir=T)
 #addOrg(arena, bace, amount=1, x=50, y=50)
-#addOrg(arena, bace, amount=500)
-addSubs(arena, smax=30)
+addOrg(arena, bace, amount=800)
+#print(system.time(addOrg(arena, bace, amount=50000)))
+addSubs(arena, smax=1000)
+
+simlist <- simulate(arena, time=10)
+
+plot(arena@orgdat[,c('x','y')])
+image(as.matrix(arena@occmat))
+stirEnv(arena,sublb = 0)
+
+
 changeSub(arena, "EX_o2(e)", 1000)
 format(object.size(arena), units='b')
 
@@ -49,5 +57,5 @@ for(i in 1:40){
 #print(system.time(simlist <- simulate(arena, time=30)))
 format(object.size(simlist), units='Mb')
 
-evalArena(simlist, plot_items=c('population',"EX_o2(e)","EX_glc(e)","EX_ac(e)"), phencol=T, retdata=F)
-#plotCurves(simlist, remove=T, retdata = F)
+evalArena(simlist, plot_items=c('population'), phencol=T, retdata=F)
+plotCurves(simlist, remove=T, retdata = F)

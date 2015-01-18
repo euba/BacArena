@@ -254,7 +254,7 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb){
   if(dead && object@lyse){
     eval.parent(substitute(sublb[j,] <- lysis(object, names(arena@media), sublb[j,])))
   }
-  if(!dead && object@speed != 0){
+  if(!dead && !arena@stir && object@speed != 0){
     sapply(1:object@speed,function(x){
       if(object@chem == ''){
         move(object, arena, j)

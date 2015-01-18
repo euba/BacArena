@@ -15,6 +15,7 @@ setClass("Arena",
            mediac="character",
            occmat="Matrix", # occupacy matrix (showing which cells have bacs) -> sparse Matrix
            tstep="numeric", # time steps per iteration
+           stir="logical", # boolean variable indicating if environment should be stirred
            n="integer",  # grid size
            m="integer"  # grid size
         )
@@ -25,9 +26,9 @@ setClass("Arena",
 ########################################################################################################
 
 Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
-                  specs=list(),media=list(),mediac=character(),phenotypes=list(),occmat=Matrix(0L,nrow=n,ncol=m,sparse=T)){
+                  specs=list(),media=list(),mediac=character(),phenotypes=list(),occmat=Matrix(0L,nrow=n,ncol=m,sparse=T),stir=F){
   new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs,
-      media=media, mediac=mediac, phenotypes=phenotypes, occmat=occmat)
+      media=media, mediac=mediac, phenotypes=phenotypes, occmat=occmat, stir=stir)
 }
 
 ########################################################################################################
@@ -60,29 +61,36 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   }
   lastind <- nrow(object@orgdat)
   if(length(x*y)==0){
-    for(i in 1:amount){
-      neworgdat[lastind+i,'growth']=growth
-      neworgdat[lastind+i,'type']=type
-      neworgdat[lastind+i,'phenotype']=ptype
-      x <- sample(1:n, 1)
-      y <- sample(1:m, 1)
-      while(newoccmat[x,y] != 0){
-        x <- sample(1:n, 1)
-        y <- sample(1:m, 1)
-      }
-      neworgdat[lastind+i,'x']=x
-      neworgdat[lastind+i,'y']=y
-      newoccmat[x,y] = type
+    cmbs = expand.grid(1:n,1:m)
+    rownames(cmbs) = paste(cmbs[,1],cmbs[,2],sep='_')
+    taken <- paste(object@orgdat$x,object@orgdat$y,sep='_')
+    if(length(taken)!=0){
+      cmbs <- cmbs[-which(rownames(cmbs) %in% taken),]
     }
+    sel <- sample(1:nrow(cmbs),amount)
+    xp = cmbs[sel,1]
+    yp = cmbs[sel,2]
+    neworgdat[(lastind+1):(amount+lastind),'x']=xp
+    neworgdat[(lastind+1):(amount+lastind),'y']=yp
+    neworgdat[(lastind+1):(amount+lastind),'growth']=rep(growth, amount)
+    neworgdat[(lastind+1):(amount+lastind),'type']=rep(type, amount)
+    neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(ptype, amount)
+    newoccmat <- as.matrix(newoccmat)
+    for(i in 1:length(xp)){
+      newoccmat[xp[i],yp[i]] = type
+    }
+    newoccmat <- Matrix(newoccmat,sparse=T)
   }else{
-    for(i in 1:amount){
-      neworgdat[lastind+i,'growth']=growth
-      neworgdat[lastind+i,'type']=type
-      neworgdat[lastind+i,'phenotype']=ptype
-      neworgdat[lastind+i,'x']=x[i]
-      neworgdat[lastind+i,'y']=y[i]
+    neworgdat[(lastind+1):(amount+lastind),'x']=x
+    neworgdat[(lastind+1):(amount+lastind),'y']=y
+    neworgdat[(lastind+1):(amount+lastind),'growth']=rep(growth, amount)
+    neworgdat[(lastind+1):(amount+lastind),'type']=rep(type, amount)
+    neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(ptype, amount)
+    newoccmat <- as.matrix(newoccmat)
+    for(i in 1:length(x)){
       newoccmat[x[i],y[i]] = type
     }
+    newoccmat <- Matrix(newoccmat,sparse=T)
   }
   eval.parent(substitute(object@occmat <- newoccmat))
   eval.parent(substitute(object@orgdat <- neworgdat))
@@ -136,7 +144,6 @@ setMethod("addSubs", "Arena", function(object, smax, mediac=object@mediac){
     sapply(mediac, function(x, smax, n, m){
       newmedia[[x]] <<- Substance(n, m, smax, name=x)
     }, smax=smax, n=n, m=m)
-    
     eval.parent(substitute(object@media <- c(object@media,newmedia)))
   }
   newspecs <- lapply(object@specs, function(x,mediac){
@@ -146,6 +153,7 @@ setMethod("addSubs", "Arena", function(object, smax, mediac=object@mediac){
   eval.parent(substitute(object@specs <- newspecs))
 })
 
+#function for changing the substances in the environment
 
 setGeneric("changeSub", function(object, subname, value){standardGeneric("changeSub")})
 setMethod("changeSub", "Arena", function(object, subname, value){
@@ -153,14 +161,6 @@ setMethod("changeSub", "Arena", function(object, subname, value){
   #return(Substance(object@n, object@m, smax=value, name=subname))
   else stop("Substance does not exist in medium")
 })
-
-#function for getting a vector of media concentrations for a specific position
-
-#setGeneric("getmed", function(object, diffmat, sublb, subname){standardGeneric("getmed")})
-#setMethod("getmed", "Arena", function(object, diffmat, sublb, subname){
-#  sublb[,subname] <- diag(diffmat[object@orgdat$x,object@orgdat$y])
-#  return(sublb)
-#})
 
 #function for checking if a phenotype is emergent
 
@@ -198,8 +198,7 @@ setMethod("simulate", "Arena", function(object, time){
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
-         stop("Please supply an Arena object."))
-  
+         stop("Please supply an Arena object.")) 
   sublb <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
   for(j in seq_along(arena@media)){
     submat <- as.matrix(arena@media[[j]]@diffmat)
@@ -208,37 +207,37 @@ setMethod("simulate", "Arena", function(object, time){
   sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb)
   colnames(sublb) <- c('x','y',arena@mediac)
   rm("submat")
-  
   for(i in 1:time){
     cat("iter:", i, "bacs:",nrow(arena@orgdat),"\n")
-    
     print(system.time(for(j in 1:nrow(arena@orgdat)){
       org <- arena@specs[[arena@orgdat[j,'type']]]
       switch(class(org),
-             "Bac"= {arena = simBac(org, arena, j, sublb)},
+             "Bac"= {arena = simBac(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
              stop("Simulation function for Organism object not defined yet.")) 
     }))
     test <- is.na(arena@orgdat$growth)
     if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
     rm("test")
-    
-    sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
-    sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
-    print(system.time(for(j in seq_along(arena@media)){
-      submat <- as.matrix(arena@media[[j]]@diffmat)
-      apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
-      switch(arena@media[[j]]@difunc,
-             "cpp"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveCpp(submat, donut=FALSE)}},
-             "r"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveR(arena@media[[j]])}},
-             stop("Simulation function for Organism object not defined yet.")) 
-      arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
-      sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
-    }))
-    sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
-    colnames(sublb) <- c('x','y',arena@mediac)
-    rm("sublb_tmp")
-    rm("submat")
-    
+    if(!arena@stir){
+      sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
+      sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
+      print(system.time(for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
+        submat <- as.matrix(arena@media[[j]]@diffmat)
+        apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
+        switch(arena@media[[j]]@difunc,
+               "cpp"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveCpp(submat, donut=FALSE)}},
+               "r"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveR(arena@media[[j]])}},
+               stop("Simulation function for Organism object not defined yet.")) 
+        arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
+        sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+      }))
+      sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
+      colnames(sublb) <- c('x','y',arena@mediac)
+      rm("sublb_tmp")
+      rm("submat")
+    }else{
+      sublb <- stirEnv(arena, sublb)
+    }
     addEval(evaluation, arena)
     if(sum(arena@occmat)==0){
       print("All organisms died!")
@@ -246,6 +245,41 @@ setMethod("simulate", "Arena", function(object, time){
     }
   }
   return(evaluation)
+})
+
+#function for stirring the complete evironment
+
+setGeneric("stirEnv", function(object, sublb){standardGeneric("stirEnv")})
+setMethod("stirEnv", "Arena", function(object, sublb){
+  #stir all the bacteria
+  neworgdat <- object@orgdat
+  cmbs = expand.grid(1:object@n,1:object@m)
+  if(nrow(neworgdat) > nrow(cmbs)){ #not so nice -> there is a problem
+    selength <- nrow(cmbs)
+  }else{
+    selength <- nrow(neworgdat)
+  }
+  sel <- sample(1:nrow(cmbs),selength)
+  neworgdat[,'x'] <- cmbs[sel,1]
+  neworgdat[,'y'] <- cmbs[sel,2]
+  newoccmat <- matrix(0,object@n,object@m)
+  for(i in 1:nrow(neworgdat)){
+    newoccmat[neworgdat[i,'x'],neworgdat[i,'y']] = neworgdat[i,'type']
+  }
+  eval.parent(substitute(object@orgdat <- neworgdat))
+  eval.parent(substitute(object@occmat <- Matrix(newoccmat,sparse=T)))
+  #stir all the substrates + modify substrates
+  sublb_tmp <- matrix(0,nrow=nrow(object@orgdat),ncol=(length(object@mediac)))
+  sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
+  for(j in seq_along(object@media)){ #get information from sublb matrix to media list
+    sval <- sum(sublb[,object@media[[j]]@name])/nrow(sublb)
+    submat <- matrix(sval,object@n,object@m)
+    eval.parent(substitute(object@media[[j]]@diffmat <- Matrix(submat, sparse=T)))
+    sublb_tmp[,j] <- apply(object@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+  }
+  sublb <- cbind(as.matrix(object@orgdat[,c(4,5)]),sublb_tmp)
+  colnames(sublb) <- c('x','y',object@mediac)
+  return(sublb)
 })
 
 #show function for class Arena
