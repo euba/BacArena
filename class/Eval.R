@@ -150,7 +150,7 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
       subs <- subs[-test,]
     }
   }
-  par(mfrow=c(2,2))
+  par(mfrow=c(2,1))
   times = c(1:length(object@simlist)*object@tstep)
   plot(times, times, xlim=c(0,max(times)), ylim=c(0,max(growths)),
        type='n', xlab='time in h', ylab='number of individuals on grid',
@@ -158,16 +158,14 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
   for(i in 1:nrow(growths)){
     lines(times, growths[i,], col=i)
   }
+  legend('bottom',legend=rownames(growths),col=1:nrow(growths),cex=0.4/log10(nrow(growths)+1),lwd=1)
   plot(times, times, xlim=c(0,max(times)), ylim=c(0,max(subs)),
        type='n', xlab='time in h', ylab='concentration in mmol per gridcell',
        main='Substance concentrations')
   for(i in 1:nrow(subs)){
     lines(times, subs[i,], col=i)
   }
-  plot(1:10,1:10,type="n",axes=FALSE,xlab='',ylab='')
-  legend('top',legend=rownames(growths),col=1:nrow(growths),cex=0.4/log10(nrow(growths)+1),lwd=1)
-  plot(1:10,1:10,type="n",axes=FALSE,xlab='',ylab='')
-  legend('top',legend=rownames(subs),col=1:nrow(subs),cex=0.4/log10(nrow(subs)+1),lwd=1)
+  legend('right',legend=rownames(subs),col=1:nrow(subs),cex=0.4/log10(nrow(subs)+1),lwd=1)
   if(retdata){
     return(list('Population'=growths,'Substances'=subs))
   }

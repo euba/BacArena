@@ -13,8 +13,8 @@ changeSub(arena, smax=medium[2], mediac=names(medium)[2])
 time=1000
 inflow=0.1
 outflow=0.063
-eval <- Eval(arena)
 product <- data.frame()
+eval <- Eval(arena)
 
 for(i in 1:time){
   print(i)
@@ -47,7 +47,6 @@ for(i in 1:time){
 #rm <- c(which(apply(product, 1, sum)==0), which(rownames(product) %in% c("EX_glc(e)","EX_pi(e)")))
 #matplot(t(product[-rm,]), type = c("b"), pch=1) #plot
 #matplot(t(product), type = c("l"), col=1:nrow(product)) #plot
-plotCurves(eval, remove=T, retdata = F)
 
 times=(1:ncol(product))*arena@tstep
 plot(0, 0, xlim=c(0,max(times)), ylim=c(0,max(product)),
@@ -57,3 +56,5 @@ for(i in 1:nrow(product)){
   lines(times, product[i,], col=i)
 }
 legend('right',legend=rownames(product),col=1:nrow(product),cex=0.6/log10(nrow(product)+1),lwd=1)
+plotCurves(eval, remove=T, retdata = F)
+
