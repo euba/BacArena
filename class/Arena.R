@@ -132,16 +132,18 @@ setMethod("addOrg2", "Arena", function(object, specI, amount, x=NULL, y=NULL, gr
 
 # Add all substances defined by exchange reactions of the available bacs
 
-setGeneric("addSubs", function(object, smax, mediac=object@mediac){standardGeneric("addSubs")})
-setMethod("addSubs", "Arena", function(object, smax, mediac=object@mediac){
-  newmedia <- list()
-  sapply(object@mediac, function(x, n, m){
-    newmedia[[x]] <<- Substance(n, m, 0, name=x)
-  }, n=object@n, m=object@m)
-  for(i in 1:length(mediac)){
-    newmedia[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i])
-  }
-  eval.parent(substitute(object@media <- newmedia))
+setGeneric("addSubs", function(object, smax=0, mediac=object@mediac){standardGeneric("addSubs")})
+setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac){
+  if(sum(mediac %in% object@mediac)==length(mediac)){
+    newmedia <- list()
+    sapply(object@mediac, function(x, n, m){
+      newmedia[[x]] <<- Substance(n, m, 0, name=x)
+    }, n=object@n, m=object@m)
+    for(i in 1:length(mediac)){
+      newmedia[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i])
+    }
+    eval.parent(substitute(object@media <- newmedia))
+  }else stop("Substance can't be produced or taken up by the organisms on the grid")
 #   newspecs <- lapply(object@specs, function(x,mediac){
 #     x@medium = intersect(x@medium, mediac)
 #     return(x)
@@ -151,11 +153,11 @@ setMethod("addSubs", "Arena", function(object, smax, mediac=object@mediac){
 
 #function for changing the substances in the environment
 
-setGeneric("changeSub", function(object, subname, value){standardGeneric("changeSub")})
-setMethod("changeSub", "Arena", function(object, subname, value){
-  if(length(sum(subname %in% names(object@media)))==length(subname)){
-    for(i in 1:length(subname)){
-      eval.parent(substitute(object@media[subname[i]] <- Substance(object@n, object@m, smax=value, name=subname[i])))
+setGeneric("changeSub", function(object, smax, mediac){standardGeneric("changeSub")})
+setMethod("changeSub", "Arena", function(object, smax, mediac){
+  if(length(sum(mediac %in% names(object@media)))==length(mediac)){
+    for(i in 1:length(mediac)){
+      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i])))
     }
   }else stop("Substance does not exist in medium")
 })
@@ -278,6 +280,17 @@ setMethod("stirEnv", "Arena", function(object, sublb){
   sublb <- cbind(as.matrix(object@orgdat[,c(4,5)]),sublb_tmp)
   colnames(sublb) <- c('x','y',object@mediac)
   return(sublb)
+})
+
+#function for converting orgdat in a matrix
+
+setGeneric("dat2mat", function(object){standardGeneric("dat2mat")})
+setMethod("dat2mat", "Arena", function(object){
+  newoccmat <- matrix(0,object@n,object@m)
+  for(i in 1:nrow(object@orgdat)){
+    newoccmat[object@orgdat[i,'x'],object@orgdat[i,'y']] = object@orgdat[i,'type']
+  }
+  return(newoccmat)
 })
 
 #show function for class Arena
