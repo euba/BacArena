@@ -134,32 +134,30 @@ setMethod("addOrg2", "Arena", function(object, specI, amount, x=NULL, y=NULL, gr
 
 setGeneric("addSubs", function(object, smax, mediac=object@mediac){standardGeneric("addSubs")})
 setMethod("addSubs", "Arena", function(object, smax, mediac=object@mediac){
-  newmedia = object@media
-  n = object@n
-  m = object@m
-  mediac = setdiff(mediac, names(arena@media))
-  if(length(mediac)==0){
-    print("No novel compound can be included to the medium.")
-  }else{
-    sapply(mediac, function(x, smax, n, m){
-      newmedia[[x]] <<- Substance(n, m, smax, name=x)
-    }, smax=smax, n=n, m=m)
-    eval.parent(substitute(object@media <- c(object@media,newmedia)))
+  newmedia <- list()
+  sapply(object@mediac, function(x, n, m){
+    newmedia[[x]] <<- Substance(n, m, 0, name=x)
+  }, n=object@n, m=object@m)
+  for(i in 1:length(mediac)){
+    newmedia[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i])
   }
-  newspecs <- lapply(object@specs, function(x,mediac){
-    x@medium = intersect(x@medium, mediac)
-    return(x)
-  }, mediac=mediac)
-  eval.parent(substitute(object@specs <- newspecs))
+  eval.parent(substitute(object@media <- newmedia))
+#   newspecs <- lapply(object@specs, function(x,mediac){
+#     x@medium = intersect(x@medium, mediac)
+#     return(x)
+#   }, mediac=mediac)
+#   eval.parent(substitute(object@specs <- newspecs))
 })
 
 #function for changing the substances in the environment
 
 setGeneric("changeSub", function(object, subname, value){standardGeneric("changeSub")})
 setMethod("changeSub", "Arena", function(object, subname, value){
-  if (subname %in% names(object@media)) eval.parent(substitute(object@media[subname] <- Substance(object@n, object@m, smax=value, name=subname)))
-  #return(Substance(object@n, object@m, smax=value, name=subname))
-  else stop("Substance does not exist in medium")
+  if(length(sum(subname %in% names(object@media)))==length(subname)){
+    for(i in 1:length(subname)){
+      eval.parent(substitute(object@media[subname[i]] <- Substance(object@n, object@m, smax=value, name=subname[i])))
+    }
+  }else stop("Substance does not exist in medium")
 })
 
 #function for checking if a phenotype is emergent
