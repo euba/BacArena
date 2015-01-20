@@ -27,8 +27,23 @@ Substance <- function(n, m, smax, diffmat={}, name, difunc="cpp", difspeed=1, ..
   if(length(diffmat)==0){
     diffmat = Matrix(smax, nrow=n, ncol=m, sparse=T)
   }
-  new("Substance", smax=smax, diffmat=diffmat, name=name, difunc=difunc, difspeed=difspeed, ...)
+  new("Substance", smax=smax, diffmat=diffmat, name=name, difunc=difunc, difspeed=round(difspeed), ...)
 }
+
+########################################################################################################
+###################################### GET METHODS FOR ATTRIBUTES ######################################
+########################################################################################################
+
+setGeneric("smax", function(object){standardGeneric("smax")})
+setMethod("smax", "Substance", function(object){return(object@smax)})
+setGeneric("diffmat", function(object){standardGeneric("diffmat")})
+setMethod("diffmat", "Substance", function(object){return(object@diffmat)})
+setGeneric("name", function(object){standardGeneric("name")})
+setMethod("name", "Substance", function(object){return(object@name)})
+setGeneric("difunc", function(object){standardGeneric("difunc")})
+setMethod("difunc", "Substance", function(object){return(object@difunc)})
+setGeneric("difspeed", function(object){standardGeneric("difspeed")})
+setMethod("difspeed", "Substance", function(object){return(object@difspeed)})
 
 ########################################################################################################
 ###################################### METHODS #########################################################

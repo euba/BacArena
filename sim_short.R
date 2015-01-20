@@ -23,15 +23,16 @@ ecore = model
 ecore = changeBounds(ecore, c('EX_ac(e)','EX_akg(e)','EX_etoh(e)','EX_for(e)',
                       'EX_fum(e)','EX_lac_D(e)','EX_pyr(e)','EX_succ(e)'), -20)
 
-bace = Bac(model=ecore, deathrate=0.2, duplirate=1.5, growthlimit=0.05, growtype="exponential",
-           speed=2, budge=F, lyse=F, chem="EX_glc(e)")
-arena = Arena(n=100, m=100, tstep=1, stir=T)
+#bace = Bac(model=ecore, deathrate=0.2, duplirate=1.5, growthlimit=0.05, growtype="exponential",
+#           speed=2, budge=F, lyse=T)
+bach = Human(model=ecore, deathrate=0.2, duplirate=1.5, growthlimit=0.05, growtype="exponential")
+arena = Arena(n=100, m=100, tstep=1)
 #addOrg(arena, bace, amount=1, x=50, y=50)
-addOrg(arena, bace, amount=1)
+addOrg(arena, bach, amount=100)
 #print(system.time(addOrg(arena, bace, amount=50000)))
-addSubs(arena, smax=1000, mediac=c("EX_glc(e)","EX_pi(e)"))
+addSubs(arena, smax=1000)
 
-simlist <- simulate(arena, time=30)
+print(system.time(simlist <- simulate(arena, time=20)))
 
 plot(arena@orgdat[,c('x','y')])
 image(as.matrix(arena@occmat))

@@ -32,6 +32,31 @@ Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0
 }
 
 ########################################################################################################
+###################################### GET METHODS FOR ATTRIBUTES ######################################
+########################################################################################################
+
+setGeneric("orgdat", function(object){standardGeneric("orgdat")})
+setMethod("orgdat", "Arena", function(object){return(object@orgdat)})
+setGeneric("specs", function(object){standardGeneric("specs")})
+setMethod("specs", "Arena", function(object){return(object@specs)})
+setGeneric("media", function(object){standardGeneric("media")})
+setMethod("media", "Arena", function(object){return(object@media)})
+setGeneric("phenotypes", function(object){standardGeneric("phenotypes")})
+setMethod("phenotypes", "Arena", function(object){return(object@phenotypes)})
+setGeneric("mediac", function(object){standardGeneric("mediac")})
+setMethod("mediac", "Arena", function(object){return(object@mediac)})
+setGeneric("occmat", function(object){standardGeneric("occmat")})
+setMethod("occmat", "Arena", function(object){return(object@occmat)})
+setGeneric("tstep", function(object){standardGeneric("tstep")})
+setMethod("tstep", "Arena", function(object){return(object@tstep)})
+setGeneric("stir", function(object){standardGeneric("stir")})
+setMethod("stir", "Arena", function(object){return(object@stir)})
+setGeneric("n", function(object){standardGeneric("n")})
+setMethod("n", "Arena", function(object){return(object@n)})
+setGeneric("m", function(object){standardGeneric("m")})
+setMethod("m", "Arena", function(object){return(object@m)})
+
+########################################################################################################
 ###################################### METHODS #########################################################
 ########################################################################################################
 
@@ -144,11 +169,6 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac){
     }
     eval.parent(substitute(object@media <- newmedia))
   }else stop("Substance can't be produced or taken up by the organisms on the grid")
-#   newspecs <- lapply(object@specs, function(x,mediac){
-#     x@medium = intersect(x@medium, mediac)
-#     return(x)
-#   }, mediac=mediac)
-#   eval.parent(substitute(object@specs <- newspecs))
 })
 
 #function for changing the substances in the environment
@@ -213,6 +233,7 @@ setMethod("simulate", "Arena", function(object, time){
       org <- arena@specs[[arena@orgdat[j,'type']]]
       switch(class(org),
              "Bac"= {arena = simBac(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
+             "Human"= {arena = simHum(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
              stop("Simulation function for Organism object not defined yet.")) 
     }))
     test <- is.na(arena@orgdat$growth)
