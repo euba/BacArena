@@ -11,7 +11,7 @@ setClass("Bac",
          representation(
            speed="integer", # speed by which bacterium is moving (given by cell per iteration)
            budge="logical", #flag indicating, if budging (veruecktes Labyrinth) should be implemented
-           chem='character' # name of substance which is the chemotaxis attractant
+           chem="character" # name of substance which is the chemotaxis attractant
          )
 )
 

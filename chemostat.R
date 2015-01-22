@@ -10,7 +10,7 @@ addSubs(arena)
 changeSub(arena, smax=medium[1], mediac=names(medium)[1])
 changeSub(arena, smax=medium[2], mediac=names(medium)[2])
 
-time=1000
+time=20
 inflow=0.1
 outflow=0.063
 product <- data.frame()
@@ -20,22 +20,26 @@ for(i in 1:time){
   print(i)
   arena <- getArena(simulate(arena, time=1))
   addEval(eval, arena)
+  arena_size <- n(arena)*m(arena)
   # remove/add concentration to the medium
-  for(j in seq_along(names(arena@media))){
-    sub <- arena@media[[j]]
-    product[sub@name,i] <- sum(sub@diffmat)*outflow
-    newconc <- (sum(sub@diffmat) - product[sub@name, i])/(arena@n*arena@m)
-    if(sub@name %in% names(medium)){
-      newconc <- newconc + (medium[sub@name]*inflow)
+  media_subs <- media(arena)
+  for(j in seq_along(names(media_subs))){
+    sub <- media_subs[[j]]
+    conc_matrix <- diffmat(sub)
+    product[name(sub),i] <- sum(conc_matrix)*outflow
+    newconc <- (sum(conc_matrix) - product[name(sub), i])/(arena_size)
+    if(name(sub) %in% names(medium)){
+      newconc <- newconc + (medium[name(sub)]*inflow)
     }
-    changeSub(arena, smax=newconc, mediac=sub@name)
+    changeSub(arena, smax=newconc, mediac=name(sub))
   }
   # remove bacteria from the medium
-  rem_org <- (floor(nrow(arena@orgdat)*outflow))
+  neworgdat <- orgdat(arena)
+  rem_org <- (floor(nrow(neworgdat)*outflow))
   if(rem_org!=0){
-    arena@orgdat <- arena@orgdat[-(1:rem_org),]
+    neworgdat <- neworgdat[-(1:rem_org),]
   }
-  arena@occmat <- Matrix(dat2mat(arena), sparse=T)
+  changeOrg(arena, neworgdat)
 }
 
 

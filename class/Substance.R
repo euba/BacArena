@@ -1,4 +1,4 @@
-#source(file="class/Grid.R")
+
 
 # Substance inherits from Grid and contains the matrices with concentrations
 
@@ -7,14 +7,12 @@
 ########################################################################################################
 
 setClass("Substance",
-         #contains="Grid",
          representation(
            smax = "numeric", # substrate start concentration
            diffmat = "Matrix", # matrix containing concentrations -> sparse Matrix
            name = "character", # String describing object
            difunc = "character", # String describing the function for diffusion
            difspeed = "numeric" # String describing the function for diffusion
-           #diffconst= "numeric",  # diffusion constant
          )
 )
 
@@ -52,8 +50,8 @@ setMethod("difspeed", "Substance", function(object){return(object@difspeed)})
 
 #R function for naive diffusion (neighbourhood) of the Substance matrix
 
-setGeneric("diffuseNaiveR", function(object){standardGeneric("diffuseNaiveR")})
-setMethod("diffuseNaiveR", "Substance", function(object){
+setGeneric("diffuseR", function(object){standardGeneric("diffuseR")})
+setMethod("diffuseR", "Substance", function(object){
   smat <- object@diffmat
   smatn <- matrix(NA, nrow=dim(smat)[1]+2, ncol=dim(smat)[2]+2) #define environment with boundary conditions
   smatn[2:(dim(smat)[1]+1), 2:(dim(smat)[2]+1)] <- smat #put the values into the environment
@@ -88,6 +86,15 @@ setMethod("diffuseNaiveR", "Substance", function(object){
     }
   }
   #eval.parent(substitute(object@diffmat <- smat))
+})
+
+#C++ function for naive diffusion (neighbourhood) of the Substance matrix
+
+setGeneric("diffuseCpp", function(object){standardGeneric("diffuseCpp")})
+setMethod("diffuseCpp", "Substance", function(object){
+  submat <- as.matrix(object@diffmat)
+  diffuseNaiveCpp(submat, donut=FALSE)
+  eval.parent(substitute(object@diffmat <- Matrix(submat, sparse=T)))
 })
 
 #show function for class Substance

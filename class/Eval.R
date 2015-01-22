@@ -122,10 +122,10 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
       }
       if(phencol){
         plot(object@simlist[[i]][,c('x','y')],xlim=c(0,object@n),ylim=c(0,object@m),xlab='',ylab='',
-             pch=20,axes=FALSE,cex=0.4,main='Population', col=object@simlist[[i]]$phenotype+1)
+             pch=20,axes=FALSE,cex=1,main='Population', col=object@simlist[[i]]$phenotype+1)
       }else{
         plot(object@simlist[[i]][,c('x','y')],xlim=c(0,object@n),ylim=c(0,object@m),xlab='',ylab='',
-             pch=20,axes=FALSE,cex=0.4,main='Population', col=object@simlist[[i]]$type)
+             pch=20,axes=FALSE,cex=1,main='Population', col=object@simlist[[i]]$type)
       }
     }
   }

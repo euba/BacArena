@@ -1,4 +1,4 @@
-#source(file="class/Grid.R")
+
 
 # Organism is the class which contains the metabolic model and other features of the organisms in the arena
 
@@ -12,7 +12,7 @@ setClass("Organism",
            ubnd="numeric", #upper bounds, which can change dynamically
            type="character", # description of the organism
            medium="character", #character vector with exchange reactions of Organism
-           lpobj="sysBiolAlg_fba", # sybil optimization object
+           lpobj="sysBiolAlg", # sybil optimization object
            fbasol="list", # fba solution
            lyse="logical", # boolean variable for lysis
            feat="list", #list containing conditional features for the object (contains at the momement only biomass components for lysis)

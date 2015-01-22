@@ -18,7 +18,7 @@ setClass("Human",
 ########################################################################################################
 
 Human <- function(model, deathrate, duplirate, growthlimit, growtype,
-                  objective==model@react_id[which(model@obj_coef==1)], ...){
+                  objective=model@react_id[which(model@obj_coef==1)], ...){
   model <- changeObjFunc(model, objective)
   new("Human", Organism(model=model, deathrate=deathrate, duplirate=duplirate, growtype=growtype,
                       growthlimit=growthlimit, ...), objective=objective)
@@ -29,7 +29,7 @@ Human <- function(model, deathrate, duplirate, growthlimit, growtype,
 ########################################################################################################
 
 setGeneric("objective", function(object){standardGeneric("objective")})
-setMethod("objective", "Organism", function(object){return(object@objective)})
+setMethod("objective", "Human", function(object){return(object@objective)})
 
 ########################################################################################################
 ###################################### METHODS #########################################################
@@ -41,14 +41,14 @@ setMethod("objective", "Organism", function(object){return(object@objective)})
 setGeneric("changeFobj", function(object, new_fobj, model, alg="fba"){standardGeneric("changeFobj")})
 setMethod("changeFobj", "Human", function(object, new_fobj, model, alg="fba"){
   eval.parent(substitute(object@objective <- new_fobj)) #(pseudo) call by reference implementation
-  model <- changeObjFunc(object@model, new_fobj)))
+  model <- changeObjFunc(object@model, new_fobj)
   eval.parent(substitute(object@lpobj <- sysBiolAlg(model, algorithm=alg))) #the lp object has to be updated according to the new objective
 })
 
 # function with the growth model of a human cell (biomass growth, replication, death)
 
 setGeneric("cellgrowth", function(object, population, j){standardGeneric("cellgrowth")})
-setMethod("cellgrowth", "Bac", function(object, population, j){
+setMethod("cellgrowth", "Human", function(object, population, j){
   neworgdat <- population@orgdat
   popvec <- neworgdat[j,]
   switch(object@growtype,
@@ -82,12 +82,12 @@ setMethod("cellgrowth", "Bac", function(object, population, j){
 #function for one iteration for Human class
 
 setGeneric("simHum", function(object, arena, j, sublb){standardGeneric("simHum")})
-setMethod("simHum", "Bac", function(object, arena, j, sublb){
+setMethod("simHum", "Human", function(object, arena, j, sublb){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium],
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep)
   optimizeLP(object, lb=lobnd)
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,])))
-  dead <- growth(object, arena, j)
+  dead <- cellgrowth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
   if(dead && object@lyse){
     eval.parent(substitute(sublb[j,] <- lysis(object, names(arena@media), sublb[j,])))

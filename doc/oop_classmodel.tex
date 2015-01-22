@@ -7,7 +7,7 @@
 \tikzstyle{hierarchy1}=[rectangle, draw=black, rounded corners, fill=gray!40, drop shadow,
         text centered, anchor=north, text=black, text width=4cm]
 \tikzstyle{hierarchy2}=[rectangle, draw=black, rounded corners, fill=white, drop shadow,
-        text centered, anchor=north, text=black, text width=4cm]
+        anchor=north, text=black, text width=4cm]
 \tikzstyle{hierarchy3}=[rectangle, draw=black, rounded corners, fill=white, drop shadow,
         text centered, anchor=north, text=black, text width=4cm]
 \tikzstyle{myarrow}=[->, >=open triangle 90, thick]
@@ -15,42 +15,66 @@
         
 \begin{center}
 \begin{tikzpicture}[node distance=2cm]
-  \node (Arena) [hierarchy1, rectangle split, rectangle split parts=2]
+  \node (Arena) [hierarchy2, rectangle split, rectangle split parts=3]
   {
-    \textbf{ARENA}
-    \nodepart{second} n = numeric \\ m = numeric \\ iter = numeric \\ smax = numeric \\ seed = numeric \\ epsilon = numeric \\ plot() \\ evaluate()
+  	\begin{center}
+    \textbf{Arena}
+    \end{center}
+    \nodepart{second} orgdat = data.frame \\ specs = list \\ media = list \\ phenotypes = list \\ mediac = character \\ occmat = Matrix \\ tstep = numeric \\ stir = logical \\ n = integer \\ m = integer
+    \nodepart{third} addOrg() \\ addSubs() \\ changeSub() \\ changeOrg() \\ checkPhen() \\ simulate() \\ stirEnv() \\ dat2mat()
   };
   
-  \node (Substance) [hierarchy2, rectangle split, rectangle split parts=2, below left=of Arena]
+  \node (Eval) [hierarchy2, rectangle split, rectangle split parts=3, below = of Arena]
   {
-    \textbf{SUBSTANCES}
-    \nodepart{second} diffconst = numeric \\ diffmatrix = numeric \\ diffusion() \\ getConc()
+    \begin{center}
+    \textbf{Eval}
+    \end{center}
+    \nodepart{second} medlist = list \\ simlist = list 
+    \nodepart{third} addEval() \\ evalArena() \\ getArena() \\ plotCurves() \\ minePheno()
+  };  
+  
+  \node (Substance) [hierarchy2, rectangle split, rectangle split parts=3, right=of Arena]
+  {
+    \begin{center}
+    \textbf{Substance}
+    \end{center}
+    \nodepart{second} smax = numeric \\ diffmat = Matrix \\ name = character \\ difunc = character \\ difspeed = numeric
+    \nodepart{third} diffuseR() \\ diffuseCpp()
   };
 
-  \node (Organism) [hierarchy2, rectangle split, rectangle split parts=2, below right= of Arena]
+  \node (Organism) [hierarchy2, rectangle split, rectangle split parts=3, right= of Substance]
   {
-    \textbf{ORGANISM}
-    \nodepart{second} x = numeric \\ y = numeric \\ objective = character \\ model = modelorg \\ optimize() \\ constrain() \\ getExRxn()
+    \begin{center}
+    \textbf{Organism}
+    \end{center}
+    \nodepart{second} lbnd = numeric \\ ubnd = numeric \\ type = character \\ medium = character \\ lpobj = sysBiolAlg \\ fbasol = list \\ lyse = logical \\ feat = list \\ deathrate = numeric \\ duplirate = numeric \\ growthlimit = numeric \\ growtype = character
+    \nodepart{third} constrain() \\ consume() \\ emptyHood() \\ getHood() \\ getPhenotype() \\ growExp() \\ growLin() \\ optimizeLP() \\ lysis()
   };
 
-  \node (Bac) [hierarchy3, rectangle split, rectangle split parts=2, below left = of Organism]
+  \node (Bac) [hierarchy2, rectangle split, rectangle split parts=3, below left = of Organism]
   {
-    \textbf{BAC}
-    \nodepart{second} biomass = numeric \\ move() \\ grow() \\ divide()
+    \begin{center}
+    \textbf{Bac}
+    \end{center}
+    \nodepart{second} speed = integer \\ budge = logical \\ chem = character
+    \nodepart{third} growth() \\ move() \\ chemotaxis() \\ budging() \\ simBac()
   };
   
-  \node (Epithelia) [hierarchy3, rectangle split, rectangle split parts=2, below right = of Organism]
+  \node (Human) [hierarchy2, rectangle split, rectangle split parts=3, below right = of Organism]
   {
-    \textbf{EPITHELIA}
-    \nodepart{second} transport()
+    \begin{center}
+    \textbf{Human}
+    \end{center}
+    \nodepart{second} objective = character
+    \nodepart{third} changeFobj() \\ cellgrowth() \\ simHum()
   };
 
 
-  \draw[myarrow] (Substance.north) -- ++(0,0.8) -| (Arena.south);
-  \draw[line] (Substance.north) -- ++(0,0.8) -| (Organism.north);
+  \draw[myarrow] (Eval.north) -- ++(0,0.8) -| (Arena.south);
+  %\draw[line] (Eval.north) -- ++(0,0.8) -| (Arena.south);
 
   \draw[myarrow] (Bac.north) -- ++(0,0.8) -| (Organism.south);
-  \draw[line] (Epithelia.north) -- ++(0,0.8) -| (Bac.north);
+  \draw[line] (Human.north) -- ++(0,0.8) -| (Bac.north);
 \end{tikzpicture}
 \end{center}
 \end{document}

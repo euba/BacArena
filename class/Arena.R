@@ -182,6 +182,14 @@ setMethod("changeSub", "Arena", function(object, smax, mediac){
   }else stop("Substance does not exist in medium")
 })
 
+#function for changing the Organisms in the environment
+
+setGeneric("changeOrg", function(object, neworgdat){standardGeneric("changeOrg")})
+setMethod("changeOrg", "Arena", function(object, neworgdat){
+  eval.parent(substitute(object@orgdat <- neworgdat))
+  eval.parent(substitute(object@occmat <- Matrix(dat2mat(object), sparse=T)))
+})
+
 #function for checking if a phenotype is emergent
 
 setGeneric("checkPhen", function(object, org, cutoff=1e-6){standardGeneric("checkPhen")})
@@ -247,7 +255,7 @@ setMethod("simulate", "Arena", function(object, time){
         apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
         switch(arena@media[[j]]@difunc,
                "cpp"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveCpp(submat, donut=FALSE)}},
-               "r"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveR(arena@media[[j]])}},
+               "r"={for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
                stop("Simulation function for Organism object not defined yet.")) 
         arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
         sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
