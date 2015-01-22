@@ -26,18 +26,19 @@ ecore = changeBounds(ecore, c('EX_ac(e)','EX_akg(e)','EX_etoh(e)','EX_for(e)',
 
 bace1 = Bac(model=ecore, deathrate=0.2, duplirate=1.5, growthlimit=0.05, growtype="exponential",
            speed=2, type="ecore1")
-bace2 = Bac(model=ecore, deathrate=0.2, duplirate=1.5, growthlimit=0.05, growtype="exponential",
-           speed=2, type="ecore2")
+#bace2 = Bac(model=ecore, deathrate=0.2, duplirate=1.5, growthlimit=0.05, growtype="exponential",
+#           speed=2, type="ecore2")
 arena = Arena(n=100, m=100, tstep=1)
 addOrg(arena, bace1, amount=10)
-addOrg(arena, bace2, amount=10)
-addSubs(arena, smax=20)
+#addOrg(arena, bace2, amount=10)
+addSubs(arena, smax=1000)
 
-print(system.time(evalsim <- simulate(arena, time=30)))
+print(system.time(evalsim <- simulate(arena, time=10)))
 format(object.size(evalsim), units='Mb')
 
 evalArena(evalsim, plot_items=c('population'), phencol=T, retdata=F)
 plotCurves(evalsim, remove=T, retdata = F)
+minePheno(evalsim)
 
 
 library(animation)

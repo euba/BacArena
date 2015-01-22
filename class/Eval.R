@@ -80,6 +80,7 @@ setMethod("getArena", "Eval", function(object, time=length(object@medlist)){
 
 setGeneric("evalArena", function(object, plot_items='population', phencol=F, retdata=F){standardGeneric("evalArena")})
 setMethod("evalArena", "Eval", function(object, plot_items='population', phencol=F, retdata=F){
+  old.par <- par(no.readonly = TRUE)
   if(retdata){
     retlist = list()
     for(i in 1:length(plot_items)){
@@ -132,12 +133,14 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
   if(retdata){
     return(retlist)
   }
+  par(old.par)
 })
 
 #function for plotting the overall change as curves
 
 setGeneric("plotCurves", function(object, medplot=object@mediac, retdata=F, remove=F){standardGeneric("plotCurves")})
 setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=F, remove=F){
+  old.par <- par(no.readonly = TRUE)
   growths <- matrix(0, nrow=length(object@specs), ncol=length(object@simlist))
   rownames(growths) = names(object@specs)
   subs <- matrix(0, nrow=length(medplot), ncol=length(object@simlist))
@@ -178,9 +181,10 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
   if(retdata){
     return(list('Population'=growths,'Substances'=subs))
   }
+  par(old.par)
 })
 
-#function for mining/analyzing phenotypes which occured on the arena
+#function for getting a matrix of phenotypes from the dataset
 
 setGeneric("getPhenoMat", function(object){standardGeneric("getPhenoMat")})
 setMethod("getPhenoMat", "Eval", function(object){
@@ -201,7 +205,31 @@ setMethod("getPhenoMat", "Eval", function(object){
       phenmat[pind, names(pvec)] <- pvec
     }
   }
+  phenmat <- ifelse(phenmat==-1,2,phenmat)
   return(phenmat)
+})
+
+#function for mining/analyzing phenotypes which occured on the arena
+
+setGeneric("minePheno", function(object){standardGeneric("minePheno")})
+setMethod("minePheno", "Eval", function(object){
+  phenmat <- getPhenoMat(object)
+  if(nrow(phenmat)<=1){
+    stop('not enough phenotypes to analyze.')
+  }
+  old.par <- par(no.readonly = TRUE)
+  pcount <- as.vector(table(rownames(phenmat)))
+  plabs <- vector()
+  for(i in 1:length(pcount)){
+    plabs <- c(plabs,paste(rep(levels(as.factor(rownames(phenmat)))[i],pcount[i]),1:pcount[i],sep='_'))
+  }
+  par(mfrow=c(2,1))
+  phenpca <- prcomp(phenmat)
+  plot(phenpca$x[,1:2], type='n', xlab='PC1', ylab='PC2')
+  text(phenpca$x[,1:2], labels=plabs, col=as.numeric(as.factor(rownames(phenpca$x))))
+  rownames(phenmat) <- plabs
+  plot(hclust(dist(phenmat)))
+  par(old.par)
 })
 
 #show function for class Eval
