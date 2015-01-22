@@ -180,6 +180,30 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
   }
 })
 
+#function for mining/analyzing phenotypes which occured on the arena
+
+setGeneric("getPhenoMat", function(object){standardGeneric("getPhenoMat")})
+setMethod("getPhenoMat", "Eval", function(object){
+  numphens <- unlist(lapply(object@phenotypes,function(x){return(length(x))}))
+  phentypes <- vector()
+  for(i in seq_along(numphens)){
+    phentypes <- c(phentypes, rep(names(numphens)[i],numphens[i]))
+  }
+  phentypes <- as.factor(phentypes)
+  phenmat <- matrix(0, nrow=length(phentypes), ncol=length(object@mediac))
+  colnames(phenmat) <- object@mediac
+  rownames(phenmat) <- phentypes
+  pind <- 0
+  for(i in 1:length(object@phenotypes)){
+    for(j in 1:numphens[i]){
+      pvec <- object@phenotypes[[i]][[j]]
+      pind <- pind + 1
+      phenmat[pind, names(pvec)] <- pvec
+    }
+  }
+  return(phenmat)
+})
+
 #show function for class Eval
 
 removeMethod(show, signature(object="Eval"))

@@ -41,4 +41,4 @@ plotCurves(evalsim, remove=T, retdata = F)
 
 
 library(animation)
-saveVideo(evalArena(evalsim, plot_items=c('population'), phencol=T, retdata=F), video.name = "Pop2.mp4", other.opts = "-b 300k")  # higher bitrate, better quality
+saveVideo(evalArena(evalsim, plot_items=c('population'), phencol=F, retdata=F), video.name = "Pop4.mp4", other.opts = "-b 300k")  # higher bitrate, better quality
