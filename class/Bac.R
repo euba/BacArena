@@ -183,7 +183,7 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb){
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
   
   if(dead && object@lyse){
-    eval.parent(substitute(sublb[j,] <- lysis(object, names(arena@media), sublb[j,])))
+    eval.parent(substitute(sublb[j,] <- lysis(object, sublb[j,])))
   }
   if(!dead && !arena@stir && object@speed != 0){
     sapply(1:object@speed,function(x){

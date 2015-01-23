@@ -25,7 +25,7 @@ ecore = changeBounds(ecore, c('EX_ac(e)','EX_akg(e)','EX_etoh(e)','EX_for(e)',
                       'EX_fum(e)','EX_lac_D(e)','EX_pyr(e)','EX_succ(e)'), -20)
 
 bace1 = Bac(model=ecore, deathrate=0.2, duplirate=1.5, growthlimit=0.05, growtype="exponential",
-           speed=2, type="ecore1")
+           speed=2, type="ecore1", lyse=T)
 #bace2 = Bac(model=ecore, deathrate=0.2, duplirate=1.5, growthlimit=0.05, growtype="exponential",
 #           speed=2, type="ecore2")
 arena = Arena(n=100, m=100, tstep=1)

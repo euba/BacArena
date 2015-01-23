@@ -27,8 +27,8 @@ setClass("Organism",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", deathrate, duplirate,
-                     growthlimit, growtype="exponential", lyse=F, feat=list(), ...){ #the constructor requires the model, after that it is not stored anymore
+Organism <- function(model, typename=mod_desc(model), algo="fba", ex=NA, deathrate, duplirate, growthlimit,
+                     growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", ...){ #the constructor requires the model, after that it is not stored anymore
   rxname = react_id(model)
   lpobject <- sysBiolAlg(model, algorithm=algo)
   fbasol <- optimizeProb(lpobject)
@@ -38,12 +38,26 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", deat
   upbnd = uppbnd(model)
   names(upbnd) = rxname
   if(lyse){
-    stoch <- S(model)[,which(model@obj_coef==1)] #find stochiometry of biomass components
-    names(stoch) <- met_id(model)
-    feat[["biomass"]] <- stoch[-which(stoch==0)]
+    stochmat <- as.matrix(S(model))
+    colnames(stochmat) <- react_id(model)
+    rownames(stochmat) <- met_id(model)
+    stoch <- stochmat[,which(model@obj_coef==1)] #find stochiometry of biomass components
+    biomets <- stoch[-which(stoch==0)]
+    exs <- findExchReact(model)
+    extrans <- react_id(exs)
+    names(extrans) <- met_id(exs)
+    names(biomets) <- gsub(csuffix,esuffix,names(biomets))
+    biomets <- biomets[which(names(biomets) %in% names(extrans))]
+    names(biomets) <- extrans[names(biomets)]
+    feat[["biomass"]] <- biomets
   }
-  new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=rxname[grep(ex, rxname)],
-      lpobj=lpobject, fbasol=fbasol, lyse=lyse, feat=feat, deathrate=deathrate, duplirate=duplirate,
+  if(is.na(ex)){
+    medc <- react_id(findExchReact(ecore))
+  }else{
+    medc <- rxname[grep(ex, rxname)]
+  }
+  new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
+      fbasol=fbasol, lyse=lyse, feat=feat, deathrate=deathrate, duplirate=duplirate,
       growthlimit=growthlimit, growtype=growtype, ...)
 }
 
@@ -149,11 +163,10 @@ setMethod("growExp", "Organism", function(object, growth){
 
 #function for lysis of bacterial cells by adding biomass_compounds * growth to the medium
 
-setGeneric("lysis", function(object, medium, sublb, factor=object@growthlimit, csuffix="\\[c\\]", esuffix="(e)", ex="EX_"){standardGeneric("lysis")})
-setMethod("lysis", "Organism", function(object, medium, sublb, factor=object@growthlimit, csuffix="\\[c\\]", esuffix="(e)", ex="EX_"){
+setGeneric("lysis", function(object, sublb, factor=object@growthlimit){standardGeneric("lysis")})
+setMethod("lysis", "Organism", function(object, sublb, factor=object@growthlimit){
   stoch = object@feat[["biomass"]]
-  names(stoch) <- paste(ex,gsub(csuffix, esuffix, names(stoch)),sep='')
-  lysate = round(abs(na.omit(stoch[medium]))*factor, 6)
+  lysate = round(abs(stoch)*factor, 6)
   sublb[names(lysate)] = sublb[names(lysate)] + lysate
   return(sublb)
 })
