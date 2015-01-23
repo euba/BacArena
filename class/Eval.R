@@ -211,8 +211,8 @@ setMethod("getPhenoMat", "Eval", function(object){
 
 #function for mining/analyzing phenotypes which occured on the arena
 
-setGeneric("minePheno", function(object){standardGeneric("minePheno")})
-setMethod("minePheno", "Eval", function(object){
+setGeneric("minePheno", function(object, plot_type="pca"){standardGeneric("minePheno")})
+setMethod("minePheno", "Eval", function(object, plot_type="pca"){
   phenmat <- getPhenoMat(object)
   if(nrow(phenmat)<=1){
     stop('not enough phenotypes to analyze.')
@@ -220,16 +220,29 @@ setMethod("minePheno", "Eval", function(object){
   old.par <- par(no.readonly = TRUE)
   pcount <- as.vector(table(rownames(phenmat)))
   plabs <- vector()
+  plabs2 <- vector()
   for(i in 1:length(pcount)){
     plabs <- c(plabs,paste(rep(levels(as.factor(rownames(phenmat)))[i],pcount[i]),1:pcount[i],sep='_'))
+    plabs2 <- c(plabs2,paste(i,1:pcount[i],sep='_'))
   }
-  par(mfrow=c(2,1))
-  phenpca <- prcomp(phenmat)
-  plot(phenpca$x[,1:2], type='n', xlab='PC1', ylab='PC2')
-  text(phenpca$x[,1:2], labels=plabs, col=as.numeric(as.factor(rownames(phenpca$x))))
-  rownames(phenmat) <- plabs
-  plot(hclust(dist(phenmat)))
-  par(old.par)
+  par(mfrow=c(1,1))
+  if(plot_type=="pca"){
+    phenpca <- prcomp(phenmat)
+    plot(phenpca$x[,1:2], xlab='PC1', ylab='PC2', pch=20, cex=0.8, col=as.numeric(as.factor(rownames(phenpca$x))))
+    text(phenpca$x[,1:2], labels=plabs2, col=as.numeric(as.factor(rownames(phenpca$x))), cex=0.7)
+    typ <- names(object@specs)
+    for(i in 1:length(object@specs)){
+      segments(phenpca$x[which(rownames(phenpca$x)==typ[i]),1],phenpca$x[which(rownames(phenpca$x)==typ[i]),2],
+               mean(phenpca$x[which(rownames(phenpca$x)==typ[i]),1]),mean(phenpca$x[which(rownames(phenpca$x)==typ[i]),2]),col=i)
+      points(mean(phenpca$x[which(rownames(phenpca$x)==typ[i]),1]),mean(phenpca$x[which(rownames(phenpca$x)==typ[i]),2]),col=i,pch=15,cex=1.5)
+    }
+    legend('topright',legend=names(object@specs),col=1:length(object@specs),cex=0.9,lwd=4)
+  }
+  if(plot_type=="hclust"){
+    rownames(phenmat) <- plabs
+    plot(hclust(dist(phenmat)))
+    par(old.par)
+  }
 })
 
 #show function for class Eval
