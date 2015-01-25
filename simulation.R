@@ -14,6 +14,7 @@ source(file="class/Arena.R")
 source(file="class/Substance.R")
 source(file="class/Bac.R")
 source(file="class/Organism.R")
+source(file="class/Eval.R")
 Rcpp::sourceCpp("cpp/diff.cpp")
 #Rcpp::sourceCpp("cpp/addBac.cpp")
 

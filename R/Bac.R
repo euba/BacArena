@@ -1,4 +1,4 @@
-source(file="class/Organism.R")
+source(file="R/Organism.R")
 
 # Bac is a subclass of Organism containing bacteria specific features
 
