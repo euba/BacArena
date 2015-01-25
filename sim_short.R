@@ -15,7 +15,7 @@ source(file="R/Bac.R")
 source(file="R/Organism.R")
 source(file="R/Eval.R")
 #source(file="data/Human.R")
-#Rcpp::sourceCpp("cpp/diff.cpp")
+Rcpp::sourceCpp("cpp/diff.cpp")
 #Rcpp::sourceCpp("cpp/addBac.cpp")
 
 set.seed(5000)

@@ -1,5 +1,5 @@
-source(file="class/Arena.R")
-source(file="class/Eval.R")
+source(file="Arena.R")
+source(file="Eval.R")
 medium <- c(15, 60)
 names(medium) <- c("EX_pi(e)","EX_glc(e)")
 

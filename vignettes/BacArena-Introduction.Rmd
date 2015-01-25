@@ -19,18 +19,21 @@ Some features
 
 ## Installing
 
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+BacArena is avaible as R package:
+```{r}
+#library("BacArena")
+```
 
 ## Setting up the arena
 
-```{r, fig.show='hold'}
-load("data/Bcoli_model.R")
-ecore = model
-bace1 = Bac(model=ecore, deathrate=0.1, duplirate=1.5, growthlimit=0.05, growtype="exponential",
-           speed=2, type="ecore1", lyse=T)
-arena = Arena(n=100, m=100, tstep=1)
-addOrg(arena, bace1, amount=10)
-addSubs(arena, smax=2000)
+```{r}
+#load("data/Bcoli_model.R")
+#ecore = model
+#bace1 = Bac(model=ecore, deathrate=0.1, duplirate=1.5, growthlimit=0.05, growtype="exponential",
+#           speed=2, type="ecore1", lyse=T)
+#arena = Arena(n=100, m=100, tstep=1)
+#addOrg(arena, bace1, amount=10)
+#addSubs(arena, smax=2000)
 
 ```
 
@@ -40,7 +43,7 @@ addSubs(arena, smax=2000)
 The figure sizes have been customised so that you can easily put two images side-by-side. 
 
 ```{r, fig.show='hold'}
-evalsim <- simulate(arena, time=20)
-plotCurves(evalsim, remove=F, retdata = F)
+#evalsim <- simulate(arena, time=20)
+#plotCurves(evalsim, remove=F, retdata = F)
 ```
 
