@@ -1,4 +1,4 @@
-source(file="Arena.R")
+source(file="R/Arena.R")
 
 # Eval is a subclass of Arena containing function to reduce the size of simulations and evalution of results
 
