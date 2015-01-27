@@ -1,5 +1,5 @@
 
-Rcpp::sourceCpp("diff.cpp")
+#Rcpp::sourceCpp("diff.cpp")
 
 # Substance inherits from Grid and contains the matrices with concentrations
 

@@ -1,4 +1,4 @@
-source(file="Organism.R")
+#source(file="Organism.R")
 
 # Human is a subclass of Organism containing human specific features
 
