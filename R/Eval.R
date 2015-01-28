@@ -10,7 +10,8 @@ setClass("Eval",
          contains="Arena",
          representation(
            medlist="list", # list of simulation results with medium concentration
-           simlist="list" # list of simulation results with organism features
+           simlist="list", # list of simulation results with organism features
+           subchange="numeric" # vector of all substrates with numbers indicating the degree of change
          )
 )
 
@@ -19,7 +20,9 @@ setClass("Eval",
 ########################################################################################################
 
 Eval <- function(arena){
-  new("Eval", n=arena@n, m=arena@m, tstep=arena@tstep, specs=arena@specs, mediac=arena@mediac, occmat=Matrix(),
+  subc = rep(0, length(arena@mediac))
+  names(subc) <- arena@mediac
+  new("Eval", n=arena@n, m=arena@m, tstep=arena@tstep, specs=arena@specs, mediac=arena@mediac, occmat=Matrix(), subchange=subc,
       phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir)
 }
 
@@ -31,6 +34,8 @@ setGeneric("medlist", function(object){standardGeneric("medlist")})
 setMethod("medlist", "Eval", function(object){return(object@medlist)})
 setGeneric("simlist", function(object){standardGeneric("simlist")})
 setMethod("simlist", "Eval", function(object){return(object@simlist)})
+setGeneric("subchange", function(object){standardGeneric("subchange")})
+setMethod("subchange", "Eval", function(object){return(object@subchange)})
 
 ########################################################################################################
 ###################################### METHODS #########################################################
@@ -41,9 +46,25 @@ setMethod("simlist", "Eval", function(object){return(object@simlist)})
 setGeneric("addEval", function(object, arena, replace=F){standardGeneric("addEval")})
 setMethod("addEval", "Eval", function(object, arena, replace=F){
   if(!replace){
-    eval.parent(substitute(object@medlist[[length(object@medlist)+1]] <- lapply(arena@media, function(x){
-      return(as.vector(x@diffmat))
-    })))
+    subch = rep(0, length(arena@mediac))
+    if(length(object@medlist)!=0){
+      names(subch) <- arena@mediac
+      sapply(names(subch), function(x, oldmed, newmed){
+        subch[x] <<- subch[x]+sum(abs(oldmed[[x]]-as.vector(newmed[[x]]@diffmat)))
+      },oldmed=extractMed(object), newmed=arena@media)
+      eval.parent(substitute(object@subchange <- object@subchange + subch))
+    }
+    if(sum(subch)!=0){
+      eval.parent(substitute(object@medlist[[length(object@medlist)+1]] <- lapply(arena@media, function(x, subc){
+        if(subc[x@name]!=0){
+          return(as.vector(x@diffmat))
+        }else{return(vector())}
+      }, subc=subch)))
+    }else{
+      eval.parent(substitute(object@medlist[[length(object@medlist)+1]] <- lapply(arena@media, function(x){
+        return(as.vector(x@diffmat))
+      })))
+    }
     eval.parent(substitute(object@simlist[[length(object@simlist)+1]] <- arena@orgdat))
     eval.parent(substitute(object@phenotypes <- arena@phenotypes))
   }else{
@@ -63,7 +84,7 @@ setMethod("getArena", "Eval", function(object, time=length(object@medlist)){
   newmedia <- lapply(object@media, function(x, meds, n, m){
     x@diffmat <- Matrix(meds[[x@name]],nrow=n,ncol=m,sparse=T)
     return(x)
-  },meds=object@medlist[[time]], n=object@n, m=object@m)
+  },meds=extractMed(object,time), n=object@n, m=object@m)
   
   occdat <- object@simlist[[time]]
   newoccmat <- matrix(0, nrow=object@n, ncol=object@m)
@@ -74,6 +95,22 @@ setMethod("getArena", "Eval", function(object, time=length(object@medlist)){
   arena <- Arena(n=object@n, m=object@m, tstep=object@tstep, specs=object@specs, mediac=object@mediac,
         phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, occmat=Matrix(newoccmat,sparse=T), stir=object@stir)
   return(arena)
+})
+
+#function for re-extracting medlist to original object
+
+setGeneric("extractMed", function(object, ind=length(object@medlist)){standardGeneric("extractMed")})
+setMethod("extractMed", "Eval", function(object, ind=length(object@medlist)){
+  medl <- object@medlist
+  medlind <- medl[[ind]]
+  for(i in 1:length(object@mediac)){
+    if(length(medl[[ind]][[i]])==0){
+      j <- ind
+      while(length(medl[[j]][[i]])==0){j <- j-1}
+      medlind[[i]] <- medl[[j]][[i]]
+    }
+  }
+  return(medlind)
 })
 
 #function for plotting spatial and temporal change of populations and/or concentrations
@@ -91,30 +128,31 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
   for(i in 1:length(object@simlist)){
     subnam <- names(object@medlist[[i]])
     inds <- which(subnam %in% plot_items)
+    meds <- extractMed(object, i)
     if(length(plot_items)==1){
       if(length(inds)!=0){
         for(j in 1:length(inds)){
           if(retdata){
-            retlist[[subnam[inds[j]]]][[j]] = matrix(object@medlist[[i]][[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
+            retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
           }
-          image(matrix(object@medlist[[i]][[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]])
+          image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]])
         }
       }
     }else if(length(plot_items)<=6){
       par(mfrow=c(2,ceiling(length(plot_items)/2)))
       for(j in 1:length(inds)){
         if(retdata){
-          retlist[[subnam[inds[j]]]][[j]] = matrix(object@medlist[[i]][[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
+          retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
         }
-        image(matrix(object@medlist[[i]][[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]])
+        image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]])
       }
     }else{
       par(mfrow=c(3,ceiling(length(plot_items)/3)))
       for(j in 1:length(inds)){
         if(retdata){
-          retlist[[subnam[inds[j]]]][[j]] = matrix(object@medlist[[i]][[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
+          retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
         }
-        image(matrix(object@medlist[[i]][[inds[j]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]])
+        image(matrix(meds[[inds[j]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]])
       }
     }
     if(plot_items[1]=='population'){
@@ -151,7 +189,7 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
     for(j in 1:length(count)){
       growths[j,i] <- count[j]
     }
-    subdat <- object@medlist[[i]]
+    subdat <- extractMed(object, i)
     for(j in 1:length(medplot)){
       subs[medplot[j],i] <- sum(subdat[[medplot[j]]])/(object@n*object@m)
     }

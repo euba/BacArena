@@ -1,0 +1,79 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {1}Introduction}{3}{section.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {1.1}Microbial metabolic ecology}{3}{subsection.1.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {1.2}Constrained based modeling}{3}{subsection.1.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {1.3}Agent based modeling}{4}{subsection.1.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {1.4}Aim of the project}{4}{subsection.1.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2}Methods}{5}{section.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.1}Model overview}{5}{subsection.2.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.2}Representation}{6}{subsection.2.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {2.2.1}Environment \& Grid}{6}{subsubsection.2.2.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {2.2.2}Bacteria}{6}{subsubsection.2.2.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {2.2.3}Substrate}{7}{subsubsection.2.2.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.3}Interactions as rules}{7}{subsection.2.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {2.3.1}Movement}{7}{subsubsection.2.3.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {2.3.2}Diffusion}{7}{subsubsection.2.3.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {2.3.3}Flux balance analysis}{7}{subsubsection.2.3.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {paragraph}{\nonumberline Hashing}{8}{section*.8}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {2.3.4}Growth}{9}{subsubsection.2.3.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {paragraph}{\nonumberline Duplication}{9}{section*.9}
+\defcounter {refsection}{0}\relax 
+\contentsline {paragraph}{\nonumberline Death}{9}{section*.10}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3}Results}{9}{section.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {3.1}General results of the framework}{9}{subsection.3.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {3.1.1}Movement and Diffusion}{9}{subsubsection.3.1.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {3.1.2}Time consumption}{9}{subsubsection.3.1.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {3.2}Population models}{11}{subsection.3.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {3.2.1}\textit {Escherichia coli} core}{11}{subsubsection.3.2.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {3.2.2}Large \textit {Escherichia coli} model (,,Bcoli'')}{11}{subsubsection.3.2.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {3.2.3}\textit {Methanosarcina barkeri}}{11}{subsubsection.3.2.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {3.2.4}\textit {Clostridium beijerinckii}}{14}{subsubsection.3.2.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {3.3}Mixed communities}{16}{subsection.3.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {3.3.1}\textit {Escherichia coli} \& \textit {Methanosarcina barkeri}}{16}{subsubsection.3.3.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {3.3.2}\textit {Escherichia coli big} \& \textit {Clostridium beijerinckii}}{18}{subsubsection.3.3.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {3.3.3}\textit {Clostridium beijerinckii} \& \textit {Methanosarcina barkeri}}{20}{subsubsection.3.3.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {4}Discussion}{22}{section.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {4.1}General discussion}{22}{subsection.4.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {4.1.1}Diffusion and movement}{22}{subsubsection.4.1.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsubsection}{\numberline {4.1.2}Time consumption}{24}{subsubsection.4.1.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {4.2}Population models of single organisms}{26}{subsection.4.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {4.3}Interactions in mixed communities}{27}{subsection.4.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {4.4}Conclusions \& outlook}{27}{subsection.4.4}
