@@ -22,6 +22,7 @@ Some features
 BacArena is avaible as R package:
 ```{r}
 library("BacArena")
+library("sybil")
 ```
 
 ## Getting started
@@ -40,13 +41,14 @@ addSubs(arena, smax=2000)
 And now let the games begin: 
 
 ```{r}
-evalsim <- simulate(arena, time=20)
+evalsim <- simulate(arena, time=5)
 ```
 
 The figure sizes have been customised so that you can easily put two images side-by-side. 
 
 ```{r, fig.show='hold'}
-plotCurves(evalsim, remove=T)
+plotCurves(evalsim, remove=T, retdata=F)
+#evalArena(evalsim, plot_items=c('population'), phencol=T, retdata=F)
 ```
 
 

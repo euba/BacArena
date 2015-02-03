@@ -1,5 +1,3 @@
-
-
 # Organism is the class which contains the metabolic model and other features of the organisms in the arena
 
 ########################################################################################################
