@@ -1,4 +1,5 @@
 source(file="R/Organism.R")
+#source(file="Organism.R")
 
 # Bac is a subclass of Organism containing bacteria specific features
 
