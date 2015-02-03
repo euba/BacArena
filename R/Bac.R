@@ -200,7 +200,7 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb){
 
 #show function for class Bac
 
-removeMethod(show, signature(object="Bac"))
+#removeMethod(show, signature(object="Bac"))
 setMethod(show, signature(object="Bac"), function(object){
   print(paste('Bacterium ',object@type,' of class Bac.',sep=''))
 })

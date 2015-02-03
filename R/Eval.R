@@ -285,7 +285,7 @@ setMethod("minePheno", "Eval", function(object, plot_type="pca"){
 
 #show function for class Eval
 
-removeMethod(show, signature(object="Eval"))
+#removeMethod(show, signature(object="Eval"))
 setMethod(show, signature(object="Eval"), function(object){
   print(paste('Evaluation results of ',length(object@medlist),' simulation steps.',sep=''))
 })

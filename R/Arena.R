@@ -324,7 +324,7 @@ setMethod("dat2mat", "Arena", function(object){
 
 #show function for class Arena
 
-removeMethod(show, "Arena")
+#removeMethod(show, "Arena")
 setMethod(show, "Arena", function(object){
   print(paste('Arena of size ',object@n,'x',object@m,' with ',sum(object@occmat),
               ' organisms of ',length(object@specs),' species.',sep=''))

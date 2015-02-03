@@ -10,7 +10,9 @@ Depends: R (>= 3.0.0)
 Imports:
     Rcpp,
     sybil,
-    glpkAPI
+    glpkAPI,
+    Matrix,
+    lattice
 License: GPL-3
 LazyData: true
 Suggests: knitr
