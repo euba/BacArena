@@ -12,7 +12,11 @@ Imports:
     sybil,
     glpkAPI,
     Matrix,
+    RcppArmadillo,
     lattice
+LinkingTo: 
+    Rcpp,
+    RcppArmadillo    
 License: GPL-3
 LazyData: true
 Suggests: knitr
