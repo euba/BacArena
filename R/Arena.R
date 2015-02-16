@@ -1,5 +1,3 @@
-
-
 # Arena is the class, that contains a list of of all organisms in the Arena
 
 ########################################################################################################
@@ -61,6 +59,18 @@ setMethod("m", "Arena", function(object){return(object@m)})
 ########################################################################################################
 
 # Add Individuals to the arena
+
+
+#' Function with to add individuals to the arena
+#'
+#' @param object An object of class Arena
+#' @param specI An object of class Organism
+#' @param amount Number of organisms to add
+#' @param x x positions of individuals on the grid
+#' @param y y positions of individuals on the grid
+#' @param growth Starting biomass of organisms
+#' @examples
+#' NULL
 
 setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){standardGeneric("addOrg")})
 setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){
@@ -330,3 +340,4 @@ setMethod(show, "Arena", function(object){
               ' organisms of ',length(object@specs),' species.',sep=''))
 })
 
+print(getwd())

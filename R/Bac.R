@@ -43,6 +43,14 @@ setMethod("chem", "Bac", function(object){return(object@chem)})
 
 # function with the growth model of a bac (biomass growth, replication, death)
 
+#' Function with the growth model of a bac (biomass growth, replication, death)
+#'
+#' @param object An object of class Bac
+#' @param population An object of class Arena
+#' @param j The number of the iteration of interest
+#' @return Boolean variable of the \code{j}th individual indicating if individual died. 
+#' @examples
+#' NULL
 setGeneric("growth", function(object, population, j){standardGeneric("growth")})
 setMethod("growth", "Bac", function(object, population, j){
   neworgdat <- population@orgdat
