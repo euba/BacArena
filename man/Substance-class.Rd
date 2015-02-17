@@ -3,7 +3,7 @@
 \docType{class}
 \name{Substance-class}
 \alias{Substance-class}
-\title{Structure of the S4 class \code{Substance} representing substances in the environment which can be produced or consumed.}
+\title{Structure of the S4 class "Substance"}
 \description{
 Structure of the S4 class \code{Substance} representing substances in the environment which can be produced or consumed.
 }

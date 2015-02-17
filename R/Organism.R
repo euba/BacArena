@@ -2,6 +2,8 @@
 ###################################### ORGANISM CLASS ##################################################
 ########################################################################################################
 
+#' Structure of the S4 class "Organism"
+#' 
 #' Structure of the S4 class \code{Organism} representing the organisms present in the environment.
 #'
 #' @slot lbnd A numeric vector containing the lower bounds of the model structure.
@@ -221,6 +223,8 @@ setMethod(show, signature(object="Organism"), function(object){
 ###################################### BAC CLASS #######################################################
 ########################################################################################################
 
+#' Structure of the S4 class "Bac"
+#' 
 #' Structure of the S4 class \code{Bac} inheriting from class \code{\link{Organism}} representing bacterial cells.
 #'
 #' @slot speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
@@ -437,6 +441,8 @@ setMethod(show, signature(object="Bac"), function(object){
 ###################################### HUMAN CLASS #####################################################
 ########################################################################################################
 
+#' Structure of the S4 class "Human"
+#' 
 #' Structure of the S4 class \code{Human} inheriting from class \code{\link{Organism}} representing human cells.
 #'
 #' @slot objective A character vector representing the current reaction which should be used as an objective function for the flux balance analysis.

@@ -3,7 +3,7 @@
 \docType{class}
 \name{Human-class}
 \alias{Human-class}
-\title{Structure of the S4 class \code{Human} inheriting from class \code{\link{Organism}} representing human cells.}
+\title{Structure of the S4 class "Human"}
 \description{
 Structure of the S4 class \code{Human} inheriting from class \code{\link{Organism}} representing human cells.
 }

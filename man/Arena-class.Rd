@@ -3,7 +3,7 @@
 \docType{class}
 \name{Arena-class}
 \alias{Arena-class}
-\title{Structure of the S4 class \code{Arena} to represent the environment in which Organisms and Substances interact.}
+\title{Structure of the S4 class "Arena"}
 \description{
 Structure of the S4 class \code{Arena} to represent the environment in which Organisms and Substances interact.
 }

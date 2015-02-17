@@ -3,7 +3,7 @@
 \docType{class}
 \name{Eval-class}
 \alias{Eval-class}
-\title{Structure of the S4 class \code{Eval} inheriting from class \code{\link{Arena}} for the analysis of simulations.}
+\title{Structure of the S4 class "Eval"}
 \description{
 Structure of the S4 class \code{Eval} inheriting from class \code{\link{Arena}} for the analysis of simulations.
 }

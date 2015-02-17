@@ -2,7 +2,7 @@
 % Please edit documentation in R/Arena.R
 \name{addOrg}
 \alias{addOrg}
-\title{Function with to add individuals to the arena}
+\title{Add individuals to the environment}
 \usage{
 addOrg(object, specI, amount, x = NULL, y = NULL, growth = 1, ...)
 }
@@ -20,9 +20,22 @@ addOrg(object, specI, amount, x = NULL, y = NULL, growth = 1, ...)
 \item{growth}{Starting biomass of organisms}
 }
 \description{
-Function with to add individuals to the arena
+The generic function \code{addOrg} adds individuals to the environment.
+}
+\details{
+## S4 method for signature 'Arena'
+
+The arguments \code{x} and \code{y} should be in the same length as the number of organisms added (given by the argument \code{amount}).
 }
 \examples{
-NULL
+\dontrun{
+ecore <- model
+bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,growthlimit=0.05,growtype="exponential")
+arena <- Arena(20,20)
+addOrg(arena, bac, amount=10)
+}
+}
+\seealso{
+\code{\link{Arena-class}} and \code{\link{Bac-class}}
 }
 

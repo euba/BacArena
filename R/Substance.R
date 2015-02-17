@@ -4,6 +4,8 @@
 ###################################### SUBSTANCE CLASS #################################################
 ########################################################################################################
 
+#' Structure of the S4 class "Substance"
+#' 
 #' Structure of the S4 class \code{Substance} representing substances in the environment which can be produced or consumed.
 #'
 #' @slot smax A number representing the start concentration of the substance for each grid cell in the environment. 
@@ -13,11 +15,11 @@
 #' @slot difspeed A number indicating the diffusion speed (given by number of cells per iteration).
 setClass("Substance",
          representation(
-           smax = "numeric", # substrate start concentration
-           diffmat = "Matrix", # matrix containing concentrations -> sparse Matrix
-           name = "character", # String describing object
-           difunc = "character", # String describing the function for diffusion
-           difspeed = "numeric" # String describing the function for diffusion
+           smax = "numeric",
+           diffmat = "Matrix",
+           name = "character",
+           difunc = "character",
+           difspeed = "numeric"
          )
 )
 

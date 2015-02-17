@@ -3,7 +3,7 @@
 \docType{class}
 \name{Bac-class}
 \alias{Bac-class}
-\title{Structure of the S4 class \code{Bac} inheriting from class \code{\link{Organism}} representing bacterial cells.}
+\title{Structure of the S4 class "Bac"}
 \description{
 Structure of the S4 class \code{Bac} inheriting from class \code{\link{Organism}} representing bacterial cells.
 }

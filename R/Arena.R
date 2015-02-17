@@ -1,9 +1,9 @@
-# Arena is the class, that contains a list of of all organisms in the Arena
-
 ########################################################################################################
 ###################################### Arena CLASS ################################################
 ########################################################################################################
 
+#' Structure of the S4 class "Arena"
+#' 
 #' Structure of the S4 class \code{Arena} to represent the environment in which Organisms and Substances interact.
 #'
 #' @slot orgdat A data frame collecting information about the accumulated growth, type, phenotype, x and y position for each individual in the environment.
@@ -70,10 +70,11 @@ setMethod("m", "Arena", function(object){return(object@m)})
 ###################################### METHODS #########################################################
 ########################################################################################################
 
-# Add Individuals to the arena
-
-
-#' Function with to add individuals to the arena
+#' Add individuals to the environment
+#'
+#' The generic function \code{addOrg} adds individuals to the environment.
+#'
+#' ## S4 method for signature 'Arena'
 #'
 #' @param object An object of class Arena
 #' @param specI An object of class Organism
@@ -81,8 +82,15 @@ setMethod("m", "Arena", function(object){return(object@m)})
 #' @param x x positions of individuals on the grid
 #' @param y y positions of individuals on the grid
 #' @param growth Starting biomass of organisms
+#' @details The arguments \code{x} and \code{y} should be in the same length as the number of organisms added (given by the argument \code{amount}).
+#' @seealso \code{\link{Arena-class}} and \code{\link{Bac-class}} 
 #' @examples
-#' NULL
+#' \dontrun{
+#' ecore <- model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,growthlimit=0.05,growtype="exponential")
+#' arena <- Arena(20,20)
+#' addOrg(arena, bac, amount=10)
+#' }
 setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){standardGeneric("addOrg")})
 setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){
   if(amount+sum(object@occmat) > object@n*object@m){
@@ -356,6 +364,8 @@ setMethod(show, "Arena", function(object){
 ###################################### EVAL CLASS ######################################################
 ########################################################################################################
 
+#' Structure of the S4 class "Eval"
+#' 
 #' Structure of the S4 class \code{Eval} inheriting from class \code{\link{Arena}} for the analysis of simulations.
 #'
 #' @slot medlist A list of medium concentrations per time step.

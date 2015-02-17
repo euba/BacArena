@@ -3,7 +3,7 @@
 \docType{class}
 \name{Organism-class}
 \alias{Organism-class}
-\title{Structure of the S4 class \code{Organism} representing the organisms present in the environment.}
+\title{Structure of the S4 class "Organism"}
 \description{
 Structure of the S4 class \code{Organism} representing the organisms present in the environment.
 }
