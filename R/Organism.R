@@ -1,23 +1,35 @@
-# Organism is the class which contains the metabolic model and other features of the organisms in the arena
-
 ########################################################################################################
 ###################################### ORGANISM CLASS ##################################################
 ########################################################################################################
 
+#' Structure of the S4 class \code{Organism} representing the organisms present in the environment.
+#'
+#' @slot lbnd A numeric vector containing the lower bounds of the model structure.
+#' @slot ubnd A numeric vector containing the upper bounds of the model structure.
+#' @slot type A character vector containing the description of the organism.
+#' @slot medium A character vector containing all exchange reactions of the organism.
+#' @slot lpobj A sybil optimization object containing the linear programing problem.
+#' @slot fbasol A list with the solutions of the flux balance analysis.
+#' @slot lyse A boolean variable indicating if the organism should lyse after death.
+#' @slot feat A list containing conditional features for the object (contains at the momement only biomass components for lysis).
+#' @slot deathrate A numeric value giving the factor by which the growth should be reduced in every iteration.
+#' @slot duplirate A numeric value giving the growth cut off at which the organism is duplicated.
+#' @slot growthlimit A numeric value giving the growth limit at which the organism dies.
+#' @slot growtype A character vector giving the functional type for growth (linear or exponential).
 setClass("Organism",
          representation(
-           lbnd="numeric", #lower bounds, which can change dynamically
-           ubnd="numeric", #upper bounds, which can change dynamically
-           type="character", # description of the organism
-           medium="character", #character vector with exchange reactions of Organism
-           lpobj="sysBiolAlg", # sybil optimization object
-           fbasol="list", # fba solution
-           lyse="logical", # boolean variable for lysis
-           feat="list", #list containing conditional features for the object (contains at the momement only biomass components for lysis)
-           deathrate="numeric", # factor by which growth is reduced
-           duplirate="numeric", # grow cut-off for test of duplication
+           lbnd="numeric",
+           ubnd="numeric",
+           type="character",
+           medium="character",
+           lpobj="sysBiolAlg",
+           fbasol="list",
+           lyse="logical",
+           feat="list",
+           deathrate="numeric",
+           duplirate="numeric",
            growthlimit="numeric",
-           growtype="character" # functional type for growth (linear or exponential)
+           growtype="character"
          )
 )
 
@@ -209,6 +221,11 @@ setMethod(show, signature(object="Organism"), function(object){
 ###################################### BAC CLASS #######################################################
 ########################################################################################################
 
+#' Structure of the S4 class \code{Bac} inheriting from class \code{\link{Organism}} representing bacterial cells.
+#'
+#' @slot speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
+#' @slot budge A boolean vector indicating if budging (bacteria in the souronding area are pushed away) should be implemented.
+#' @slot chem A character vector indicating name of substance which is the chemotaxis attractant. Empty character vector if no chemotaxis.
 setClass("Bac",
          contains="Organism",
          representation(
@@ -420,10 +437,13 @@ setMethod(show, signature(object="Bac"), function(object){
 ###################################### HUMAN CLASS #####################################################
 ########################################################################################################
 
+#' Structure of the S4 class \code{Human} inheriting from class \code{\link{Organism}} representing human cells.
+#'
+#' @slot objective A character vector representing the current reaction which should be used as an objective function for the flux balance analysis.
 setClass("Human",
          contains="Organism",
          representation(
-           objective="character" # name of the objective function, which can be changed
+           objective="character"
          )
 )
 

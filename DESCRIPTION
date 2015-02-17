@@ -9,8 +9,7 @@ BugReports: https://github.com/euba/BacArena/issues
 Depends: R (>= 3.0.0),
     sybil,
     RcppArmadillo,
-    glpkAPI,
-    ggplot2
+    glpkAPI
 Imports:
     Rcpp,
     Matrix,

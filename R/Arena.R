@@ -4,18 +4,30 @@
 ###################################### Arena CLASS ################################################
 ########################################################################################################
 
+#' Structure of the S4 class \code{Arena} to represent the environment in which Organisms and Substances interact.
+#'
+#' @slot orgdat A data frame collecting information about the accumulated growth, type, phenotype, x and y position for each individual in the environment.
+#' @slot specs A list of organism types and their associated parameters.
+#' @slot media A list of objects of class \code{\link{Substance}} for each compound in the environment.
+#' @slot phenotypes A list of unique phenotypes (metabolites consumed and produced), which occurred in the environment.
+#' @slot mediac A character vector containing the names of all substances in the environment.
+#' @slot occmat A sparse matrix showing which cells in the environment are occupied by individuals.
+#' @slot tstep A number giving the time (in h) per iteration.
+#' @slot stir A boolean variable indicating if environment should be stirred.
+#' @slot n A number giving the horizontal size of the environment.
+#' @slot m A number giving the vertical size of the environment.
 setClass("Arena",
          representation(
-           orgdat="data.frame", # data frame of individuals in the Arena
-           specs="list", # list of organism types in the Arena
-           media="list", # media composition of mixed organisms
-           phenotypes="list", # list of unique phenotypes of the individuals
+           orgdat="data.frame",
+           specs="list",
+           media="list",
+           phenotypes="list",
            mediac="character",
-           occmat="Matrix", # occupacy matrix (showing which cells have bacs) -> sparse Matrix
-           tstep="numeric", # time steps per iteration
-           stir="logical", # boolean variable indicating if environment should be stirred
-           n="integer",  # grid size
-           m="integer"  # grid size
+           occmat="Matrix",
+           tstep="numeric",
+           stir="logical",
+           n="integer",
+           m="integer"
         )
 )
 
@@ -344,12 +356,17 @@ setMethod(show, "Arena", function(object){
 ###################################### EVAL CLASS ######################################################
 ########################################################################################################
 
+#' Structure of the S4 class \code{Eval} inheriting from class \code{\link{Arena}} for the analysis of simulations.
+#'
+#' @slot medlist A list of medium concentrations per time step.
+#' @slot simlist A list of the organism features per time step.
+#' @slot subchange A vector of all substrates with numbers indicating the degree of change in the overall simulation.
 setClass("Eval",
          contains="Arena",
          representation(
-           medlist="list", # list of simulation results with medium concentration
-           simlist="list", # list of simulation results with organism features
-           subchange="numeric" # vector of all substrates with numbers indicating the degree of change
+           medlist="list",
+           simlist="list",
+           subchange="numeric"
          )
 )
 
