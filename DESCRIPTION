@@ -22,5 +22,4 @@ Suggests:
     cplexAPI
 License: GPL-3
 LazyData: true
-Suggests: knitr
 VignetteBuilder: knitr
