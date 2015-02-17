@@ -70,18 +70,17 @@ setMethod("m", "Arena", function(object){return(object@m)})
 ###################################### METHODS #########################################################
 ########################################################################################################
 
-#' Add individuals to the environment
+#' @title Add individuals to the environment
 #'
-#' The generic function \code{addOrg} adds individuals to the environment.
+#' @description The generic function \code{addOrg} adds individuals to the environment.
 #'
-#' ## S4 method for signature 'Arena'
-#'
-#' @param object An object of class Arena
-#' @param specI An object of class Organism
-#' @param amount Number of organisms to add
-#' @param x x positions of individuals on the grid
-#' @param y y positions of individuals on the grid
-#' @param growth Starting biomass of organisms
+#' @param object An object of class Arena.
+#' @param specI An object of class Organism.
+#' @param amount A numeric number giving the number of individuals to add.
+#' @param x A numeric vector giving the x positions of individuals on the grid.
+#' @param y A numeric vector giving the y positions of individuals on the grid.
+#' @param growth A numeric vector giving the starting biomass of the individuals.
+# @value growth A numeric vector giving the starting biomass of the individuals.
 #' @details The arguments \code{x} and \code{y} should be in the same length as the number of organisms added (given by the argument \code{amount}).
 #' @seealso \code{\link{Arena-class}} and \code{\link{Bac-class}} 
 #' @examples
@@ -91,8 +90,8 @@ setMethod("m", "Arena", function(object){return(object@m)})
 #' arena <- Arena(20,20)
 #' addOrg(arena, bac, amount=10)
 #' }
-setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){standardGeneric("addOrg")})
-setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){
+setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=1){standardGeneric("addOrg")})
+setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=1){
   if(amount+sum(object@occmat) > object@n*object@m){
     stop("More individuals than space on the grid")
   }

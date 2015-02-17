@@ -7,24 +7,22 @@
 addOrg(object, specI, amount, x = NULL, y = NULL, growth = 1, ...)
 }
 \arguments{
-\item{object}{An object of class Arena}
+\item{object}{An object of class Arena.}
 
-\item{specI}{An object of class Organism}
+\item{specI}{An object of class Organism.}
 
-\item{amount}{Number of organisms to add}
+\item{amount}{A numeric number giving the number of individuals to add.}
 
-\item{x}{x positions of individuals on the grid}
+\item{x}{A numeric vector giving the x positions of individuals on the grid.}
 
-\item{y}{y positions of individuals on the grid}
+\item{y}{A numeric vector giving the y positions of individuals on the grid.}
 
-\item{growth}{Starting biomass of organisms}
+\item{growth}{A numeric vector giving the starting biomass of the individuals.}
 }
 \description{
 The generic function \code{addOrg} adds individuals to the environment.
 }
 \details{
-## S4 method for signature 'Arena'
-
 The arguments \code{x} and \code{y} should be in the same length as the number of organisms added (given by the argument \code{amount}).
 }
 \examples{
