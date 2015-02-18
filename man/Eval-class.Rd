@@ -10,7 +10,7 @@ Structure of the S4 class \code{Eval} inheriting from class \code{\link{Arena}} 
 \section{Slots}{
 
 \describe{
-\item{\code{medlist}}{A list of medium concentrations per time step.}
+\item{\code{medlist}}{A list of compressed medium concentrations (only changes of concentrations are stored) per time step.}
 
 \item{\code{simlist}}{A list of the organism features per time step.}
 

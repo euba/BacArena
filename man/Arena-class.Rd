@@ -14,7 +14,7 @@ Structure of the S4 class \code{Arena} to represent the environment in which Org
 
 \item{\code{specs}}{A list of organism types and their associated parameters.}
 
-\item{\code{media}}{A list of objects of class \code{\link{Substance}} for each compound in the environment.}
+\item{\code{media}}{A list of objects of class \code{\link{Substance-class}} for each compound in the environment.}
 
 \item{\code{phenotypes}}{A list of unique phenotypes (metabolites consumed and produced), which occurred in the environment.}
 

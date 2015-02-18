@@ -8,7 +8,7 @@
 #'
 #' @slot orgdat A data frame collecting information about the accumulated growth, type, phenotype, x and y position for each individual in the environment.
 #' @slot specs A list of organism types and their associated parameters.
-#' @slot media A list of objects of class \code{\link{Substance}} for each compound in the environment.
+#' @slot media A list of objects of class \code{\link{Substance-class}} for each compound in the environment.
 #' @slot phenotypes A list of unique phenotypes (metabolites consumed and produced), which occurred in the environment.
 #' @slot mediac A character vector containing the names of all substances in the environment.
 #' @slot occmat A sparse matrix showing which cells in the environment are occupied by individuals.
@@ -501,7 +501,7 @@ setMethod(show, "Arena", function(object){
 #' 
 #' Structure of the S4 class \code{Eval} inheriting from class \code{\link{Arena}} for the analysis of simulations.
 #'
-#' @slot medlist A list of medium concentrations per time step.
+#' @slot medlist A list of compressed medium concentrations (only changes of concentrations are stored) per time step.
 #' @slot simlist A list of the organism features per time step.
 #' @slot subchange A vector of all substrates with numbers indicating the degree of change in the overall simulation.
 setClass("Eval",
@@ -539,8 +539,26 @@ setMethod("subchange", "Eval", function(object){return(object@subchange)})
 ###################################### METHODS #########################################################
 ########################################################################################################
 
-#function for changing the Eval object -> adding or replacing simulations
-
+#' @title Function for adding a simulation step
+#'
+#' @description The generic function \code{addEval} adds results of a simulation step to an \code{Eval} object.
+#'
+#' @param object An object of class Eval.
+#' @param arena An object of class Arena.
+#' @param replace A boolean variable indicating if the last simulation step should be replaced by the new simulation step \code{arena}.
+#' @details The function \code{addEval} can be used in iterations to manipulate an \code{Arena} object and store the results in an \code{Eval} object.
+#' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' eval <- simulate(arena,10)
+#' addEval(eval,arena)
+#' }
 setGeneric("addEval", function(object, arena, replace=F){standardGeneric("addEval")})
 setMethod("addEval", "Eval", function(object, arena, replace=F){
   if(!replace){
@@ -574,9 +592,26 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
   }
 })
 
-
-#function for re-creating an Arena object from Evalution -> usefull, if you want start a new simulation from a previous time point
-
+#' @title Function for re-constructing an Arena object from a simulation step
+#'
+#' @description The generic function \code{getArena} re-constructs an \code{Arena} object from a simulation step within an \code{Eval} object.
+#'
+#' @param object An object of class Eval.
+#' @param time A number giving the simulation step of interest.
+#' @return Returns an object of class \code{Arena} containing the organisms and substance conditions in simulation step \code{time}.
+#' @details The function \code{addEval} can be used to manipulate an \code{Arena} object from a simulation step to modify the subsequent simulation steps.
+#' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' eval <- simulate(arena,10)
+#' arena5 <- getArena(eval,5)
+#' }
 setGeneric("getArena", function(object, time=length(object@medlist)){standardGeneric("getArena")})
 setMethod("getArena", "Eval", function(object, time=length(object@medlist)){
   newmedia <- lapply(object@media, function(x, meds, n, m){
@@ -595,8 +630,26 @@ setMethod("getArena", "Eval", function(object, time=length(object@medlist)){
   return(arena)
 })
 
-#function for re-extracting medlist to original object
-
+#' @title Function for re-constructing a medium concentrations from simulations
+#'
+#' @description The generic function \code{extractMed} re-constructs a list of vectors of medium concentrations from a simulation step in an \code{Eval} object.
+#'
+#' @param object An object of class Eval.
+#' @param ind A number giving the simulation step of interest.
+#' @return Returns a list containing concentration vectors of all medium substances.
+#' @details Medium concentrations in slot \code{medlist} of an object of class \code(Eval) store only the changes of concentrations in the simulation process. The function \code{extractMed} reconstructs the original, uncompressed version of medium concentrations.
+#' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' eval <- simulate(arena,10)
+#' med5 <- extractMed(eval,5)
+#' }
 setGeneric("extractMed", function(object, ind=length(object@medlist)){standardGeneric("extractMed")})
 setMethod("extractMed", "Eval", function(object, ind=length(object@medlist)){
   medl <- object@medlist
