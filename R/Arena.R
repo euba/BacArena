@@ -80,15 +80,15 @@ setMethod("m", "Arena", function(object){return(object@m)})
 #' @param x A numeric vector giving the x positions of individuals on the grid.
 #' @param y A numeric vector giving the y positions of individuals on the grid.
 #' @param growth A numeric vector giving the starting biomass of the individuals.
-# @value growth A numeric vector giving the starting biomass of the individuals.
 #' @details The arguments \code{x} and \code{y} should be in the same length as the number of organisms added (given by the argument \code{amount}).
 #' @seealso \code{\link{Arena-class}} and \code{\link{Bac-class}} 
 #' @examples
 #' \dontrun{
-#' ecore <- model
-#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,growthlimit=0.05,growtype="exponential")
-#' arena <- Arena(20,20)
-#' addOrg(arena, bac, amount=10)
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
 #' }
 setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=1){standardGeneric("addOrg")})
 setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=1){
@@ -182,9 +182,23 @@ setMethod("addOrg2", "Arena", function(object, specI, amount, x=NULL, y=NULL, gr
   eval.parent(substitute(object@mediac <- union(object@mediac, specI@medium)))
 })
 
-
-# Add all substances defined by exchange reactions of the available bacs
-
+#' @title Add substances to the environment
+#'
+#' @description The generic function \code{addSubs} adds specific substances to the environment.
+#'
+#' @param object An object of class Arena.
+#' @param smax A number indicating the maximum substance concentration per grid cell.
+#' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
+#' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub} can be used to modify the concentrations of specific substances.} 
+#' @seealso \code{\link{Arena-class}} and \code{\link{changeSub}} 
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
+#' }
 setGeneric("addSubs", function(object, smax=0, mediac=object@mediac){standardGeneric("addSubs")})
 setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac){
   if(sum(mediac %in% object@mediac)==length(mediac)){
@@ -199,8 +213,24 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac){
   }else stop("Substance can't be produced or taken up by the organisms on the grid")
 })
 
-#function for changing the substances in the environment
-
+#' @title Change substances in the environment
+#'
+#' @description The generic function \code{changeSub} changes specific substances in the environment.
+#'
+#' @param object An object of class Arena.
+#' @param smax A number indicating the maximum substance concentration per grid cell.
+#' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
+#' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub} can be used to modify the concentrations of specific substances.} 
+#' @seealso \code{\link{Arena-class}} and \code{\link{addSubs}} 
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addSubs(arena) #add all substances with no concentrations.
+#' changeSub(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
+#' }
 setGeneric("changeSub", function(object, smax, mediac){standardGeneric("changeSub")})
 setMethod("changeSub", "Arena", function(object, smax, mediac){
   if(length(sum(mediac %in% names(object@media)))==length(mediac)){
@@ -210,16 +240,49 @@ setMethod("changeSub", "Arena", function(object, smax, mediac){
   }else stop("Substance does not exist in medium")
 })
 
-#function for changing the Organisms in the environment
-
+#' @title Change organisms in the environment
+#'
+#' @description The generic function \code{changeOrg} changes organisms in the environment.
+#'
+#' @param object An object of class Arena.
+#' @param neworgdat A data frame with new information about the accumulated growth, type, phenotype, x and y position for each individual in the environment.
+#' @details The argument \code{neworgdat} contains the same information as the \code{orgdat} slot of \code{\link{Arena-class}}. The \code{orgdat} slot of an \code{Arena} object can be used to create \code{neworgdat}.
+#' @seealso \code{\link{Arena-class}} and \code{\link{addOrg}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' neworgdat <- orgdat(arena) #get the current orgdat
+#' neworgdat <- neworgdat[-1,] #remove the first individual
+#' changeOrg(arena,neworgdat)
+#' }
 setGeneric("changeOrg", function(object, neworgdat){standardGeneric("changeOrg")})
 setMethod("changeOrg", "Arena", function(object, neworgdat){
   eval.parent(substitute(object@orgdat <- neworgdat))
   eval.parent(substitute(object@occmat <- Matrix(dat2mat(object), sparse=T)))
 })
 
-#function for checking if a phenotype is emergent
-
+#' @title Function for checking phenotypes in the environment
+#'
+#' @description The generic function \code{checkPhen} checks and adds the phenotypes of organisms in the environment.
+#'
+#' @param object An object of class Arena.
+#' @param org An object of class Organism.
+#' @param cutoff A number giving the cutoff for values of the objective function and fluxes of exchange reactions.
+#' @return Returns a number indicating the number of the phenotype in the phenotype list.
+#' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages. Uptake of substances are indicated by a negative and production of substances by a positive number.
+#' @seealso \code{\link{Arena-class}} and \code{\link{getPhenotype}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' checkPhen(arena,bac) #returns 1 as the index of the current phenotype in the list.
+#' }
 setGeneric("checkPhen", function(object, org, cutoff=1e-6){standardGeneric("checkPhen")})
 setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
   ptype <- 0
@@ -240,29 +303,38 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
         object2 <- object
         object2@phenotypes[[org@type]] <- phenotypes
         eval.parent(substitute(object <- object2)) #has to be like this, otherwise there is a problem with the slot name!
-        #eval.parent(substitute(object@phenotypes[[org@type]] <- phenotypes))
       }
     }
   }
   return(ptype)
 })
 
-#main function for simulation of the whole arena
-
+#' @title Main function for simulating all processes in the environment
+#'
+#' @description The generic function \code{simulate} for a simple simulation of the environment.
+#'
+#' @param object An object of class Arena or Eval.
+#' @param time A number giving the number of iterations to perform for the simulation
+#' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
+#' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
+#' @seealso \code{\link{Arena-class}} and \code{\link{Eval-class}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' eval <- simulate(arena,10)
+#' }
 setGeneric("simulate", function(object, time){standardGeneric("simulate")})
 setMethod("simulate", "Arena", function(object, time){
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
          stop("Please supply an Arena object.")) 
-  sublb <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
-  for(j in seq_along(arena@media)){
-    submat <- as.matrix(arena@media[[j]]@diffmat)
-    sublb[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
-  }
-  sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb)
-  colnames(sublb) <- c('x','y',arena@mediac)
-  rm("submat")
+  sublb <- getSublb(arena)
   for(i in 1:time){
     cat("iter:", i, "bacs:",nrow(arena@orgdat),"\n")
     print(system.time(for(j in 1:nrow(arena@orgdat)){
@@ -304,8 +376,55 @@ setMethod("simulate", "Arena", function(object, time){
   return(evaluation)
 })
 
-#function for stirring the complete evironment
+#' @title Function for calculated the substrate concentration for every organism
+#'
+#' @description The generic function \code{getSublb} calculates the substrate concentration for every individual in the environment based on their x and y position.
+#'
+#' @param object An object of class Arena.
+#' @return Returns the substrate concentration for every individual in the environment with substrates as well as x and y positions as columns and rows for each organism.
+#' @seealso \code{\link{Arena-class}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' sublb <- getSublb(arena)
+#' }
+setGeneric("getSublb", function(object){standardGeneric("getSublb")})
+setMethod("getSublb", "Arena", function(object){
+  sublb <- matrix(0,nrow=nrow(object@orgdat),ncol=(length(object@mediac)))
+  for(j in seq_along(object@media)){
+    submat <- as.matrix(object@media[[j]]@diffmat)
+    sublb[,j] <- apply(object@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+  }
+  sublb <- cbind(as.matrix(object@orgdat[,c(4,5)]),sublb)
+  colnames(sublb) <- c('x','y',object@mediac)
+  return(sublb)
+})
 
+#' @title Function for stirring/mixing the complete evironment
+#'
+#' @description The generic function \code{stirEnv} simulates the event of mixing all substrates and organisms in the environment.
+#'
+#' @param object An object of class Arena.
+#' @param sublb A matrix with the substrate concentration for every individual in the environment based on their x and y position.
+#' @return Returns the substrate concentration for every individual in the environment with substrates as well as x and y positions as columns and rows for each organism.
+#' @details The stirring is implemented as a random permutation of organism positions and the equalization of of all substrate concentrations.
+#' @seealso \code{\link{Arena-class}} and \code{\link{getSublb}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' sublb <- getSublb(arena)
+#' stirEnv(arena,sublb)
+#' }
 setGeneric("stirEnv", function(object, sublb){standardGeneric("stirEnv")})
 setMethod("stirEnv", "Arena", function(object, sublb){
   #stir all the bacteria
@@ -339,8 +458,23 @@ setMethod("stirEnv", "Arena", function(object, sublb){
   return(sublb)
 })
 
-#function for converting orgdat in a matrix
-
+#' @title Function for transforming the organism data frame to a presence/absence matrix of organisms
+#'
+#' @description The generic function \code{dat2mat} simulates the event of mixing all substrates and organisms in the environment.
+#'
+#' @param object An object of class Arena.
+#' @return Returns the presence/absence matrix of organisms on the grid based on the \code{orgdat} slot of the \code{Arena} class.
+#' @seealso \code{\link{Arena-class}} and \code{\link{getSublb}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' occmat <- dat2mat(arena)
+#' image(occmat)
+#' }
 setGeneric("dat2mat", function(object){standardGeneric("dat2mat")})
 setMethod("dat2mat", "Arena", function(object){
   newoccmat <- matrix(0,object@n,object@m)

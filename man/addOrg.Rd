@@ -4,7 +4,7 @@
 \alias{addOrg}
 \title{Add individuals to the environment}
 \usage{
-addOrg(object, specI, amount, x = NULL, y = NULL, growth = 1, ...)
+addOrg(object, specI, amount, x = NULL, y = NULL, growth = 1)
 }
 \arguments{
 \item{object}{An object of class Arena.}
@@ -27,10 +27,11 @@ The arguments \code{x} and \code{y} should be in the same length as the number o
 }
 \examples{
 \dontrun{
-ecore <- model
-bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,growthlimit=0.05,growtype="exponential")
-arena <- Arena(20,20)
-addOrg(arena, bac, amount=10)
+ecore <- model #get Escherichia coli core metabolic model
+bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+           growthlimit=0.05,growtype="exponential") #initialize a bacterium
+arena <- Arena(20,20) #initialize the environment
+addOrg(arena,bac,amount=10) #add 10 organisms
 }
 }
 \seealso{
