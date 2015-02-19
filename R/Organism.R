@@ -106,9 +106,25 @@ setMethod("growtype", "Organism", function(object){return(object@feat)})
 ###################################### METHODS #########################################################
 ########################################################################################################
 
-#function for constraining the models based on metabolite concentrations (can be given as vectors or single reaction)
-#requires as input: organism object, reaction name, lowerbound, upperbound -> either lowerbound or upperbound can be omitted
-
+#' @title Function for constraining the models based on metabolite concentrations
+#'
+#' @description The generic function \code{constrain} changes the constraints of the model representation of an organism.
+#'
+#' @param object An object of class Organisms.
+#' @param reacts A character vector giving the names of reactions which should be constrained.
+#' @param lb A numeric vector giving the constraint values of lower bounds.
+#' @param dryweight A number giving the current dryweight of the organism.
+#' @param time A number giving the time intervals for each simulation step.
+#' @return Returns the lower bounds, which carry the constraints and names of relevant reactions.
+#' @details The constraints are calculated according to the flux definition as mmol/(gDW*hr) with the parameters \code{dryweight} and \code{time}.
+#' @seealso \code{\link{Organism-class}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' org <- Organism(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a organism
+#' lobnds <- constrain(org,medium(org),lbnd(org)[medium(org)],1,1)
+#' }
 setGeneric("constrain", function(object, reacts, lb, dryweight, time){standardGeneric("constrain")})
 setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time){
   lobnd <- object@lbnd*dryweight*time #costrain according to flux definition: mmol/(gDW*hr)
@@ -116,9 +132,23 @@ setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time)
   return(lobnd)
 })
 
-#function for computing the linear programming according to the model structure -> this can be changed for comp. speed (warmstart)
-#requires as input: organism object -> changes the optimization object slot
-
+#' @title Function for computing the linear programming according to the model structure 
+#'
+#' @description The generic function \code{optimizeLP} implements a linear programming based on the problem structure and refined constraints.
+#'
+#' @param object An object of class Organisms.
+#' @param lpob A linear programing object encoding the problem to solve.
+#' @param lb A numeric vector giving the constraint values of lower bounds.
+#' @param ub A numeric vector giving the constraint values of upper bounds.
+#' @details The problem object \code{lpob} is modified according to the constraints and then solved with \code{optimizeProb}.
+#' @seealso \code{\link{Organism-class}}, \code{\link{optimizeProb}} and \code{\link{sysBiolAlg}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' org <- Organism(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a organism
+#' optimizeLP(org)
+#' }
 setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){standardGeneric("optimizeLP")})
 setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){ #this function has to be extended to contain also additional solvers
   switch(problem(lpob)@solver,
@@ -130,8 +160,18 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
   eval.parent(substitute(object@fbasol <- fbasl))
 })
 
-#function to account for the consumption and production of Substances
-
+#' @title Function to account for the consumption and production of substances
+#'
+#' @description The generic function \code{consume} implements the consumption and production of substances based on the flux of exchange reactions of organisms
+#'
+#' @param object An object of class Organisms.
+#' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
+#' @param cutoff A number giving the cutoff value by which value of objective function is considered greater than 0.
+#' @return Returns the updated vector containing the substance concentrations in the current position of the individual of interest.
+#' @details The consumption is implemented by adding the flux of the exchange reactions to the current substance concentrations.
+#' @seealso \code{\link{Organism-class}}
+#' @examples
+#' NULL
 setGeneric("consume", function(object, sublb, cutoff=1e-6){standardGeneric("consume")})
 setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6){
   if(object@fbasol$obj>=cutoff){
@@ -142,8 +182,22 @@ setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6){
   return(sublb)
 })
 
-#function to extract the phenotype (what is consumed and what produced from the medium)
-
+#' @title Function to extract the phenotype of an organism object
+#'
+#' @description The generic function \code{getPhenotype} implements an identification of organism phenotypes.
+#'
+#' @param object An object of class Organisms.
+#' @param cutoff A number giving the cutoff value by which value of objective function is considered greater than 0.
+#' @return Returns the phenotype of the organisms where the uptake of substances is indicated by a negative and production of substances by a positive number
+#' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages. Uptake of substances is indicated by a negative and production of substances by a positive number.
+#' @seealso \code{\link{Organism-class}}, \code{\link{checkPhen}} and \code{\link{minePheno}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' org <- Organism(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a organism
+#' getPhenotype(org)
+#' }
 setGeneric("getPhenotype", function(object, cutoff=1e-6){standardGeneric("getPhenotype")})
 setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6){
   exflux=object@fbasol$fluxes[object@medium]
@@ -153,9 +207,22 @@ setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6){
   return(exflux[which(exflux!=0)])
 })
 
-#function for letting bacteria grow by adding the calculated growthrate to the already present growth value -> linear growth
-#requires as input: organism object
-
+#' @title Function for letting organisms grow linearly
+#'
+#' @description The generic function \code{growLin} implements a growth model of organisms in their environment.
+#'
+#' @param object An object of class Organisms.
+#' @param growth A number indicating the current biomass, which has to be updated. 
+#' @return Returns the updated biomass of the organisms of interest.
+#' @details Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value.
+#' @seealso \code{\link{Organism-class}} and \code{\link{optimizeLP}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' org <- Organism(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a organism
+#' growLin(org,1)
+#' }
 setGeneric("growLin", function(object, growth){standardGeneric("growLin")})
 setMethod("growLin", "Organism", function(object, growth){
   if(object@fbasol$obj > 0) grow_accum <- object@fbasol$obj + growth
@@ -163,9 +230,22 @@ setMethod("growLin", "Organism", function(object, growth){
   return(grow_accum)
 })
 
-#function for letting bacteria grow by adding the calculated growthrate multiplied with the current growth plus to the already present growth value -> exp growth
-#requires as input: organism object
-
+#' @title Function for letting organisms grow exponentially
+#'
+#' @description The generic function \code{growExp} implements a growth model of organisms in their environment.
+#'
+#' @param object An object of class Organisms.
+#' @param growth A number indicating the current biomass, which has to be updated. 
+#' @return Returns the updated biomass of the organisms of interest.
+#' @details Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value
+#' @seealso \code{\link{Organism-class}} and \code{\link{optimizeLP}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' org <- Organism(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a organism
+#' growExp(org,1)
+#' }
 setGeneric("growExp", function(object, growth){standardGeneric("growExp")})
 setMethod("growExp", "Organism", function(object, growth){
   if(object@fbasol$obj > 0) grow_accum <- (object@fbasol$obj * growth + growth)
@@ -173,8 +253,18 @@ setMethod("growExp", "Organism", function(object, growth){
   return(grow_accum)
 })
 
-#function for lysis of bacterial cells by adding biomass_compounds * growth to the medium
-
+#' @title Lysis function of organismal cells by adding biomass_compounds to the medium
+#'
+#' @description The generic function \code{lysis} implements cell lysis by the stochiometric concentration of the biomass compounds of organisms to the concentration of substances in the environment
+#'
+#' @param object An object of class Organisms.
+#' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
+#' @param factor A number given the factor with which the biomass compound concentrations are multiplied to achieve the final concentration which is added to the environment
+#' @return Returns the updated vector containing the substance concentrations in the current position of the dead individual of interest.
+#' @details Lysis is implemented by taking the intersect between biomass compounds and the substances in the environment and adding the normalized stochiometric concentrations of the biomass compounds to the medium.
+#' @seealso \code{\link{Organism-class}} and \code{\link{optimizeLP}}
+#' @examples
+#' NULL
 setGeneric("lysis", function(object, sublb, factor=object@growthlimit){standardGeneric("lysis")})
 setMethod("lysis", "Organism", function(object, sublb, factor=object@growthlimit){
   stoch = object@feat[["biomass"]]
@@ -183,8 +273,18 @@ setMethod("lysis", "Organism", function(object, sublb, factor=object@growthlimit
   return(sublb)
 })
 
-#function to get moore-neighbourhood of a bac together with its relative position
-
+#' @title Function to get Moore-neighbourhood of a organism together with its relative position
+#'
+#' @description The generic function \code{getHood} gives the Moore neighbourhood of an individual of interest.
+#'
+#' @param object An object of class Organisms.
+#' @param occmat A matrix giving where the individuals in environment are occupying a specific position.
+#' @param x A number giving the x position of the individual of interest in its environment.
+#' @param y A number giving the y position of the individual of interest in its environment.
+#' @return Returns a matrix giving the Moore neighbourhood with positions that are occupied by other individuals.
+#' @seealso \code{\link{Organism-class}} and \code{\link{emptyHood}}
+#' @examples
+#' NULL
 setGeneric("getHood", function(object, occmat, x, y){standardGeneric("getHood")})
 setMethod("getHood", "Organism", function(object, occmat, x, y){
   occmat <- as.matrix(occmat) #dangerous!
@@ -195,9 +295,18 @@ setMethod("getHood", "Organism", function(object, occmat, x, y){
   return(list(as.matrix(occmat[,(y-dy):(y+dy2)])[(x-dx):(x+dx2),], c(1+dx,1+dy)))
 })
 
-
-#function to check if the there is some free place in the neighbourhood
-
+#' @title Function to check if the there is a free place in the Moore neighbourhood
+#'
+#' @description The generic function \code{emptyHood} gives a free space which is present in the Moore neighbourhood of an individual of interest.
+#'
+#' @param object An object of class Organisms.
+#' @param occmat A matrix giving where the individuals in environment are occupying a specific position.
+#' @param x A number giving the x position of the individual of interest in its environment.
+#' @param y A number giving the y position of the individual of interest in its environment.
+#' @return Returns the free position in the Moore neighbourhood, which is not occupied by other individuals. If there is no free space \code{NULL} is returned.
+#' @seealso \code{\link{Organism-class}} and \code{\link{getHood}}
+#' @examples
+#' NULL
 setGeneric("emptyHood", function(object, occmat, x, y){standardGeneric("emptyHood")})
 setMethod("emptyHood", "Organism", function(object, occmat, x, y){
   hood <- getHood(object, occmat, x, y)
