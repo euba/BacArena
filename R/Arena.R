@@ -220,7 +220,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac){
 #' @param object An object of class Arena.
 #' @param smax A number indicating the maximum substance concentration per grid cell.
 #' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
-#' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub} can be used to modify the concentrations of specific substances.} 
+#' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub}} can be used to modify the concentrations of specific substances.
 #' @seealso \code{\link{Arena-class}} and \code{\link{addSubs}} 
 #' @examples
 #' \dontrun{
@@ -238,6 +238,34 @@ setMethod("changeSub", "Arena", function(object, smax, mediac){
       eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i])))
     }
   }else stop("Substance does not exist in medium")
+})
+
+#' @title Change substance concentration patterns in the environment
+#'
+#' @description The generic function \code{changeDiff} changes specific substance concentration patterns in the environment.
+#'
+#' @param object An object of class Arena.
+#' @param diffmat A matrix giving the new gradient of the specific substances in the environment.
+#' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
+#' @details This function can be used to add gradients of specific substances in the environment. The default conditions in \code{changeSubs} assumes an equal concentration in every grid cell of the environment. 
+#' @seealso \code{\link{Arena-class}} and \code{\link{changeSubs}} 
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addSubs(arena) #add all substances with no concentrations.
+#' gradient <- matrix(1:200,20,20)
+#' changeDiff(arena,gradient,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
+#' }
+setGeneric("changeDiff", function(object, diffmat, mediac){standardGeneric("changeDiff")})
+setMethod("changeDiff", "Arena", function(object, diffmat, mediac){
+  if(nrow(diffmat)==object@n && ncol(diffmat)==object@m){
+    for(i in 1:length(mediac)){
+      eval.parent(substitute(object@media[mediac[i]]@diffmat <- Matrix(diffmat, sparse=T)))
+    }
+  }else stop("Given matrix is not compatible in dimensions with the environment.")
 })
 
 #' @title Change organisms in the environment
@@ -499,7 +527,7 @@ setMethod(show, "Arena", function(object){
 
 #' Structure of the S4 class "Eval"
 #' 
-#' Structure of the S4 class \code{Eval} inheriting from class \code{\link{Arena}} for the analysis of simulations.
+#' Structure of the S4 class \code{Eval} inheriting from class \code{\link{Arena-class}} for the analysis of simulations.
 #'
 #' @slot medlist A list of compressed medium concentrations (only changes of concentrations are stored) per time step.
 #' @slot simlist A list of the organism features per time step.
