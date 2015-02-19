@@ -373,16 +373,26 @@ setMethod("chem", "Bac", function(object){return(object@chem)})
 ###################################### METHODS #########################################################
 ########################################################################################################
 
-# function with the growth model of a bac (biomass growth, replication, death)
-
-#' Function with the growth model of a bac (biomass growth, replication, death)
+#' @title Function implementing a growth model of a bacterium
 #'
-#' @param object An object of class Bac
-#' @param population An object of class Arena
-#' @param j The number of the iteration of interest
-#' @return Boolean variable of the \code{j}th individual indicating if individual died. 
+#' @description The generic function \code{growth} implements different growth models for an object of class Bac.
+#'
+#' @param object An object of class Bac.
+#' @param population An object of class Arena.
+#' @param j The number of the iteration of interest.
+#' @return Boolean variable of the \code{j}th individual indicating if individual died.
+#' @details Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value. Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value
+#' @seealso \code{\link{Bac-class}}, \code{\link{growLin}} and \code{\link{growExp}}
 #' @examples
-#' NULL
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' growth(bac,arena,1)
+#' }
 setGeneric("growth", function(object, population, j){standardGeneric("growth")})
 setMethod("growth", "Bac", function(object, population, j){
   neworgdat <- population@orgdat
@@ -418,8 +428,25 @@ setMethod("growth", "Bac", function(object, population, j){
   return(dead)
 })
 
-# function for random movement
-
+#' @title Function for random movement of bacteria
+#'
+#' @description The generic function \code{move} implements a random movement in the Moore neighbourhood of an individual.
+#'
+#' @param object An object of class Bac.
+#' @param population An object of class Arena.
+#' @param j The number of the iteration of interest.
+#' @details Bacteria move in a random position the Moore neighbourhood, which is not occupied by other individuals. If there is no free space the individuals stays in the same position.
+#' @seealso \code{\link{Bac-class}}, \code{\link{getHood}} and \code{\link{emptyHood}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' move(bac,arena,1)
+#' }
 setGeneric("move", function(object, population, j){standardGeneric("move")})
 setMethod("move", "Bac", function(object, population, j){
   popvec <- population@orgdat[j,]
@@ -437,8 +464,25 @@ setMethod("move", "Bac", function(object, population, j){
   }
 })
 
-# function for chemotaxis: go to direction with highest concentration, otherwise random movement
-
+#' @title Function for chemotaxis of bacteria to their prefered substrate
+#'
+#' @description The generic function \code{chemotaxis} implements a bacterial movement in the Moore neighbourhood to the highest substrate concentration.
+#'
+#' @param object An object of class Bac.
+#' @param population An object of class Arena.
+#' @param j The number of the iteration of interest.
+#' @details Bacteria move to a position in the Moore neighbourhood which has the highest concentration of the prefered substrate, which is not occupied by other individuals. The prefered substance is given by slot \code{chem} in the \code{Bac} object. If there is no free space the individuals stays in the same position. If the concentration in the Moore neighbourhood has the same concentration in every position, then random movement is implemented.
+#' @seealso \code{\link{Bac-class}}, \code{\link{getHood}} and \code{\link{emptyHood}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' chemotaxis(bac,arena,1)
+#' }
 setGeneric("chemotaxis", function(object, population, j){standardGeneric("chemotaxis")})
 setMethod("chemotaxis", "Bac", function(object, population, j){
   popvec <- population@orgdat[j,]
@@ -469,8 +513,19 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
   }
 })
 
-# function for budging of fellow bacteria, while one is moving
-
+#' @title Function for budging of fellow bacteria, while one is moving
+#'
+#' @description The generic function \code{budging} implements a random bacterial movement in the Moore neighbourhood while pushing other bacteria into the next grid cell
+#'
+#' @param object An object of class Bac.
+#' @param population An object of class Arena.
+#' @param j The number of the iteration of interest.
+#' @param hood A vector giving the Moore neighbourhood of the bacterium of interest
+#' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid.
+#' @details Bacteria move to a random position in the Moore neighbourhood. If the position is already occupied by another individual, the individual gets push away to the next grid position, which pushes another individual until a free position is reached. If the borders of the environment are reached, then the first individual is not able to move and every subsequently pushed bacterium stays at its original position.
+#' @seealso \code{\link{Bac-class}}, \code{\link{getHood}}, \code{\link{emptyHood}} and \code{\link{move}}
+#' @examples
+#' NULL
 setGeneric("budging", function(object, population, j, hood, repli=F){standardGeneric("budging")})
 setMethod("budging", "Bac", function(object, population, j, hood, repli=F){
   flag <- T
@@ -513,7 +568,19 @@ setMethod("budging", "Bac", function(object, population, j, hood, repli=F){
 })
 
 #function for one iteration for Bac class
-
+#' @title Function for one simulation iteration for objects of Bac class
+#'
+#' @description The generic function \code{simBac} implements all neccessary functions for the individuals to update the complete environment. 
+#'
+#' @param object An object of class Bac.
+#' @param population An object of class Arena.
+#' @param j The number of the iteration of interest.
+#' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
+#' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.
+#' @details Bacterial individuals undergo the step by step the following procedures: First the individuals are constrained with \code{constrain} to the substrate environment, then flux balance analysis is computed with \code{optimizeLP}, after this the substrate concentrations are updated with \code{consume}, then the bacterial growth is implemented with \code{growth}, the potential new phenotypes are added with \code{checkPhen}, finally the additional and conditional functions \code{lysis}, \code{move} or \code{chemotaxis} are performed. Can be used as a wrapper for all important bacterial functions in a function similar to \code{simulate}.
+#' @seealso \code{\link{Bac-class}}, \code{\link{Arena-class}}, \code{\link{simulate}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{growth}, \code{checkPhen}, \code{lysis}, \code{move} and \code{chemotaxis}
+#' @examples
+#' NULL
 setGeneric("simBac", function(object, arena, j, sublb){standardGeneric("simBac")})
 setMethod("simBac", "Bac", function(object, arena, j, sublb){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium],
@@ -584,18 +651,50 @@ setMethod("objective", "Human", function(object){return(object@objective)})
 ###################################### METHODS #########################################################
 ########################################################################################################
 
-#function for changing the objective function of the model -> might be interesting for dynamic changes in varying environments
-#requires as input: organism object -> changes the model, fobj slot and lpobj of the object
-
+#' @title Function for changing the objective function of the model
+#'
+#' @description The generic function \code{changeFobj} changes the objective function, which is used for the linear programming in \code{optimizeLP}.
+#'
+#' @param object An object of class Human.
+#' @param new_fobj A character vector giving the reaction name of the new objective function.
+#' @param model The original model structure which is converted into a problem object used for the next optimization.
+#' @param alg A character vector giving the algorithm which should be used for the optimization (default is flux balance analysis).
+#' @details To avoid the bias to just one particular objective function, the objective can be changed dynamically in this function. 
+#' @seealso \code{\link{Human-class}} and \code{\link{optimizeLP}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' human <- Human(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' changeFobj(human,'EX_glc(e)',ecore)
+#' }
 setGeneric("changeFobj", function(object, new_fobj, model, alg="fba"){standardGeneric("changeFobj")})
 setMethod("changeFobj", "Human", function(object, new_fobj, model, alg="fba"){
   eval.parent(substitute(object@objective <- new_fobj)) #(pseudo) call by reference implementation
-  model <- changeObjFunc(object@model, new_fobj)
+  model <- changeObjFunc(model, new_fobj)
   eval.parent(substitute(object@lpobj <- sysBiolAlg(model, algorithm=alg))) #the lp object has to be updated according to the new objective
 })
 
-# function with the growth model of a human cell (biomass growth, replication, death)
-
+#' @title Function implementing a growth model of a human cell
+#'
+#' @description The generic function \code{cellgrowth} implements different growth models for an object of class Human.
+#'
+#' @param object An object of class Human.
+#' @param population An object of class Arena.
+#' @param j The number of the iteration of interest.
+#' @return Boolean variable of the \code{j}th individual indicating if individual died.
+#' @details Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value. Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value.
+#' @seealso \code{\link{Human-class}}, \code{\link{growLin}} and \code{\link{growExp}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' human <- Human(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,human,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' cellgrowth(human,arena,1)
+#' }
 setGeneric("cellgrowth", function(object, population, j){standardGeneric("cellgrowth")})
 setMethod("cellgrowth", "Human", function(object, population, j){
   neworgdat <- population@orgdat
@@ -628,8 +727,19 @@ setMethod("cellgrowth", "Human", function(object, population, j){
   return(dead)
 })
 
-#function for one iteration for Human class
-
+#' @title Function for one simulation iteration for objects of Human class
+#'
+#' @description The generic function \code{simHum} implements all neccessary functions for the individuals to update the complete environment. 
+#'
+#' @param object An object of class Human.
+#' @param population An object of class Arena.
+#' @param j The number of the iteration of interest.
+#' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
+#' @return Returns the updated enivironment of the \code{arena} parameter with all new positions of individuals on the grid and all new substrate concentrations.
+#' @details Human cell individuals undergo the step by step the following procedures: First the individuals are constrained with \code{constrain} to the substrate environment, then flux balance analysis is computed with \code{optimizeLP}, after this the substrate concentrations are updated with \code{consume}, then the cell growth is implemented with \code{cellgrowth}, the potential new phenotypes are added with \code{checkPhen}, finally the conditional function \code{lysis} is performed. Can be used as a wrapper for all important cell functions in a function similar to \code{simulate}.
+#' @seealso \code{\link{Human-class}}, \code{\link{Arena-class}}, \code{\link{simulate}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{cellgrowth}, \code{checkPhen} and \code{lysis}
+#' @examples
+#' NULL
 setGeneric("simHum", function(object, arena, j, sublb){standardGeneric("simHum")})
 setMethod("simHum", "Human", function(object, arena, j, sublb){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium],

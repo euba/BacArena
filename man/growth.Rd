@@ -2,24 +2,38 @@
 % Please edit documentation in R/Organism.R
 \name{growth}
 \alias{growth}
-\title{Function with the growth model of a bac (biomass growth, replication, death)}
+\title{Function implementing a growth model of a bacterium}
 \usage{
 growth(object, population, j)
 }
 \arguments{
-\item{object}{An object of class Bac}
+\item{object}{An object of class Bac.}
 
-\item{population}{An object of class Arena}
+\item{population}{An object of class Arena.}
 
-\item{j}{The number of the iteration of interest}
+\item{j}{The number of the iteration of interest.}
 }
 \value{
 Boolean variable of the \code{j}th individual indicating if individual died.
 }
 \description{
-Function with the growth model of a bac (biomass growth, replication, death)
+The generic function \code{growth} implements different growth models for an object of class Bac.
+}
+\details{
+Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value. Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value
 }
 \examples{
-NULL
+\dontrun{
+ecore <- model #get Escherichia coli core metabolic model
+bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+           growthlimit=0.05,growtype="exponential") #initialize a bacterium
+arena <- Arena(20,20) #initialize the environment
+addOrg(arena,bac,amount=10) #add 10 organisms
+addSubs(arena,40) #add all possible substances
+growth(bac,arena,1)
+}
+}
+\seealso{
+\code{\link{Bac-class}}, \code{\link{growLin}} and \code{\link{growExp}}
 }
 
