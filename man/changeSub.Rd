@@ -17,7 +17,7 @@ changeSub(object, smax, mediac)
 The generic function \code{changeSub} changes specific substances in the environment.
 }
 \details{
-If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub} can be used to modify the concentrations of specific substances.}
+If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub}} can be used to modify the concentrations of specific substances.
 }
 \examples{
 \dontrun{

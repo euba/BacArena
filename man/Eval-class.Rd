@@ -5,7 +5,7 @@
 \alias{Eval-class}
 \title{Structure of the S4 class "Eval"}
 \description{
-Structure of the S4 class \code{Eval} inheriting from class \code{\link{Arena}} for the analysis of simulations.
+Structure of the S4 class \code{Eval} inheriting from class \code{\link{Arena-class}} for the analysis of simulations.
 }
 \section{Slots}{
 
