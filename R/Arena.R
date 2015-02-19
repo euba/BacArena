@@ -245,7 +245,7 @@ setMethod("changeSub", "Arena", function(object, smax, mediac){
 #' @description The generic function \code{changeDiff} changes specific substance concentration patterns in the environment.
 #'
 #' @param object An object of class Arena.
-#' @param diffmat A matrix giving the new gradient of the specific substances in the environment.
+#' @param newdiffmat A matrix giving the new gradient matrix of the specific substances in the environment.
 #' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
 #' @details This function can be used to add gradients of specific substances in the environment. The default conditions in \code{changeSubs} assumes an equal concentration in every grid cell of the environment. 
 #' @seealso \code{\link{Arena-class}} and \code{\link{changeSubs}} 
@@ -260,11 +260,11 @@ setMethod("changeSub", "Arena", function(object, smax, mediac){
 #' gradient <- matrix(1:200,20,20)
 #' changeDiff(arena,gradient,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
 #' }
-setGeneric("changeDiff", function(object, diffmat, mediac){standardGeneric("changeDiff")})
-setMethod("changeDiff", "Arena", function(object, diffmat, mediac){
-  if(nrow(diffmat)==object@n && ncol(diffmat)==object@m){
+setGeneric("changeDiff", function(object, newdiffmat, mediac){standardGeneric("changeDiff")})
+setMethod("changeDiff", "Arena", function(object, newdiffmat, mediac){
+  if(nrow(newdiffmat)==object@n && ncol(newdiffmat)==object@m){
     for(i in 1:length(mediac)){
-      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix(diffmat, sparse=T)))
+      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix(newdiffmat, sparse=T)))
     }
   }else stop("Given matrix is not compatible in dimensions with the environment.")
 })

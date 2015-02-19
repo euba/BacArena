@@ -4,12 +4,12 @@
 \alias{changeDiff}
 \title{Change substance concentration patterns in the environment}
 \usage{
-changeDiff(object, diffmat, mediac)
+changeDiff(object, newdiffmat, mediac)
 }
 \arguments{
 \item{object}{An object of class Arena.}
 
-\item{diffmat}{A matrix giving the new gradient of the specific substances in the environment.}
+\item{newdiffmat}{A matrix giving the new gradient matrix of the specific substances in the environment.}
 
 \item{mediac}{A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).}
 }
