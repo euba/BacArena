@@ -54,9 +54,18 @@ setMethod("difspeed", "Substance", function(object){return(object@difspeed)})
 ###################################### METHODS #########################################################
 ########################################################################################################
 
-
-#R function for naive diffusion (neighbourhood) of the Substance matrix
-
+#' @title Function for naive diffusion (neighbourhood) of the Substance matrix
+#'
+#' @description The generic function \code{diffuseR} implements the diffusion in the Moore neighbourhood in \code{R}.
+#'
+#' @param object An object of class Substance.
+#' @details The diffusion is implemented by iterating through each cell in the grid and taking the cell with the lowest concentration in the Moore neighbourhood to update the concentration of both by their mean.
+#' @seealso \code{\link{Substance-class}} and \code{\link{diffuseCpp}}
+#' @examples
+#' \dontrun{
+#' sub <- Substance(n=20,m=20,smax=40,name='test',difunc='r') #initialize test substance
+#' diffuseR(sub)
+#' }
 setGeneric("diffuseR", function(object){standardGeneric("diffuseR")})
 setMethod("diffuseR", "Substance", function(object){
   smat <- object@diffmat
@@ -92,11 +101,21 @@ setMethod("diffuseR", "Substance", function(object){
       }
     }
   }
-  #eval.parent(substitute(object@diffmat <- smat))
+  eval.parent(substitute(object@diffmat <- smat))
 })
 
-#C++ function for naive diffusion (neighbourhood) of the Substance matrix
-
+#' @title Function for naive diffusion (neighbourhood) of the Substance matrix
+#'
+#' @description The generic function \code{diffuseR} implements the diffusion in the Moore neighbourhood with \code{C++} code.
+#'
+#' @param object An object of class Substance.
+#' @details The function is a wrapper of the \code{C++} function \code{diffuseNaiveCpp}. The diffusion is implemented by iterating through each cell in the grid and taking the cell with the lowest concentration in the Moore neighbourhood to update the concentration of both by their mean.
+#' @seealso \code{\link{Substance-class}} and \code{\link{diffuseR}}
+#' @examples
+#' \dontrun{
+#' sub <- Substance(n=20,m=20,smax=40,name='test',difunc='cpp') #initialize test substance
+#' diffuseCpp(sub)
+#' }
 setGeneric("diffuseCpp", function(object){standardGeneric("diffuseCpp")})
 setMethod("diffuseCpp", "Substance", function(object){
   submat <- as.matrix(object@diffmat)
