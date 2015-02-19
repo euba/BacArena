@@ -25,7 +25,8 @@ ecore <- model #get Escherichia coli core metabolic model
 bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 arena <- Arena(20,20) #initialize the environment
-addSubs(arena) #add all substances with no concentrations.
+addOrg(arena,bac,amount=10) #add 10 organisms
+addSubs(arena,30) #add all substances with no concentrations.
 gradient <- matrix(1:200,20,20)
 changeDiff(arena,gradient,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
 }
