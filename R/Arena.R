@@ -664,8 +664,31 @@ setMethod("extractMed", "Eval", function(object, ind=length(object@medlist)){
   return(medlind)
 })
 
-#function for plotting spatial and temporal change of populations and/or concentrations
-
+#' @title Function for plotting spatial and temporal change of populations and/or concentrations
+#'
+#' @description The generic function \code{evalArena} plots heatmaps from the simulation steps in an \code{Eval} object.
+#'
+#' @param object An object of class Eval.
+#' @param plot_items A character vector giving the items, which should be plotted.
+#' @param phencol A boolean variable indicating if the phenotypes of the organisms in the environment should be integrated as different colors in the population plot.
+#' @param retdata A boolean variable indicating if the data used to generate the plots should be returned.
+#' @return Returns several plots of the chosen plot items. Optional the data to generate the original plots can be returned.
+#' @details If \code{phencol} is \code{TRUE} then different phenotypes of the same organism are visualized by varying colors, otherwise different organism types are represented by varying colors. The parameter \code{retdata} can be used to access the data used for the returned plots to create own custom plots. 
+#' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' eval <- simulate(arena,10)
+#' evalArena(eval)
+#' ## if animation package is installed a movie of the simulation can be stored:
+#' library(animation)
+#' saveVideo({evalArena(eval)},video.name="Ecoli_sim.mp4")
+#' }
 setGeneric("evalArena", function(object, plot_items='population', phencol=F, retdata=F){standardGeneric("evalArena")})
 setMethod("evalArena", "Eval", function(object, plot_items='population', phencol=F, retdata=F){
   old.par <- par(no.readonly = TRUE)
@@ -725,8 +748,28 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
   par(old.par)
 })
 
-#function for plotting the overall change as curves
-
+#' @title Function for plotting the overall change as curves
+#'
+#' @description The generic function \code{plotCurves} plots the growth curves and concentration changes of substances from simulation steps in an \code{Eval} object.
+#'
+#' @param object An object of class Eval.
+#' @param medplot A character vector giving the name of substances which should be plotted.
+#' @param retdata A boolean variable indicating if the data used to generate the plots should be returned.
+#' @param remove A boolean variable indicating if substances, which don't change in their concentration should be removed from the plot.
+#' @return Returns two graphs in one plot: the growth curves and the curves of concentration changes. Optional the data to generate the original plots can be returned.
+#' @details The parameter \code{retdata} can be used to access the data used for the returned plots to create own custom plots. 
+#' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' eval <- simulate(arena,10)
+#' plotCurves(eval)
+#' }
 setGeneric("plotCurves", function(object, medplot=object@mediac, retdata=F, remove=F){standardGeneric("plotCurves")})
 setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=F, remove=F){
   old.par <- par(no.readonly = TRUE)
@@ -773,8 +816,25 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
   par(old.par)
 })
 
-#function for getting a matrix of phenotypes from the dataset
-
+#' @title Function for getting a matrix of phenotypes from the dataset
+#'
+#' @description The generic function \code{getPhenoMat} reconstructs a matrix with the usage of exchange reactions of the different organisms in the environment.
+#'
+#' @param object An object of class Eval.
+#' @return Returns a matrix with different phenotypes of the organism as rows and all possible exchange reactions as columns. A value of 1 means secretion, 2 means uptake and 0 means no usage of the substance of interest.
+#' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages.
+#' @seealso \code{\link{Eval-class}} and \code{\link{getPhenotype}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' eval <- simulate(arena,10)
+#' phenmat <- getPhenoMat(eval)
+#' }
 setGeneric("getPhenoMat", function(object){standardGeneric("getPhenoMat")})
 setMethod("getPhenoMat", "Eval", function(object){
   numphens <- unlist(lapply(object@phenotypes,function(x){return(length(x))}))
@@ -798,8 +858,26 @@ setMethod("getPhenoMat", "Eval", function(object){
   return(phenmat)
 })
 
-#function for mining/analyzing phenotypes which occured on the arena
-
+#' @title Function for mining/analyzing phenotypes which occured on the arena
+#'
+#' @description The generic function \code{minePheno} mines the similarity and differences of phenotypes reconstructed by \code{getPhenoMat} for each simulation step in an \code{Eval} object.
+#'
+#' @param object An object of class Eval.
+#' @param plot_type A character vector giving the plot which should be returned (either "pca" for a principle coordinate analysis or "hclust" for hierarchical clustering).
+#' @return Returns a plot for each simulation step representing the similarity of phenotypes of organisms within the environment. 
+#' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages.
+#' @seealso \code{\link{Eval-class}} and \code{\link{getPhenoMat}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' eval <- simulate(arena,10)
+#' minePheno(eval)
+#' }
 setGeneric("minePheno", function(object, plot_type="pca"){standardGeneric("minePheno")})
 setMethod("minePheno", "Eval", function(object, plot_type="pca"){
   phenmat <- getPhenoMat(object)
@@ -839,4 +917,3 @@ setMethod("minePheno", "Eval", function(object, plot_type="pca"){
 setMethod(show, signature(object="Eval"), function(object){
   print(paste('Evaluation results of ',length(object@medlist),' simulation steps.',sep=''))
 })
-
