@@ -10,15 +10,14 @@ Depends: R (>= 3.0.0),
     sybil,
     RcppArmadillo,
     glpkAPI
-Imports:
+Imports: 
     Rcpp,
     Matrix,
     lattice
 LinkingTo: 
     Rcpp,
-    RcppArmadillo    
-Suggests:
-    cplexAPI
+    RcppArmadillo
 License: GPL-3
 LazyData: true
 VignetteBuilder: knitr
+Suggests: knitr

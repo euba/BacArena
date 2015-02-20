@@ -365,21 +365,22 @@ setMethod("simEnv", "Arena", function(object, time){
          stop("Please supply an Arena object.")) 
   sublb <- getSublb(arena)
   for(i in 1:time){
-    cat("iter:", i, "bacs:",nrow(arena@orgdat),"\n")
-    print(system.time(for(j in 1:nrow(arena@orgdat)){
+    cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
+    print(system.time(
+    for(j in 1:nrow(arena@orgdat)){
       org <- arena@specs[[arena@orgdat[j,'type']]]
       switch(class(org),
              "Bac"= {arena = simBac(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
              "Human"= {arena = simHum(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
              stop("Simulation function for Organism object not defined yet.")) 
-    }))
+    }
     test <- is.na(arena@orgdat$growth)
     if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
     rm("test")
     if(!arena@stir){
       sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
       sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
-      print(system.time(for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
+      for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
         submat <- as.matrix(arena@media[[j]]@diffmat)
         apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
         switch(arena@media[[j]]@difunc,
@@ -388,7 +389,7 @@ setMethod("simEnv", "Arena", function(object, time){
                stop("Simulation function for Organism object not defined yet.")) 
         arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
         sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
-      }))
+      }
       sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
       colnames(sublb) <- c('x','y',arena@mediac)
       rm("sublb_tmp")
@@ -402,6 +403,7 @@ setMethod("simEnv", "Arena", function(object, time){
       break
     }
   }
+  ))
   return(evaluation)
 })
 
@@ -666,7 +668,7 @@ setMethod("getArena", "Eval", function(object, time=length(object@medlist)){
 #' @param object An object of class Eval.
 #' @param ind A number giving the simulation step of interest.
 #' @return Returns a list containing concentration vectors of all medium substances.
-#' @details Medium concentrations in slot \code{medlist} of an object of class \code(Eval) store only the changes of concentrations in the simulation process. The function \code{extractMed} reconstructs the original and uncompressed version of medium concentrations.
+#' @details Medium concentrations in slot \code{medlist} of an object of class \code{Eval} store only the changes of concentrations in the simulation process. The function \code{extractMed} reconstructs the original and uncompressed version of medium concentrations.
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
 #' @examples
 #' \dontrun{
@@ -701,6 +703,7 @@ setMethod("extractMed", "Eval", function(object, ind=length(object@medlist)){
 #' @param plot_items A character vector giving the items, which should be plotted.
 #' @param phencol A boolean variable indicating if the phenotypes of the organisms in the environment should be integrated as different colors in the population plot.
 #' @param retdata A boolean variable indicating if the data used to generate the plots should be returned.
+#' @param sims A numeric vector giving the simulation steps which should be plotted.
 #' @return Returns several plots of the chosen plot items. Optional the data to generate the original plots can be returned.
 #' @details If \code{phencol} is \code{TRUE} then different phenotypes of the same organism are visualized by varying colors, otherwise different organism types are represented by varying colors. The parameter \code{retdata} can be used to access the data used for the returned plots to create own custom plots. 
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
@@ -718,8 +721,8 @@ setMethod("extractMed", "Eval", function(object, ind=length(object@medlist)){
 #' library(animation)
 #' saveVideo({evalArena(eval)},video.name="Ecoli_sim.mp4")
 #' }
-setGeneric("evalArena", function(object, plot_items='population', phencol=F, retdata=F){standardGeneric("evalArena")})
-setMethod("evalArena", "Eval", function(object, plot_items='population', phencol=F, retdata=F){
+setGeneric("evalArena", function(object, plot_items='population', phencol=F, retdata=F, sims=1:length(object@simlist)){standardGeneric("evalArena")})
+setMethod("evalArena", "Eval", function(object, plot_items='population', phencol=F, retdata=F, sims=1:length(object@simlist)){
   old.par <- par(no.readonly = TRUE)
   if(retdata){
     retlist = list()
