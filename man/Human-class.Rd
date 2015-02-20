@@ -5,7 +5,7 @@
 \alias{Human-class}
 \title{Structure of the S4 class "Human"}
 \description{
-Structure of the S4 class \code{Human} inheriting from class \code{\link{Organism}} representing human cells.
+Structure of the S4 class \code{Human} inheriting from class \code{\link{Organism-class}} representing human cells.
 }
 \section{Slots}{
 

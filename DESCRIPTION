@@ -17,6 +17,8 @@ Imports:
 LinkingTo: 
     Rcpp,
     RcppArmadillo
+Suggests: 
+    sybilSBML
 License: GPL-3
 LazyData: true
 VignetteBuilder: knitr

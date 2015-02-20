@@ -334,7 +334,7 @@ setMethod(show, signature(object="Organism"), function(object){
 
 #' Structure of the S4 class "Bac"
 #' 
-#' Structure of the S4 class \code{Bac} inheriting from class \code{\link{Organism}} representing bacterial cells.
+#' Structure of the S4 class \code{Bac} inheriting from class \code{\link{Organism-class}} representing bacterial cells.
 #'
 #' @slot speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
 #' @slot budge A boolean vector indicating if budging (bacteria in the souronding area are pushed away) should be implemented.
@@ -619,7 +619,7 @@ setMethod(show, signature(object="Bac"), function(object){
 
 #' Structure of the S4 class "Human"
 #' 
-#' Structure of the S4 class \code{Human} inheriting from class \code{\link{Organism}} representing human cells.
+#' Structure of the S4 class \code{Human} inheriting from class \code{\link{Organism-class}} representing human cells.
 #'
 #' @slot objective A character vector representing the current reaction which should be used as an objective function for the flux balance analysis.
 setClass("Human",
