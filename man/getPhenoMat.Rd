@@ -26,7 +26,7 @@ bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
 arena <- Arena(20,20) #initialize the environment
 addOrg(arena,bac,amount=10) #add 10 organisms
 addSubs(arena,40) #add all possible substances
-eval <- simulate(arena,10)
+eval <- simEnv(arena,10)
 phenmat <- getPhenoMat(eval)
 }
 }

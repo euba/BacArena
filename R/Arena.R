@@ -340,7 +340,7 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
 
 #' @title Main function for simulating all processes in the environment
 #'
-#' @description The generic function \code{simulate} for a simple simulation of the environment.
+#' @description The generic function \code{simEnv} for a simple simulation of the environment.
 #'
 #' @param object An object of class Arena or Eval.
 #' @param time A number giving the number of iterations to perform for the simulation
@@ -355,10 +355,10 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
-#' eval <- simulate(arena,10)
+#' eval <- simEnv(arena,10)
 #' }
-setGeneric("simulate", function(object, time){standardGeneric("simulate")})
-setMethod("simulate", "Arena", function(object, time){
+setGeneric("simEnv", function(object, time){standardGeneric("simEnv")})
+setMethod("simEnv", "Arena", function(object, time){
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
@@ -585,7 +585,7 @@ setMethod("subchange", "Eval", function(object){return(object@subchange)})
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
-#' eval <- simulate(arena,10)
+#' eval <- simEnv(arena,10)
 #' addEval(eval,arena)
 #' }
 setGeneric("addEval", function(object, arena, replace=F){standardGeneric("addEval")})
@@ -638,7 +638,7 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
-#' eval <- simulate(arena,10)
+#' eval <- simEnv(arena,10)
 #' arena5 <- getArena(eval,5)
 #' }
 setGeneric("getArena", function(object, time=length(object@medlist)){standardGeneric("getArena")})
@@ -676,7 +676,7 @@ setMethod("getArena", "Eval", function(object, time=length(object@medlist)){
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
-#' eval <- simulate(arena,10)
+#' eval <- simEnv(arena,10)
 #' med5 <- extractMed(eval,5)
 #' }
 setGeneric("extractMed", function(object, ind=length(object@medlist)){standardGeneric("extractMed")})
@@ -712,7 +712,7 @@ setMethod("extractMed", "Eval", function(object, ind=length(object@medlist)){
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
-#' eval <- simulate(arena,10)
+#' eval <- simEnv(arena,10)
 #' evalArena(eval)
 #' ## if animation package is installed a movie of the simulation can be stored:
 #' library(animation)
@@ -796,7 +796,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
-#' eval <- simulate(arena,10)
+#' eval <- simEnv(arena,10)
 #' plotCurves(eval)
 #' }
 setGeneric("plotCurves", function(object, medplot=object@mediac, retdata=F, remove=F){standardGeneric("plotCurves")})
@@ -861,7 +861,7 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
-#' eval <- simulate(arena,10)
+#' eval <- simEnv(arena,10)
 #' phenmat <- getPhenoMat(eval)
 #' }
 setGeneric("getPhenoMat", function(object){standardGeneric("getPhenoMat")})
@@ -904,7 +904,7 @@ setMethod("getPhenoMat", "Eval", function(object){
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
-#' eval <- simulate(arena,10)
+#' eval <- simEnv(arena,10)
 #' minePheno(eval)
 #' }
 setGeneric("minePheno", function(object, plot_type="pca"){standardGeneric("minePheno")})
