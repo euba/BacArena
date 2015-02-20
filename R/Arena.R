@@ -666,7 +666,7 @@ setMethod("getArena", "Eval", function(object, time=length(object@medlist)){
 #' @param object An object of class Eval.
 #' @param ind A number giving the simulation step of interest.
 #' @return Returns a list containing concentration vectors of all medium substances.
-#' @details Medium concentrations in slot \code{medlist} of an object of class \code(Eval) store only the changes of concentrations in the simulation process. The function \code{extractMed} reconstructs the original, uncompressed version of medium concentrations.
+#' @details Medium concentrations in slot \code{medlist} of an object of class \code(Eval) store only the changes of concentrations in the simulation process. The function \code{extractMed} reconstructs the original and uncompressed version of medium concentrations.
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
 #' @examples
 #' \dontrun{

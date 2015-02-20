@@ -18,7 +18,7 @@ Returns a list containing concentration vectors of all medium substances.
 The generic function \code{extractMed} re-constructs a list of vectors of medium concentrations from a simulation step in an \code{Eval} object.
 }
 \details{
-Medium concentrations in slot \code{medlist} of an object of class \code(Eval) store only the changes of concentrations in the simulation process. The function \code{extractMed} reconstructs the original, uncompressed version of medium concentrations.
+Medium concentrations in slot \code{medlist} of an object of class \code(Eval) store only the changes of concentrations in the simulation process. The function \code{extractMed} reconstructs the original and uncompressed version of medium concentrations.
 }
 \examples{
 \dontrun{
