@@ -365,17 +365,18 @@ setMethod("simEnv", "Arena", function(object, time){
          stop("Please supply an Arena object.")) 
   sublb <- getSublb(arena)
   for(i in 1:time){
-    t1 <- system.time(for(j in 1:nrow(arena@orgdat)){
+    cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
+    for(j in 1:nrow(arena@orgdat)){
       org <- arena@specs[[arena@orgdat[j,'type']]]
       switch(class(org),
              "Bac"= {arena = simBac(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
              "Human"= {arena = simHum(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
              stop("Simulation function for Organism object not defined yet.")) 
-    })
+    }
     test <- is.na(arena@orgdat$growth)
     if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
     rm("test")
-    t2 <- system.time(if(!arena@stir){
+    if(!arena@stir){
       sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
       sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
       for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
@@ -394,13 +395,12 @@ setMethod("simEnv", "Arena", function(object, time){
       rm("submat")
     }else{
       sublb <- stirEnv(arena, sublb)
-    })
+    }
     addEval(evaluation, arena)
     if(sum(arena@occmat)==0){
       print("All organisms died!")
       break
     }
-    cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n",'time elapsed:', t1+t2)
   }
   return(evaluation)
 })
@@ -729,7 +729,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
     }
     names(retlist) = plot_items
   }
-  for(i in 1:length(object@simlist)){
+  for(i in sims){
     subnam <- names(object@medlist[[i]])
     inds <- which(subnam %in% plot_items)
     meds <- extractMed(object, i)

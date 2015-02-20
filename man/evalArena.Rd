@@ -4,7 +4,8 @@
 \alias{evalArena}
 \title{Function for plotting spatial and temporal change of populations and/or concentrations}
 \usage{
-evalArena(object, plot_items = "population", phencol = F, retdata = F)
+evalArena(object, plot_items = "population", phencol = F, retdata = F,
+  sims = 1:length(object@simlist))
 }
 \arguments{
 \item{object}{An object of class Eval.}
@@ -14,6 +15,8 @@ evalArena(object, plot_items = "population", phencol = F, retdata = F)
 \item{phencol}{A boolean variable indicating if the phenotypes of the organisms in the environment should be integrated as different colors in the population plot.}
 
 \item{retdata}{A boolean variable indicating if the data used to generate the plots should be returned.}
+
+\item{sims}{A numeric vector giving the simulation steps which should be plotted.}
 }
 \value{
 Returns several plots of the chosen plot items. Optional the data to generate the original plots can be returned.
