@@ -31,9 +31,13 @@ install_github("euba/BacArena", ref="rpkg")
 ## Downloading github repo euba/BacArena@rpkg
 ## Installing BacArena
 ## "C:/PROGRA~1/R/R-31~1.0/bin/x64/R" --vanilla CMD INSTALL  \
-##   "C:/Users/eugen.bauer/AppData/Local/Temp/Rtmp0GErA6/devtools1cc4433d5cca/euba-BacArena-ee99059"  \
+##   "C:/Users/eugen.bauer/AppData/Local/Temp/RtmpsXKCg9/devtools10a0188d1f49/euba-BacArena-99ccdb5"  \
 ##   --library="C:/Users/eugen.bauer/Documents/R/win-library/3.1"  \
 ##   --install-tests
+```
+
+```
+## Error: Command failed (1)
 ```
 
 ## Getting started
@@ -94,104 +98,104 @@ eval <- simEnv(arena,20)
 ```
 ## iter: 1 bacs: 1 
 ##    user  system elapsed 
-##    0.03    0.00    0.03 
-##    user  system elapsed 
-##    0.13    0.00    0.13 
-## iter: 2 bacs: 2 
-##    user  system elapsed 
-##    0.01    0.00    0.01 
+##    0.03    0.00    0.05 
 ##    user  system elapsed 
 ##    0.13    0.00    0.12 
+## iter: 2 bacs: 2 
+##    user  system elapsed 
+##    0.03    0.00    0.03 
+##    user  system elapsed 
+##    0.11    0.03    0.14 
 ## iter: 3 bacs: 4 
 ##    user  system elapsed 
-##    0.05    0.00    0.04 
+##    0.03    0.00    0.03 
 ##    user  system elapsed 
-##    0.11    0.00    0.10 
+##    0.12    0.00    0.12 
 ## iter: 4 bacs: 8 
 ##    user  system elapsed 
-##    0.06    0.00    0.07 
+##    0.08    0.00    0.08 
 ##    user  system elapsed 
-##    0.12    0.00    0.12 
+##    0.13    0.00    0.12 
 ## iter: 5 bacs: 16 
 ##    user  system elapsed 
-##    0.12    0.00    0.12 
-##    user  system elapsed 
-##    0.20    0.00    0.21 
-## iter: 6 bacs: 16 
-##    user  system elapsed 
-##    0.15    0.00    0.15 
-##    user  system elapsed 
-##    0.11    0.00    0.11 
-## iter: 7 bacs: 32 
-##    user  system elapsed 
-##    0.23    0.00    0.24 
-##    user  system elapsed 
-##    0.11    0.00    0.11 
-## iter: 8 bacs: 32 
-##    user  system elapsed 
-##    0.29    0.00    0.29 
-##    user  system elapsed 
-##    0.12    0.00    0.12 
-## iter: 9 bacs: 64 
-##    user  system elapsed 
-##    0.46    0.00    0.45 
-##    user  system elapsed 
-##    0.13    0.00    0.13 
-## iter: 10 bacs: 118 
-##    user  system elapsed 
-##    0.66    0.00    0.65 
-##    user  system elapsed 
-##    0.14    0.00    0.14 
-## iter: 11 bacs: 191 
-##    user  system elapsed 
-##    1.06    0.00    1.06 
-##    user  system elapsed 
-##    0.14    0.00    0.14 
-## iter: 12 bacs: 196 
-##    user  system elapsed 
-##    1.12    0.00    1.12 
-##    user  system elapsed 
-##    0.14    0.00    0.14 
-## iter: 13 bacs: 311 
-##    user  system elapsed 
-##    1.24    0.00    1.23 
-##    user  system elapsed 
-##    0.16    0.00    0.16 
-## iter: 14 bacs: 418 
-##    user  system elapsed 
-##    1.86    0.00    1.87 
-##    user  system elapsed 
-##    0.18    0.00    0.17 
-## iter: 15 bacs: 430 
-##    user  system elapsed 
-##    1.84    0.00    1.84 
-##    user  system elapsed 
-##    0.17    0.00    0.17 
-## iter: 16 bacs: 596 
-##    user  system elapsed 
-##    2.13    0.00    2.14 
-##    user  system elapsed 
-##    0.19    0.00    0.19 
-## iter: 17 bacs: 751 
-##    user  system elapsed 
-##    2.37    0.00    2.37 
-##    user  system elapsed 
-##     0.2     0.0     0.2 
-## iter: 18 bacs: 892 
-##    user  system elapsed 
-##    3.06    0.00    3.06 
+##    0.13    0.00    0.12 
 ##    user  system elapsed 
 ##    0.22    0.00    0.22 
-## iter: 19 bacs: 926 
+## iter: 6 bacs: 16 
 ##    user  system elapsed 
-##    3.13    0.00    3.13 
+##    0.14    0.00    0.14 
 ##    user  system elapsed 
-##    0.22    0.00    0.21 
-## iter: 20 bacs: 1123 
+##    0.12    0.00    0.13 
+## iter: 7 bacs: 32 
 ##    user  system elapsed 
-##    3.66    0.00    3.67 
+##    0.25    0.00    0.25 
 ##    user  system elapsed 
-##    0.26    0.00    0.27
+##    0.12    0.00    0.13 
+## iter: 8 bacs: 32 
+##    user  system elapsed 
+##    0.33    0.00    0.32 
+##    user  system elapsed 
+##    0.13    0.00    0.12 
+## iter: 9 bacs: 64 
+##    user  system elapsed 
+##    0.52    0.00    0.51 
+##    user  system elapsed 
+##    0.13    0.00    0.13 
+## iter: 10 bacs: 119 
+##    user  system elapsed 
+##    0.81    0.00    0.81 
+##    user  system elapsed 
+##    0.14    0.00    0.14 
+## iter: 11 bacs: 199 
+##    user  system elapsed 
+##    1.18    0.00    1.18 
+##    user  system elapsed 
+##    0.14    0.00    0.14 
+## iter: 12 bacs: 203 
+##    user  system elapsed 
+##    1.28    0.00    1.28 
+##    user  system elapsed 
+##    0.14    0.00    0.14 
+## iter: 13 bacs: 322 
+##    user  system elapsed 
+##    1.45    0.00    1.45 
+##    user  system elapsed 
+##    0.15    0.00    0.16 
+## iter: 14 bacs: 436 
+##    user  system elapsed 
+##    2.05    0.00    2.04 
+##    user  system elapsed 
+##    0.17    0.00    0.17 
+## iter: 15 bacs: 448 
+##    user  system elapsed 
+##    1.95    0.00    1.96 
+##    user  system elapsed 
+##    0.19    0.00    0.19 
+## iter: 16 bacs: 602 
+##    user  system elapsed 
+##    2.30    0.00    2.32 
+##    user  system elapsed 
+##    0.21    0.00    0.20 
+## iter: 17 bacs: 746 
+##    user  system elapsed 
+##    2.59    0.00    2.60 
+##    user  system elapsed 
+##    0.24    0.00    0.23 
+## iter: 18 bacs: 889 
+##    user  system elapsed 
+##    3.41    0.00    3.42 
+##    user  system elapsed 
+##    0.24    0.00    0.23 
+## iter: 19 bacs: 915 
+##    user  system elapsed 
+##    3.61    0.00    3.60 
+##    user  system elapsed 
+##    0.25    0.00    0.25 
+## iter: 20 bacs: 1142 
+##    user  system elapsed 
+##    3.96    0.00    3.98 
+##    user  system elapsed 
+##    0.28    0.00    0.28
 ```
 The object eval stores all 20 simulation steps, that we performed. After we retrieve the eval object we can plot now the results of the simulation
 
@@ -203,24 +207,30 @@ plotCurves(eval)
 This will plot the growth curve and curves of substance concentration changes over the 20 simulation steps. If we are interested in the spatial and temporal changes of our constructed population we can use 
 
 ```r
-evalArena(eval)
+evalArena(eval,sims=c(1,20))
 ```
 
-![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-2.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-3.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-4.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-5.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-6.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-7.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-8.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-9.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-10.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-11.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-12.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-13.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-14.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-15.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-16.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-17.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-18.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-19.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-20.png) 
+```
+## Error in evalArena(eval, sims = c(1, 20)): unused argument (sims = c(1, 20))
+```
 This will produce multiple plots one by one for each simulation step with the spatial structure of the population (black dots represent individuals). We can also investigate the spatial change of the population together with the main subtrate glucose
 
 ```r
-evalArena(eval,c("population","EX_glc(e)"))
+evalArena(eval,c("population","EX_glc(e)"),sims=c(1,20))
 ```
 
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-2.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-3.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-4.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-5.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-6.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-7.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-8.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-9.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-10.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-11.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-12.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-13.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-14.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-15.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-16.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-17.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-18.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-19.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-20.png) 
-At the same time we can also integrate the visualization of different phenotypes into the population 
+```
+## Error in evalArena(eval, c("population", "EX_glc(e)"), sims = c(1, 20)): unused argument (sims = c(1, 20))
+```
+Here we only plot the first and the last result of the simulation steps given by the parameter sims. At the same time we can also integrate the visualization of different phenotypes into the population 
 
 ```r
-evalArena(eval,c("population","EX_glc(e)"),phencol=T)
+evalArena(eval,c("population","EX_glc(e)"),phencol=T,sims=c(1,20))
 ```
 
-![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-2.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-3.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-4.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-5.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-6.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-7.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-8.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-9.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-10.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-11.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-12.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-13.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-14.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-15.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-16.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-17.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-18.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-19.png) ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-20.png) 
+```
+## Error in evalArena(eval, c("population", "EX_glc(e)"), phencol = T, sims = c(1, : unused argument (sims = c(1, 20))
+```
 Now we can see that the periphery of the population has a different color than the individuals in the center. This indicates that individuals on the outside of the population use a different metabolism (respiration of glucose) than the center (fermentation of glucose and acetate). To visualize the differences of the apparent phenotypes we can use
 
 ```r
