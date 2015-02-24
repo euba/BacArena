@@ -64,7 +64,7 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex=NA, deathra
     feat[["biomass"]] <- biomets
   }
   if(is.na(ex)){
-    medc <- react_id(findExchReact(ecore))
+    medc <- react_id(findExchReact(model))
   }else{
     medc <- rxname[grep(ex, rxname)]
   }
