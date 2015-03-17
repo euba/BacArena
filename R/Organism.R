@@ -39,7 +39,7 @@ setClass("Organism",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Organism <- function(model, typename=mod_desc(model), algo="fba", ex=NA, deathrate, duplirate, growthlimit,
+Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", deathrate, duplirate, growthlimit,
                      growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", ...){ #the constructor requires the model, after that it is not stored anymore
   rxname = react_id(model)
   lpobject <- sysBiolAlg(model, algorithm=algo)
