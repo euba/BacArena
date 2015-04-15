@@ -38,7 +38,31 @@ setClass("Organism",
 ########################################################################################################
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
-
+#' @title Constructor for creacting objects of class Organism
+#'
+#' @description The constructor \code{Organism} creactes an object of class Organism.
+#'
+#' @param model A metabolic model of class modelorg.
+#' @param typename A character vector giving the name of the organism (default is model description).
+#' @param algo Algorithm to use for optimization (default: "fba").
+#' @param ex Flag to find prefix of exchange reactions (default: "EX_").
+#' @param ex_comp Flag to find compartment of exchange reactions.
+#' @param deathrate A numeric value giving the factor by which the growth should be reduced in every iteration.
+#' @param duplirate A numeric value giving the growth cut off at which the organism is duplicated.
+#' @param growthlimit A numeric value giving the growth limit at which the organism dies.
+#' @param growtype A character vector giving the functional type for growth (linear or exponential).
+#' @param lyse A boolean variable indicating if the organism should lyse after death.
+#' @param feat A list containing conditional features for the object (contains at the momement only biomass components for lysis).
+#' @param csuffix Flag to find compartment of intracellular metabolites.
+#' @param esuffix Flag to find compartment of extracellular metabolites.
+#' @return An object of class Organism.
+#' @details Lysis is implemented by taking the intersect between biomass compounds and the substances in the environment and adding the normalized stochiometric concentrations of the biomass compounds to the medium
+#' @seealso \code{\link{Organism-class}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' org <- Organism(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize an organism
 Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_comp=NA, deathrate, duplirate, growthlimit,
                      growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", ...){ #the constructor requires the model, after that it is not stored anymore
   rxname = react_id(model)
@@ -127,7 +151,7 @@ setMethod("growtype", "Organism", function(object){return(object@feat)})
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
 #' org <- Organism(ecore,deathrate=0.05,duplirate=0.5,
-#'            growthlimit=0.05,growtype="exponential") #initialize a organism
+#'            growthlimit=0.05,growtype="exponential") #initialize an organism
 #' lobnds <- constrain(org,medium(org),lbnd(org)[medium(org)],1,1)
 #' }
 setGeneric("constrain", function(object, reacts, lb, dryweight, time){standardGeneric("constrain")})
