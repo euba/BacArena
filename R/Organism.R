@@ -39,7 +39,7 @@ setClass("Organism",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", deathrate, duplirate, growthlimit,
+Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_comp=NA, deathrate, duplirate, growthlimit,
                      growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", ...){ #the constructor requires the model, after that it is not stored anymore
   rxname = react_id(model)
   lpobject <- sysBiolAlg(model, algorithm=algo)
@@ -49,24 +49,29 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", deat
   names(lobnd) = rxname
   upbnd = uppbnd(model)
   names(upbnd) = rxname
+  if(is.na(ex)){
+    medc <- react_id(findExchReact(model))
+  }else{
+    medc <- react_id(findExchReact(model))
+    medc <- medc[grep(ex, medc)]
+  }
+  if(!is.na(ex_comp)){
+    medc <- medc[grep(ex_comp, medc)]
+  }
   if(lyse){
     stochmat <- as.matrix(S(model))
-    colnames(stochmat) <- react_id(model)
+    colnames(stochmat) <- rxname
     rownames(stochmat) <- met_id(model)
     stoch <- stochmat[,which(model@obj_coef==1)] #find stochiometry of biomass components
     biomets <- stoch[-which(stoch==0)]
     exs <- findExchReact(model)
     extrans <- react_id(exs)
     names(extrans) <- met_id(exs)
+    extrans <- extrans[which(extrans %in% medc)]
     names(biomets) <- gsub(csuffix,esuffix,names(biomets))
     biomets <- biomets[which(names(biomets) %in% names(extrans))]
     names(biomets) <- extrans[names(biomets)]
     feat[["biomass"]] <- biomets
-  }
-  if(is.na(ex)){
-    medc <- react_id(findExchReact(model))
-  }else{
-    medc <- rxname[grep(ex, rxname)]
   }
   new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
       fbasol=fbasol, lyse=lyse, feat=feat, deathrate=deathrate, duplirate=duplirate,
