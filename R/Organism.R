@@ -154,7 +154,8 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
   switch(problem(lpob)@solver,
          glpkAPI=setColsBndsGLPK(problem(lpob)@oobj, 1:length(lb), #specific for GLPK!
                                     lb=lb, ub=ub),
-         clpAPI=chgColLowerCLP(problem(lpob)@oobj, lb=lb))
+         clpAPI=chgColLowerCLP(problem(lpob)@oobj, lb=lb), #specific for CLP
+         sybilGUROBI=changeColsBnds(problem(lpob), lb=lb, ub=ub)) #specific for Gurobi
   fbasl <- optimizeProb(lpob)
   names(fbasl$fluxes) <- names(object@lbnd)
   eval.parent(substitute(object@fbasol <- fbasl))
