@@ -145,6 +145,9 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
     }
     newoccmat <- Matrix(newoccmat,sparse=T)
   }
+  if(sum(duplicated(paste(neworgdat$x,neworgdat$y,sep="_")))!=0){
+    stop("You have multiple individuals in the same position! Make sure that your x an y positions are unique")
+  }
   eval.parent(substitute(object@occmat <- newoccmat))
   eval.parent(substitute(object@orgdat <- neworgdat))
   eval.parent(substitute(object@specs <- newspecs))
@@ -456,9 +459,17 @@ setMethod("getSublb", "Arena", function(object){
 #' }
 setGeneric("stirEnv", function(object, sublb){standardGeneric("stirEnv")})
 setMethod("stirEnv", "Arena", function(object, sublb){
-  #stir all the bacteria
+  #stir all the organism except the ones which are not moving
   neworgdat <- object@orgdat
   cmbs = expand.grid(1:object@n,1:object@m)
+  sit <- which(unlist(lapply(object@specs,function(x)(return(x@speed))))==0)
+  if(length(sit) != 0){
+    siti <- which(neworgdat$type==sit)
+    sitorgdat <- neworgdat[siti,]
+    neworgdat <- neworgdat[-siti,]
+    rownames(cmbs) <- paste(cmbs$Var1,cmbs$Var2,sep="_")
+    cmbs <- cmbs[setdiff(rownames(cmbs),c(paste(sitorgdat$x,sitorgdat$y,sep="_"))),]
+  }
   if(nrow(neworgdat) > nrow(cmbs)){ #not so nice -> there is a problem
     selength <- nrow(cmbs)
   }else{
@@ -468,6 +479,7 @@ setMethod("stirEnv", "Arena", function(object, sublb){
   neworgdat[,'x'] <- cmbs[sel,1]
   neworgdat[,'y'] <- cmbs[sel,2]
   newoccmat <- matrix(0,object@n,object@m)
+  if(length(sit) != 0){neworgdat <- rbind(neworgdat,sitorgdat)}
   for(i in 1:nrow(neworgdat)){
     newoccmat[neworgdat[i,'x'],neworgdat[i,'y']] = neworgdat[i,'type']
   }

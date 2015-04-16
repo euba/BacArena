@@ -18,6 +18,7 @@
 #' @slot duplirate A numeric value giving the growth cut off at which the organism is duplicated.
 #' @slot growthlimit A numeric value giving the growth limit at which the organism dies.
 #' @slot growtype A character vector giving the functional type for growth (linear or exponential).
+#' @slot speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
 setClass("Organism",
          representation(
            lbnd="numeric",
@@ -31,40 +32,17 @@ setClass("Organism",
            deathrate="numeric",
            duplirate="numeric",
            growthlimit="numeric",
-           growtype="character"
+           growtype="character",
+           speed="numeric"
          )
 )
 
 ########################################################################################################
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
-#' @title Constructor for creacting objects of class Organism
-#'
-#' @description The constructor \code{Organism} creactes an object of class Organism.
-#'
-#' @param model A metabolic model of class modelorg.
-#' @param typename A character vector giving the name of the organism (default is model description).
-#' @param algo Algorithm to use for optimization (default: "fba").
-#' @param ex Flag to find prefix of exchange reactions (default: "EX_").
-#' @param ex_comp Flag to find compartment of exchange reactions.
-#' @param deathrate A numeric value giving the factor by which the growth should be reduced in every iteration.
-#' @param duplirate A numeric value giving the growth cut off at which the organism is duplicated.
-#' @param growthlimit A numeric value giving the growth limit at which the organism dies.
-#' @param growtype A character vector giving the functional type for growth (linear or exponential).
-#' @param lyse A boolean variable indicating if the organism should lyse after death.
-#' @param feat A list containing conditional features for the object (contains at the momement only biomass components for lysis).
-#' @param csuffix Flag to find compartment of intracellular metabolites.
-#' @param esuffix Flag to find compartment of extracellular metabolites.
-#' @return An object of class Organism.
-#' @details Lysis is implemented by taking the intersect between biomass compounds and the substances in the environment and adding the normalized stochiometric concentrations of the biomass compounds to the medium
-#' @seealso \code{\link{Organism-class}}
-#' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,duplirate=0.5,
-#'            growthlimit=0.05,growtype="exponential") #initialize an organism
+
 Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_comp=NA, deathrate, duplirate, growthlimit,
-                     growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", ...){ #the constructor requires the model, after that it is not stored anymore
+                     growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", speed=2, ...){ #the constructor requires the model, after that it is not stored anymore
   rxname = react_id(model)
   lpobject <- sysBiolAlg(model, algorithm=algo)
   fbasol <- optimizeProb(lpobject)
@@ -130,6 +108,8 @@ setGeneric("growthlimit", function(object){standardGeneric("growthlimit")})
 setMethod("growthlimit", "Organism", function(object){return(object@growthlimit)})
 setGeneric("growtype", function(object){standardGeneric("growtype")})
 setMethod("growtype", "Organism", function(object){return(object@feat)})
+setGeneric("speed", function(object){standardGeneric("speed")})
+setMethod("speed", "Organism", function(object){return(object@speed)})
 
 ########################################################################################################
 ###################################### METHODS #########################################################
@@ -350,6 +330,42 @@ setMethod("emptyHood", "Organism", function(object, occmat, x, y){
   }
 })
 
+#' @title Function for random movement of organisms
+#'
+#' @description The generic function \code{move} implements a random movement in the Moore neighbourhood of an individual.
+#'
+#' @param object An object of class Organism.
+#' @param population An object of class Arena.
+#' @param j The number of the iteration of interest.
+#' @details Organisms move in a random position the Moore neighbourhood, which is not occupied by other individuals. If there is no free space the individuals stays in the same position.
+#' @seealso \code{\link{Organism-class}}, \code{\link{getHood}} and \code{\link{emptyHood}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' move(bac,arena,1)
+#' }
+setGeneric("move", function(object, population, j){standardGeneric("move")})
+setMethod("move", "Organism", function(object, population, j){
+  popvec <- population@orgdat[j,]
+  hood <- emptyHood(object, population@occmat, popvec$x, popvec$y)
+  if(length(hood) != 0){
+    xp = hood[1]
+    yp = hood[2]
+    eval.parent(substitute(population@occmat[popvec$x, popvec$y] <- 0))
+    eval.parent(substitute(population@occmat[xp,yp] <- as.numeric(popvec$type)))
+    eval.parent(substitute(population@orgdat[j,]$x <- xp))
+    eval.parent(substitute(population@orgdat[j,]$y <- yp))
+  }else if(object@budge){
+    hood2 = getHood(object, population@occmat, popvec$x, popvec$y)
+    eval.parent(substitute(population <- budging(object, population, j, hood2)))
+  }
+})
+
 #show function for class Organism
 
 setMethod(show, signature(object="Organism"), function(object){
@@ -366,13 +382,11 @@ setMethod(show, signature(object="Organism"), function(object){
 #' 
 #' Structure of the S4 class \code{Bac} inheriting from class \code{\link{Organism-class}} representing bacterial cells.
 #'
-#' @slot speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
 #' @slot budge A boolean vector indicating if budging (bacteria in the souronding area are pushed away) should be implemented.
 #' @slot chem A character vector indicating name of substance which is the chemotaxis attractant. Empty character vector if no chemotaxis.
 setClass("Bac",
          contains="Organism",
          representation(
-           speed="integer", # speed by which bacterium is moving (given by cell per iteration)
            budge="logical", #flag indicating, if budging (veruecktes Labyrinth) should be implemented
            chem="character" # name of substance which is the chemotaxis attractant
          )
@@ -392,8 +406,6 @@ Bac <- function(model, deathrate, duplirate, speed=2, growthlimit, growtype,
 ###################################### GET METHODS FOR ATTRIBUTES ######################################
 ########################################################################################################
 
-setGeneric("speed", function(object){standardGeneric("speed")})
-setMethod("speed", "Bac", function(object){return(object@speed)})
 setGeneric("budge", function(object){standardGeneric("budge")})
 setMethod("budge", "Bac", function(object){return(object@budge)})
 setGeneric("chem", function(object){standardGeneric("chem")})
@@ -456,42 +468,6 @@ setMethod("growth", "Bac", function(object, population, j){
   }
   eval.parent(substitute(population@orgdat <- neworgdat))
   return(dead)
-})
-
-#' @title Function for random movement of bacteria
-#'
-#' @description The generic function \code{move} implements a random movement in the Moore neighbourhood of an individual.
-#'
-#' @param object An object of class Bac.
-#' @param population An object of class Arena.
-#' @param j The number of the iteration of interest.
-#' @details Bacteria move in a random position the Moore neighbourhood, which is not occupied by other individuals. If there is no free space the individuals stays in the same position.
-#' @seealso \code{\link{Bac-class}}, \code{\link{getHood}} and \code{\link{emptyHood}}
-#' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
-#' move(bac,arena,1)
-#' }
-setGeneric("move", function(object, population, j){standardGeneric("move")})
-setMethod("move", "Bac", function(object, population, j){
-  popvec <- population@orgdat[j,]
-  hood <- emptyHood(object, population@occmat, popvec$x, popvec$y)
-  if(length(hood) != 0){
-    xp = hood[1]
-    yp = hood[2]
-    eval.parent(substitute(population@occmat[popvec$x, popvec$y] <- 0))
-    eval.parent(substitute(population@occmat[xp,yp] <- as.numeric(popvec$type)))
-    eval.parent(substitute(population@orgdat[j,]$x <- xp))
-    eval.parent(substitute(population@orgdat[j,]$y <- yp))
-  }else if(object@budge){
-    hood2 = getHood(object, population@occmat, popvec$x, popvec$y)
-    eval.parent(substitute(population <- budging(object, population, j, hood2)))
-  }
 })
 
 #' @title Function for chemotaxis of bacteria to their prefered substrate

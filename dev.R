@@ -1,5 +1,6 @@
 library(devtools)
 
+build() #building R package archive
 
 setwd("~/BacArena")
 load_all()
