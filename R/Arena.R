@@ -464,7 +464,7 @@ setMethod("stirEnv", "Arena", function(object, sublb){
   cmbs = expand.grid(1:object@n,1:object@m)
   sit <- which(unlist(lapply(object@specs,function(x)(return(x@speed))))==0)
   if(length(sit) != 0){
-    siti <- which(neworgdat$type==sit)
+    siti <- which(neworgdat$type %in% sit)
     sitorgdat <- neworgdat[siti,]
     neworgdat <- neworgdat[-siti,]
     rownames(cmbs) <- paste(cmbs$Var1,cmbs$Var2,sep="_")

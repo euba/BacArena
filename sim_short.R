@@ -27,16 +27,17 @@ ecore1 = changeBounds(ecore, names(bace1@lbnd[bace1@medium][which(bace1@lbnd[bac
 ecore2 = changeBounds(ecore, c('EX_o2(e)'), 0, 0)
 
 bace1 = Bac(model=ecore, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growtype="exponential",
-           speed=2, type="ecore1", lyse=T)
+           speed=1, type="ecore1", lyse=T)
 bace2 = Bac(model=ecore2, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growtype="exponential",
            speed=0, type="ecore2")
-arena = Arena(n=100, m=100, tstep=0.5,stir=T)
+arena = Arena(n=100, m=100, stir=T)
 addOrg(arena, bace1, amount=10)
-addOrg(arena, bace2, amount=10)
+addOrg(arena, bace2, amount=10,x=1:10,y=1:10)
 addSubs(arena, smax=100)
 
 print(system.time(evalsim <- simEnv(arena, time=5)))
 format(object.size(evalsim), units='Mb')
+evalArena(evalsim)
 
 evalArena(evalsim, plot_items=c('population','EX_o2(e)'), phencol=T, retdata=F)
 plotCurves(evalsim, remove=T, retdata=F)

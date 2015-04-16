@@ -33,7 +33,7 @@ setClass("Organism",
            duplirate="numeric",
            growthlimit="numeric",
            growtype="character",
-           speed="numeric"
+           speed="integer"
          )
 )
 
@@ -77,7 +77,7 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_c
   }
   new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
       fbasol=fbasol, lyse=lyse, feat=feat, deathrate=deathrate, duplirate=duplirate,
-      growthlimit=growthlimit, growtype=growtype, ...)
+      growthlimit=growthlimit, growtype=growtype, speed=as.integer(speed), ...)
 }
 
 ########################################################################################################
@@ -399,7 +399,7 @@ setClass("Bac",
 Bac <- function(model, deathrate, duplirate, speed=2, growthlimit, growtype,
                 budge=F, chem='', ...){
   new("Bac", Organism(model=model, deathrate=deathrate, duplirate=duplirate, growtype=growtype,
-                      growthlimit=growthlimit, ...), budge=budge, speed=as.integer(speed), chem=chem)
+                      growthlimit=growthlimit, speed=speed, ...), budge=budge, chem=chem)
 }
 
 ########################################################################################################
@@ -640,10 +640,10 @@ setClass("Human",
 ########################################################################################################
 
 Human <- function(model, deathrate, duplirate, growthlimit, growtype,
-                  objective=model@react_id[which(model@obj_coef==1)], ...){
+                  objective=model@react_id[which(model@obj_coef==1)], speed=0, ...){
   model <- changeObjFunc(model, objective)
   new("Human", Organism(model=model, deathrate=deathrate, duplirate=duplirate, growtype=growtype,
-                        growthlimit=growthlimit, ...), objective=objective)
+                        growthlimit=growthlimit, speed=speed, ...), objective=objective)
 }
 
 ########################################################################################################
