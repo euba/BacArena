@@ -821,9 +821,13 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
   rownames(subs) = medplot
   for(i in 1:length(object@simlist)){
     simdat <- object@simlist[[i]]
-    count <- table(simdat[,'type'])
-    for(j in 1:length(count)){
-      growths[j,i] <- count[j]
+    #count <- table(simdat[,'type'])
+    #for(j in 1:length(count)){
+    #  growths[j,i] <- count[j]
+    #}
+    abun <- table(simdat$type)
+    for(j in 1:length(abun)){
+      growths[as.numeric(names(abun[j])),i] = abun[j]
     }
     subdat <- extractMed(object, i)
     for(j in 1:length(medplot)){
