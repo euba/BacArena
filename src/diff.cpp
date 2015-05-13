@@ -1,13 +1,56 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+// [[Rcpp::export]]
+void diffuseGrajdeanuCpp(Rcpp::NumericMatrix y, bool donut){
+  // According to Grajdeanu (2007) MODELING DIFFUSION IN A DISCRETE ENVIRONMENT
+  int n = y.ncol();
+  int m = y.nrow();
+  int z = 0;
+  double mu = 1.0; // diff const
+  Rcpp::NumericMatrix y_old = Rcpp::clone(y);
+  
+  for(int i=0; i<n; i++){
+    for(int j=0; j<m; j++){
+      double A = 0, d = 0, sum_A = 0, sum_y = 0;
+      int neigh = 0;
+      for(int l=-1; l<=1; l++){
+        for(int o=-1; o<=1; o++){
+          int pos_i; //neighbour with position i,j
+          int pos_j;
+          if (donut==true){
+            pos_i = (i + l) % m;
+            pos_j = (j + o) % n;
+            if (pos_i == -1) pos_i = m-1;
+            if (pos_j == -1) pos_j = n-1;
+          }
+          else{ // in case of bounds (no donut) ignore unavaible neighbours
+            pos_i = i + l;
+            pos_j = j + o;
+            if (pos_i == -1 || pos_i == m) pos_i = i;
+            if (pos_j == -1 || pos_j == n) pos_j = j;
+          }
+          if(i!=pos_i or j!=pos_j){ //don't get it again
+            neigh++;
+            d = 1.0; // cell distance
+            sum_A += exp( -pow(d,2) / mu );
+            sum_y += ( y_old(pos_i,pos_j) - y_old(i,j) ) * exp( -pow(d,2)/mu );
+          }
+        }
+      }
+      A = 1.0 / sum_A;
+      y(i,j) = y_old(i,j) + A * sum_y;
+    }
+  }
+}
+
 
 // [[Rcpp::export]]
 void diffuseNaiveCpp(Rcpp::NumericMatrix y, bool donut){
   int n = y.ncol();
   int m = y.nrow();
-  int l = 0;
-  while(l++ < n*m ){ // one repeat for each cell
+  int z = 0;
+  while(z++ < n*m ){ // one repeat for each cell
     // okay this is ugly but who cares ;P  (needed for using same seed as in R)
     int j = static_cast<int>(round(Rcpp::as<double>(Rcpp::runif(1, 0, n-1))));
     int i = static_cast<int>(round(Rcpp::as<double>(Rcpp::runif(1, 0, m-1))));
