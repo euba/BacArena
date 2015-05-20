@@ -272,6 +272,45 @@ setMethod("changeDiff", "Arena", function(object, newdiffmat, mediac){
   }else stop("Given matrix is not compatible in dimensions with the environment.")
 })
 
+#' @title Change substance concentration patterns in the environment according to a gradient
+#'
+#' @description The generic function \code{createGradient} changes specific substance concentration patterns in the environment.
+#'
+#' @param object An object of class Arena.
+#' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
+#' @param position A character vector giving the position (top, bottom, right and left) of the gradient.
+#' @param smax A number giving the maximum concentration of the substance.
+#' @param steep A number between 0 and 1 giving the steepness of the gradient (concentration relative to the arena size).
+#' @details This function can be used to add gradients of specific substances in the environment. 
+#' @seealso \code{\link{Arena-class}} and \code{\link{changeSubs}} 
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,30) #add all substances with no concentrations.
+#' createGradient(arena,smax=50,mediac=c("EX_glc(e)","EX_o2(e)","EX_pi(e)"),
+#'              position='top',steep=0.5)
+#' }
+setGeneric("createGradient", function(object, mediac, position, smax, steep){standardGeneric("createGradient")})
+setMethod("createGradient", "Arena", function(object, mediac, position, smax, steep){
+  if(steep<=0 || steep>=1){stop("Steepness must be in between 0 and 1.")}
+  newdiffmat <- matrix(0,nrow=object@n,ncol=object@m)
+  gradn = floor(object@n*steep)
+  gradm = floor(object@m*steep)
+  switch(position,
+         'top'={for(i in 1:object@m){newdiffmat[0:gradm+1,i]=seq(smax,0,length.out=gradm+1)}},
+         'bottom'={for(i in 1:object@m){newdiffmat[gradm:object@m,i]=seq(0,smax,length.out=gradm+1)}},
+         'right'={for(i in 1:object@n){newdiffmat[i,gradn:object@n]=seq(0,smax,length.out=gradn+1)}},
+         'left'={for(i in 1:object@n){newdiffmat[i,0:gradn+1]=seq(smax,0,length.out=gradn+1)}},
+         stop("Positions must be top, bottom, right and left."))
+  for(i in 1:length(mediac)){
+    eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix(newdiffmat, sparse=T)))
+  }
+})
+
 #' @title Change organisms in the environment
 #'
 #' @description The generic function \code{changeOrg} changes organisms in the environment.
