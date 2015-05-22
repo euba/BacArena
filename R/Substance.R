@@ -56,7 +56,7 @@ setMethod("difspeed", "Substance", function(object){return(object@difspeed)})
 
 #' @title Function for naive diffusion (neighbourhood) of the Substance matrix
 #'
-#' @description The generic function \code{diffuseR} implements the diffusion in the Moore neighbourhood in \code{R}.
+#' @description The generic function \code{diff} implements the diffusion in the Moore neighbourhood in \code{R}.
 #'
 #' @param object An object of class Substance.
 #' @details The diffusion is implemented by iterating through each cell in the grid and taking the cell with the lowest concentration in the Moore neighbourhood to update the concentration of both by their mean.
@@ -68,7 +68,7 @@ setMethod("difspeed", "Substance", function(object){return(object@difspeed)})
 #' }
 setGeneric("diffuseR", function(object){standardGeneric("diffuseR")})
 setMethod("diffuseR", "Substance", function(object){
-  smat <- object@diffmat
+  smat <- as(object@diffmat, "matrix")
   smatn <- matrix(NA, nrow=dim(smat)[1]+2, ncol=dim(smat)[2]+2) #define environment with boundary conditions
   smatn[2:(dim(smat)[1]+1), 2:(dim(smat)[2]+1)] <- smat #put the values into the environment
   i <- sample(1:dim(smat)[1], dim(smat)[1])
@@ -101,7 +101,7 @@ setMethod("diffuseR", "Substance", function(object){
       }
     }
   }
-  eval.parent(substitute(object@diffmat <- smat))
+  eval.parent(substitute(object@diffmat <- as(smat, "sparseMatrix")))
 })
 
 #' @title Function for naive diffusion (neighbourhood) of the Substance matrix

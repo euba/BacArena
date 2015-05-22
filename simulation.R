@@ -1,6 +1,6 @@
 # load libraries and other R files to have everything in place
 set.seed(5000)
-setwd("~/BacArena")
+setwd("~/uni/bacarena")
 library(Rcpp)
 library(sybil)
 library(glpkAPI)

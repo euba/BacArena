@@ -2,12 +2,11 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-void diffuseGrajdeanuCpp(Rcpp::NumericMatrix y, bool donut){
+void diffuseGrajdeanuCpp(Rcpp::NumericMatrix y, double mu, bool donut){
   // According to Grajdeanu (2007) MODELING DIFFUSION IN A DISCRETE ENVIRONMENT
   int n = y.ncol();
   int m = y.nrow();
-  int z = 0;
-  double mu = 1.0; // diff const
+  //double mu = 1.0; // diff const
   Rcpp::NumericMatrix y_old = Rcpp::clone(y);
   
   for(int i=0; i<n; i++){

@@ -1,7 +1,9 @@
 # load libraries and other R files to have everything in place
 setwd('C:/Users/eugen.bauer/Documents/GitHub/BacArena')
 setwd("~/BacArena")
+setwd("~/uni/bacarena")
 library(Rcpp)
+library(RcppArmadillo)
 library(sybil)
 library(sybilGUROBI) 
 #library(microbenchmark)
@@ -35,7 +37,7 @@ addOrg(arena, bace1, amount=10)
 addOrg(arena, bace2, amount=10,x=1:10,y=1:10)
 addSubs(arena, smax=100)
 
-print(system.time(evalsim <- simEnv(arena, time=5)))
+print(system.time(evalsim <- simEnv(arena, time=50)))
 format(object.size(evalsim), units='Mb')
 evalArena(evalsim)
 
