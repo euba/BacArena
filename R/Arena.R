@@ -192,6 +192,9 @@ setMethod("addOrg2", "Arena", function(object, specI, amount, x=NULL, y=NULL, gr
 #' @param object An object of class Arena.
 #' @param smax A number indicating the maximum substance concentration per grid cell.
 #' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
+#' @param smax A number indicating the maximum substance concentration per grid cell.
+#' @slot difunc A character vector ("pde","cpp" or "r") describing the function for diffusion.
+#' @slot difspeed A number indicating the diffusion speed (given by number of cells per iteration).
 #' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub} can be used to modify the concentrations of specific substances.} 
 #' @seealso \code{\link{Arena-class}} and \code{\link{changeSub}} 
 #' @examples
@@ -202,15 +205,15 @@ setMethod("addOrg2", "Arena", function(object, specI, amount, x=NULL, y=NULL, gr
 #' arena <- Arena(20,20) #initialize the environment
 #' addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
 #' }
-setGeneric("addSubs", function(object, smax=0, mediac=object@mediac){standardGeneric("addSubs")})
-setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac){
+setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=1){standardGeneric("addSubs")})
+setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=1){
   if(sum(mediac %in% object@mediac)==length(mediac)){
     newmedia <- list()
     sapply(object@mediac, function(x, n, m){
       newmedia[[x]] <<- Substance(n, m, 0, name=x)
     }, n=object@n, m=object@m)
     for(i in 1:length(mediac)){
-      newmedia[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i])
+      newmedia[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i], difunc=difunc, difspeed=difspeed)
     }
     eval.parent(substitute(object@media <- newmedia))
   }else stop("Substance can't be produced or taken up by the organisms on the grid")
@@ -238,7 +241,9 @@ setGeneric("changeSub", function(object, smax, mediac){standardGeneric("changeSu
 setMethod("changeSub", "Arena", function(object, smax, mediac){
   if(length(sum(mediac %in% names(object@media)))==length(mediac)){
     for(i in 1:length(mediac)){
-      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i])))
+      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i],
+                                                                  difunc=object@media[mediac[i]]@difunc,
+                                                                  difspeed=object@media[mediac[i]]@difspeed)))
     }
   }else stop("Substance does not exist in medium")
 })
@@ -792,7 +797,8 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
           if(retdata){
             retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
           }
-          image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]])
+          image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
+                zlim=c(0,max(unlist(lapply(evalsim@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
         }
       }
     }else if(length(plot_items)<=6){
@@ -801,7 +807,8 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
         if(retdata){
           retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
         }
-        image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]])
+        image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
+              zlim=c(0,max(unlist(lapply(evalsim@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
       }
     }else{
       par(mfrow=c(3,ceiling(length(plot_items)/3)))
@@ -809,7 +816,8 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
         if(retdata){
           retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
         }
-        image(matrix(meds[[inds[j]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]])
+        image(matrix(meds[[inds[j]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
+              zlim=c(0,max(unlist(lapply(evalsim@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
       }
     }
     if(plot_items[1]=='population'){
@@ -923,27 +931,58 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 #' eval <- simEnv(arena,10)
 #' phenmat <- getPhenoMat(eval)
 #' }
-setGeneric("getPhenoMat", function(object){standardGeneric("getPhenoMat")})
-setMethod("getPhenoMat", "Eval", function(object){
-  numphens <- unlist(lapply(object@phenotypes,function(x){return(length(x))}))
-  phentypes <- vector()
-  for(i in seq_along(numphens)){
-    phentypes <- c(phentypes, rep(names(numphens)[i],numphens[i]))
-  }
-  phentypes <- as.factor(phentypes)
-  phenmat <- matrix(0, nrow=length(phentypes), ncol=length(object@mediac))
-  colnames(phenmat) <- object@mediac
-  rownames(phenmat) <- phentypes
-  pind <- 0
-  for(i in 1:length(object@phenotypes)){
-    for(j in 1:numphens[i]){
-      pvec <- object@phenotypes[[i]][[j]]
-      pind <- pind + 1
-      phenmat[pind, names(pvec)] <- pvec
+setGeneric("getPhenoMat", function(object, step="total"){standardGeneric("getPhenoMat")})
+setMethod("getPhenoMat", "Eval", function(object, step="total"){
+  if(step=="total"){
+    numphens <- unlist(lapply(object@phenotypes,function(x){return(length(x))}))
+    phentypes <- vector()
+    for(i in seq_along(numphens)){
+      phentypes <- c(phentypes, rep(names(numphens)[i],numphens[i]))
     }
+    phentypes <- as.factor(phentypes)
+    phenmat <- matrix(0, nrow=length(phentypes), ncol=length(object@mediac))
+    colnames(phenmat) <- object@mediac
+    rownames(phenmat) <- phentypes
+    pind <- 0
+    for(i in 1:length(object@phenotypes)){
+      for(j in 1:numphens[i]){
+        pvec <- object@phenotypes[[i]][[j]]
+        pind <- pind + 1
+        phenmat[pind, names(pvec)] <- pvec
+      }
+    }
+    phenmat <- ifelse(phenmat==-1,2,phenmat)
+    return(phenmat)
+  }else{
+    typestep = object@simlist[[step]]$type
+    phenstep = object@simlist[[step]]$phenotype
+    typenam = names(object@phenotypes)
+    phens = list()
+    for(i in levels(as.factor(typestep))){
+      tphen = object@phenotypes[[as.numeric(i)]]
+      phens[[typenam[as.numeric(i)]]] = tphen[as.numeric(levels(as.factor(phenstep[which(typestep==as.numeric(i))])))]
+    }
+    
+    numphens <- unlist(lapply(phens,function(x){return(length(x))}))
+    phentypes <- vector()
+    for(i in seq_along(numphens)){
+      phentypes <- c(phentypes, rep(names(numphens)[i],numphens[i]))
+    }
+    phentypes <- as.factor(phentypes)
+    phenmat <- matrix(0, nrow=length(phentypes), ncol=length(object@mediac))
+    colnames(phenmat) <- object@mediac
+    rownames(phenmat) <- phentypes
+    pind <- 0
+    for(i in 1:length(phens)){
+      for(j in 1:numphens[i]){
+        pvec <- phens[[i]][[j]]
+        pind <- pind + 1
+        phenmat[pind, names(pvec)] <- pvec
+      }
+    }
+    phenmat <- ifelse(phenmat==-1,2,phenmat)
+    return(phenmat)
   }
-  phenmat <- ifelse(phenmat==-1,2,phenmat)
-  return(phenmat)
 })
 
 #' @title Function for mining/analyzing phenotypes which occured on the arena
@@ -967,9 +1006,9 @@ setMethod("getPhenoMat", "Eval", function(object){
 #' eval <- simEnv(arena,10)
 #' minePheno(eval)
 #' }
-setGeneric("minePheno", function(object, plot_type="pca", legend=F){standardGeneric("minePheno")})
-setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F){
-  phenmat <- getPhenoMat(object)
+setGeneric("minePheno", function(object, plot_type="pca", legend=F, step="total"){standardGeneric("minePheno")})
+setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, step="total"){
+  phenmat <- getPhenoMat(object, step)
   if(nrow(phenmat)<=1){
     stop('not enough phenotypes to analyze.')
   }
