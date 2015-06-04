@@ -28,7 +28,7 @@ setClass("Substance",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Substance <- function(n, m, smax, diffmat={}, name, difunc="cpp", difspeed=1, ...){
+Substance <- function(n, m, smax, diffmat={}, name, difunc="pde", difspeed=1, ...){
   if(length(diffmat)==0){
     diffmat = Matrix(smax, nrow=n, ncol=m, sparse=T)
   }
@@ -106,7 +106,7 @@ setMethod("diffuseR", "Substance", function(object){
 
 #' @title Function for naive diffusion (neighbourhood) of the Substance matrix
 #'
-#' @description The generic function \code{diffuseR} implements the diffusion in the Moore neighbourhood with \code{C++} code.
+#' @description The generic function \code{diffuseCpp} implements the diffusion in the Moore neighbourhood with \code{C++} code.
 #'
 #' @param object An object of class Substance.
 #' @details The function is a wrapper of the \code{C++} function \code{diffuseNaiveCpp}. The diffusion is implemented by iterating through each cell in the grid and taking the cell with the lowest concentration in the Moore neighbourhood to update the concentration of both by their mean.
@@ -120,6 +120,25 @@ setGeneric("diffuseCpp", function(object){standardGeneric("diffuseCpp")})
 setMethod("diffuseCpp", "Substance", function(object){
   submat <- as.matrix(object@diffmat)
   diffuseNaiveCpp(submat, donut=FALSE)
+  eval.parent(substitute(object@diffmat <- Matrix(submat, sparse=T)))
+})
+
+#' @title Function for diffusion using a partial differential equation
+#'
+#' @description The generic function \code{diffusePDE} implements a partial differential equation after Grajdeanu (2007).
+#'
+#' @param object An object of class Substance.
+#' @details The function is a wrapper of the \code{C++} function \code{diffuseGrajdeanuCpp}. 
+#' @seealso \code{\link{Substance-class}} and \code{\link{diffuseR}}
+#' @examples
+#' \dontrun{
+#' sub <- Substance(n=20,m=20,smax=40,name='test',difunc='pde') #initialize test substance
+#' diffusePDE(sub)
+#' }
+setGeneric("diffusePDE", function(object){standardGeneric("diffusePDE")})
+setMethod("diffusePDE", "Substance", function(object){
+  submat <- as.matrix(object@diffmat)
+  diffuseGrajdeanuCpp(submat, donut=FALSE, mu=object@difspeed)
   eval.parent(substitute(object@diffmat <- Matrix(submat, sparse=T)))
 })
 

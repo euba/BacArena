@@ -272,6 +272,46 @@ setMethod("changeDiff", "Arena", function(object, newdiffmat, mediac){
   }else stop("Given matrix is not compatible in dimensions with the environment.")
 })
 
+#' @title Change substance concentration patterns in the environment according to a gradient
+#'
+#' @description The generic function \code{createGradient} changes specific substance concentration patterns in the environment.
+#'
+#' @param object An object of class Arena.
+#' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
+#' @param position A character vector giving the position (top, bottom, right and left) of the gradient.
+#' @param smax A number giving the maximum concentration of the substance.
+#' @param steep A number between 0 and 1 giving the steepness of the gradient (concentration relative to the arena size).
+#' @details This function can be used to add gradients of specific substances in the environment. 
+#' @seealso \code{\link{Arena-class}} and \code{\link{changeSubs}} 
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,30) #add all substances with no concentrations.
+#' createGradient(arena,smax=50,mediac=c("EX_glc(e)","EX_o2(e)","EX_pi(e)"),
+#'              position='top',steep=0.5)
+#' }
+setGeneric("createGradient", function(object, mediac, position, smax, steep){standardGeneric("createGradient")})
+setMethod("createGradient", "Arena", function(object, mediac, position, smax, steep){
+  if(steep<=0 || steep>=1){stop("Steepness must be in between 0 and 1.")}
+  mediac = intersect(mediac,object@mediac)
+  newdiffmat <- matrix(0,nrow=object@n,ncol=object@m)
+  gradn = floor(object@n*steep)
+  gradm = floor(object@m*steep)
+  switch(position,
+         'top'={for(i in 1:object@m){newdiffmat[0:gradm+1,i]=seq(smax,0,length.out=gradm+1)}},
+         'bottom'={for(i in 1:object@m){newdiffmat[gradm:object@m,i]=seq(0,smax,length.out=gradm+1)}},
+         'right'={for(i in 1:object@n){newdiffmat[i,gradn:object@n]=seq(0,smax,length.out=gradn+1)}},
+         'left'={for(i in 1:object@n){newdiffmat[i,0:gradn+1]=seq(smax,0,length.out=gradn+1)}},
+         stop("Positions must be top, bottom, right and left."))
+  for(i in 1:length(mediac)){
+    eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix(newdiffmat, sparse=T)))
+  }
+})
+
 #' @title Change organisms in the environment
 #'
 #' @description The generic function \code{changeOrg} changes organisms in the environment.
@@ -386,6 +426,7 @@ setMethod("simEnv", "Arena", function(object, time){
         submat <- as.matrix(arena@media[[j]]@diffmat)
         apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
         switch(arena@media[[j]]@difunc,
+               "pde"={diffuseGrajdeanuCpp(submat, donut=FALSE, mu=arena@media[[j]]@difspeed)},
                "cpp"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveCpp(submat, donut=FALSE)}},
                "r"={for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
                stop("Simulation function for Organism object not defined yet.")) 
@@ -777,10 +818,10 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
       }
       if(phencol){
         plot(object@simlist[[i]][,c('x','y')],xlim=c(0,object@n),ylim=c(0,object@m),xlab='',ylab='',
-             pch=20,axes=FALSE,cex=1,main='Population', col=object@simlist[[i]]$phenotype+1)
+             pch=object@simlist[[i]]$type-1,axes=FALSE,cex=1,main='Population', col=object@simlist[[i]]$phenotype+1)
       }else{
         plot(object@simlist[[i]][,c('x','y')],xlim=c(0,object@n),ylim=c(0,object@m),xlab='',ylab='',
-             pch=20,axes=FALSE,cex=1,main='Population', col=object@simlist[[i]]$type)
+             pch=object@simlist[[i]]$type-1,axes=FALSE,cex=1,main='Population', col=object@simlist[[i]]$type)
       }
     }
   }
@@ -798,6 +839,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
 #' @param medplot A character vector giving the name of substances which should be plotted.
 #' @param retdata A boolean variable indicating if the data used to generate the plots should be returned.
 #' @param remove A boolean variable indicating if substances, which don't change in their concentration should be removed from the plot.
+#' @param legend Boolean variable indicating if legend should be plotted
 #' @return Returns two graphs in one plot: the growth curves and the curves of concentration changes. Optional the data to generate the original plots can be returned.
 #' @details The parameter \code{retdata} can be used to access the data used for the returned plots to create own custom plots. 
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
@@ -812,8 +854,8 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
 #' eval <- simEnv(arena,10)
 #' plotCurves(eval)
 #' }
-setGeneric("plotCurves", function(object, medplot=object@mediac, retdata=F, remove=F){standardGeneric("plotCurves")})
-setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=F, remove=F){
+setGeneric("plotCurves", function(object, medplot=object@mediac, retdata=F, remove=F, legend=F){standardGeneric("plotCurves")})
+setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=F, remove=F, legend=F){
   old.par <- par(no.readonly = TRUE)
   growths <- matrix(0, nrow=length(object@specs), ncol=length(object@simlist))
   rownames(growths) = names(object@specs)
@@ -846,16 +888,16 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
        type='n', xlab='time in h', ylab='number of individuals on grid',
        main='Population')
   for(i in 1:nrow(growths)){
-    lines(times, growths[i,], col=i)
+    lines(times, growths[i,], col=i, type='b', pch=i-1)
   }
-  legend('bottom',legend=rownames(growths),col=1:nrow(growths),cex=0.4/log10(nrow(growths)+1),lwd=1)
+  if(legend){legend('bottom',legend=rownames(growths),col=1:nrow(growths),cex=0.4/log10(nrow(growths)+1),pch=(0:nrow(growths)-1),lwd=1)}
   plot(times, times, xlim=c(0,max(times)), ylim=c(0,max(subs)),
        type='n', xlab='time in h', ylab='concentration in mmol per gridcell',
        main='Substance concentrations')
   for(i in 1:nrow(subs)){
     lines(times, subs[i,], col=i)
   }
-  legend('right',legend=rownames(subs),col=1:nrow(subs),cex=0.4/log10(nrow(subs)+1),lwd=1)
+  if(legend){legend('right',legend=rownames(subs),col=1:nrow(subs),cex=0.4/log10(nrow(subs)+1),lwd=1)}
   if(retdata){
     return(list('Population'=growths,'Substances'=subs))
   }
@@ -910,6 +952,7 @@ setMethod("getPhenoMat", "Eval", function(object){
 #'
 #' @param object An object of class Eval.
 #' @param plot_type A character vector giving the plot which should be returned (either "pca" for a principle coordinate analysis or "hclust" for hierarchical clustering).
+#' @param legend Boolean variable indicating if legend should be plotted
 #' @return Returns a plot for each simulation step representing the similarity of phenotypes of organisms within the environment. 
 #' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages.
 #' @seealso \code{\link{Eval-class}} and \code{\link{getPhenoMat}}
@@ -924,8 +967,8 @@ setMethod("getPhenoMat", "Eval", function(object){
 #' eval <- simEnv(arena,10)
 #' minePheno(eval)
 #' }
-setGeneric("minePheno", function(object, plot_type="pca"){standardGeneric("minePheno")})
-setMethod("minePheno", "Eval", function(object, plot_type="pca"){
+setGeneric("minePheno", function(object, plot_type="pca", legend=F){standardGeneric("minePheno")})
+setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F){
   phenmat <- getPhenoMat(object)
   if(nrow(phenmat)<=1){
     stop('not enough phenotypes to analyze.')
@@ -947,9 +990,9 @@ setMethod("minePheno", "Eval", function(object, plot_type="pca"){
     for(i in 1:length(object@specs)){
       segments(phenpca$x[which(rownames(phenpca$x)==typ[i]),1],phenpca$x[which(rownames(phenpca$x)==typ[i]),2],
                mean(phenpca$x[which(rownames(phenpca$x)==typ[i]),1]),mean(phenpca$x[which(rownames(phenpca$x)==typ[i]),2]),col=i)
-      points(mean(phenpca$x[which(rownames(phenpca$x)==typ[i]),1]),mean(phenpca$x[which(rownames(phenpca$x)==typ[i]),2]),col=i,pch=15,cex=1.5)
+      points(mean(phenpca$x[which(rownames(phenpca$x)==typ[i]),1]),mean(phenpca$x[which(rownames(phenpca$x)==typ[i]),2]),col=i,pch=i-1,cex=1.5)
     }
-    legend('topright',legend=names(object@specs),col=1:length(object@specs),cex=0.9,lwd=4)
+    if(legend){legend('topright',legend=names(object@specs),col=1:length(object@specs),pch=(0:length(object@specs)-1),cex=0.9,lwd=4)}
   }
   if(plot_type=="hclust"){
     rownames(phenmat) <- plabs

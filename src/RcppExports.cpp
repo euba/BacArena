@@ -10,32 +10,38 @@ using namespace Rcpp;
 List addBacCpp(arma::sp_mat occmat, DataFrame orgdat, int amount, double growth, int type, int ptype);
 RcppExport SEXP BacArena_addBacCpp(SEXP occmatSEXP, SEXP orgdatSEXP, SEXP amountSEXP, SEXP growthSEXP, SEXP typeSEXP, SEXP ptypeSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< arma::sp_mat >::type occmat(occmatSEXP );
-        Rcpp::traits::input_parameter< DataFrame >::type orgdat(orgdatSEXP );
-        Rcpp::traits::input_parameter< int >::type amount(amountSEXP );
-        Rcpp::traits::input_parameter< double >::type growth(growthSEXP );
-        Rcpp::traits::input_parameter< int >::type type(typeSEXP );
-        Rcpp::traits::input_parameter< int >::type ptype(ptypeSEXP );
-        List __result = addBacCpp(occmat, orgdat, amount, growth, type, ptype);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::sp_mat >::type occmat(occmatSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type orgdat(orgdatSEXP);
+    Rcpp::traits::input_parameter< int >::type amount(amountSEXP);
+    Rcpp::traits::input_parameter< double >::type growth(growthSEXP);
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< int >::type ptype(ptypeSEXP);
+    __result = Rcpp::wrap(addBacCpp(occmat, orgdat, amount, growth, type, ptype));
+    return __result;
+END_RCPP
+}
+// diffuseGrajdeanuCpp
+void diffuseGrajdeanuCpp(Rcpp::NumericMatrix y, bool donut, double mu);
+RcppExport SEXP BacArena_diffuseGrajdeanuCpp(SEXP ySEXP, SEXP donutSEXP, SEXP muSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type y(ySEXP);
+    Rcpp::traits::input_parameter< bool >::type donut(donutSEXP);
+    Rcpp::traits::input_parameter< double >::type mu(muSEXP);
+    diffuseGrajdeanuCpp(y, donut, mu);
+    return R_NilValue;
 END_RCPP
 }
 // diffuseNaiveCpp
 void diffuseNaiveCpp(Rcpp::NumericMatrix y, bool donut);
 RcppExport SEXP BacArena_diffuseNaiveCpp(SEXP ySEXP, SEXP donutSEXP) {
 BEGIN_RCPP
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type y(ySEXP );
-        Rcpp::traits::input_parameter< bool >::type donut(donutSEXP );
-        diffuseNaiveCpp(y, donut);
-    }
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type y(ySEXP);
+    Rcpp::traits::input_parameter< bool >::type donut(donutSEXP);
+    diffuseNaiveCpp(y, donut);
     return R_NilValue;
 END_RCPP
 }
