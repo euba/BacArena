@@ -35,7 +35,7 @@ bace2 = Bac(model=ecore2, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growt
 arena = Arena(n=100, m=100, stir=F)
 addOrg(arena, bace1, amount=10)
 addOrg(arena, bace2, amount=10,x=1:10,y=1:10)
-addSubs(arena, smax=100)
+addSubs(arena, smax=10, difunc="cpp", difspeed=1)
 
 print(system.time(evalsim <- simEnv(arena, time=50)))
 format(object.size(evalsim), units='Mb')
@@ -43,7 +43,7 @@ evalArena(evalsim)
 
 evalArena(evalsim, plot_items=c('population','EX_o2(e)'), phencol=F, retdata=F)
 plotCurves(evalsim, remove=T, retdata=F)
-minePheno(evalsim)
+minePheno(evalsim, step=8)
 
 
 library(animation)
