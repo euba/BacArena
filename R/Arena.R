@@ -898,7 +898,9 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
   for(i in 1:nrow(growths)){
     lines(times, growths[i,], col=i, type='b', pch=i-1)
   }
-  if(legend){legend('bottom',legend=rownames(growths),col=1:nrow(growths),cex=0.4/log10(nrow(growths)+1),pch=(0:nrow(growths)-1),lwd=1)}
+  # and length(object@specs) > 1
+  if(legend){legend('topleft',legend=rownames(growths),col=1:nrow(growths), cex=ifelse(length(object@specs)==1,1,0.4/log10(nrow(growths)+1)),pch=(0:nrow(growths)-1),lwd=1, bty="n")}
+  #if(legend){legend('topleft',legend=rownames(growths),col=1:nrow(growths), cex=0.4/log10(nrow(growths)+1),pch=(0:nrow(growths)-1),lwd=1, bty="n")}
   plot(times, times, xlim=c(0,max(times)), ylim=c(0,max(subs)),
        type='n', xlab='time in h', ylab='concentration in mmol per gridcell',
        main='Substance concentrations')
