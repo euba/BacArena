@@ -242,8 +242,8 @@ setMethod("changeSub", "Arena", function(object, smax, mediac){
   if(sum(mediac %in% names(object@media))==length(mediac)){
     for(i in 1:length(mediac)){
       eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i],
-                                                                  difunc=object@media[mediac[i]]@difunc,
-                                                                  difspeed=object@media[mediac[i]]@difspeed)))
+                                                                  difunc=object@media[[mediac[i]]]@difunc,
+                                                                  difspeed=object@media[[mediac[i]]]@difspeed)))
     }
   }else stop("Substance does not exist in medium")
 })
