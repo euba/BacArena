@@ -239,7 +239,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
 #' }
 setGeneric("changeSub", function(object, smax, mediac){standardGeneric("changeSub")})
 setMethod("changeSub", "Arena", function(object, smax, mediac){
-  if(length(sum(mediac %in% names(object@media)))==length(mediac)){
+  if(sum(mediac %in% names(object@media))==length(mediac)){
     for(i in 1:length(mediac)){
       eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i],
                                                                   difunc=object@media[mediac[i]]@difunc,
