@@ -798,7 +798,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
             retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
           }
           image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
-                zlim=c(0,max(unlist(lapply(evalsim@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
+                zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
         }
       }
     }else if(length(plot_items)<=6){
@@ -808,7 +808,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
           retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
         }
         image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
-              zlim=c(0,max(unlist(lapply(evalsim@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
+              zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
       }
     }else{
       par(mfrow=c(3,ceiling(length(plot_items)/3)))
@@ -817,7 +817,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
           retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
         }
         image(matrix(meds[[inds[j]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
-              zlim=c(0,max(unlist(lapply(evalsim@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
+              zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
       }
     }
     if(plot_items[1]=='population'){

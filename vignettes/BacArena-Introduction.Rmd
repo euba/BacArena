@@ -9,17 +9,13 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-Microbial communities are essential for global ecosystems and human health. Computational modeling of microbial consortia is thus a major goal in systems biology and microbial ecology. BacArena is a project to simulate bacterial behaviour in communities. A lot of progress is done in the last years to gain genome wide metabolic reconstructions of certain organisms, which open a wide field of mathematical analysis. One of this new methods is  fux balanced analysis (fba) to estimate optimal metabolic  fluxes under certain constraints. With this work, advanced models are build which are available in an exchangeable format (SBML). Some of these models can be found in http://bigg.ucsd.edu/. The idea of this project is to use this existing reconstructions and put them in a spatial and temporal environment to study their possible interactions. This is achieved by the combination of agent based modeling with fba. Each bacterium is considered as an agent with individual states, own properties and rules to act. Agents are located on a grid where they can move and interact via metabolic exchanges computed by fba. The starting point for our project is curiosity of what could be done with this huge models. We just throw those models into an arena to see what kind of actions will evolve.
+# Introduction to BacArena
 
-## Installing
-
-BacArena is avaible as a R package. The developmental version can be installed from GitHub with the devtools package:
-```{r}
-library("devtools")
-install_github("euba/BacArena", ref="rpkg")
-```
+Microbial communities are essential for global ecosystems and human health. Computational modeling of microbial consortia is thus a major goal in systems biology and microbial ecology. BacArena is a project to simulate bacterial behaviour in communities. A lot of progress is done in the last years to create genome wide metabolic reconstructions of certain organisms, which open a wide field of mathematical analysis. One of this new methods is  fux balanced analysis (fba) to estimate optimal metabolic  fluxes under certain constraints. Some of these models are available in an exchangeable format (SBML) and can be found in http://bigg.ucsd.edu/. The idea of this project is to use this existing reconstructions and put them in a spatial and temporal environment to study their possible interactions. This is achieved by the combination of agent based modeling with fba. Each bacterium is considered as an agent with individual states, own properties and rules to act. Agents are located on a grid where they can move and interact via metabolic exchanges computed by fba. The starting point for our project is curiosity of what could be done with this huge models. We just throw those models into an arena to see what kind of actions will evolve.
 
 ## Getting started
+
+### Simple simulations with the *Escherichia coli* core metabolic model
 
 First we have to load the installed package in the workspace with
 
@@ -30,10 +26,11 @@ library("BacArena")
 Next we set-up the *Escherichia coli* core metabolic model
 
 ```{r}
-ecore <- model
+data(Ec_core)
+ecore <- Ec_core
 ```
 
-The model is integrated in BacArena by default. Alternatively you can also load your own model of interest with commands of the sybil package and libSBML. After we loaded the model, we convert it into an object of class Bac by calling the constructor
+The model is already integrated in the sybil R package by default. Alternatively you can also load your own model of interest with commands of the sybil and libSBML. After we loaded the model, we convert it into an object of class Bac by calling its constructor
 
 ```{r}
 bac <- Bac(ecore,deathrate=0.1,duplirate=1,
@@ -102,7 +99,7 @@ pmat <- getPhenoMat(eval)
 
 The object pmat carries now the different phenotypes which are defined by used exchange reactions within individuals on the population. A value of 1 means secretion, 2 means uptake and 0 means no usage of the substance of interest.
 
-## Advanced
+### Simulation of multiple organisms
 
 Now we want to multiple organisms or organism types in the environment. For this we create two different types of the *Escherichia coli* core metabolic model: A wildtype *E. coli* and an auxotrophic mutant which is unable to use aerobic respiration.
 
@@ -147,4 +144,8 @@ minePheno(eval)
 print(getPhenoMat(eval))
 ```
 
-Based on the results we can see, that the auxotrophic organism type grows slower in general and uses just fermentation of glucose, whereas the the wildtype can respire glucose with the aid of oxygen. We can also create customized microbial communities or multicellular systems by importing external SBML models using the readSBMLmod function in the sybilSBML package. 
+Based on these results we can see, that the auxotrophic organism type grows slower in general and uses just fermentation of glucose, whereas the the wildtype can respire glucose with the aid of oxygen. We can also create customized microbial communities or multicellular systems by importing external SBML models using the readSBMLmod function in the sybilSBML package. 
+
+## Advanced
+
+in preparation ...

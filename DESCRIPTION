@@ -1,14 +1,15 @@
 Package: BacArena
 Title: Agent based modeling framework for microbial communities.
-Version: 0.12
-Authors@R: c( person("Eugen", "Bauer", , "first.last@example.com", role = c("aut", "cre")), 
-              person("Johannes", "Zimmermann", , "first.last@example.com", role = c("aut", "cre")))
+Version: 0.14
+Authors@R: c( person("Eugen", "Bauer", , "eugen.bauer@uni.lu", role = c("aut", "cre")), 
+              person("Johannes", "Zimmermann", , "j.zimmermann@iem.uni-kiel.de", role = c("aut")))
 Description: In silico growth simulation of biological organisms and communities using existing genome-wide metabolic models
 URL: https://github.com/euba/BacArena
 BugReports: https://github.com/euba/BacArena/issues
 Depends: R (>= 3.0.0),
     sybil,
     RcppArmadillo,
+    RcppEigen,
     glpkAPI
 Imports: 
     Rcpp,

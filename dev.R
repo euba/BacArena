@@ -1,4 +1,5 @@
 library(devtools)
+library(knitr)
 
 build() #building R package archive
 
@@ -7,6 +8,8 @@ load_all()
 check()
 
 build_vignettes()
+
+build_win()
 
 
 install_github("euba/BacArena", ref="rpkg")
