@@ -1,7 +1,7 @@
 ---
-title: "Introduction to BacArena"
+title: "BacArena - Individual based modeling of metabolisms"
 author: "Eugen Bauer and Johannes Zimmermann"
-date: "2015-06-10"
+date: "2015-06-12"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
@@ -67,10 +67,10 @@ With this command we added one individual of our bacterium in the middle of the 
 
 
 ```r
-addSubs(arena,40)
+addSubs(arena,30)
 ```
 
-Now we added all possible substances to the environment arena with a concentration 40 mmol per gridcell. Finally we can start the simulation with
+Now we added all possible substances to the environment arena with a concentration 40 mmol per gridcell. Finally, we can start the simulation with
 
 
 ```r
@@ -85,19 +85,19 @@ eval <- simEnv(arena,20)
 ## iter: 5 Organisms: 16 
 ## iter: 6 Organisms: 16 
 ## iter: 7 Organisms: 32 
-## iter: 8 Organisms: 64 
-## iter: 9 Organisms: 116 
-## iter: 10 Organisms: 121 
-## iter: 11 Organisms: 207 
-## iter: 12 Organisms: 296 
-## iter: 13 Organisms: 392 
-## iter: 14 Organisms: 496 
-## iter: 15 Organisms: 521 
-## iter: 16 Organisms: 694 
-## iter: 17 Organisms: 713 
-## iter: 18 Organisms: 912 
-## iter: 19 Organisms: 1092 
-## iter: 20 Organisms: 1271
+## iter: 8 Organisms: 60 
+## iter: 9 Organisms: 106 
+## iter: 10 Organisms: 111 
+## iter: 11 Organisms: 189 
+## iter: 12 Organisms: 274 
+## iter: 13 Organisms: 362 
+## iter: 14 Organisms: 429 
+## iter: 15 Organisms: 517 
+## iter: 16 Organisms: 653 
+## iter: 17 Organisms: 728 
+## iter: 18 Organisms: 887 
+## iter: 19 Organisms: 1023 
+## iter: 20 Organisms: 1185
 ```
 
 The object eval stores all 20 simulation steps, that we performed. After we retrieve the eval object we can plot now the results of the simulation
@@ -113,28 +113,28 @@ This will plot the growth curve and curves of substance concentration changes ov
 
 
 ```r
-evalArena(eval,sims=c(1,20))
+evalArena(eval,sims=20)
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png) ![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-2.png) 
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png) 
 
 This will produce multiple plots one by one for each simulation step with the spatial structure of the population (black dots represent individuals). We can also investigate the spatial change of the population together with the main subtrate glucose
 
 
 ```r
-evalArena(eval,c("population","EX_glc(e)"),sims=c(1,20))
+evalArena(eval,c("population","EX_glc(e)"),sims=20)
 ```
 
-![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-2.png) 
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) 
 
-Here we only plot the first and the last result of the simulation steps given by the parameter sims. At the same time we can also integrate the visualization of different phenotypes into the population 
+Here we only plot the last result of the simulation steps given by the parameter sims. At the same time we can also integrate the visualization of different phenotypes into the population 
 
 
 ```r
-evalArena(eval,c("population","EX_glc(e)"),phencol=T,sims=c(1,20))
+evalArena(eval,c("population","EX_glc(e)"),phencol=T,sims=20)
 ```
 
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-2.png) 
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
 
 Now we can see that the periphery of the population has a different color than the individuals in the center. This indicates that individuals on the outside of the population use a different metabolism (respiration of glucose) than the center (fermentation of glucose and acetate). To visualize the differences of the apparent phenotypes we can use
 
@@ -163,21 +163,25 @@ Now we want to multiple organisms or organism types in the environment. For this
 ecore <- model
 bac1 <- Bac(ecore,deathrate=0.1,duplirate=1,type="ecoli_wt",
            growthlimit=0.05,growtype="exponential")
+```
 
-## now creating the auxotrophic mutant by using sybil commands.
+Now we create the auxotrophic mutant by using basic commands of the sybil package.
+
+
+```r
 ecore_aux <- changeBounds(ecore,"EX_o2(e)",lb=0)
 bac2 <- Bac(ecore_aux,deathrate=0.1,duplirate=1,type="ecoli_aux",
            growthlimit=0.05,growtype="exponential")
 ```
 
-Again we set up a environment and insert organisms and substances
+Again we set up an environment and insert organisms and substances
 
 
 ```r
 arena <- Arena(100,100)
 addOrg(arena,bac1,amount=1,x=25,y=50)
 addOrg(arena,bac2,amount=1,x=75,y=50)
-addSubs(arena,160)
+addSubs(arena,100)
 eval <- simEnv(arena,20)
 ```
 
@@ -191,17 +195,17 @@ eval <- simEnv(arena,20)
 ## iter: 7 Organisms: 36 
 ## iter: 8 Organisms: 36 
 ## iter: 9 Organisms: 68 
-## iter: 10 Organisms: 134 
-## iter: 11 Organisms: 212 
-## iter: 12 Organisms: 225 
-## iter: 13 Organisms: 337 
-## iter: 14 Organisms: 445 
-## iter: 15 Organisms: 464 
-## iter: 16 Organisms: 626 
-## iter: 17 Organisms: 780 
-## iter: 18 Organisms: 926 
-## iter: 19 Organisms: 945 
-## iter: 20 Organisms: 1192
+## iter: 10 Organisms: 131 
+## iter: 11 Organisms: 209 
+## iter: 12 Organisms: 215 
+## iter: 13 Organisms: 325 
+## iter: 14 Organisms: 433 
+## iter: 15 Organisms: 452 
+## iter: 16 Organisms: 620 
+## iter: 17 Organisms: 766 
+## iter: 18 Organisms: 908 
+## iter: 19 Organisms: 925 
+## iter: 20 Organisms: 1141
 ```
 
 Here we put the both organism types we created next to each other (given by their x position) in the environment and then started the simulation for 20 time steps. Next we perform again all evaluation steps
@@ -211,17 +215,17 @@ Here we put the both organism types we created next to each other (given by thei
 plotCurves(eval)
 ```
 
-![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png) 
+![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17-1.png) 
 
 And the spatial pattern of the community with the substances glucose, acetate and oxygen:
 
 
 ```r
 evalArena(eval,c("population","EX_glc(e)","EX_ac(e)","EX_o2(e)"),
-          sims=c(1,20))
+          sims=20)
 ```
 
-![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17-1.png) ![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17-2.png) 
+![plot of chunk unnamed-chunk-18](figure/unnamed-chunk-18-1.png) 
 
 Here different point colors indicate the two different organism types. Finally also the different phenotypes:
 
@@ -230,7 +234,7 @@ Here different point colors indicate the two different organism types. Finally a
 minePheno(eval)
 ```
 
-![plot of chunk unnamed-chunk-18](figure/unnamed-chunk-18-1.png) 
+![plot of chunk unnamed-chunk-19](figure/unnamed-chunk-19-1.png) 
 
 ```r
 print(getPhenoMat(eval))
