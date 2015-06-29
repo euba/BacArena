@@ -156,34 +156,34 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 })
 
 
-setGeneric("addOrg2", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){standardGeneric("addOrg2")})
-setMethod("addOrg2", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){
-  if(amount+sum(object@occmat) > object@n*object@m){
-    stop("More individuals than space on the grid")
-  }
-  spectype <- specI@type
-  newspecs <- object@specs
-  newphens <- object@phenotypes[[spectype]]
-  newspecs[[spectype]] <- specI
-  type <- which(names(newspecs)==spectype)
-  
-  if(length(newphens)!=0){
-    ptype <- as.integer(checkPhen(object, specI))
-    newphens <- object@phenotypes[[spectype]]
-  }else{
-    newphens[[1]] <- getPhenotype(specI)
-    ptype=as.integer(1)
-  }
-  l = addBacCpp(object@occmat, object@orgdat, amount, growth, type, ptype)
-  newoccmat = l[["occmat"]]
-  neworgdat = l[["orgdat"]]
-  
-  eval.parent(substitute(object@occmat <- newoccmat))
-  eval.parent(substitute(object@orgdat <- neworgdat))
-  eval.parent(substitute(object@specs <- newspecs))
-  eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
-  eval.parent(substitute(object@mediac <- union(object@mediac, specI@medium)))
-})
+# setGeneric("addOrg2", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){standardGeneric("addOrg2")})
+# setMethod("addOrg2", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){
+#   if(amount+sum(object@occmat) > object@n*object@m){
+#     stop("More individuals than space on the grid")
+#   }
+#   spectype <- specI@type
+#   newspecs <- object@specs
+#   newphens <- object@phenotypes[[spectype]]
+#   newspecs[[spectype]] <- specI
+#   type <- which(names(newspecs)==spectype)
+#   
+#   if(length(newphens)!=0){
+#     ptype <- as.integer(checkPhen(object, specI))
+#     newphens <- object@phenotypes[[spectype]]
+#   }else{
+#     newphens[[1]] <- getPhenotype(specI)
+#     ptype=as.integer(1)
+#   }
+#   l = addBacCpp(object@occmat, object@orgdat, amount, growth, type, ptype)
+#   newoccmat = l[["occmat"]]
+#   neworgdat = l[["orgdat"]]
+#   
+#   eval.parent(substitute(object@occmat <- newoccmat))
+#   eval.parent(substitute(object@orgdat <- neworgdat))
+#   eval.parent(substitute(object@specs <- newspecs))
+#   eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
+#   eval.parent(substitute(object@mediac <- union(object@mediac, specI@medium)))
+# })
 
 #' @title Add substances to the environment
 #'
@@ -192,7 +192,7 @@ setMethod("addOrg2", "Arena", function(object, specI, amount, x=NULL, y=NULL, gr
 #' @param object An object of class Arena.
 #' @param smax A number indicating the maximum substance concentration per grid cell.
 #' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
-#' @param smax A number indicating the maximum substance concentration per grid cell.
+#' @param smax A numeric vector indicating the maximum substance concentration per grid cell.
 #' @slot difunc A character vector ("pde","cpp" or "r") describing the function for diffusion.
 #' @slot difspeed A number indicating the diffusion speed (given by number of cells per iteration).
 #' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub} can be used to modify the concentrations of specific substances.} 

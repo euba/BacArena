@@ -37,7 +37,7 @@ addOrg(arena, bace1, amount=10)
 addOrg(arena, bace2, amount=10,x=1:10,y=1:10)
 addSubs(arena, smax=sample(1:100,length(arena@mediac)), difunc="cpp", difspeed=1)
 
-print(system.time(evalsim <- simEnv(arena, time=50)))
+print(system.time(evalsim <- simEnv(arena, time=20)))
 format(object.size(evalsim), units='Mb')
 evalArena(evalsim)
 

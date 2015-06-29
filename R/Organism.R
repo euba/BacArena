@@ -186,7 +186,7 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
 #' NULL
 setGeneric("consume", function(object, sublb, cutoff=1e-6){standardGeneric("consume")})
 setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6){
-  if(object@fbasol$obj>=cutoff){
+  if(object@fbasol$obj>=cutoff && !is.na(object@fbasol$obj)){
     flux = object@fbasol$fluxes[object@medium]
     flux = na.omit(ifelse(abs(flux)<=cutoff,NA,flux))
     sublb[names(flux)] = round(sublb[names(flux)]+flux, 6)
