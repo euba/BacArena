@@ -207,13 +207,19 @@ setMethod("addOrg2", "Arena", function(object, specI, amount, x=NULL, y=NULL, gr
 #' }
 setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=1){standardGeneric("addSubs")})
 setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=1){
+  if(length(smax) != length(mediac) && length(smax) != 1){
+    stop("The parameter smax should be of the same size of mediac or equal to 1.")
+  }
   if(sum(mediac %in% object@mediac)==length(mediac)){
     newmedia <- list()
     sapply(object@mediac, function(x, n, m){
       newmedia[[x]] <<- Substance(n, m, 0, name=x)
     }, n=object@n, m=object@m)
+    if(length(smax) == 1){
+      smax = rep(smax,length(mediac))
+    }
     for(i in 1:length(mediac)){
-      newmedia[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i], difunc=difunc, difspeed=difspeed)
+      newmedia[mediac[i]] <- Substance(object@n, object@m, smax=smax[i], name=mediac[i], difunc=difunc, difspeed=difspeed)
     }
     eval.parent(substitute(object@media <- newmedia))
   }else stop("Substance can't be produced or taken up by the organisms on the grid")

@@ -104,7 +104,6 @@ The object pmat carries now the different phenotypes which are defined by used e
 Now we want to multiple organisms or organism types in the environment. For this we create two different types of the *Escherichia coli* core metabolic model: A wildtype *E. coli* and an auxotrophic mutant which is unable to use aerobic respiration.
 
 ```{r}
-ecore <- model
 bac1 <- Bac(ecore,deathrate=0.1,duplirate=1,type="ecoli_wt",
            growthlimit=0.05,growtype="exponential")
 ```

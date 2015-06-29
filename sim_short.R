@@ -23,8 +23,8 @@ Rcpp::sourceCpp("src/diff.cpp")
 #Rcpp::sourceCpp("cpp/addBac.cpp")
 
 set.seed(5000)
-load("data/ecore_model.RData")
-ecore = model
+data(Ec_core)
+ecore = Ec_core
 ecore1 = changeBounds(ecore, names(bace1@lbnd[bace1@medium][which(bace1@lbnd[bace1@medium]==0)]), -1000)
 ecore2 = changeBounds(ecore, c('EX_o2(e)'), 0, 0)
 
@@ -35,7 +35,7 @@ bace2 = Bac(model=ecore2, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growt
 arena = Arena(n=100, m=100, stir=F)
 addOrg(arena, bace1, amount=10)
 addOrg(arena, bace2, amount=10,x=1:10,y=1:10)
-addSubs(arena, smax=10, difunc="cpp", difspeed=1)
+addSubs(arena, smax=sample(1:100,length(arena@mediac)), difunc="cpp", difspeed=1)
 
 print(system.time(evalsim <- simEnv(arena, time=50)))
 format(object.size(evalsim), units='Mb')
