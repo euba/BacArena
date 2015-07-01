@@ -219,7 +219,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
       smax = rep(smax,length(mediac))
     }
     for(i in 1:length(mediac)){
-      newmedia[mediac[i]] <- Substance(object@n, object@m, smax=smax[i], name=mediac[i], difunc=difunc, difspeed=difspeed)
+      newmedia[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], name=mediac[i], difunc=difunc, difspeed=difspeed)
     }
     eval.parent(substitute(object@media <- newmedia))
   }else stop("Substance can't be produced or taken up by the organisms on the grid")
