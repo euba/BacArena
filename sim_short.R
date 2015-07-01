@@ -9,8 +9,8 @@ library(sybil)
 #library(microbenchmark)
 #library(ggplot2)
 library(compiler) # byte code 
-#SYBIL_SETTINGS("SOLVER", "sybilGUROBI")
-SYBIL_SETTINGS("SOLVER", "glpkAPI")
+SYBIL_SETTINGS("SOLVER", "sybilGUROBI")
+#SYBIL_SETTINGS("SOLVER", "glpkAPI")
 #source(file="cpp_source.R")
 #source(file="R/class_baggage.R")
 source(file="R/Arena.R")
@@ -37,13 +37,13 @@ addOrg(arena, bace1, amount=10)
 addOrg(arena, bace2, amount=10,x=1:10,y=1:10)
 addSubs(arena, smax=sample(1:100,length(arena@mediac)), difunc="cpp", difspeed=1)
 
-print(system.time(evalsim <- simEnv(arena, time=20)))
+print(system.time(evalsim <- simEnv(arena, time=10)))
 format(object.size(evalsim), units='Mb')
 evalArena(evalsim)
 
 evalArena(evalsim, plot_items=c('population','EX_o2(e)'), phencol=F, retdata=F)
 plotCurves(evalsim, remove=T, retdata=F)
-minePheno(evalsim, step=8)
+minePheno(evalsim, time=8)
 
 
 library(animation)

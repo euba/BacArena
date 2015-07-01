@@ -416,7 +416,8 @@ setMethod("simEnv", "Arena", function(object, time){
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
-         stop("Please supply an Arena object.")) 
+         stop("Please supply an Arena object."))
+  addEval(evaluation, arena)
   sublb <- getSublb(arena)
   for(i in 1:time){
     cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
@@ -705,8 +706,9 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
 #' eval <- simEnv(arena,10)
 #' arena5 <- getArena(eval,5)
 #' }
-setGeneric("getArena", function(object, time=length(object@medlist)){standardGeneric("getArena")})
-setMethod("getArena", "Eval", function(object, time=length(object@medlist)){
+setGeneric("getArena", function(object, time=(length(object@medlist)-1)){standardGeneric("getArena")})
+setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){ #index in R start at 1, but the first state is 0
+  time = time+1 #index in R start at 1, but the first state is 0
   newmedia <- lapply(object@media, function(x, meds, n, m){
     x@diffmat <- Matrix(meds[[x@name]],nrow=n,ncol=m,sparse=T)
     return(x)
@@ -728,7 +730,7 @@ setMethod("getArena", "Eval", function(object, time=length(object@medlist)){
 #' @description The generic function \code{extractMed} re-constructs a list of vectors of medium concentrations from a simulation step in an \code{Eval} object.
 #'
 #' @param object An object of class Eval.
-#' @param ind A number giving the simulation step of interest.
+#' @param time A number giving the simulation step of interest.
 #' @return Returns a list containing concentration vectors of all medium substances.
 #' @details Medium concentrations in slot \code{medlist} of an object of class \code{Eval} store only the changes of concentrations in the simulation process. The function \code{extractMed} reconstructs the original and uncompressed version of medium concentrations.
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
@@ -743,13 +745,13 @@ setMethod("getArena", "Eval", function(object, time=length(object@medlist)){
 #' eval <- simEnv(arena,10)
 #' med5 <- extractMed(eval,5)
 #' }
-setGeneric("extractMed", function(object, ind=length(object@medlist)){standardGeneric("extractMed")})
-setMethod("extractMed", "Eval", function(object, ind=length(object@medlist)){
+setGeneric("extractMed", function(object, time=length(object@medlist)){standardGeneric("extractMed")})
+setMethod("extractMed", "Eval", function(object, time=length(object@medlist)){
   medl <- object@medlist
-  medlind <- medl[[ind]]
+  medlind <- medl[[time]]
   for(i in 1:length(object@mediac)){
-    if(length(medl[[ind]][[i]])==0){
-      j <- ind
+    if(length(medl[[time]][[i]])==0){
+      j <- time
       while(length(medl[[j]][[i]])==0){j <- j-1}
       medlind[[i]] <- medl[[j]][[i]]
     }
@@ -765,7 +767,7 @@ setMethod("extractMed", "Eval", function(object, ind=length(object@medlist)){
 #' @param plot_items A character vector giving the items, which should be plotted.
 #' @param phencol A boolean variable indicating if the phenotypes of the organisms in the environment should be integrated as different colors in the population plot.
 #' @param retdata A boolean variable indicating if the data used to generate the plots should be returned.
-#' @param sims A numeric vector giving the simulation steps which should be plotted.
+#' @param time A numeric vector giving the simulation steps which should be plotted.
 #' @return Returns several plots of the chosen plot items. Optional the data to generate the original plots can be returned.
 #' @details If \code{phencol} is \code{TRUE} then different phenotypes of the same organism are visualized by varying colors, otherwise different organism types are represented by varying colors. The parameter \code{retdata} can be used to access the data used for the returned plots to create own custom plots. 
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
@@ -783,8 +785,9 @@ setMethod("extractMed", "Eval", function(object, ind=length(object@medlist)){
 #' library(animation)
 #' saveVideo({evalArena(eval)},video.name="Ecoli_sim.mp4")
 #' }
-setGeneric("evalArena", function(object, plot_items='population', phencol=F, retdata=F, sims=1:length(object@simlist)){standardGeneric("evalArena")})
-setMethod("evalArena", "Eval", function(object, plot_items='population', phencol=F, retdata=F, sims=1:length(object@simlist)){
+setGeneric("evalArena", function(object, plot_items='population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){standardGeneric("evalArena")})
+setMethod("evalArena", "Eval", function(object, plot_items='population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){ #index in R start at 1, but the first state is 0
+  time = time+1
   old.par <- par(no.readonly = TRUE)
   if(retdata){
     retlist = list()
@@ -793,7 +796,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
     }
     names(retlist) = plot_items
   }
-  for(i in sims){
+  for(i in time){
     subnam <- names(object@medlist[[i]])
     inds <- which(subnam %in% plot_items)
     meds <- extractMed(object, i)
@@ -875,12 +878,8 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
   rownames(growths) = names(object@specs)
   subs <- matrix(0, nrow=length(medplot), ncol=length(object@simlist))
   rownames(subs) = medplot
-  for(i in 1:length(object@simlist)){
+  for(i in seq_along(object@simlist)){
     simdat <- object@simlist[[i]]
-    #count <- table(simdat[,'type'])
-    #for(j in 1:length(count)){
-    #  growths[j,i] <- count[j]
-    #}
     abun <- table(simdat$type)
     for(j in 1:length(abun)){
       growths[as.numeric(names(abun[j])),i] = abun[j]
@@ -897,27 +896,25 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
     }
   }
   par(mfrow=c(2,1))
-  times = c(1:length(object@simlist)*object@tstep)
+  times = c((seq_along(object@simlist)-1)*object@tstep)
   plot(times, times, xlim=c(0,max(times)), ylim=c(0,max(growths)),
        type='n', xlab='time in h', ylab='number of individuals on grid',
        main='Population')
   for(i in 1:nrow(growths)){
     lines(times, growths[i,], col=i, type='b', pch=i-1)
   }
-  # and length(object@specs) > 1
   if(legend){legend('topleft',legend=rownames(growths),col=1:nrow(growths), cex=ifelse(length(object@specs)==1,1,0.4/log10(nrow(growths)+1)),pch=(0:nrow(growths)-1),lwd=1, bty="n")}
-  #if(legend){legend('topleft',legend=rownames(growths),col=1:nrow(growths), cex=0.4/log10(nrow(growths)+1),pch=(0:nrow(growths)-1),lwd=1, bty="n")}
   plot(times, times, xlim=c(0,max(times)), ylim=c(0,max(subs)),
        type='n', xlab='time in h', ylab='concentration in mmol per gridcell',
        main='Substance concentrations')
   for(i in 1:nrow(subs)){
     lines(times, subs[i,], col=i)
   }
+  par(old.par)
   if(legend){legend('right',legend=rownames(subs),col=1:nrow(subs),cex=0.4/log10(nrow(subs)+1),lwd=1)}
   if(retdata){
     return(list('Population'=growths,'Substances'=subs))
   }
-  par(old.par)
 })
 
 #' @title Function for getting a matrix of phenotypes from the dataset
@@ -939,9 +936,9 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 #' eval <- simEnv(arena,10)
 #' phenmat <- getPhenoMat(eval)
 #' }
-setGeneric("getPhenoMat", function(object, step="total"){standardGeneric("getPhenoMat")})
-setMethod("getPhenoMat", "Eval", function(object, step="total"){
-  if(step=="total"){
+setGeneric("getPhenoMat", function(object, time="total"){standardGeneric("getPhenoMat")})
+setMethod("getPhenoMat", "Eval", function(object, time="total"){
+  if(time=="total"){
     numphens <- unlist(lapply(object@phenotypes,function(x){return(length(x))}))
     phentypes <- vector()
     for(i in seq_along(numphens)){
@@ -962,8 +959,9 @@ setMethod("getPhenoMat", "Eval", function(object, step="total"){
     phenmat <- ifelse(phenmat==-1,2,phenmat)
     return(phenmat)
   }else{
-    typestep = object@simlist[[step]]$type
-    phenstep = object@simlist[[step]]$phenotype
+    time = time+1 #index in R start at 1, but the first state is 0
+    typestep = object@simlist[[time]]$type
+    phenstep = object@simlist[[time]]$phenotype
     typenam = names(object@phenotypes)
     phens = list()
     for(i in levels(as.factor(typestep))){
@@ -1014,9 +1012,9 @@ setMethod("getPhenoMat", "Eval", function(object, step="total"){
 #' eval <- simEnv(arena,10)
 #' minePheno(eval)
 #' }
-setGeneric("minePheno", function(object, plot_type="pca", legend=F, step="total"){standardGeneric("minePheno")})
-setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, step="total"){
-  phenmat <- getPhenoMat(object, step)
+setGeneric("minePheno", function(object, plot_type="pca", legend=F, time="total"){standardGeneric("minePheno")})
+setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, time="total"){
+  phenmat <- getPhenoMat(object, time)
   if(nrow(phenmat)<=1){
     stop('not enough phenotypes to analyze.')
   }
