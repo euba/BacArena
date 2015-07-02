@@ -1046,8 +1046,65 @@ setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, time=
   }
 })
 
+#' @title Function for selecting phenotypes which occured on the arena from specific iterations and species
+#'
+#' @description The generic function \code{selPheno} selects phenotypes from specific simulation step in an \code{Eval} object.
+#'
+#' @param object An object of class Eval.
+#' @param time A numeric vector giving the simulation steps which should be plotted. 
+#' @param type A names indicating the species of interest in the arena.
+#' @param reduce A boolean variable indicating if the resulting matrix should be reduced.
+#' @return Returns a matrix with the substrate usage and the number of individuals using the phenotype. 
+#' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages.
+#' @seealso \code{\link{Eval-class}} and \code{\link{getPhenoMat}}
+#' @examples
+#' \dontrun{
+#' data(Ec_core)
+#' ecore <- Ec_core #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' eval <- simEnv(arena,10)
+#' selPheno(eval,time=10,type='ecoli_core_model',reduce=T)
+#' }
+setGeneric("selPheno", function(object, time, type, reduce=F){standardGeneric("selPheno")})
+setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
+  arena = getArena(object, time)
+  type_num = which(names(arena@specs)==type)
+  pabund = as.matrix(table(arena@orgdat[which(arena@orgdat$type == type_num),'phenotype']))
+  rownames(pabund) = paste(type,'phen',rownames(pabund),sep='_')
+  rownames(pabund)[which(rownames(pabund)==paste(type,'phen_0',sep='_'))] = 'inactive'
+  colnames(pabund) = 'individuals'
+  
+  pmat = getPhenoMat(object, time)
+  pmatsp = pmat[which(rownames(pmat) == type),]
+  if(is.vector(pmatsp)){
+    pmatsp = t(as.matrix(pmatsp))
+  }else{
+    pmatsp = as.matrix(pmatsp)
+  }
+  if(reduce){
+    if(nrow(pmatsp)==1){
+      pmatsp = t(as.matrix(pmatsp[,-which(apply(pmatsp,2,sum)==0)]))
+    }else{
+      pmatsp = pmatsp[,-which(apply(pmatsp,2,sum)==0)]
+    }
+  }
+  rownames(pmatsp) = paste(type,'phen',1:nrow(pmatsp),sep='_')
+  pmatsp = as.data.frame(pmatsp)
+  if(length(grep('inactive',rownames(pabund)))){
+    pmatsp['inactive',]=rep(0,ncol(pmatsp))
+  }
+  pmatsp[,'individuals']=rep(NA,nrow(pmatsp))
+  pmatsp[rownames(pabund),'individuals'] = pabund[,'individuals']
+  
+  return(as.matrix(pmatsp))
+})
+
 #show function for class Eval
 
 setMethod(show, signature(object="Eval"), function(object){
-  print(paste('Evaluation results of ',length(object@medlist),' simulation steps.',sep=''))
+  print(paste('Evaluation results of ',length(object@medlist)-1,' simulation steps.',sep=''))
 })

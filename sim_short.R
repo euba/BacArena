@@ -35,7 +35,7 @@ bace2 = Bac(model=ecore2, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growt
 arena = Arena(n=100, m=100, stir=F)
 addOrg(arena, bace1, amount=10)
 addOrg(arena, bace2, amount=10,x=1:10,y=1:10)
-addSubs(arena, smax=sample(1:100,length(arena@mediac)), difunc="cpp", difspeed=1)
+addSubs(arena, smax=20, difunc="cpp", difspeed=1)
 
 print(system.time(evalsim <- simEnv(arena, time=10)))
 format(object.size(evalsim), units='Mb')
@@ -45,6 +45,7 @@ evalArena(evalsim, plot_items=c('population','EX_o2(e)'), phencol=F, retdata=F)
 plotCurves(evalsim, remove=T, retdata=F)
 minePheno(evalsim, time=8)
 
+selPheno(evalsim,time=1,type='ecore1')
 
 library(animation)
 saveVideo(evalArena(evalsim, plot_items=c('population'), phencol=T, retdata=F), video.name="Pop4_phen.mp4", other.opts="-b 300k")  # higher bitrate, better quality
