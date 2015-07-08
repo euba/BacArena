@@ -1092,10 +1092,15 @@ setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
       pmatsp = pmatsp[,-which(apply(pmatsp,2,sum)==0)]
     }
   }
-  rownames(pmatsp) = paste(type,'phen',1:nrow(pmatsp),sep='_')
-  pmatsp = as.data.frame(pmatsp)
+  #rownames(pmatsp) = paste(type,'phen',1:nrow(pmatsp),sep='_')
+  #pmatsp = as.data.frame(pmatsp)
+  pmatsp = data.frame(row)
+  
+  
   if(length(grep('inactive',rownames(pabund)))){
     pmatsp['inactive',]=rep(0,ncol(pmatsp))
+  }else{
+    
   }
   pmatsp[,'individuals']=rep(NA,nrow(pmatsp))
   pmatsp[rownames(pabund),'individuals'] = pabund[,'individuals']
