@@ -1,3 +1,4 @@
+library(sybilSBML)
 model = readSBMLmod("P:/BACARENA/Comparison/MatNet/P_aeruginosa/POA_test.xml")
 
 
@@ -5,14 +6,16 @@ set.seed(5000)
 # paramters from MatNet:
 # if cellMass >= 2
 # cellDeathThreshold = 0
+model@lowbnd[grep("EX",model@react_id)]
+model = changeBounds(model,model@react_id[grep("EX",model@react_id)],lb=-10)
 
-bace1 = Bac(model=model, deathrate=0, duplirate=2, growthlimit=0.05, growtype="exponential",
+bace1 = Bac(model=model, deathrate=0.5, duplirate=1, growthlimit=0.05, growtype="exponential",
             speed=1, type="PAO", lyse=T)
-arena = Arena(n=30, m=30, stir=F, tstep=1/12)
+arena = Arena(n=100, m=100, stir=F, tstep=0.5)
 addOrg(arena, bace1, amount=100, x=1:100, y=rep(1,100))
 addSubs(arena, smax=20, difunc="cpp", difspeed=1)
 
-print(system.time(evalsim <- simEnv(arena, time=200)))
+print(system.time(evalsim <- simEnv(arena, time=50)))
 
 
 library(animation)
