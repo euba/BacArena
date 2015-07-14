@@ -1071,6 +1071,7 @@ setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, time=
 #' }
 setGeneric("selPheno", function(object, time, type, reduce=F){standardGeneric("selPheno")})
 setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
+  time = 1
   arena = getArena(object, time)
   type_num = which(names(arena@specs)==type)
   pabund = as.matrix(table(arena@orgdat[which(arena@orgdat$type == type_num),'phenotype']))
@@ -1092,9 +1093,9 @@ setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
       pmatsp = pmatsp[,-which(apply(pmatsp,2,sum)==0)]
     }
   }
-  #rownames(pmatsp) = paste(type,'phen',1:nrow(pmatsp),sep='_')
-  #pmatsp = as.data.frame(pmatsp)
-  pmatsp = data.frame(row)
+  rownames(pmatsp) = paste(type,'phen',1:nrow(pmatsp),sep='_')
+  pmatsp = as.data.frame(pmatsp)
+  #pmatsp = data.frame(pmatsp)
   
   
   if(length(grep('inactive',rownames(pabund)))){
@@ -1104,7 +1105,7 @@ setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
   }
   pmatsp[,'individuals']=rep(NA,nrow(pmatsp))
   pmatsp[rownames(pabund),'individuals'] = pabund[,'individuals']
-  
+  pmatsp
   return(as.matrix(pmatsp))
 })
 
