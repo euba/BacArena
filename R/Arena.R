@@ -1080,7 +1080,6 @@ setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
   rownames(pabund) = paste(type,'phen',rownames(pabund),sep='_')
   rownames(pabund)[which(rownames(pabund)==paste(type,'phen_0',sep='_'))] = 'inactive'
   colnames(pabund) = 'individuals'
-  
   pmat = getPhenoMat(object, time)
   pmatsp = pmat[which(rownames(pmat) == type),]
   if(is.vector(pmatsp)){
@@ -1095,15 +1094,13 @@ setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
       pmatsp = pmatsp[,-which(apply(pmatsp,2,sum)==0)]
     }
   }
-  rownames(pmatsp) = paste(type,'phen',1:nrow(pmatsp),sep='_')
-  pmatsp = as.data.frame(pmatsp)
-  #pmatsp = data.frame(pmatsp)
-  
-  
-  if(length(grep('inactive',rownames(pabund)))){
+  if(length(grep('inactive',rownames(pabund)))!=0){
+    rownames(pmatsp) = rownames(pabund)[-which(rownames(pabund)=="inactive")]
+    pmatsp = as.data.frame(pmatsp)
     pmatsp['inactive',]=rep(0,ncol(pmatsp))
   }else{
-    
+    rownames(pmatsp) = rownames(pabund)
+    pmatsp = as.data.frame(pmatsp)
   }
   pmatsp[,'individuals']=rep(NA,nrow(pmatsp))
   pmatsp[rownames(pabund),'individuals'] = pabund[,'individuals']
