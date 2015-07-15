@@ -967,6 +967,9 @@ setMethod("getPhenoMat", "Eval", function(object, time="total"){
     for(i in levels(as.factor(typestep))){
       tphen = object@phenotypes[[as.numeric(i)]]
       phens[[typenam[as.numeric(i)]]] = tphen[as.numeric(levels(as.factor(phenstep[which(typestep==as.numeric(i))])))]
+      if(length(phens[[typenam[as.numeric(i)]]])==0){ #will this cause a problem?
+        phens = phens[-as.numeric(i)]
+      }
     }
     
     numphens <- unlist(lapply(phens,function(x){return(length(x))}))
@@ -1071,7 +1074,6 @@ setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, time=
 #' }
 setGeneric("selPheno", function(object, time, type, reduce=F){standardGeneric("selPheno")})
 setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
-  time = 1
   arena = getArena(object, time)
   type_num = which(names(arena@specs)==type)
   pabund = as.matrix(table(arena@orgdat[which(arena@orgdat$type == type_num),'phenotype']))
