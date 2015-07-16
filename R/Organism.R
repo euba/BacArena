@@ -297,14 +297,16 @@ setMethod("lysis", "Organism", function(object, sublb, factor=object@growthlimit
 #' @seealso \code{\link{Organism-class}} and \code{\link{emptyHood}}
 #' @examples
 #' NULL
-setGeneric("getHood", function(object, occmat, x, y){standardGeneric("getHood")})
-setMethod("getHood", "Organism", function(object, occmat, x, y){
-  occmat <- as.matrix(occmat) #dangerous!
-  if(x-1==0) dx=0 else dx=1
-  if(x+1>nrow(occmat)) dx2=0 else dx2=1
-  if(y-1==0) dy=0 else dy=1
-  if(y+1>ncol(occmat)) dy2=0 else dy2=1
-  return(list(as.matrix(occmat[,(y-dy):(y+dy2)])[(x-dx):(x+dx2),], c(1+dx,1+dy)))
+setGeneric("getHood", function(object, n, m, x, y){standardGeneric("getHood")})
+setMethod("getHood", "Organism", function(object, n, m, x, y){
+  xp = c(x-1,x,x+1)
+  yp = c(y-1,y,y+1)
+  xp=na.omit(ifelse(xp==0,NA,xp))
+  xp=na.omit(ifelse(xp>n,NA,xp))
+  yp=na.omit(ifelse(yp==0,NA,yp))
+  yp=na.omit(ifelse(yp>m,NA,yp))
+  nb=as.vector(sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp))
+  return(nb)
 })
 
 #' @title Function to check if the there is a free place in the Moore neighbourhood
@@ -319,17 +321,17 @@ setMethod("getHood", "Organism", function(object, occmat, x, y){
 #' @seealso \code{\link{Organism-class}} and \code{\link{getHood}}
 #' @examples
 #' NULL
-setGeneric("emptyHood", function(object, occmat, x, y){standardGeneric("emptyHood")})
-setMethod("emptyHood", "Organism", function(object, occmat, x, y){
-  hood <- getHood(object, occmat, x, y)
-  free <- which(hood[[1]]==0, arr.ind = T)
-  if(nrow(free) == 0) return(NULL)
-  else {
-    abs <- free[sample(nrow(free),1),]
-    abs[1] <- abs[1] - hood[[2]][1] + x
-    abs[2] <- abs[2] - hood[[2]][2] + y
-    return(abs)
-  }
+setGeneric("emptyHood", function(object, pos, n, m, x, y){standardGeneric("emptyHood")})
+setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y){
+  xp = c(x-1,x,x+1)
+  yp = c(y-1,y,y+1)
+  xp=na.omit(ifelse(xp==0,NA,xp))
+  xp=na.omit(ifelse(xp>n,NA,xp))
+  yp=na.omit(ifelse(yp==0,NA,yp))
+  yp=na.omit(ifelse(yp>m,NA,yp))
+  nb=as.vector(sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp))
+  freenb=setdiff(nb,paste(pos$x,pos$y,sep='_'))
+  if(length(freenb)==0){return(NULL)}else{return(freenb)}
 })
 
 #' @title Function for random movement of organisms
@@ -354,17 +356,13 @@ setMethod("emptyHood", "Organism", function(object, occmat, x, y){
 setGeneric("move", function(object, population, j){standardGeneric("move")})
 setMethod("move", "Organism", function(object, population, j){
   popvec <- population@orgdat[j,]
-  hood <- emptyHood(object, population@occmat, popvec$x, popvec$y)
-  if(length(hood) != 0){
-    xp = hood[1]
-    yp = hood[2]
-    eval.parent(substitute(population@occmat[popvec$x, popvec$y] <- 0))
-    eval.parent(substitute(population@occmat[xp,yp] <- as.numeric(popvec$type)))
-    eval.parent(substitute(population@orgdat[j,]$x <- xp))
-    eval.parent(substitute(population@orgdat[j,]$y <- yp))
-  }else if(object@budge){
-    hood2 = getHood(object, population@occmat, popvec$x, popvec$y)
-    eval.parent(substitute(population <- budging(object, population, j, hood2)))
+  freenb <- emptyHood(object, population@orgdat[,c('x','y')],
+                      population@n, population@m, popvec$x, popvec$y)
+  if(length(freenb) != 0){
+    npos = freenb[sample(1:length(freenb),1)]
+    npos = as.numeric(unlist(strsplit(npos,'_')))
+    eval.parent(substitute(population@orgdat[j,]$x <- npos[1]))
+    eval.parent(substitute(population@orgdat[j,]$y <- npos[2]))
   }
 })
 
@@ -389,7 +387,6 @@ setMethod(show, signature(object="Organism"), function(object){
 setClass("Bac",
          contains="Organism",
          representation(
-           budge="logical", #flag indicating, if budging (veruecktes Labyrinth) should be implemented
            chem="character" # name of substance which is the chemotaxis attractant
          )
 )
@@ -398,18 +395,15 @@ setClass("Bac",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Bac <- function(model, deathrate, duplirate, speed=2, growthlimit, growtype,
-                budge=F, chem='', ...){
+Bac <- function(model, deathrate, duplirate, speed=2, growthlimit, growtype, chem='', ...){
   new("Bac", Organism(model=model, deathrate=deathrate, duplirate=duplirate, growtype=growtype,
-                      growthlimit=growthlimit, speed=speed, ...), budge=budge, chem=chem)
+                      growthlimit=growthlimit, speed=speed, ...), chem=chem)
 }
 
 ########################################################################################################
 ###################################### GET METHODS FOR ATTRIBUTES ######################################
 ########################################################################################################
 
-setGeneric("budge", function(object){standardGeneric("budge")})
-setMethod("budge", "Bac", function(object){return(object@budge)})
 setGeneric("chem", function(object){standardGeneric("chem")})
 setMethod("chem", "Bac", function(object){return(object@chem)})
 
@@ -448,29 +442,29 @@ setMethod("growth", "Bac", function(object, population, j){
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
   if(popvec$growth > object@duplirate){
-    hood <- emptyHood(object, population@occmat, popvec$x, popvec$y)
-    if(length(hood) != 0){
+    freenb <- emptyHood(object, population@orgdat[,c('x','y')],
+              population@n, population@m, popvec$x, popvec$y)
+    if(length(freenb) != 0){
+      npos = freenb[sample(1:length(freenb),1)]
+      npos = as.numeric(unlist(strsplit(npos,'_')))
       daughter <- popvec
       daughter$growth <- popvec$growth/2
-      daughter$x <- hood[1]
-      daughter$y <- hood[2]
+      daughter$x <- npos[1]
+      daughter$y <- npos[2]
       popvec$growth = popvec$growth/2
       neworgdat[nrow(neworgdat)+1,] <- daughter
       neworgdat[j,] <- popvec
-      eval.parent(substitute(population@occmat[daughter$x,daughter$y] <- as.numeric(daughter$type)))
-    }else if(object@budge){
-      hood2 = getHood(object, population@occmat, popvec$x, popvec$y)
-      eval.parent(substitute(population <- budging(object, population, j, hood2, repli=T)))
     }
   }
   else if(popvec$growth < object@growthlimit){
-    eval.parent(substitute(population@occmat[popvec$x, popvec$y] <- 0))
     neworgdat[j,'growth'] <- NA
     dead <- T
   }
   eval.parent(substitute(population@orgdat <- neworgdat))
   return(dead)
 })
+
+# chemotaxis still needs to be edited
 
 #' @title Function for chemotaxis of bacteria to their prefered substrate
 #'
@@ -495,84 +489,21 @@ setGeneric("chemotaxis", function(object, population, j){standardGeneric("chemot
 setMethod("chemotaxis", "Bac", function(object, population, j){
   popvec <- population@orgdat[j,]
   attract <- population@media[[object@chem]]@diffmat
-  hood <- getHood(object, population@occmat, popvec$x, popvec$y)
-  free <- which(hood[[1]]==0, arr.ind=T)
-  if(nrow(free) != 0){
-    conc <- apply(free, 1, function(x, attract, popvec, hood){
-      xpos <- x[1] - hood[[2]][1] + popvec$x
-      ypos <- x[2] - hood[[2]][2] + popvec$y
-      return(attract[xpos,ypos])
-    }, attract=attract, popvec=popvec, hood=hood)
-    abs <- free[which(conc==max(conc)),]
-    if(!is.vector(abs)){
-      abs <- abs[sample(nrow(abs),1),]
+  freenb <- emptyHood(object, population@orgdat[,c('x','y')],
+                      population@n, population@m, popvec$x, popvec$y)
+  if(length(freenb) != 0){
+    conc <- sapply(freenb, function(x, attract){
+      npos = as.numeric(unlist(strsplit(x,'_')))
+      return(attract[npos[1],npos[2]])
+    }, attract=attract)
+    abs <- freenb[which(conc==max(conc))]
+    if(length(abs)!=1){
+      abs <- abs[sample(1:length(abs),1)]
     }
-    abs[1] <- abs[1] - hood[[2]][1] + popvec$x
-    abs[2] <- abs[2] - hood[[2]][2] + popvec$y
-    hood <- abs
-    xp = hood[1]
-    yp = hood[2]
-    eval.parent(substitute(population@occmat[popvec$x, popvec$y] <- 0))
-    eval.parent(substitute(population@occmat[xp,yp] <- as.numeric(popvec$type)))
-    eval.parent(substitute(population@orgdat[j,]$x <- xp))
-    eval.parent(substitute(population@orgdat[j,]$y <- yp))
-  }else if(object@budge){
-    eval.parent(substitute(population <- budging(object, population, j, hood)))
+    npos = as.numeric(unlist(strsplit(abs,'_')))
+    eval.parent(substitute(population@orgdat[j,]$x <- npos[1]))
+    eval.parent(substitute(population@orgdat[j,]$y <- npos[2]))
   }
-})
-
-#' @title Function for budging of fellow bacteria, while one is moving
-#'
-#' @description The generic function \code{budging} implements a random bacterial movement in the Moore neighbourhood while pushing other bacteria into the next grid cell
-#'
-#' @param object An object of class Bac.
-#' @param population An object of class Arena.
-#' @param j The number of the iteration of interest.
-#' @param hood A vector giving the Moore neighbourhood of the bacterium of interest
-#' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid.
-#' @details Bacteria move to a random position in the Moore neighbourhood. If the position is already occupied by another individual, the individual gets push away to the next grid position, which pushes another individual until a free position is reached. If the borders of the environment are reached, then the first individual is not able to move and every subsequently pushed bacterium stays at its original position.
-#' @seealso \code{\link{Bac-class}}, \code{\link{getHood}}, \code{\link{emptyHood}} and \code{\link{move}}
-#' @examples
-#' NULL
-setGeneric("budging", function(object, population, j, hood, repli=F){standardGeneric("budging")})
-setMethod("budging", "Bac", function(object, population, j, hood, repli=F){
-  flag <- T
-  orgdat <- population@orgdat
-  orgxy <- paste(orgdat$x,orgdat$y,sep='_')
-  hood[[1]][2,2] <- 0
-  pos <- which(hood[[1]]!=0, arr.ind=T)
-  inds <- sample(nrow(pos),nrow(pos))
-  i <- 0
-  while(i < nrow(pos)){
-    i <- i+1
-    xy <- pos[inds[i],]
-    #test if all positions in this direction are blocked
-    xp <- 1 #initialize xp and yp
-    yp <- 1
-    k <- j
-    while(xp<population@n && yp<population@m){
-      popvec <- orgdat[k,]
-      xp <- xy[1] - hood[[2]][1] + popvec$x
-      yp <- xy[2] - hood[[2]][2] + popvec$y
-      pxy <- paste(xp,yp,sep='_')
-      k <- which(orgxy==pxy)
-      if(length(k)==0){flag <- F; break}
-    }
-  }
-  while(!flag){
-    popvec <- orgdat[j,]
-    xp <- xy[1] - hood[[2]][1] + popvec$x
-    yp <- xy[2] - hood[[2]][2] + popvec$y
-    if(!repli){population@occmat[popvec$x, popvec$y] <- 0} #if not used in replication function
-    population@occmat[xp,yp] <- as.numeric(popvec$type)
-    population@orgdat[j,]$x <- xp
-    population@orgdat[j,]$y <- yp
-    pxy <- paste(xp,yp,sep='_')
-    j <- which(orgxy==pxy)
-    if(length(j)==0){flag <- T}
-    repli <- T
-  }
-  return(population)
 })
 
 #function for one iteration for Bac class
@@ -714,20 +645,21 @@ setMethod("cellgrowth", "Human", function(object, population, j){
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
   if(popvec$growth > object@duplirate){
-    hood <- emptyHood(object, population@occmat, popvec$x, popvec$y)
-    if(length(hood) != 0){
+    freenb <- emptyHood(object, population@orgdat[,c('x','y')],
+                        population@n, population@m, popvec$x, popvec$y)
+    if(length(freenb) != 0){
+      npos = freenb[sample(1:length(freenb),1)]
+      npos = as.numeric(unlist(strsplit(npos,'_')))
       daughter <- popvec
       daughter$growth <- popvec$growth/2
-      daughter$x <- hood[1]
-      daughter$y <- hood[2]
+      daughter$x <- npos[1]
+      daughter$y <- npos[2]
       popvec$growth = popvec$growth/2
       neworgdat[nrow(neworgdat)+1,] <- daughter
       neworgdat[j,] <- popvec
-      eval.parent(substitute(population@occmat[daughter$x,daughter$y] <- as.numeric(daughter$type)))
     }
   }
   else if(popvec$growth < object@growthlimit){
-    eval.parent(substitute(population@occmat[popvec$x, popvec$y] <- 0))
     neworgdat[j,'growth'] <- NA
     dead <- T
   }
