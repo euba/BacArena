@@ -301,10 +301,10 @@ setGeneric("getHood", function(object, n, m, x, y){standardGeneric("getHood")})
 setMethod("getHood", "Organism", function(object, n, m, x, y){
   xp = c(x-1,x,x+1)
   yp = c(y-1,y,y+1)
-  xp=na.omit(ifelse(xp==0,NA,xp))
-  xp=na.omit(ifelse(xp>n,NA,xp))
-  yp=na.omit(ifelse(yp==0,NA,yp))
-  yp=na.omit(ifelse(yp>m,NA,yp))
+  xp=xp[-which(xp<=0)]
+  xp=xp[-which(xp>n)]
+  yp=yp[-which(yp<=0)]
+  yp=yp[-which(yp>m)]
   nb=as.vector(sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp))
   return(nb)
 })
@@ -325,10 +325,39 @@ setGeneric("emptyHood", function(object, pos, n, m, x, y){standardGeneric("empty
 setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y){
   xp = c(x-1,x,x+1)
   yp = c(y-1,y,y+1)
-  xp=na.omit(ifelse(xp==0,NA,xp))
-  xp=na.omit(ifelse(xp>n,NA,xp))
-  yp=na.omit(ifelse(yp==0,NA,yp))
-  yp=na.omit(ifelse(yp>m,NA,yp))
+  xp=xp[-which(xp<=0)]
+  xp=xp[-which(xp>n)]
+  yp=yp[-which(yp<=0)]
+  yp=yp[-which(yp>m)]
+  nb=as.vector(sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp))
+  freenb=setdiff(nb,paste(pos$x,pos$y,sep='_'))
+  if(length(freenb)==0){return(NULL)}else{return(freenb)}
+})
+
+#' @title Function to check if the there is a free place in the Moore neighbourhood
+#'
+#' @description The generic function \code{NemptyHood} gives a free space which is present in the Moore neighbourhood of an individual of interest.
+#'
+#' @param object An object of class Organisms.
+#' @param occmat A matrix giving where the individuals in environment are occupying a specific position.
+#' @param x A number giving the x position of the individual of interest in its environment.
+#' @param y A number giving the y position of the individual of interest in its environment.
+#' @return Returns the free position in the Moore neighbourhood, which is not occupied by other individuals. If there is no free space \code{NULL} is returned.
+#' @seealso \code{\link{Organism-class}} and \code{\link{getHood}}
+#' @examples
+#' NULL
+setGeneric("NemptyHood", function(object, pos, n, m, x, y){standardGeneric("NemptyHood")})
+setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
+  xp = c(x-1,x,x+1)
+  yp = c(y-1,y,y+1)
+  for(i in 2:object@speed){
+    xp = c(xp,x-i,x+i)
+    yp = c(yp,y-i,y+i)
+  }
+  xp=xp[-which(xp<=0)]
+  xp=xp[-which(xp>n)]
+  yp=yp[-which(yp<=0)]
+  yp=yp[-which(yp>m)]
   nb=as.vector(sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp))
   freenb=setdiff(nb,paste(pos$x,pos$y,sep='_'))
   if(length(freenb)==0){return(NULL)}else{return(freenb)}
@@ -353,17 +382,21 @@ setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y){
 #' addSubs(arena,40) #add all possible substances
 #' move(bac,arena,1)
 #' }
-setGeneric("move", function(object, population, j){standardGeneric("move")})
-setMethod("move", "Organism", function(object, population, j){
-  popvec <- population@orgdat[j,]
-  freenb <- emptyHood(object, population@orgdat[,c('x','y')],
-                      population@n, population@m, popvec$x, popvec$y)
+setGeneric("move", function(object, pos, n, m, j){standardGeneric("move")})
+setMethod("move", "Organism", function(object, pos, n, m, j){
+  if(object@speed == 1){
+    freenb <- emptyHood(object, pos, n, m, pos[j,1], pos[j,2])
+  }else{
+    freenb <- NemptyHood(object, pos, n, m, pos[j,1], pos[j,2])
+  }
   if(length(freenb) != 0){
     npos = freenb[sample(1:length(freenb),1)]
     npos = as.numeric(unlist(strsplit(npos,'_')))
-    eval.parent(substitute(population@orgdat[j,]$x <- npos[1]))
-    eval.parent(substitute(population@orgdat[j,]$y <- npos[2]))
+    pos[j,] = npos
+    #eval.parent(substitute(population@orgdat[j,]$x <- npos[1]))
+    #eval.parent(substitute(population@orgdat[j,]$y <- npos[2]))
   }
+  return(pos)
 })
 
 #show function for class Organism
@@ -532,15 +565,17 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb){
   if(dead && object@lyse){
     eval.parent(substitute(sublb[j,] <- lysis(object, sublb[j,])))
   }
+  pos <- arena@orgdat[,c('x','y')]
   if(!dead && !arena@stir && object@speed != 0){
-    sapply(1:object@speed,function(x){
+    #for(i in 1:object@speed){
       if(object@chem == ''){
-        move(object, arena, j)
+        pos <- move(object, pos, arena@n, arena@m, j)
       }else{
         chemotaxis(object, arena, j)
       }
-      arena <<- arena})
+    #}
   }
+  arena@orgdat[,c('x','y')] <- pos
   return(arena)
 })
 
