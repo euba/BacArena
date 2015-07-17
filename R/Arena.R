@@ -381,6 +381,7 @@ setMethod("simEnv", "Arena", function(object, time){
              "Human"= {arena = simHum(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
              stop("Simulation function for Organism object not defined yet.")) 
     }
+    #print(arena@orgdat)
     test <- is.na(arena@orgdat$growth)
     if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
     rm("test")

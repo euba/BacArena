@@ -301,10 +301,12 @@ setGeneric("getHood", function(object, n, m, x, y){standardGeneric("getHood")})
 setMethod("getHood", "Organism", function(object, n, m, x, y){
   xp = c(x-1,x,x+1)
   yp = c(y-1,y,y+1)
-  xp=xp[-which(xp<=0)]
-  xp=xp[-which(xp>n)]
-  yp=yp[-which(yp<=0)]
-  yp=yp[-which(yp>m)]
+  xp=na.omit(ifelse(xp<=0,NA,xp))
+  xp=na.omit(ifelse(xp>n,NA,xp))
+  yp=na.omit(ifelse(yp<=0,NA,yp))
+  yp=na.omit(ifelse(yp>m,NA,yp))
+  #xp=xp[xp>0]; xp=xp[xp<=n]
+  #yp=yp[yp>0]; yp=yp[yp<=m]
   nb=as.vector(sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp))
   return(nb)
 })
@@ -325,10 +327,10 @@ setGeneric("emptyHood", function(object, pos, n, m, x, y){standardGeneric("empty
 setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y){
   xp = c(x-1,x,x+1)
   yp = c(y-1,y,y+1)
-  xp=xp[-which(xp<=0)]
-  xp=xp[-which(xp>n)]
-  yp=yp[-which(yp<=0)]
-  yp=yp[-which(yp>m)]
+  xp=na.omit(ifelse(xp<=0,NA,xp))
+  xp=na.omit(ifelse(xp>n,NA,xp))
+  yp=na.omit(ifelse(yp<=0,NA,yp))
+  yp=na.omit(ifelse(yp>m,NA,yp))
   nb=as.vector(sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp))
   freenb=setdiff(nb,paste(pos$x,pos$y,sep='_'))
   if(length(freenb)==0){return(NULL)}else{return(freenb)}
@@ -354,10 +356,10 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
     xp = c(xp,x-i,x+i)
     yp = c(yp,y-i,y+i)
   }
-  xp=xp[-which(xp<=0)]
-  xp=xp[-which(xp>n)]
-  yp=yp[-which(yp<=0)]
-  yp=yp[-which(yp>m)]
+  xp=na.omit(ifelse(xp<=0,NA,xp))
+  xp=na.omit(ifelse(xp>n,NA,xp))
+  yp=na.omit(ifelse(yp<=0,NA,yp))
+  yp=na.omit(ifelse(yp>m,NA,yp))
   nb=as.vector(sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp))
   freenb=setdiff(nb,paste(pos$x,pos$y,sep='_'))
   if(length(freenb)==0){return(NULL)}else{return(freenb)}
