@@ -390,7 +390,9 @@ setMethod("simEnv", "Arena", function(object, time){
       sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
       for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
         submat <- as.matrix(arena@media[[j]]@diffmat)
-        apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
+        if(nrow(sublb) != sum(sublb[,j+2]==mean(sublb[,j+2]))){
+          apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
+        }
         if(arena@n*arena@m != sum(submat==mean(submat))){
           switch(arena@media[[j]]@difunc,
                  "pde"={diffuseGrajdeanuCpp(submat, donut=FALSE, mu=arena@media[[j]]@difspeed)},

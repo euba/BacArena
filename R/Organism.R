@@ -539,7 +539,7 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb){
   optimizeLP(object, lb=lobnd)
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,])))
   dead <- growth(object, arena, j)
-  arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
+  #arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
   
   if(dead && object@lyse){
     eval.parent(substitute(sublb[j,] <- lysis(object, sublb[j,])))
