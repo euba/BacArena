@@ -285,32 +285,6 @@ setMethod("lysis", "Organism", function(object, sublb, factor=object@growthlimit
   return(sublb)
 })
 
-#' @title Function to get Moore-neighbourhood of a organism together with its relative position
-#'
-#' @description The generic function \code{getHood} gives the Moore neighbourhood of an individual of interest.
-#'
-#' @param object An object of class Organisms.
-#' @param occmat A matrix giving where the individuals in environment are occupying a specific position.
-#' @param x A number giving the x position of the individual of interest in its environment.
-#' @param y A number giving the y position of the individual of interest in its environment.
-#' @return Returns a matrix giving the Moore neighbourhood with positions that are occupied by other individuals.
-#' @seealso \code{\link{Organism-class}} and \code{\link{emptyHood}}
-#' @examples
-#' NULL
-setGeneric("getHood", function(object, n, m, x, y){standardGeneric("getHood")})
-setMethod("getHood", "Organism", function(object, n, m, x, y){
-  xp = c(x-1,x,x+1)
-  yp = c(y-1,y,y+1)
-  xp=na.omit(ifelse(xp<=0,NA,xp))
-  xp=na.omit(ifelse(xp>n,NA,xp))
-  yp=na.omit(ifelse(yp<=0,NA,yp))
-  yp=na.omit(ifelse(yp>m,NA,yp))
-  #xp=xp[xp>0]; xp=xp[xp<=n]
-  #yp=yp[yp>0]; yp=yp[yp<=m]
-  nb=as.vector(sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp))
-  return(nb)
-})
-
 #' @title Function to check if the there is a free place in the Moore neighbourhood
 #'
 #' @description The generic function \code{emptyHood} gives a free space which is present in the Moore neighbourhood of an individual of interest.
@@ -331,7 +305,11 @@ setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y){
   xp=na.omit(ifelse(xp>n,NA,xp))
   yp=na.omit(ifelse(yp<=0,NA,yp))
   yp=na.omit(ifelse(yp>m,NA,yp))
-  nb=as.vector(sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp))
+  #xp = xp[xp>0 & xp<=n]
+  #xp = xp[yp>0 & yp<=m]
+  nb=sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp)
+  pos = pos[which(pos$x %in% xp),]
+  pos = pos[which(pos$y %in% yp),]
   freenb=setdiff(nb,paste(pos$x,pos$y,sep='_'))
   if(length(freenb)==0){return(NULL)}else{return(freenb)}
 })
@@ -360,7 +338,9 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
   xp=na.omit(ifelse(xp>n,NA,xp))
   yp=na.omit(ifelse(yp<=0,NA,yp))
   yp=na.omit(ifelse(yp>m,NA,yp))
-  nb=as.vector(sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp))
+  nb=sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp)
+  pos = pos[which(pos$x %in% xp),]
+  pos = pos[which(pos$y %in% yp),]
   freenb=setdiff(nb,paste(pos$x,pos$y,sep='_'))
   if(length(freenb)==0){return(NULL)}else{return(freenb)}
 })
@@ -392,11 +372,9 @@ setMethod("move", "Organism", function(object, pos, n, m, j){
     freenb <- NemptyHood(object, pos, n, m, pos[j,1], pos[j,2])
   }
   if(length(freenb) != 0){
-    npos = freenb[sample(1:length(freenb),1)]
+    npos = freenb[sample(length(freenb),1)]
     npos = as.numeric(unlist(strsplit(npos,'_')))
     pos[j,] = npos
-    #eval.parent(substitute(population@orgdat[j,]$x <- npos[1]))
-    #eval.parent(substitute(population@orgdat[j,]$y <- npos[2]))
   }
   return(pos)
 })
@@ -480,15 +458,14 @@ setMethod("growth", "Bac", function(object, population, j){
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
               population@n, population@m, popvec$x, popvec$y)
     if(length(freenb) != 0){
-      npos = freenb[sample(1:length(freenb),1)]
+      npos = freenb[sample(length(freenb),1)]
       npos = as.numeric(unlist(strsplit(npos,'_')))
       daughter <- popvec
       daughter$growth <- popvec$growth/2
       daughter$x <- npos[1]
       daughter$y <- npos[2]
-      popvec$growth = popvec$growth/2
       neworgdat[nrow(neworgdat)+1,] <- daughter
-      neworgdat[j,] <- popvec
+      neworgdat[j,'growth'] <- popvec$growth/2
     }
   }
   else if(popvec$growth < object@growthlimit){

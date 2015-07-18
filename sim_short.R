@@ -76,8 +76,8 @@ pao = readSBMLmod("P:/BACARENA/Comparison/MatNet/P_aeruginosa/modelPOA.xml")
 
 bace = Bac(model=ecore, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growtype="exponential",
             speed=1, type="ecore1", lyse=F)
-arena = Arena(n=30, m=30, stir=F)
-addOrg(arena, bace, amount=30, x=1:30, y=rep(1,30))
+arena = Arena(n=100, m=100, stir=F)
+addOrg(arena, bace, amount=100, x=1:100, y=rep(1,100))
 addSubs(arena, smax=20, difunc="cpp", difspeed=1)
 
 Rprof()
@@ -88,6 +88,5 @@ bench = summaryRprof("Rprof.out")
 
 rtime = c((bench$by.total["\"simEnv\"",1]-bench$by.total["\"simBac\"",1]),(bench$by.total["\"simBac\"",1]-bench$by.total["\"optimizeLP\"",1]),bench$by.total["\"optimizeLP\"",1])
 names(rtime) = c("Background","Individual","FBA")
-barplot(as.matrix(rtime))
+barplot(rtime)
 
-barplot(cbind(rpao,rcoli,rcoli_mix,rvis))
