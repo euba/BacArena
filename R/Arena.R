@@ -390,7 +390,7 @@ setMethod("simEnv", "Arena", function(object, time){
       sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
       for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
         submat <- as.matrix(arena@media[[j]]@diffmat)
-        if(nrow(sublb) != sum(sublb[,j+2]==mean(sublb[,j+2]))){
+        if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
           apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
         }
         if(arena@n*arena@m != sum(submat==mean(submat))){
@@ -400,8 +400,8 @@ setMethod("simEnv", "Arena", function(object, time){
                  "r"={for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
                  stop("Simulation function for Organism object not defined yet.")) 
           arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
-          sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
         }
+        sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
       }
       sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
       colnames(sublb) <- c('x','y',arena@mediac)
