@@ -369,7 +369,7 @@ setMethod("simEnv", "Arena", function(object, time){
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
-         stop("Please supply an Arena object."))
+         stop("Please supply an object of class Arena."))
   addEval(evaluation, arena)
   sublb <- getSublb(arena)
   for(i in 1:time){
@@ -391,13 +391,15 @@ setMethod("simEnv", "Arena", function(object, time){
       for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
         submat <- as.matrix(arena@media[[j]]@diffmat)
         apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
-        switch(arena@media[[j]]@difunc,
-               "pde"={diffuseGrajdeanuCpp(submat, donut=FALSE, mu=arena@media[[j]]@difspeed)},
-               "cpp"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveCpp(submat, donut=FALSE)}},
-               "r"={for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
-               stop("Simulation function for Organism object not defined yet.")) 
-        arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
-        sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+        if(arena@n*arena@m != sum(submat==mean(submat))){
+          switch(arena@media[[j]]@difunc,
+                 "pde"={diffuseGrajdeanuCpp(submat, donut=FALSE, mu=arena@media[[j]]@difspeed)},
+                 "cpp"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveCpp(submat, donut=FALSE)}},
+                 "r"={for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
+                 stop("Simulation function for Organism object not defined yet.")) 
+          arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
+          sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+        }
       }
       sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
       colnames(sublb) <- c('x','y',arena@mediac)

@@ -301,9 +301,9 @@ setGeneric("emptyHood", function(object, pos, n, m, x, y){standardGeneric("empty
 setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y){
   xp = c(x-1,x,x+1)
   yp = c(y-1,y,y+1)
-  xp=na.omit(ifelse(xp<=0,NA,xp))
+  xp=ifelse(xp<=0,NA,xp)
   xp=na.omit(ifelse(xp>n,NA,xp))
-  yp=na.omit(ifelse(yp<=0,NA,yp))
+  yp=ifelse(yp<=0,NA,yp)
   yp=na.omit(ifelse(yp>m,NA,yp))
   #xp = xp[xp>0 & xp<=n]
   #xp = xp[yp>0 & yp<=m]
@@ -334,9 +334,9 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
     xp = c(xp,x-i,x+i)
     yp = c(yp,y-i,y+i)
   }
-  xp=na.omit(ifelse(xp<=0,NA,xp))
+  xp=ifelse(xp<=0,NA,xp)
   xp=na.omit(ifelse(xp>n,NA,xp))
-  yp=na.omit(ifelse(yp<=0,NA,yp))
+  yp=ifelse(yp<=0,NA,yp)
   yp=na.omit(ifelse(yp>m,NA,yp))
   nb=sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp)
   pos = pos[which(pos$x %in% xp),]
