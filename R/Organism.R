@@ -540,19 +540,16 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb){
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,])))
   dead <- growth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
-  
   if(dead && object@lyse){
     eval.parent(substitute(sublb[j,] <- lysis(object, sublb[j,])))
   }
   pos <- arena@orgdat[,c('x','y')]
   if(!dead && !arena@stir && object@speed != 0){
-    #for(i in 1:object@speed){
-      if(object@chem == ''){
-        pos <- move(object, pos, arena@n, arena@m, j)
-      }else{
-        chemotaxis(object, arena, j)
-      }
-    #}
+    if(object@chem == ''){
+      pos <- move(object, pos, arena@n, arena@m, j)
+    }else{
+      chemotaxis(object, arena, j)
+    }
   }
   arena@orgdat[,c('x','y')] <- pos
   return(arena)
@@ -662,15 +659,14 @@ setMethod("cellgrowth", "Human", function(object, population, j){
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
                         population@n, population@m, popvec$x, popvec$y)
     if(length(freenb) != 0){
-      npos = freenb[sample(1:length(freenb),1)]
+      npos = freenb[sample(length(freenb),1)]
       npos = as.numeric(unlist(strsplit(npos,'_')))
       daughter <- popvec
       daughter$growth <- popvec$growth/2
       daughter$x <- npos[1]
       daughter$y <- npos[2]
-      popvec$growth = popvec$growth/2
       neworgdat[nrow(neworgdat)+1,] <- daughter
-      neworgdat[j,] <- popvec
+      neworgdat[j,'growth'] <- popvec$growth/2
     }
   }
   else if(popvec$growth < object@growthlimit){
