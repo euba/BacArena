@@ -267,8 +267,8 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
   gradn = floor(object@n*steep)
   gradm = floor(object@m*steep)
   switch(position,
-         'top'={for(i in 1:object@m){newdiffmat[0:gradm+1,i]=seq(smax,0,length.out=gradm+1)}},
-         'bottom'={for(i in 1:object@m){newdiffmat[gradm:object@m,i]=seq(0,smax,length.out=gradm+1)}},
+         'top'={for(i in 1:object@m){newdiffmat[0:gradm+1,i]=rev(seq(0,smax,length.out=gradm+1))}},
+         'bottom'={for(i in 1:object@m){newdiffmat[object@m:(object@m-gradm),i]=rev(seq(0,smax,length.out=gradm+1))}},
          'right'={for(i in 1:object@n){newdiffmat[i,gradn:object@n]=seq(0,smax,length.out=gradn+1)}},
          'left'={for(i in 1:object@n){newdiffmat[i,0:gradn+1]=seq(smax,0,length.out=gradn+1)}},
          stop("Positions must be top, bottom, right and left."))
