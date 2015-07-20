@@ -32,7 +32,7 @@ bace1 = Bac(model=ecore, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growty
            speed=1, type="ecore1", lyse=T)
 bace2 = Bac(model=ecore2, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growtype="exponential",
            speed=0, type="ecore2")
-arena = Arena(n=100, m=100, stir=F)
+arena = Arena(n=30, m=30, stir=F)
 addOrg(arena, bace1, amount=10)
 addOrg(arena, bace2, amount=10,x=1:10,y=1:10)
 addSubs(arena, smax=20, difunc="cpp", difspeed=1)
@@ -49,3 +49,28 @@ selPheno(evalsim,time=1,type='ecore1')
 
 library(animation)
 saveVideo(evalArena(evalsim, plot_items=c('population'), phencol=T, retdata=F), video.name="Pop4_phen.mp4", other.opts="-b 300k")  # higher bitrate, better quality
+
+
+setwd("P:/BACARENA/benchmark")
+set.seed(5000)
+data(Ec_core)
+ecore = Ec_core
+pao = readSBMLmod("P:/BACARENA/Comparison/MatNet/P_aeruginosa/modelPOA.xml")
+
+bace = Bac(model=ecore, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growtype="exponential",
+            speed=1, type="ecore1", lyse=F)
+arena = Arena(n=30, m=30, stir=F)
+addOrg(arena, bace, amount=30, x=1:30, y=rep(1,30))
+addSubs(arena, smax=20, difunc="cpp", difspeed=1)
+
+Rprof()
+evalsim <- simEnv(arena, time=10)
+Rprof(NULL)
+
+bench = summaryRprof("Rprof.out")
+
+rtime = c((bench$by.total["\"simEnv\"",1]-bench$by.total["\"simBac\"",1]),(bench$by.total["\"simBac\"",1]-bench$by.total["\"optimizeLP\"",1]),bench$by.total["\"optimizeLP\"",1])
+names(rtime) = c("Background","Individual","FBA")
+barplot(as.matrix(rtime))
+
+barplot(cbind(rpao,rcoli,rcoli_mix,rvis))

@@ -800,8 +800,8 @@ setMethod("extractMed", "Eval", function(object, time=length(object@medlist)){
 #' library(animation)
 #' saveVideo({evalArena(eval)},video.name="Ecoli_sim.mp4")
 #' }
-setGeneric("evalArena", function(object, plot_items='population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){standardGeneric("evalArena")})
-setMethod("evalArena", "Eval", function(object, plot_items='population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){ #index in R start at 1, but the first state is 0
+setGeneric("evalArena", function(object, plot_items='Population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){standardGeneric("evalArena")})
+setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){ #index in R start at 1, but the first state is 0
   time = time+1
   old.par <- par(no.readonly = TRUE)
   if(retdata){
@@ -819,7 +819,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
       if(length(inds)!=0){
         for(j in 1:length(inds)){
           if(retdata){
-            retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
+            retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
           }
           image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
                 zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
@@ -829,7 +829,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
       par(mfrow=c(2,ceiling(length(plot_items)/2)))
       for(j in 1:length(inds)){
         if(retdata){
-          retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
+          retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
         }
         image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
               zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
@@ -838,15 +838,15 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
       par(mfrow=c(3,ceiling(length(plot_items)/3)))
       for(j in 1:length(inds)){
         if(retdata){
-          retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
+          retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
         }
         image(matrix(meds[[inds[j]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
               zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
       }
     }
-    if(plot_items[1]=='population'){
+    if(plot_items[1]=='Population'){
       if(retdata){
-        retlist[['population']][[j]] = object@simlist[[i]]
+        retlist[['Population']][[paste0("time",(i-1))]] = object@simlist[[i]]
       }
       if(phencol){
         plot(object@simlist[[i]][,c('x','y')],xlim=c(0,object@n),ylim=c(0,object@m),xlab='',ylab='',
@@ -1003,6 +1003,9 @@ setMethod("getPhenoMat", "Eval", function(object, time="total"){
     for(i in levels(as.factor(typestep))){
       tphen = object@phenotypes[[as.numeric(i)]]
       phens[[typenam[as.numeric(i)]]] = tphen[as.numeric(levels(as.factor(phenstep[which(typestep==as.numeric(i))])))]
+      if(length(phens[[typenam[as.numeric(i)]]])==0){ #will this cause a problem?
+        phens = phens[-as.numeric(i)]
+      }
     }
     
     numphens <- unlist(lapply(phens,function(x){return(length(x))}))
@@ -1113,7 +1116,6 @@ setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
   rownames(pabund) = paste(type,'phen',rownames(pabund),sep='_')
   rownames(pabund)[which(rownames(pabund)==paste(type,'phen_0',sep='_'))] = 'inactive'
   colnames(pabund) = 'individuals'
-  
   pmat = getPhenoMat(object, time)
   pmatsp = pmat[which(rownames(pmat) == type),]
   if(is.vector(pmatsp)){
@@ -1128,19 +1130,17 @@ setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
       pmatsp = pmatsp[,-which(apply(pmatsp,2,sum)==0)]
     }
   }
-  #rownames(pmatsp) = paste(type,'phen',1:nrow(pmatsp),sep='_')
-  #pmatsp = as.data.frame(pmatsp)
-  pmatsp = data.frame(row)
-  
-  
-  if(length(grep('inactive',rownames(pabund)))){
+  if(length(grep('inactive',rownames(pabund)))!=0){
+    rownames(pmatsp) = rownames(pabund)[-which(rownames(pabund)=="inactive")]
+    pmatsp = as.data.frame(pmatsp)
     pmatsp['inactive',]=rep(0,ncol(pmatsp))
   }else{
-    
+    rownames(pmatsp) = rownames(pabund)
+    pmatsp = as.data.frame(pmatsp)
   }
   pmatsp[,'individuals']=rep(NA,nrow(pmatsp))
   pmatsp[rownames(pabund),'individuals'] = pabund[,'individuals']
-  
+  pmatsp
   return(as.matrix(pmatsp))
 })
 

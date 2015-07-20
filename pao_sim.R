@@ -26,11 +26,11 @@ oopts = ani.options(ffmpeg = "C:/ffmpeg.exe")
 saveVideo({
   ani.options(interval = 0.5)
   evalArena(evalsim, phencol=T, plot_items=c('population','EX_EC0007'))
-},video.name = "PAO_pop_phen_bio.avi", other.opts = "-b 600k")
+},video.name = "PAO_pop_phen_bio2.avi", other.opts = "-b 600k")
 
 library(animation)
 oopts = ani.options(ffmpeg = "C:/ffmpeg.exe")
 saveVideo({
   ani.options(interval = 0.5)
   evalArena(evalsim, phencol=T)
-},video.name = "PAO_pop4.avi", other.opts = "-b 600k")
+},video.name = "PAO_pop5.avi", other.opts = "-b 600k")
