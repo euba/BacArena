@@ -194,6 +194,24 @@ setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6){
   return(sublb)
 })
 
+
+#' @title Function to detect most active reactions
+#'
+#' @description The generic function \code{setActiveR} implements the consumption and production of substances based on the flux of exchange reactions of organisms
+#'
+#' @param object An object of class Organisms.
+#' @return Returns the updated vector containing the substance concentrations in the current position of the individual of interest.
+#' @details sadasdad
+#' @examples
+#' NULL
+setGeneric("setActiveR", function(object){standardGeneric("setActiveR")})
+setMethod("setActiveR", "Organism", function(object){
+    new_activeR <- head(object@fbasol$fluxes)
+    names(new_activeR) <- names(head(object@fbasol$fluxes))
+    return(new_activeR)
+})
+
+
 #' @title Function to extract the phenotype of an organism object
 #'
 #' @description The generic function \code{getPhenotype} implements an identification of organism phenotypes.
@@ -597,6 +615,10 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb){
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,])))
   dead <- growth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
+  
+  #arena@mflux <<- setActiveR(object) # save highly active reactions
+  type <- object@type
+  arena@mflux[[type]] <- arena@mflux[[type]] + object@fbasol$fluxes
   
   if(dead && object@lyse){
     eval.parent(substitute(sublb[j,] <- lysis(object, sublb[j,])))

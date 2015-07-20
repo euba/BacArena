@@ -14,6 +14,7 @@
 #' @slot occmat A sparse matrix showing which cells in the environment are occupied by individuals.
 #' @slot tstep A number giving the time (in h) per iteration.
 #' @slot stir A boolean variable indicating if environment should be stirred.
+#' @slot mflux A vector containing highly used metabolic reactions within the arena
 #' @slot n A number giving the horizontal size of the environment.
 #' @slot m A number giving the vertical size of the environment.
 setClass("Arena",
@@ -26,6 +27,7 @@ setClass("Arena",
            occmat="Matrix",
            tstep="numeric",
            stir="logical",
+           mflux="list",
            n="integer",
            m="integer"
         )
@@ -36,9 +38,9 @@ setClass("Arena",
 ########################################################################################################
 
 Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
-                  specs=list(),media=list(),mediac=character(),phenotypes=list(),occmat=Matrix(0L,nrow=n,ncol=m,sparse=T),stir=F){
+                  specs=list(),media=list(),mediac=character(),phenotypes=list(),occmat=Matrix(0L,nrow=n,ncol=m,sparse=T),stir=F,mflux=list()){
   new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs,
-      media=media, mediac=mediac, phenotypes=phenotypes, occmat=occmat, stir=stir)
+      media=media, mediac=mediac, phenotypes=phenotypes, occmat=occmat, stir=stir, mflux=mflux)
 }
 
 ########################################################################################################
@@ -61,6 +63,8 @@ setGeneric("tstep", function(object){standardGeneric("tstep")})
 setMethod("tstep", "Arena", function(object){return(object@tstep)})
 setGeneric("stir", function(object){standardGeneric("stir")})
 setMethod("stir", "Arena", function(object){return(object@stir)})
+setGeneric("mflux", function(object){standardGeneric("mflux")})
+setMethod("mflux", "Arena", function(object){return(object@mflux)})
 setGeneric("n", function(object){standardGeneric("n")})
 setMethod("n", "Arena", function(object){return(object@n)})
 setGeneric("m", function(object){standardGeneric("m")})
@@ -104,6 +108,11 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   newphens <- object@phenotypes[[spectype]]
   newspecs[[spectype]] <- specI
   type <- which(names(newspecs)==spectype)
+  newmflux <- object@mflux
+  
+  # mflux
+  newmflux[[spectype]] <- numeric(length(specI@lbnd))
+  names(newmflux[[spectype]]) <- names(specI@lbnd)
   
   if(length(newphens)!=0){
     ptype <- as.integer(checkPhen(object, specI))
@@ -153,6 +162,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   eval.parent(substitute(object@specs <- newspecs))
   eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
   eval.parent(substitute(object@mediac <- union(object@mediac, specI@medium)))
+  eval.parent(substitute(object@mflux <- newmflux))
 })
 
 
@@ -421,7 +431,8 @@ setMethod("simEnv", "Arena", function(object, time){
   sublb <- getSublb(arena)
   for(i in 1:time){
     cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
-    for(j in 1:nrow(arena@orgdat)){
+    arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
+    for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
       org <- arena@specs[[arena@orgdat[j,'type']]]
       switch(class(org),
              "Bac"= {arena = simBac(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
@@ -603,6 +614,7 @@ setClass("Eval",
          representation(
            medlist="list",
            simlist="list",
+           mfluxlist="list",
            subchange="numeric"
          )
 )
@@ -615,7 +627,7 @@ Eval <- function(arena){
   subc = rep(0, length(arena@mediac))
   names(subc) <- arena@mediac
   new("Eval", n=arena@n, m=arena@m, tstep=arena@tstep, specs=arena@specs, mediac=arena@mediac, occmat=Matrix(), subchange=subc,
-      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir)
+      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir, mfluxlist=list())
 }
 
 ########################################################################################################
@@ -626,6 +638,8 @@ setGeneric("medlist", function(object){standardGeneric("medlist")})
 setMethod("medlist", "Eval", function(object){return(object@medlist)})
 setGeneric("simlist", function(object){standardGeneric("simlist")})
 setMethod("simlist", "Eval", function(object){return(object@simlist)})
+setGeneric("mfluxlist", function(object){standardGeneric("mfluxlist")})
+setMethod("mfluxlist", "Eval", function(object){return(object@mfluxlist)})
 setGeneric("subchange", function(object){standardGeneric("subchange")})
 setMethod("subchange", "Eval", function(object){return(object@subchange)})
 
@@ -677,6 +691,7 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
     }
     eval.parent(substitute(object@simlist[[length(object@simlist)+1]] <- arena@orgdat))
     eval.parent(substitute(object@phenotypes <- arena@phenotypes))
+    eval.parent(substitute(object@mfluxlist[[length(object@mfluxlist)+1]] <- arena@mflux))
   }else{
     eval.parent(substitute(object@medlist[[length(object@medlist)]] <- lapply(arena@media, function(x){
       return(as.vector(x@diffmat))
@@ -916,6 +931,27 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
     return(list('Population'=growths,'Substances'=subs))
   }
 })
+
+
+#' @title Function for plotting the overall change in reaction activity
+#'
+#' @description The generic function \code{plotTotFlux} plots the time course of reactions with high variation in activity for an \code{Eval} object.
+#'
+#' @param object An object of class Eval.
+setGeneric("plotTotFlux", function(object){standardGeneric("plotTotFlux")})
+setMethod("plotTotFlux", "Eval", function(object){
+  # TODO: expand on all species
+  list <- lapply(object@mfluxlist, function(x){x[[1]]})
+  mat  <- do.call(cbind, list)
+  mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
+  mat_nice <- tail(mat[order(mat_var),], 20)
+  
+  matplot(t(mat_nice), type='l', pch=1, lty=1,
+          xlab='time in h', ylab='reaction activity in mmol/(h * g_DW)',
+          main='Highly active reactions')
+  legend("topleft", rownames(mat_nice), col=seq_len(nrow(mat_nice)), cex=0.5, fill=seq_len(nrow(mat_nice)))
+})
+
 
 #' @title Function for getting a matrix of phenotypes from the dataset
 #'
