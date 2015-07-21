@@ -933,18 +933,21 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 })
 
 
-setGeneric("plotCurves2", function(object, legendpos="topleft"){standardGeneric("plotCurves2")})
-setMethod("plotCurves2", "Eval", function(object, legendpos="topright"){
-  list <- lapply(object@medlist, function(x){lapply(x, sum)})
+setGeneric("plotCurves2", function(object, legendpos="topleft", num=10){standardGeneric("plotCurves2")})
+setMethod("plotCurves2", "Eval", function(object, legendpos="topright", num=10){
+  # first get the correct (ie. complete) medlist
+  prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
+  list <- lapply(prelist, function(x){lapply(x, sum)})
   mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
   rownames(mat) <- names <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
   mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
-  mat_nice <- tail(mat[order(mat_var),], 10)
+  mat_nice <- tail(mat[order(mat_var),], num)
   
-  matplot(t(mat_nice), type='l', pch=1, lty=1,
+  cols <- seq(num)
+  matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1,
           xlab='time in h', ylab='concentration in mmol',
           main='Strongly changing substances')
-  legend(legendpos, rownames(mat_nice), col=seq_len(nrow(mat_nice)), cex=0.5, fill=seq_len(nrow(mat_nice)))
+  legend(legendpos, rownames(mat_nice), col=cols, cex=0.5, fill=cols)
 })
 
 
