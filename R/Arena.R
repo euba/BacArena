@@ -938,10 +938,11 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 #' @description The generic function \code{plotTotFlux} plots the time course of reactions with high variation in activity for an \code{Eval} object.
 #'
 #' @param object An object of class Eval.
-setGeneric("plotTotFlux", function(object){standardGeneric("plotTotFlux")})
-setMethod("plotTotFlux", "Eval", function(object){
-  # TODO: expand on all species
-  list <- lapply(object@mfluxlist, function(x){x[[1]]})
+setGeneric("plotTotFlux", function(object, legendpos="topright"){standardGeneric("plotTotFlux")})
+setMethod("plotTotFlux", "Eval", function(object, legendpos="topright"){
+  list <- lapply(object@mfluxlist, function(x){
+    unlist(x)
+  })
   mat  <- do.call(cbind, list)
   mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
   mat_nice <- tail(mat[order(mat_var),], 20)
@@ -949,7 +950,7 @@ setMethod("plotTotFlux", "Eval", function(object){
   matplot(t(mat_nice), type='l', pch=1, lty=1,
           xlab='time in h', ylab='reaction activity in mmol/(h * g_DW)',
           main='Highly active reactions')
-  legend("topleft", rownames(mat_nice), col=seq_len(nrow(mat_nice)), cex=0.5, fill=seq_len(nrow(mat_nice)))
+  legend(legendpos, rownames(mat_nice), col=seq_len(nrow(mat_nice)), cex=0.5, fill=seq_len(nrow(mat_nice)))
 })
 
 
