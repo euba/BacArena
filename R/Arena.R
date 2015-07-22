@@ -4,6 +4,29 @@ colpal1 <- c("#000000","#FFFF00","#1CE6FF","#FF34FF","#FF4A46","#008941","#006FA
 # 20 optimally distinct colors
 colpal2 <- c("#C48736", "#CE54D1", "#96CED5", "#76D73C", "#403552", "#D4477D", "#5A7E36", "#D19EC4", "#CBC594", "#722A2D", "#D0CD47", "#CF4A31", "#7B6FD0", "#597873", "#6CD3A7", "#484125", "#C17E73", "#688EC1",  "#844081", "#7DD06F")
 
+# K. Kelly (1965): Twenty-two colors of maximum contrast. // Color Eng., 3(6)
+colpal3 = c(
+  "#FFB300", # Vivid Yellow
+  "#803E75", # Strong Purple
+  "#FF6800", # Vivid Orange
+  "#A6BDD7", # Very Light Blue
+  "#C10020", # Vivid Red
+  "#CEA262", # Grayish Yellow
+  "#817066", # Medium Gray
+  "#007D34", # Vivid Green
+  "#F6768E", # Strong Purplish Pink
+  "#00538A", # Strong Blue
+  "#FF7A5C", # Strong Yellowish Pink
+  "#53377A", # Strong Violet
+  "#FF8E00", # Vivid Orange Yellow
+  "#B32851", # Strong Purplish Red
+  "#F4C800", # Vivid Greenish Yellow
+  "#7F180D", # Strong Reddish Brown
+  "#93AA00", # Vivid Yellowish Green
+  "#593315", # Deep Yellowish Brown
+  "#F13A13", # Vivid Reddish Orange
+  "#232C16" # Dark Olive Green
+)
 
 
 ########################################################################################################
@@ -952,11 +975,11 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", num=10){
   mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
   mat_nice <- tail(mat[order(mat_var),], num)
   
-  if(num>length(colpal2)) cols <- colpal1[1:num] else cols <- colpal2[1:num]
-  matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1,
-          xlab='time in h', ylab='concentration in mmol',
+  if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
+  matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
+          xlab='time in h', ylab='amount of substance in mmol',
           main='Strongly changing substances')
-  legend(legendpos, rownames(mat_nice), col=cols, cex=0.5, fill=cols)
+  legend(legendpos, rownames(mat_nice), col=cols, cex=0.7, fill=cols)
 })
 
 
@@ -975,11 +998,11 @@ setMethod("plotTotFlux", "Eval", function(object, legendpos="topright", num=20){
   mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
   mat_nice <- tail(mat[order(mat_var),], num)
   
-  if(num>length(colpal2)) cols <- colpal1[1:num] else cols <- colpal2[1:num]
-  matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1,
+  if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
+  matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=3,
           xlab='time in h', ylab='reaction activity in mmol/(h * g_DW)',
           main='Highly active reactions')
-  legend(legendpos, rownames(mat_nice), col=cols, cex=0.5, fill=cols)
+  legend(legendpos, rownames(mat_nice), col=cols, cex=0.6, fill=cols)
 })
 
 
