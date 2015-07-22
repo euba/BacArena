@@ -971,7 +971,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", num=10){
   prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
   list <- lapply(prelist, function(x){lapply(x, sum)})
   mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
-  rownames(mat) <- names <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
+  rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
   mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
   mat_nice <- tail(mat[order(mat_var),], num)
   
@@ -1201,4 +1201,50 @@ setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
 
 setMethod(show, signature(object="Eval"), function(object){
   print(paste('Evaluation results of ',length(object@medlist)-1,' simulation steps.',sep=''))
+})
+
+
+setGeneric("getCorrM", function(object){standardGeneric("getCorrM")})
+setMethod("getCorrM", "Eval", function(object){
+  # substrates
+  prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
+  list <- lapply(prelist, function(x){lapply(x, sum)})
+  mat_sub <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
+  rownames(mat_sub) <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
+  
+  # reactions
+  list <- lapply(object@mfluxlist, function(x){
+    unlist(x)
+  })
+  mat_rea  <- do.call(cbind, list)
+  
+  # bacs
+  list <- lapply(object@simlist, function(x){
+    occ <- table(x$type)
+    new <- unlist(lapply(seq_along(object@specs), function(i){(occ[i])}))
+  })
+  list[is.na(list)] <- 0
+  mat_bac  <- do.call(cbind, list)
+  rownames(mat_bac) <- names(object@specs)
+  
+  mat <- rbind(mat_sub, mat_rea, mat_bac)
+  corr <- cor(t(mat))
+  corr[is.na(corr)] <- 0
+  return(corr)
+  # library(corrplot)
+  #corrplot(corr, tl.cex=0.1)
+})
+  
+
+setGeneric("checkCorr", function(object, corr=NULL, tocheck=list()){standardGeneric("checkCorr")})
+setMethod("checkCorr", "Eval", function(object, corr=NULL, tocheck=list()){
+  if(is.null(corr)) corr <- getCorrM(object)
+
+  lapply(tocheck, function(feature){
+    dat <- corr[feature,]
+    dat <- dat[-which(names(dat)==feature)]
+    dat <- dat[order(dat)]
+    dat_interest <- c(head(dat), tail(dat))
+    barplot(names.arg=names(dat_interest), height=dat_interest, las=2, main=paste("Highest correlations of", feature))
+  })
 })
