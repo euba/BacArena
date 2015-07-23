@@ -964,14 +964,21 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 })
 
 
-setGeneric("plotCurves2", function(object, legendpos="topleft", num=10){standardGeneric("plotCurves2")})
+setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), num=10){standardGeneric("plotCurves2")})
 setMethod("plotCurves2", "Eval", function(object, legendpos="topright", num=10){
   if(num>length(object@mediac) || num<1) stop("Number of substances invalid")
   # first get the correct (ie. complete) medlist
   prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
   list <- lapply(prelist, function(x){lapply(x, sum)})
   mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
-  rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
+  #remove substances that should be ignored
+  ignore_subs <- which(object@mediac %in% ignore)
+  mat <- mat[-which(ignore_subs),]
+  meadac <- object@mediac[-ignore_subs]
+  rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
+  
+  
+  
   mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
   mat_nice <- tail(mat[order(mat_var),], num)
   
