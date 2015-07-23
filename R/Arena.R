@@ -973,12 +973,9 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", num=10){
   mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
   #remove substances that should be ignored
   ignore_subs <- which(object@mediac %in% ignore)
-  mat <- mat[-which(ignore_subs),]
-  meadac <- object@mediac[-ignore_subs]
+  mat <- mat[-ignore_subs,]
+  mediac <- object@mediac[-ignore_subs]
   rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
-  
-  
-  
   mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
   mat_nice <- tail(mat[order(mat_var),], num)
   
