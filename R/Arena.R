@@ -1208,35 +1208,38 @@ setMethod(show, signature(object="Eval"), function(object){
 })
 
 
-setGeneric("getCorrM", function(object){standardGeneric("getCorrM")})
-setMethod("getCorrM", "Eval", function(object){
-  # substrates
-  prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
-  list <- lapply(prelist, function(x){lapply(x, sum)})
-  mat_sub <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
-  rownames(mat_sub) <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
+setGeneric("getCorrM", function(object, reactions=TRUE, bacs=TRUE, substrates=TRUE){standardGeneric("getCorrM")})
+setMethod("getCorrM", "Eval", function(object, reactions=TRUE, bacs=TRUE, substrates=TRUE){
+  mat <- matrix(0,0,length(object@medlist))
+  if(substrates){
+    prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
+    list <- lapply(prelist, function(x){lapply(x, sum)})
+    mat_sub <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
+    rownames(mat_sub) <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
+    mat <- rbind(mat, mat_sub)
+  }
   
-  # reactions
-  list <- lapply(object@mfluxlist, function(x){
-    unlist(x)
-  })
-  mat_rea  <- do.call(cbind, list)
+  if(reactions){
+    list <- lapply(object@mfluxlist, function(x){
+      unlist(x)
+    })
+    mat_rea  <- do.call(cbind, list)
+    mat <- rbind(mat, mat_rea)
+  }
   
-  # bacs
-  list <- lapply(object@simlist, function(x){
-    occ <- table(x$type)
-    new <- unlist(lapply(seq_along(object@specs), function(i){(occ[i])}))
-  })
-  list[is.na(list)] <- 0
-  mat_bac  <- do.call(cbind, list)
-  rownames(mat_bac) <- names(object@specs)
+  if(bacs){
+    list <- lapply(object@simlist, function(x){
+      occ <- table(x$type)
+      unlist(lapply(seq_along(object@specs), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
+    })
+    mat_bac  <- do.call(cbind, list)
+    rownames(mat_bac) <- names(object@specs)
+    mat <- rbind(mat, mat_bac)
+  }
   
-  mat <- rbind(mat_sub, mat_rea, mat_bac)
   corr <- cor(t(mat))
   corr[is.na(corr)] <- 0
   return(corr)
-  # library(corrplot)
-  #corrplot(corr, tl.cex=0.1)
 })
   
 
