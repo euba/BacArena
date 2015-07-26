@@ -214,8 +214,8 @@ setGeneric("getPhenotype", function(object, cutoff=1e-6){standardGeneric("getPhe
 setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6){
   exflux=object@fbasol$fluxes[object@medium]
   exflux=ifelse(abs(exflux)<cutoff,0,1)*exflux
-  exflux=ifelse(exflux<0,-1,exflux)
   exflux=ifelse(exflux>0,1,exflux)
+  exflux=ifelse(exflux<0,2,exflux)
   return(exflux[which(exflux!=0)])
 })
 

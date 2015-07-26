@@ -20,7 +20,7 @@ setClass("Arena",
            orgdat="data.frame",
            specs="list",
            media="list",
-           phenotypes="list",
+           phenotypes="character",
            mediac="character",
            tstep="numeric",
            stir="logical",
@@ -34,7 +34,7 @@ setClass("Arena",
 ########################################################################################################
 
 Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
-                  specs=list(),media=list(),mediac=character(),phenotypes=list(),stir=F){
+                  specs=list(),media=list(),mediac=character(),phenotypes=character(),stir=F){
   new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs,
       media=media, mediac=mediac, phenotypes=phenotypes, stir=stir)
 }
@@ -96,17 +96,16 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   spectype <- specI@type
   neworgdat <- object@orgdat
   newspecs <- object@specs
-  newphens <- object@phenotypes[[spectype]]
+  #newphens <- object@phenotypes[which(names(object@phenotypes)==spectype)]
   newspecs[[spectype]] <- specI
-  type <- which(names(newspecs)==spectype)
-  
-  if(length(newphens)!=0){
-    ptype <- as.integer(checkPhen(object, specI))
-    newphens <- object@phenotypes[[spectype]]
-  }else{
-    newphens[[1]] <- getPhenotype(specI)
-    ptype=as.integer(1)
-  }
+  type <- which(names(newspecs)==spectype) 
+  #if(length(newphens)!=0){
+  #  ptype <- as.integer(checkPhen(object, specI))
+  #  newphens <- object@phenotypes[[spectype]]
+  #}else{
+  #  newphens[[1]] <- getPhenotype(specI)
+  #  ptype=as.integer(1)
+  #}
   lastind <- nrow(object@orgdat)
   if(length(x*y)==0){
     cmbs = expand.grid(1:n,1:m)
@@ -122,20 +121,20 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
     neworgdat[(lastind+1):(amount+lastind),'y']=yp
     neworgdat[(lastind+1):(amount+lastind),'growth']=rep(growth, amount)
     neworgdat[(lastind+1):(amount+lastind),'type']=rep(type, amount)
-    neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(ptype, amount)
+    neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(NA, amount)
   }else{
     neworgdat[(lastind+1):(amount+lastind),'x']=x
     neworgdat[(lastind+1):(amount+lastind),'y']=y
     neworgdat[(lastind+1):(amount+lastind),'growth']=rep(growth, amount)
     neworgdat[(lastind+1):(amount+lastind),'type']=rep(type, amount)
-    neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(ptype, amount)
+    neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(NA, amount)
   }
   if(sum(duplicated(paste(neworgdat$x,neworgdat$y,sep="_")))!=0){
     stop("You have multiple individuals in the same position! Make sure that your x an y positions are unique")
   }
   eval.parent(substitute(object@orgdat <- neworgdat))
   eval.parent(substitute(object@specs <- newspecs))
-  eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
+  #eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
   eval.parent(substitute(object@mediac <- union(object@mediac, specI@medium)))
 })
 
@@ -321,28 +320,24 @@ setMethod("changeOrg", "Arena", function(object, neworgdat){
 #' }
 setGeneric("checkPhen", function(object, org, cutoff=1e-6){standardGeneric("checkPhen")})
 setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
-  ptype <- 0
+  pind <- 0
   if(org@fbasol$obj>=cutoff){
-    phenotypes <- object@phenotypes[[org@type]]
-    phenspec <- getPhenotype(org, cutoff=0.1)
-    if(length(phenspec) != 0){
-      for(i in 1:length(phenotypes)){
-        inlist <- intersect(names(phenotypes[[i]]),names(phenspec))
-        if(sum(phenotypes[[i]][inlist]==phenspec[inlist])==length(inlist)){
-          ptype=i
-          break
-        }
-      }
-      if(ptype==0){
-        ptype = length(phenotypes)+1
-        phenotypes[[ptype]] <- phenspec
-        object2 <- object
-        object2@phenotypes[[org@type]] <- phenotypes
-        eval.parent(substitute(object <- object2)) #has to be like this, otherwise there is a problem with the slot name!
-      }
+    test = getPhenotype(org, cutoff=1e-6)
+    tspec = org@type
+    pvec = rep(0,length(object@mediac))
+    names(pvec) = object@mediac
+    pvec[names(test)] = test
+    pvec <- paste(pvec,collapse='')
+    phenc <- object@phenotypes
+    phensel <- phenc[which(names(phenc)==tspec)]
+    pind <- which(phensel==pvec)
+    if(length(pind)==0){
+      pind = length(phensel)+1
+      names(pvec) = tspec
+      eval.parent(substitute(object@phenotypes <- c(phenc,pvec)))
     }
   }
-  return(ptype)
+  return(pind)
 })
 
 #' @title Main function for simulating all processes in the environment
@@ -370,6 +365,18 @@ setMethod("simEnv", "Arena", function(object, time){
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
          stop("Please supply an object of class Arena."))
+  for(i in names(arena@specs)){
+    phensel <- arena@phenotypes[which(names(arena@phenotypes)==i)]
+    if(length(phensel)==0){
+      test = getPhenotype(arena@specs[[i]], cutoff=1e-6)
+      pvec = rep(0,length(arena@mediac))
+      names(pvec) = arena@mediac
+      pvec[names(test)] = test
+      pvec <- paste(pvec,collapse='')
+      names(pvec) = i
+      arena@phenotypes <- c(arena@phenotypes,pvec)
+    }
+  }
   addEval(evaluation, arena)
   sublb <- getSublb(arena)
   for(i in 1:time){
