@@ -29,15 +29,18 @@ void diffuseGrajdeanuCpp(Rcpp::NumericMatrix y, double mu, bool donut){
             if (pos_i == -1 || pos_i == m) pos_i = i;
             if (pos_j == -1 || pos_j == n) pos_j = j;
           }
-          if(i!=pos_i or j!=pos_j){ //don't get it again
+          //if(i!=pos_i or j!=pos_j){ //don't get it again
             neigh++;
             d = 1.0; // cell distance
             sum_A += exp( -pow(d,2) / mu );
             sum_y += ( y_old(pos_i,pos_j) - y_old(i,j) ) * exp( -pow(d,2)/mu );
-          }
+            //sum_y += ( y(pos_i,pos_j) - y(i,j) ) * exp( -pow(d,2)/mu );
+            //std::cout<<mu<<" "<<sum_A<<" "<<sum_y<<"\n";
+         // }
         }
       }
       A = 1.0 / sum_A;
+      std::cout<<i<<","<<j<<"\t"<<A<<" "<< A*sum_y<<"\n";
       y(i,j) = y_old(i,j) + A * sum_y;
     }
   }
