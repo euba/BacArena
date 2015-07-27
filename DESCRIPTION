@@ -1,6 +1,6 @@
 Package: BacArena
 Title: Agent based modeling framework for microbial communities.
-Version: 0.15
+Version: 0.16
 Authors@R: c( person("Eugen", "Bauer", , "eugen.bauer@uni.lu", role = c("aut", "cre")), 
               person("Johannes", "Zimmermann", , "j.zimmermann@iem.uni-kiel.de", role = c("aut")))
 Description: In silico growth simulation of biological organisms and communities using existing genome-wide metabolic models

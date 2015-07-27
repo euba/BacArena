@@ -1,7 +1,7 @@
 ---
 title: "BacArena - Individual based modeling of metabolisms"
 author: "Eugen Bauer and Johannes Zimmermann"
-date: "2015-06-12"
+date: "2015-07-21"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
@@ -29,6 +29,14 @@ library("BacArena")
 ## Loading required package: Matrix
 ## Loading required package: lattice
 ## Loading required package: RcppArmadillo
+## Loading required package: RcppEigen
+## 
+## Attaching package: 'RcppEigen'
+## 
+## The following objects are masked from 'package:RcppArmadillo':
+## 
+##     fastLm, fastLmPure
+## 
 ## Loading required package: glpkAPI
 ## using GLPK version 4.47
 ```
@@ -85,19 +93,19 @@ eval <- simEnv(arena,20)
 ## iter: 5 Organisms: 16 
 ## iter: 6 Organisms: 16 
 ## iter: 7 Organisms: 32 
-## iter: 8 Organisms: 60 
-## iter: 9 Organisms: 106 
-## iter: 10 Organisms: 111 
-## iter: 11 Organisms: 189 
-## iter: 12 Organisms: 274 
-## iter: 13 Organisms: 362 
-## iter: 14 Organisms: 429 
-## iter: 15 Organisms: 517 
-## iter: 16 Organisms: 653 
-## iter: 17 Organisms: 728 
-## iter: 18 Organisms: 887 
-## iter: 19 Organisms: 1023 
-## iter: 20 Organisms: 1185
+## iter: 8 Organisms: 64 
+## iter: 9 Organisms: 110 
+## iter: 10 Organisms: 118 
+## iter: 11 Organisms: 196 
+## iter: 12 Organisms: 279 
+## iter: 13 Organisms: 363 
+## iter: 14 Organisms: 461 
+## iter: 15 Organisms: 504 
+## iter: 16 Organisms: 660 
+## iter: 17 Organisms: 695 
+## iter: 18 Organisms: 880 
+## iter: 19 Organisms: 1052 
+## iter: 20 Organisms: 1220
 ```
 
 The object eval stores all 20 simulation steps, that we performed. After we retrieve the eval object we can plot now the results of the simulation
@@ -113,7 +121,7 @@ This will plot the growth curve and curves of substance concentration changes ov
 
 
 ```r
-evalArena(eval,sims=20)
+evalArena(eval,time=20)
 ```
 
 ![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png) 
@@ -122,16 +130,16 @@ This will produce multiple plots one by one for each simulation step with the sp
 
 
 ```r
-evalArena(eval,c("population","EX_glc(e)"),sims=20)
+evalArena(eval,c("Population","EX_glc(e)"),time=20)
 ```
 
 ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) 
 
-Here we only plot the last result of the simulation steps given by the parameter sims. At the same time we can also integrate the visualization of different phenotypes into the population 
+Here we only plot the last result of the simulation steps given by the parameter time. At the same time we can also integrate the visualization of different phenotypes into the population 
 
 
 ```r
-evalArena(eval,c("population","EX_glc(e)"),phencol=T,sims=20)
+evalArena(eval,c("Population","EX_glc(e)"),phencol=T,time=20)
 ```
 
 ![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
@@ -160,7 +168,6 @@ Now we want to multiple organisms or organism types in the environment. For this
 
 
 ```r
-ecore <- model
 bac1 <- Bac(ecore,deathrate=0.1,duplirate=1,type="ecoli_wt",
            growthlimit=0.05,growtype="exponential")
 ```
@@ -193,19 +200,19 @@ eval <- simEnv(arena,20)
 ## iter: 5 Organisms: 18 
 ## iter: 6 Organisms: 20 
 ## iter: 7 Organisms: 36 
-## iter: 8 Organisms: 36 
-## iter: 9 Organisms: 68 
-## iter: 10 Organisms: 131 
-## iter: 11 Organisms: 209 
-## iter: 12 Organisms: 215 
-## iter: 13 Organisms: 325 
-## iter: 14 Organisms: 433 
-## iter: 15 Organisms: 452 
-## iter: 16 Organisms: 620 
-## iter: 17 Organisms: 766 
-## iter: 18 Organisms: 908 
-## iter: 19 Organisms: 925 
-## iter: 20 Organisms: 1141
+## iter: 8 Organisms: 68 
+## iter: 9 Organisms: 128 
+## iter: 10 Organisms: 128 
+## iter: 11 Organisms: 232 
+## iter: 12 Organisms: 340 
+## iter: 13 Organisms: 455 
+## iter: 14 Organisms: 589 
+## iter: 15 Organisms: 595 
+## iter: 16 Organisms: 788 
+## iter: 17 Organisms: 804 
+## iter: 18 Organisms: 1030 
+## iter: 19 Organisms: 1214 
+## iter: 20 Organisms: 1392
 ```
 
 Here we put the both organism types we created next to each other (given by their x position) in the environment and then started the simulation for 20 time steps. Next we perform again all evaluation steps
@@ -221,8 +228,8 @@ And the spatial pattern of the community with the substances glucose, acetate an
 
 
 ```r
-evalArena(eval,c("population","EX_glc(e)","EX_ac(e)","EX_o2(e)"),
-          sims=20)
+evalArena(eval,c("Population","EX_glc(e)","EX_ac(e)","EX_o2(e)"),
+          time=20)
 ```
 
 ![plot of chunk unnamed-chunk-18](figure/unnamed-chunk-18-1.png) 
@@ -241,13 +248,24 @@ print(getPhenoMat(eval))
 ```
 
 ```
-##           EX_ac(e) EX_akg(e) EX_co2(e) EX_etoh(e) EX_for(e) EX_fum(e)
-## ecoli_wt         0         0         1          0         0         0
-## ecoli_aux        1         0         2          1         1         0
-##           EX_glc(e) EX_h2o(e) EX_h(e) EX_lac_D(e) EX_o2(e) EX_pi(e)
-## ecoli_wt          2         1       1           0        2        2
-## ecoli_aux         2         2       1           0        0        2
+##           EX_ac(e) EX_acald(e) EX_akg(e) EX_co2(e) EX_etoh(e) EX_for(e)
+## ecoli_wt         0           0         0         1          0         0
+## ecoli_wt         1           0         0         2          1         1
+## ecoli_wt         1           0         0         2          1         1
+## ecoli_aux        1           0         0         2          1         1
+##           EX_fru(e) EX_fum(e) EX_glc(e) EX_gln_L(e) EX_glu_L(e) EX_h(e)
+## ecoli_wt          0         0         2           0           0       1
+## ecoli_wt          0         0         2           0           0       1
+## ecoli_wt          0         0         2           0           0       1
+## ecoli_aux         0         0         2           0           0       1
+##           EX_h2o(e) EX_lac_D(e) EX_mal_L(e) EX_nh4(e) EX_o2(e) EX_pi(e)
+## ecoli_wt          1           0           0         2        2        2
+## ecoli_wt          2           0           0         2        2        2
+## ecoli_wt          1           0           0         2        2        2
+## ecoli_aux         2           0           0         2        0        2
 ##           EX_pyr(e) EX_succ(e)
+## ecoli_wt          0          0
+## ecoli_wt          0          0
 ## ecoli_wt          0          0
 ## ecoli_aux         0          0
 ```
