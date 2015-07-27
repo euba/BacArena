@@ -43,6 +43,16 @@ corr2 <- getCorrM(sim, reactions=F)
 corrplot(corr2)
 corrplot(corr2, order = "hclust")
 corrplot(corr2, method = "square", order = "hclust", type="upper")
+corrplot(corr2, method = "number",tl.cex=0.1)
+
+cex.before <- par("cex")
+par(cex = 0.5)
+corrplot.mixed(corr2, insig = "blank", method = "color",
+         addCoef.col="grey", 
+         order = "AOE", tl.cex = 1/par("cex"),
+         cl.cex = 1/par("cex"), addCoefasPercent = TRUE)
+corrplot.mixed(corr2, tl.cex=0.5/par("cex"), cl.cex = 1/par("cex"))
+par(cex = cex.before)
 
 
 #library(caret) # very big! just for findCorrelation??
