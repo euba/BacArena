@@ -18,6 +18,7 @@
 #' @slot duplirate A numeric value giving the growth cut off at which the organism is duplicated.
 #' @slot growthlimit A numeric value giving the growth limit at which the organism dies.
 #' @slot growtype A character vector giving the functional type for growth (linear or exponential).
+#' @slot kinetics A List containing Km and v_max values for each reactions.
 #' @slot speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
 setClass("Organism",
          representation(
@@ -33,6 +34,7 @@ setClass("Organism",
            duplirate="numeric",
            growthlimit="numeric",
            growtype="character",
+           kinetics="list",
            speed="integer"
          )
 )
@@ -42,7 +44,7 @@ setClass("Organism",
 ########################################################################################################
 
 Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_comp=NA, deathrate, duplirate, growthlimit,
-                     growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", speed=2, ...){ #the constructor requires the model, after that it is not stored anymore
+                     growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", kinetics=list(), speed=2, ...){ #the constructor requires the model, after that it is not stored anymore
   rxname = react_id(model)
   lpobject <- sysBiolAlg(model, algorithm=algo)
   fbasol <- optimizeProb(lpobject)
@@ -75,9 +77,13 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_c
     names(biomets) <- extrans[names(biomets)]
     feat[["biomass"]] <- biomets
   }
+  kinetics <- lapply(medc, function(name){
+    list()
+  })
+  names(kinetics) <- medc
   new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
       fbasol=fbasol, lyse=lyse, feat=feat, deathrate=deathrate, duplirate=duplirate,
-      growthlimit=growthlimit, growtype=growtype, speed=as.integer(speed), ...)
+      growthlimit=growthlimit, growtype=growtype, kinetics=kinetics, speed=as.integer(speed), ...)
 }
 
 ########################################################################################################
@@ -108,6 +114,8 @@ setGeneric("growthlimit", function(object){standardGeneric("growthlimit")})
 setMethod("growthlimit", "Organism", function(object){return(object@growthlimit)})
 setGeneric("growtype", function(object){standardGeneric("growtype")})
 setMethod("growtype", "Organism", function(object){return(object@feat)})
+setGeneric("kinetics", function(object){standardGeneric("kinetics")})
+setMethod("kinetics", "Organism", function(object){return(object@kinetics)})
 setGeneric("speed", function(object){standardGeneric("speed")})
 setMethod("speed", "Organism", function(object){return(object@speed)})
 
@@ -140,6 +148,22 @@ setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time)
   lobnd[reacts] <- ifelse(lb<=lobnd[reacts], lobnd[reacts], lb) #check if lower bounds in biological relevant range
   return(lobnd)
 })
+
+
+setGeneric("setKinetics", function(object, exchangeR, Km, vmax){standardGeneric("setKinetics")})
+setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
+  if( !(exchangeR %in% names(object@kinetics)) ){
+    stop("Incorrect exchange reaction setup for kinetics")
+  }
+  kinetics <- object@kinetics
+  if(length(kinetics[exchangeR]) == 0){
+    warning("Kinetics for this exchange reaction already set, set to new values")
+    kinetics[[exchangeR]] <- list()
+  }
+  kinetics[[exchangeR]] <- c(kinetics[[exchangeR]], "Km"=Km, "vmax"=vmax)
+  eval.parent(substitute(object@kinetics <- kinetics))
+})
+
 
 #' @title Function for computing the linear programming according to the model structure 
 #'
