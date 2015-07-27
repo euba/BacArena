@@ -965,7 +965,7 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 
 
 setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), num=10){standardGeneric("plotCurves2")})
-setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)", num=10)){
+setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), num=10){
   if(num>length(object@mediac) || num<1) stop("Number of substances invalid")
   # first get the correct (ie. complete) medlist
   prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
