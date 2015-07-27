@@ -1,3 +1,34 @@
+#color dictionary of 269 maximally distinct colors from all previous colors 
+colpal1 <- c("#000000","#FFFF00","#1CE6FF","#FF34FF","#FF4A46","#008941","#006FA6","#A30059","#FFDBE5","#7A4900","#0000A6","#63FFAC","#B79762","#004D43","#8FB0FF","#997D87","#5A0007","#809693","#FEFFE6","#1B4400","#4FC601","#3B5DFF","#4A3B53","#FF2F80","#61615A","#BA0900","#6B7900","#00C2A0","#FFAA92","#FF90C9","#B903AA","#D16100","#DDEFFF","#000035","#7B4F4B","#A1C299","#300018","#0AA6D8","#013349","#00846F","#372101","#FFB500","#C2FFED","#A079BF","#CC0744","#C0B9B2","#C2FF99","#001E09","#00489C","#6F0062","#0CBD66","#EEC3FF","#456D75","#B77B68","#7A87A1","#788D66","#885578","#FAD09F","#FF8A9A","#D157A0","#BEC459","#456648","#0086ED","#886F4C","#34362D","#B4A8BD","#00A6AA","#452C2C","#636375","#A3C8C9","#FF913F","#938A81","#575329","#00FECF","#B05B6F","#8CD0FF","#3B9700","#04F757","#C8A1A1","#1E6E00","#7900D7","#A77500","#6367A9","#A05837","#6B002C","#772600","#D790FF","#9B9700","#549E79","#FFF69F","#201625","#72418F","#BC23FF","#99ADC0","#3A2465","#922329","#5B4534","#FDE8DC","#404E55","#0089A3","#CB7E98","#A4E804","#324E72","#6A3A4C","#83AB58","#001C1E","#D1F7CE","#004B28","#C8D0F6","#A3A489","#806C66","#222800","#BF5650","#E83000","#66796D","#DA007C","#FF1A59","#8ADBB4","#1E0200","#5B4E51","#C895C5","#320033","#FF6832","#66E1D3","#CFCDAC","#D0AC94","#7ED379","#012C58","#7A7BFF","#D68E01","#353339","#78AFA1","#FEB2C6","#75797C","#837393","#943A4D","#B5F4FF","#D2DCD5","#9556BD","#6A714A","#001325","#02525F","#0AA3F7","#E98176","#DBD5DD","#5EBCD1","#3D4F44","#7E6405","#02684E","#962B75","#8D8546","#9695C5","#E773CE","#D86A78","#3E89BE","#CA834E","#518A87","#5B113C","#55813B","#E704C4","#00005F","#A97399","#4B8160","#59738A","#FF5DA7","#F7C9BF","#643127","#513A01","#6B94AA","#51A058","#A45B02","#1D1702","#E20027","#E7AB63","#4C6001","#9C6966","#64547B","#97979E","#006A66","#391406","#F4D749","#0045D2","#006C31","#DDB6D0","#7C6571","#9FB2A4","#00D891","#15A08A","#BC65E9","#FFFFFE","#C6DC99","#203B3C","#671190","#6B3A64","#F5E1FF","#FFA0F2","#CCAA35","#374527","#8BB400","#797868","#C6005A","#3B000A","#C86240","#29607C","#402334","#7D5A44","#CCB87C","#B88183","#AA5199","#B5D6C3","#A38469","#9F94F0","#A74571","#B894A6","#71BB8C","#00B433","#789EC9","#6D80BA","#953F00","#5EFF03","#E4FFFC","#1BE177","#BCB1E5","#76912F","#003109","#0060CD","#D20096","#895563","#29201D","#5B3213","#A76F42","#89412E","#1A3A2A","#494B5A","#A88C85","#F4ABAA","#A3F3AB","#00C6C8","#EA8B66","#958A9F","#BDC9D2","#9FA064","#BE4700","#658188","#83A485","#453C23","#47675D","#3A3F00","#061203","#DFFB71","#868E7E","#98D058","#6C8F7D","#D7BFC2","#3C3E6E","#D83D66","#2F5D9B","#6C5E46","#D25B88","#5B656C","#00B57F","#545C46","#866097","#365D25","#252F99","#00CCFF","#674E60","#FC009C","#92896B")
+
+# 20 optimally distinct colors
+colpal2 <- c("#C48736", "#CE54D1", "#96CED5", "#76D73C", "#403552", "#D4477D", "#5A7E36", "#D19EC4", "#CBC594", "#722A2D", "#D0CD47", "#CF4A31", "#7B6FD0", "#597873", "#6CD3A7", "#484125", "#C17E73", "#688EC1",  "#844081", "#7DD06F")
+
+# K. Kelly (1965): Twenty-two colors of maximum contrast. // Color Eng., 3(6)
+colpal3 = c(
+  "#FFB300", # Vivid Yellow
+  "#803E75", # Strong Purple
+  "#FF6800", # Vivid Orange
+  "#A6BDD7", # Very Light Blue
+  "#C10020", # Vivid Red
+  "#CEA262", # Grayish Yellow
+  "#817066", # Medium Gray
+  "#007D34", # Vivid Green
+  "#F6768E", # Strong Purplish Pink
+  "#00538A", # Strong Blue
+  "#FF7A5C", # Strong Yellowish Pink
+  "#53377A", # Strong Violet
+  "#FF8E00", # Vivid Orange Yellow
+  "#B32851", # Strong Purplish Red
+  "#F4C800", # Vivid Greenish Yellow
+  "#7F180D", # Strong Reddish Brown
+  "#93AA00", # Vivid Yellowish Green
+  "#593315", # Deep Yellowish Brown
+  "#F13A13", # Vivid Reddish Orange
+  "#232C16" # Dark Olive Green
+)
+
+
 ########################################################################################################
 ###################################### Arena CLASS ################################################
 ########################################################################################################
@@ -14,6 +45,7 @@
 #' @slot occmat A sparse matrix showing which cells in the environment are occupied by individuals.
 #' @slot tstep A number giving the time (in h) per iteration.
 #' @slot stir A boolean variable indicating if environment should be stirred.
+#' @slot mflux A vector containing highly used metabolic reactions within the arena
 #' @slot n A number giving the horizontal size of the environment.
 #' @slot m A number giving the vertical size of the environment.
 setClass("Arena",
@@ -26,6 +58,7 @@ setClass("Arena",
            occmat="Matrix",
            tstep="numeric",
            stir="logical",
+           mflux="list",
            n="integer",
            m="integer"
         )
@@ -36,9 +69,9 @@ setClass("Arena",
 ########################################################################################################
 
 Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
-                  specs=list(),media=list(),mediac=character(),phenotypes=list(),occmat=Matrix(0L,nrow=n,ncol=m,sparse=T),stir=F){
+                  specs=list(),media=list(),mediac=character(),phenotypes=list(),occmat=Matrix(0L,nrow=n,ncol=m,sparse=T),stir=F,mflux=list()){
   new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs,
-      media=media, mediac=mediac, phenotypes=phenotypes, occmat=occmat, stir=stir)
+      media=media, mediac=mediac, phenotypes=phenotypes, occmat=occmat, stir=stir, mflux=mflux)
 }
 
 ########################################################################################################
@@ -61,6 +94,8 @@ setGeneric("tstep", function(object){standardGeneric("tstep")})
 setMethod("tstep", "Arena", function(object){return(object@tstep)})
 setGeneric("stir", function(object){standardGeneric("stir")})
 setMethod("stir", "Arena", function(object){return(object@stir)})
+setGeneric("mflux", function(object){standardGeneric("mflux")})
+setMethod("mflux", "Arena", function(object){return(object@mflux)})
 setGeneric("n", function(object){standardGeneric("n")})
 setMethod("n", "Arena", function(object){return(object@n)})
 setGeneric("m", function(object){standardGeneric("m")})
@@ -104,6 +139,11 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   newphens <- object@phenotypes[[spectype]]
   newspecs[[spectype]] <- specI
   type <- which(names(newspecs)==spectype)
+  newmflux <- object@mflux
+  
+  # mflux
+  newmflux[[spectype]] <- numeric(length(specI@lbnd))
+  names(newmflux[[spectype]]) <- names(specI@lbnd)
   
   if(length(newphens)!=0){
     ptype <- as.integer(checkPhen(object, specI))
@@ -153,6 +193,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   eval.parent(substitute(object@specs <- newspecs))
   eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
   eval.parent(substitute(object@mediac <- union(object@mediac, specI@medium)))
+  eval.parent(substitute(object@mflux <- newmflux))
 })
 
 
@@ -421,7 +462,8 @@ setMethod("simEnv", "Arena", function(object, time){
   sublb <- getSublb(arena)
   for(i in 1:time){
     cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
-    for(j in 1:nrow(arena@orgdat)){
+    arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
+    for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
       org <- arena@specs[[arena@orgdat[j,'type']]]
       switch(class(org),
              "Bac"= {arena = simBac(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
@@ -603,6 +645,7 @@ setClass("Eval",
          representation(
            medlist="list",
            simlist="list",
+           mfluxlist="list",
            subchange="numeric"
          )
 )
@@ -615,7 +658,7 @@ Eval <- function(arena){
   subc = rep(0, length(arena@mediac))
   names(subc) <- arena@mediac
   new("Eval", n=arena@n, m=arena@m, tstep=arena@tstep, specs=arena@specs, mediac=arena@mediac, occmat=Matrix(), subchange=subc,
-      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir)
+      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir, mfluxlist=list())
 }
 
 ########################################################################################################
@@ -626,6 +669,8 @@ setGeneric("medlist", function(object){standardGeneric("medlist")})
 setMethod("medlist", "Eval", function(object){return(object@medlist)})
 setGeneric("simlist", function(object){standardGeneric("simlist")})
 setMethod("simlist", "Eval", function(object){return(object@simlist)})
+setGeneric("mfluxlist", function(object){standardGeneric("mfluxlist")})
+setMethod("mfluxlist", "Eval", function(object){return(object@mfluxlist)})
 setGeneric("subchange", function(object){standardGeneric("subchange")})
 setMethod("subchange", "Eval", function(object){return(object@subchange)})
 
@@ -677,6 +722,7 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
     }
     eval.parent(substitute(object@simlist[[length(object@simlist)+1]] <- arena@orgdat))
     eval.parent(substitute(object@phenotypes <- arena@phenotypes))
+    eval.parent(substitute(object@mfluxlist[[length(object@mfluxlist)+1]] <- arena@mflux))
   }else{
     eval.parent(substitute(object@medlist[[length(object@medlist)]] <- lapply(arena@media, function(x){
       return(as.vector(x@diffmat))
@@ -785,8 +831,8 @@ setMethod("extractMed", "Eval", function(object, time=length(object@medlist)){
 #' library(animation)
 #' saveVideo({evalArena(eval)},video.name="Ecoli_sim.mp4")
 #' }
-setGeneric("evalArena", function(object, plot_items='population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){standardGeneric("evalArena")})
-setMethod("evalArena", "Eval", function(object, plot_items='population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){ #index in R start at 1, but the first state is 0
+setGeneric("evalArena", function(object, plot_items='Population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){standardGeneric("evalArena")})
+setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){ #index in R start at 1, but the first state is 0
   time = time+1
   old.par <- par(no.readonly = TRUE)
   if(retdata){
@@ -804,7 +850,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
       if(length(inds)!=0){
         for(j in 1:length(inds)){
           if(retdata){
-            retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
+            retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
           }
           image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
                 zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
@@ -814,7 +860,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
       par(mfrow=c(2,ceiling(length(plot_items)/2)))
       for(j in 1:length(inds)){
         if(retdata){
-          retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
+          retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
         }
         image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
               zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
@@ -823,15 +869,15 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
       par(mfrow=c(3,ceiling(length(plot_items)/3)))
       for(j in 1:length(inds)){
         if(retdata){
-          retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
+          retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
         }
         image(matrix(meds[[inds[j]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
               zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
       }
     }
-    if(plot_items[1]=='population'){
+    if(plot_items[1]=='Population'){
       if(retdata){
-        retlist[['population']][[j]] = object@simlist[[i]]
+        retlist[['Population']][[paste0("time",(i-1))]] = object@simlist[[i]]
       }
       if(phencol){
         plot(object@simlist[[i]][,c('x','y')],xlim=c(0,object@n),ylim=c(0,object@m),xlab='',ylab='',
@@ -917,6 +963,53 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
   }
 })
 
+
+setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), num=10){standardGeneric("plotCurves2")})
+setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)", num=10)){
+  if(num>length(object@mediac) || num<1) stop("Number of substances invalid")
+  # first get the correct (ie. complete) medlist
+  prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
+  list <- lapply(prelist, function(x){lapply(x, sum)})
+  mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
+  #remove substances that should be ignored
+  ignore_subs <- which(object@mediac %in% ignore)
+  mat <- mat[-ignore_subs,]
+  mediac <- object@mediac[-ignore_subs]
+  rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
+  mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
+  mat_nice <- tail(mat[order(mat_var),], num)
+  
+  if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
+  matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
+          xlab='time in h', ylab='amount of substance in mmol',
+          main='Strongly changing substances')
+  legend(legendpos, rownames(mat_nice), col=cols, cex=0.7, fill=cols)
+})
+
+
+#' @title Function for plotting the overall change in reaction activity
+#'
+#' @description The generic function \code{plotTotFlux} plots the time course of reactions with high variation in activity for an \code{Eval} object.
+#'
+#' @param object An object of class Eval.
+setGeneric("plotTotFlux", function(object, legendpos="topright", num=20){standardGeneric("plotTotFlux")})
+setMethod("plotTotFlux", "Eval", function(object, legendpos="topright", num=20){
+  if(num<1) stop("Number of reactions invalid")
+  list <- lapply(object@mfluxlist, function(x){
+    unlist(x)
+  })
+  mat  <- do.call(cbind, list)
+  mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
+  mat_nice <- tail(mat[order(mat_var),], num)
+  
+  if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
+  matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=3,
+          xlab='time in h', ylab='reaction activity in mmol/(h * g_DW)',
+          main='Highly active reactions')
+  legend(legendpos, rownames(mat_nice), col=cols, cex=0.6, fill=cols)
+})
+
+
 #' @title Function for getting a matrix of phenotypes from the dataset
 #'
 #' @description The generic function \code{getPhenoMat} reconstructs a matrix with the usage of exchange reactions of the different organisms in the environment.
@@ -967,6 +1060,9 @@ setMethod("getPhenoMat", "Eval", function(object, time="total"){
     for(i in levels(as.factor(typestep))){
       tphen = object@phenotypes[[as.numeric(i)]]
       phens[[typenam[as.numeric(i)]]] = tphen[as.numeric(levels(as.factor(phenstep[which(typestep==as.numeric(i))])))]
+      if(length(phens[[typenam[as.numeric(i)]]])==0){ #will this cause a problem?
+        phens = phens[-as.numeric(i)]
+      }
     }
     
     numphens <- unlist(lapply(phens,function(x){return(length(x))}))
@@ -1077,7 +1173,6 @@ setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
   rownames(pabund) = paste(type,'phen',rownames(pabund),sep='_')
   rownames(pabund)[which(rownames(pabund)==paste(type,'phen_0',sep='_'))] = 'inactive'
   colnames(pabund) = 'individuals'
-  
   pmat = getPhenoMat(object, time)
   pmatsp = pmat[which(rownames(pmat) == type),]
   if(is.vector(pmatsp)){
@@ -1092,19 +1187,17 @@ setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
       pmatsp = pmatsp[,-which(apply(pmatsp,2,sum)==0)]
     }
   }
-  #rownames(pmatsp) = paste(type,'phen',1:nrow(pmatsp),sep='_')
-  #pmatsp = as.data.frame(pmatsp)
-  pmatsp = data.frame(row)
-  
-  
-  if(length(grep('inactive',rownames(pabund)))){
+  if(length(grep('inactive',rownames(pabund)))!=0){
+    rownames(pmatsp) = rownames(pabund)[-which(rownames(pabund)=="inactive")]
+    pmatsp = as.data.frame(pmatsp)
     pmatsp['inactive',]=rep(0,ncol(pmatsp))
   }else{
-    
+    rownames(pmatsp) = rownames(pabund)
+    pmatsp = as.data.frame(pmatsp)
   }
   pmatsp[,'individuals']=rep(NA,nrow(pmatsp))
   pmatsp[rownames(pabund),'individuals'] = pabund[,'individuals']
-  
+  pmatsp
   return(as.matrix(pmatsp))
 })
 
@@ -1112,4 +1205,53 @@ setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
 
 setMethod(show, signature(object="Eval"), function(object){
   print(paste('Evaluation results of ',length(object@medlist)-1,' simulation steps.',sep=''))
+})
+
+
+setGeneric("getCorrM", function(object, reactions=TRUE, bacs=TRUE, substrates=TRUE){standardGeneric("getCorrM")})
+setMethod("getCorrM", "Eval", function(object, reactions=TRUE, bacs=TRUE, substrates=TRUE){
+  mat <- matrix(0,0,length(object@medlist))
+  if(substrates){
+    prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
+    list <- lapply(prelist, function(x){lapply(x, sum)})
+    mat_sub <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
+    rownames(mat_sub) <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
+    mat <- rbind(mat, mat_sub)
+  }
+  
+  if(reactions){
+    list <- lapply(object@mfluxlist, function(x){
+      unlist(x)
+    })
+    mat_rea  <- do.call(cbind, list)
+    mat <- rbind(mat, mat_rea)
+  }
+  
+  if(bacs){
+    list <- lapply(object@simlist, function(x){
+      occ <- table(x$type)
+      unlist(lapply(seq_along(object@specs), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
+    })
+    mat_bac  <- do.call(cbind, list)
+    rownames(mat_bac) <- names(object@specs)
+    mat <- rbind(mat, mat_bac)
+  }
+  
+  corr <- cor(t(mat))
+  corr[is.na(corr)] <- 0
+  return(corr)
+})
+  
+
+setGeneric("checkCorr", function(object, corr=NULL, tocheck=list()){standardGeneric("checkCorr")})
+setMethod("checkCorr", "Eval", function(object, corr=NULL, tocheck=list()){
+  if(is.null(corr)) corr <- getCorrM(object)
+
+  lapply(tocheck, function(feature){
+    dat <- corr[feature,]
+    dat <- dat[-which(names(dat)==feature)]
+    dat <- dat[order(dat)]
+    dat_interest <- c(head(dat), tail(dat))
+    barplot(names.arg=names(dat_interest), height=dat_interest, las=2, main=paste("Highest correlations of", feature))
+  })
 })
