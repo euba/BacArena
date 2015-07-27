@@ -17,8 +17,7 @@ data(Ec_core)
 bac <- Bac(model=Ec_core, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growtype="exponential",
            speed=1, type="ecore")
 
-setKinetics(bac, exchangeR="EX_glu_L(e)", Km=2, vmax=5)
-
+setKinetics(bac, exchangeR="EX_glc(e)", Km=5, vmax=10)
 
 arena = Arena(n=10, m=10, stir=F)
 addOrg(arena, bac, amount=1)
@@ -26,4 +25,4 @@ addOrg(arena, bac, amount=1)
 addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)", "EX_h2o(e)", "EX_h2o(e)", "EX_h(e)", "EX_nh4(e)"), difunc="cpp", difspeed=1)
 res <- simEnv(arena, time=50)
 
-
+plotCurves2(res)

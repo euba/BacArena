@@ -77,13 +77,9 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_c
     names(biomets) <- extrans[names(biomets)]
     feat[["biomass"]] <- biomets
   }
-  kinetics <- lapply(medc, function(name){
-    list()
-  })
-  names(kinetics) <- medc
   new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
       fbasol=fbasol, lyse=lyse, feat=feat, deathrate=deathrate, duplirate=duplirate,
-      growthlimit=growthlimit, growtype=growtype, kinetics=kinetics, speed=as.integer(speed), ...)
+      growthlimit=growthlimit, growtype=growtype, kinetics=list(), speed=as.integer(speed), ...)
 }
 
 ########################################################################################################
@@ -129,7 +125,7 @@ setMethod("speed", "Organism", function(object){return(object@speed)})
 #'
 #' @param object An object of class Organisms.
 #' @param reacts A character vector giving the names of reactions which should be constrained.
-#' @param lb A numeric vector giving the constraint values of lower bounds.
+#' @param lb A numeric vector giving the constraint values of lower bounds (e.g. avaible metabolite concentrations
 #' @param dryweight A number giving the current dryweight of the organism.
 #' @param time A number giving the time intervals for each simulation step.
 #' @return Returns the lower bounds, which carry the constraints and names of relevant reactions.
@@ -146,22 +142,29 @@ setGeneric("constrain", function(object, reacts, lb, dryweight, time){standardGe
 setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time){
   lobnd <- object@lbnd*dryweight*time #costrain according to flux definition: mmol/(gDW*hr)
   lobnd[reacts] <- ifelse(lb<=lobnd[reacts], lobnd[reacts], lb) #check if lower bounds in biological relevant range
+  lobnd[names(object@kinetics)] <- sapply(names(object@kinetics), function(name){
+    Km  <- object@kinetics[[name]][["Km"]]
+    vmax<- object@kinetics[[name]][["vmax"]]
+    s   <- -lb[[name]] # change sign to get concentrations
+    cat("s",s)
+    -vmax*s/(Km + s)
+  })
   return(lobnd)
 })
 
 
 setGeneric("setKinetics", function(object, exchangeR, Km, vmax){standardGeneric("setKinetics")})
 setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
-  if( !(exchangeR %in% names(object@kinetics)) ){
+  if( !(exchangeR %in% names(object@lbnd)) ){
     stop("Incorrect exchange reaction setup for kinetics")
   }
-  kinetics <- object@kinetics
-  if(length(kinetics[exchangeR]) == 0){
-    warning("Kinetics for this exchange reaction already set, set to new values")
-    kinetics[[exchangeR]] <- list()
+  nKinetics <- object@kinetics
+  if(exchangeR %in% names(nKinetics)){
+    warning("Kinetics for this exchange reaction already given, set to new value")
+    nKinetics[[exchangeR]] <- list()
   }
-  kinetics[[exchangeR]] <- c(kinetics[[exchangeR]], "Km"=Km, "vmax"=vmax)
-  eval.parent(substitute(object@kinetics <- kinetics))
+  nKinetics[[exchangeR]] <- c(nKinetics[[exchangeR]], "Km"=Km, "vmax"=vmax)
+  eval.parent(substitute(object@kinetics <- nKinetics))
 })
 
 
