@@ -60,7 +60,8 @@ setClass("Arena",
            stir="logical",
            mflux="list",
            n="integer",
-           m="integer"
+           m="integer",
+           seed="numeric"
         )
 )
 
@@ -69,9 +70,12 @@ setClass("Arena",
 ########################################################################################################
 
 Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
-                  specs=list(),media=list(),mediac=character(),phenotypes=list(),occmat=Matrix(0L,nrow=n,ncol=m,sparse=T),stir=F,mflux=list()){
+                  specs=list(),media=list(),mediac=character(),phenotypes=list(),occmat=Matrix(0L,nrow=n,ncol=m,sparse=T),stir=F,mflux=list(), seed=numeric(0)){
+  #seed <- ifelse(length(seed)==0, sample(1:.Machine$integer.max,1), seed) # lame ...
+  seed <- ifelse(length(seed)==0, sample(1:10000,1), seed)
+  set.seed(seed)
   new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs,
-      media=media, mediac=mediac, phenotypes=phenotypes, occmat=occmat, stir=stir, mflux=mflux)
+      media=media, mediac=mediac, phenotypes=phenotypes, occmat=occmat, stir=stir, mflux=mflux, seed=seed)
 }
 
 ########################################################################################################
@@ -100,6 +104,9 @@ setGeneric("n", function(object){standardGeneric("n")})
 setMethod("n", "Arena", function(object){return(object@n)})
 setGeneric("m", function(object){standardGeneric("m")})
 setMethod("m", "Arena", function(object){return(object@m)})
+setGeneric("seed", function(object){standardGeneric("seed")})
+setMethod("seed", "Arena", function(object){return(object@seed)})
+
 
 ########################################################################################################
 ###################################### METHODS #########################################################
