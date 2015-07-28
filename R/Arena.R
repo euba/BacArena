@@ -254,7 +254,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   if(sum(mediac %in% object@mediac)==length(mediac)){
     newmedia <- list()
     sapply(object@mediac, function(x, n, m){
-      newmedia[[x]] <<- Substance(n, m, 0, name=x)
+      newmedia[[x]] <<- Substance(n, m, 0, name=x, difunc=difunc)
     }, n=object@n, m=object@m)
     if(length(smax) == 1){
       smax = rep(smax,length(mediac))
