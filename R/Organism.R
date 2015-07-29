@@ -141,14 +141,14 @@ setMethod("speed", "Organism", function(object){return(object@speed)})
 setGeneric("constrain", function(object, reacts, lb, dryweight, time){standardGeneric("constrain")})
 setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time){
   lobnd <- object@lbnd*dryweight*time #costrain according to flux definition: mmol/(gDW*hr)
-  lobnd[reacts] <- ifelse(lb<=lobnd[reacts], lobnd[reacts], lb) #check if lower bounds in biological relevant range
-  lobnd[names(object@kinetics)] <- sapply(names(object@kinetics), function(name){
+  lobnd[reacts] <- ifelse(lb<=lobnd[reacts], ifelse(lobnd[reacts]==0, lb, lobnd[reacts]), lb) #check if lower bounds in biological relevant range
+  lobnd[names(object@kinetics)] <- unlist(lapply(names(object@kinetics), function(name){
     Km  <- object@kinetics[[name]][["Km"]]
     vmax<- object@kinetics[[name]][["vmax"]]
     s   <- -lb[[name]] # change sign to get concentrations
     cat("s",s)
     -vmax*s/(Km + s)
-  })
+  }))
   return(lobnd)
 })
 
