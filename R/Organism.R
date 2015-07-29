@@ -146,7 +146,6 @@ setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time)
     Km  <- object@kinetics[[name]][["Km"]]
     vmax<- object@kinetics[[name]][["vmax"]]
     s   <- -lb[[name]] # change sign to get concentrations
-    cat("s",s)
     -vmax*s/(Km + s)
   }))
   return(lobnd)
