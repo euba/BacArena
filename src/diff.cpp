@@ -40,7 +40,7 @@ void diffuseGrajdeanuCpp(Rcpp::NumericMatrix y, double mu, bool donut){
         }
       }
       A = 1.0 / sum_A;
-      std::cout<<i<<","<<j<<"\t"<<A<<" "<< A*sum_y<<"\n";
+      //std::cout<<i<<","<<j<<"\t"<<A<<" "<< A*sum_y<<"\n";
       y(i,j) = y_old(i,j) + A * sum_y;
     }
   }
@@ -97,3 +97,36 @@ void diffuseNaiveCpp(Rcpp::NumericMatrix y, bool donut){
      y(min_i, min_j) = mean;
   }
 }
+
+// [[Rcpp::export]]
+void diffuseSteveCpp(Rcpp::NumericMatrix y, bool donut, double D, double h, double tstep){
+  //pde is solved numerical by stencil method (Differenzenstern)
+  int n = y.ncol();
+  int m = y.nrow();
+  //double D     = 1.0; // diff const
+  //double h     = 1.0; //step size on grid
+  //double tspet = 0.1; //mustn't be too large
+  Rcpp::NumericMatrix y_old = Rcpp::clone(y);
+  
+  for(int i=0; i<n; i++){
+    for(int j=0; j<m; j++){
+      double c = 0.0;
+      //not at the edge
+      if(i%(n-1)!=0 && j%(m-1)!=0)  c=y_old(i,j+1) + y_old(i,j-1) + y_old(i-1,j) + y_old(i+1,j);
+      //edges
+      else if(i%(n-1)!=0 && j==0)   c=y_old(i,j+1) + y_old(i,m-1) + y_old(i-1,j) + y_old(i+1,j);
+      else if(i%(n-1)!=0 && j==m-1) c=y_old(i,0) + y_old(i,j-1) + y_old(i-1,j) + y_old(i+1,j);
+      else if(i==0 && j%(m-1)!=0)   c=y_old(i,j+1) + y_old(i,j-1) + y_old(n-1,j) + y_old(i+1,j);
+      else if(i==n-1 && j%(m-1)!=0) c=y_old(i,j+1) + y_old(i,j-1) + y_old(i-1,j) + y_old(0,j);
+      //corner
+      else if(i==0   && j==0)       c=y_old(0,m-1) + y_old(n-1,0) + y_old(1,0) + y_old(0,1);
+      else if(i==n-1 && j==0)       c=y_old(0,0) + y_old(n-1,m-1) + y_old(n-2,0) + y_old(n-1,1);
+      else if(i==0   && j==m-1)     c=y_old(0,0) + y_old(n-1,m-1) + y_old(0,m-2) + y_old(1,m-1);
+      else if(i==n-1 && j==m-1)     c=y_old(n-1,0) + y_old(0,m-1) + y_old(n-1,m-2) + y_old(n-2,m-1);
+      
+      double u = D/(h*h) * (c - 4 * y_old(i,j));
+      y(i,j) = y_old(i,j) + u * tstep;
+    }
+  }
+}
+
