@@ -799,10 +799,12 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
           }
           image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
                 zlim=c(0,max(unlist(lapply(evalsim@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
+          title(main=paste("step",i), outer=TRUE)
         }
       }
     }else if(length(plot_items)<=6){
       par(mfrow=c(2,ceiling(length(plot_items)/2)))
+      title(main=paste("step",i), outer=TRUE)
       for(j in 1:length(inds)){
         if(retdata){
           retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
@@ -812,6 +814,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
       }
     }else{
       par(mfrow=c(3,ceiling(length(plot_items)/3)))
+      title(main=paste("step",i), outer=TRUE)
       for(j in 1:length(inds)){
         if(retdata){
           retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
