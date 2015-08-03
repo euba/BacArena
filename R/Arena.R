@@ -829,7 +829,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
           if(retdata){
             retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
           }
-          image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
+          image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=paste(subnam[inds[j]], ": #", i),
                 zlim=c(0,max(unlist(lapply(evalsim@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
         }
       }
@@ -839,7 +839,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
         if(retdata){
           retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
         }
-        image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
+        image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=paste(subnam[inds[j]], ": #", i),
               zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
       }
     }else{
@@ -848,7 +848,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
         if(retdata){
           retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
         }
-        image(matrix(meds[[inds[j]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
+        image(matrix(meds[[inds[j]]],nrow=object@n,ncol=object@m),axes=F,main=paste(subnam[inds[j]], ": #", i),
               zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
       }
     }
@@ -858,16 +858,16 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
       }
       if(phencol){
         plot(object@simlist[[i]][,c('x','y')],xlim=c(0,object@n),ylim=c(0,object@m),xlab='',ylab='',
-             pch=object@simlist[[i]]$type-1,axes=FALSE,cex=1,main='Population', col=object@simlist[[i]]$phenotype+1)
+             pch=object@simlist[[i]]$type-1,axes=FALSE,cex=1,main=paste('Population', ": #", i), col=object@simlist[[i]]$phenotype+1)
       }else{
         plot(object@simlist[[i]][,c('x','y')],xlim=c(0,object@n),ylim=c(0,object@m),xlab='',ylab='',
-             pch=object@simlist[[i]]$type-1,axes=FALSE,cex=1,main='Population', col=object@simlist[[i]]$type)
+             pch=object@simlist[[i]]$type-1,axes=FALSE,cex=1,main=paste('Population', ": #", i), col=object@simlist[[i]]$type)
 
       }
     }
   }
+  #title(main=paste("step",i), outer=TRUE)
   par(old.par)
-  title(sub=paste("step",i))
   if(retdata){
     return(retlist)
   }
