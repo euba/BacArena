@@ -5,8 +5,8 @@ addBacCpp <- function(occmat, orgdat, amount, growth, type, ptype) {
     .Call('BacArena_addBacCpp', PACKAGE = 'BacArena', occmat, orgdat, amount, growth, type, ptype)
 }
 
-diffuseGrajdeanuCpp <- function(y, donut, mu) {
-    invisible(.Call('BacArena_diffuseGrajdeanuCpp', PACKAGE = 'BacArena', y, donut, mu))
+diffuseGrajdeanuCpp <- function(y, mu, donut) {
+    invisible(.Call('BacArena_diffuseGrajdeanuCpp', PACKAGE = 'BacArena', y, mu, donut))
 }
 
 diffuseNaiveCpp <- function(y, donut) {

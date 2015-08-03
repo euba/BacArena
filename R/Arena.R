@@ -1,3 +1,4 @@
+
 ########################################################################################################
 ###################################### Arena CLASS ################################################
 ########################################################################################################
@@ -14,6 +15,7 @@
 #' @slot occmat A sparse matrix showing which cells in the environment are occupied by individuals.
 #' @slot tstep A number giving the time (in h) per iteration.
 #' @slot stir A boolean variable indicating if environment should be stirred.
+#' @slot mflux A vector containing highly used metabolic reactions within the arena
 #' @slot n A number giving the horizontal size of the environment.
 #' @slot m A number giving the vertical size of the environment.
 setClass("Arena",
@@ -26,8 +28,10 @@ setClass("Arena",
            occmat="Matrix",
            tstep="numeric",
            stir="logical",
+           mflux="list",
            n="integer",
-           m="integer"
+           m="integer",
+           seed="numeric"
         )
 )
 
@@ -36,9 +40,12 @@ setClass("Arena",
 ########################################################################################################
 
 Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
-                  specs=list(),media=list(),mediac=character(),phenotypes=list(),occmat=Matrix(0L,nrow=n,ncol=m,sparse=T),stir=F){
+                  specs=list(),media=list(),mediac=character(),phenotypes=list(),occmat=Matrix(0L,nrow=n,ncol=m,sparse=T),stir=F,mflux=list(), seed=numeric(0)){
+  #seed <- ifelse(length(seed)==0, sample(1:.Machine$integer.max,1), seed) # lame ...
+  seed <- ifelse(length(seed)==0, sample(1:10000,1), seed)
+  set.seed(seed)
   new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs,
-      media=media, mediac=mediac, phenotypes=phenotypes, occmat=occmat, stir=stir)
+      media=media, mediac=mediac, phenotypes=phenotypes, occmat=occmat, stir=stir, mflux=mflux, seed=seed)
 }
 
 ########################################################################################################
@@ -61,10 +68,15 @@ setGeneric("tstep", function(object){standardGeneric("tstep")})
 setMethod("tstep", "Arena", function(object){return(object@tstep)})
 setGeneric("stir", function(object){standardGeneric("stir")})
 setMethod("stir", "Arena", function(object){return(object@stir)})
+setGeneric("mflux", function(object){standardGeneric("mflux")})
+setMethod("mflux", "Arena", function(object){return(object@mflux)})
 setGeneric("n", function(object){standardGeneric("n")})
 setMethod("n", "Arena", function(object){return(object@n)})
 setGeneric("m", function(object){standardGeneric("m")})
 setMethod("m", "Arena", function(object){return(object@m)})
+setGeneric("seed", function(object){standardGeneric("seed")})
+setMethod("seed", "Arena", function(object){return(object@seed)})
+
 
 ########################################################################################################
 ###################################### METHODS #########################################################
@@ -104,6 +116,11 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   newphens <- object@phenotypes[[spectype]]
   newspecs[[spectype]] <- specI
   type <- which(names(newspecs)==spectype)
+  newmflux <- object@mflux
+  
+  # mflux
+  newmflux[[spectype]] <- numeric(length(specI@lbnd))
+  names(newmflux[[spectype]]) <- names(specI@lbnd)
   
   if(length(newphens)!=0){
     ptype <- as.integer(checkPhen(object, specI))
@@ -153,37 +170,38 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   eval.parent(substitute(object@specs <- newspecs))
   eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
   eval.parent(substitute(object@mediac <- union(object@mediac, specI@medium)))
+  eval.parent(substitute(object@mflux <- newmflux))
 })
 
 
-setGeneric("addOrg2", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){standardGeneric("addOrg2")})
-setMethod("addOrg2", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){
-  if(amount+sum(object@occmat) > object@n*object@m){
-    stop("More individuals than space on the grid")
-  }
-  spectype <- specI@type
-  newspecs <- object@specs
-  newphens <- object@phenotypes[[spectype]]
-  newspecs[[spectype]] <- specI
-  type <- which(names(newspecs)==spectype)
-  
-  if(length(newphens)!=0){
-    ptype <- as.integer(checkPhen(object, specI))
-    newphens <- object@phenotypes[[spectype]]
-  }else{
-    newphens[[1]] <- getPhenotype(specI)
-    ptype=as.integer(1)
-  }
-  l = addBacCpp(object@occmat, object@orgdat, amount, growth, type, ptype)
-  newoccmat = l[["occmat"]]
-  neworgdat = l[["orgdat"]]
-  
-  eval.parent(substitute(object@occmat <- newoccmat))
-  eval.parent(substitute(object@orgdat <- neworgdat))
-  eval.parent(substitute(object@specs <- newspecs))
-  eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
-  eval.parent(substitute(object@mediac <- union(object@mediac, specI@medium)))
-})
+# setGeneric("addOrg2", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){standardGeneric("addOrg2")})
+# setMethod("addOrg2", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){
+#   if(amount+sum(object@occmat) > object@n*object@m){
+#     stop("More individuals than space on the grid")
+#   }
+#   spectype <- specI@type
+#   newspecs <- object@specs
+#   newphens <- object@phenotypes[[spectype]]
+#   newspecs[[spectype]] <- specI
+#   type <- which(names(newspecs)==spectype)
+#   
+#   if(length(newphens)!=0){
+#     ptype <- as.integer(checkPhen(object, specI))
+#     newphens <- object@phenotypes[[spectype]]
+#   }else{
+#     newphens[[1]] <- getPhenotype(specI)
+#     ptype=as.integer(1)
+#   }
+#   l = addBacCpp(object@occmat, object@orgdat, amount, growth, type, ptype)
+#   newoccmat = l[["occmat"]]
+#   neworgdat = l[["orgdat"]]
+#   
+#   eval.parent(substitute(object@occmat <- newoccmat))
+#   eval.parent(substitute(object@orgdat <- neworgdat))
+#   eval.parent(substitute(object@specs <- newspecs))
+#   eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
+#   eval.parent(substitute(object@mediac <- union(object@mediac, specI@medium)))
+# })
 
 #' @title Add substances to the environment
 #'
@@ -192,7 +210,7 @@ setMethod("addOrg2", "Arena", function(object, specI, amount, x=NULL, y=NULL, gr
 #' @param object An object of class Arena.
 #' @param smax A number indicating the maximum substance concentration per grid cell.
 #' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
-#' @param smax A number indicating the maximum substance concentration per grid cell.
+#' @param smax A numeric vector indicating the maximum substance concentration per grid cell.
 #' @slot difunc A character vector ("pde","cpp" or "r") describing the function for diffusion.
 #' @slot difspeed A number indicating the diffusion speed (given by number of cells per iteration).
 #' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub} can be used to modify the concentrations of specific substances.} 
@@ -207,13 +225,19 @@ setMethod("addOrg2", "Arena", function(object, specI, amount, x=NULL, y=NULL, gr
 #' }
 setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=1){standardGeneric("addSubs")})
 setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=1){
+  if(length(smax) != length(mediac) && length(smax) != 1){
+    stop("The parameter smax should be of the same size of mediac or equal to 1.")
+  }
   if(sum(mediac %in% object@mediac)==length(mediac)){
     newmedia <- list()
     sapply(object@mediac, function(x, n, m){
-      newmedia[[x]] <<- Substance(n, m, 0, name=x)
+      newmedia[[x]] <<- Substance(n, m, 0, name=x, difunc=difunc)
     }, n=object@n, m=object@m)
+    if(length(smax) == 1){
+      smax = rep(smax,length(mediac))
+    }
     for(i in 1:length(mediac)){
-      newmedia[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i], difunc=difunc, difspeed=difspeed)
+      newmedia[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], name=mediac[i], difunc=difunc, difspeed=difspeed)
     }
     eval.parent(substitute(object@media <- newmedia))
   }else stop("Substance can't be produced or taken up by the organisms on the grid")
@@ -410,11 +434,13 @@ setMethod("simEnv", "Arena", function(object, time){
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
-         stop("Please supply an Arena object.")) 
+         stop("Please supply an Arena object."))
+  addEval(evaluation, arena)
   sublb <- getSublb(arena)
   for(i in 1:time){
     cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
-    for(j in 1:nrow(arena@orgdat)){
+    arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
+    for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
       org <- arena@specs[[arena@orgdat[j,'type']]]
       switch(class(org),
              "Bac"= {arena = simBac(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
@@ -596,6 +622,7 @@ setClass("Eval",
          representation(
            medlist="list",
            simlist="list",
+           mfluxlist="list",
            subchange="numeric"
          )
 )
@@ -608,7 +635,7 @@ Eval <- function(arena){
   subc = rep(0, length(arena@mediac))
   names(subc) <- arena@mediac
   new("Eval", n=arena@n, m=arena@m, tstep=arena@tstep, specs=arena@specs, mediac=arena@mediac, occmat=Matrix(), subchange=subc,
-      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir)
+      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir, mfluxlist=list())
 }
 
 ########################################################################################################
@@ -619,6 +646,8 @@ setGeneric("medlist", function(object){standardGeneric("medlist")})
 setMethod("medlist", "Eval", function(object){return(object@medlist)})
 setGeneric("simlist", function(object){standardGeneric("simlist")})
 setMethod("simlist", "Eval", function(object){return(object@simlist)})
+setGeneric("mfluxlist", function(object){standardGeneric("mfluxlist")})
+setMethod("mfluxlist", "Eval", function(object){return(object@mfluxlist)})
 setGeneric("subchange", function(object){standardGeneric("subchange")})
 setMethod("subchange", "Eval", function(object){return(object@subchange)})
 
@@ -670,6 +699,7 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
     }
     eval.parent(substitute(object@simlist[[length(object@simlist)+1]] <- arena@orgdat))
     eval.parent(substitute(object@phenotypes <- arena@phenotypes))
+    eval.parent(substitute(object@mfluxlist[[length(object@mfluxlist)+1]] <- arena@mflux))
   }else{
     eval.parent(substitute(object@medlist[[length(object@medlist)]] <- lapply(arena@media, function(x){
       return(as.vector(x@diffmat))
@@ -699,8 +729,9 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
 #' eval <- simEnv(arena,10)
 #' arena5 <- getArena(eval,5)
 #' }
-setGeneric("getArena", function(object, time=length(object@medlist)){standardGeneric("getArena")})
-setMethod("getArena", "Eval", function(object, time=length(object@medlist)){
+setGeneric("getArena", function(object, time=(length(object@medlist)-1)){standardGeneric("getArena")})
+setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){ #index in R start at 1, but the first state is 0
+  time = time+1 #index in R start at 1, but the first state is 0
   newmedia <- lapply(object@media, function(x, meds, n, m){
     x@diffmat <- Matrix(meds[[x@name]],nrow=n,ncol=m,sparse=T)
     return(x)
@@ -722,7 +753,7 @@ setMethod("getArena", "Eval", function(object, time=length(object@medlist)){
 #' @description The generic function \code{extractMed} re-constructs a list of vectors of medium concentrations from a simulation step in an \code{Eval} object.
 #'
 #' @param object An object of class Eval.
-#' @param ind A number giving the simulation step of interest.
+#' @param time A number giving the simulation step of interest.
 #' @return Returns a list containing concentration vectors of all medium substances.
 #' @details Medium concentrations in slot \code{medlist} of an object of class \code{Eval} store only the changes of concentrations in the simulation process. The function \code{extractMed} reconstructs the original and uncompressed version of medium concentrations.
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
@@ -737,13 +768,13 @@ setMethod("getArena", "Eval", function(object, time=length(object@medlist)){
 #' eval <- simEnv(arena,10)
 #' med5 <- extractMed(eval,5)
 #' }
-setGeneric("extractMed", function(object, ind=length(object@medlist)){standardGeneric("extractMed")})
-setMethod("extractMed", "Eval", function(object, ind=length(object@medlist)){
+setGeneric("extractMed", function(object, time=length(object@medlist)){standardGeneric("extractMed")})
+setMethod("extractMed", "Eval", function(object, time=length(object@medlist)){
   medl <- object@medlist
-  medlind <- medl[[ind]]
+  medlind <- medl[[time]]
   for(i in 1:length(object@mediac)){
-    if(length(medl[[ind]][[i]])==0){
-      j <- ind
+    if(length(medl[[time]][[i]])==0){
+      j <- time
       while(length(medl[[j]][[i]])==0){j <- j-1}
       medlind[[i]] <- medl[[j]][[i]]
     }
@@ -759,7 +790,7 @@ setMethod("extractMed", "Eval", function(object, ind=length(object@medlist)){
 #' @param plot_items A character vector giving the items, which should be plotted.
 #' @param phencol A boolean variable indicating if the phenotypes of the organisms in the environment should be integrated as different colors in the population plot.
 #' @param retdata A boolean variable indicating if the data used to generate the plots should be returned.
-#' @param sims A numeric vector giving the simulation steps which should be plotted.
+#' @param time A numeric vector giving the simulation steps which should be plotted.
 #' @return Returns several plots of the chosen plot items. Optional the data to generate the original plots can be returned.
 #' @details If \code{phencol} is \code{TRUE} then different phenotypes of the same organism are visualized by varying colors, otherwise different organism types are represented by varying colors. The parameter \code{retdata} can be used to access the data used for the returned plots to create own custom plots. 
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
@@ -777,8 +808,9 @@ setMethod("extractMed", "Eval", function(object, ind=length(object@medlist)){
 #' library(animation)
 #' saveVideo({evalArena(eval)},video.name="Ecoli_sim.mp4")
 #' }
-setGeneric("evalArena", function(object, plot_items='population', phencol=F, retdata=F, sims=1:length(object@simlist)){standardGeneric("evalArena")})
-setMethod("evalArena", "Eval", function(object, plot_items='population', phencol=F, retdata=F, sims=1:length(object@simlist)){
+setGeneric("evalArena", function(object, plot_items='Population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){standardGeneric("evalArena")})
+setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){ #index in R start at 1, but the first state is 0
+  time = time+1
   old.par <- par(no.readonly = TRUE)
   if(retdata){
     retlist = list()
@@ -787,7 +819,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
     }
     names(retlist) = plot_items
   }
-  for(i in sims){
+  for(i in time){
     subnam <- names(object@medlist[[i]])
     inds <- which(subnam %in% plot_items)
     meds <- extractMed(object, i)
@@ -795,37 +827,34 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
       if(length(inds)!=0){
         for(j in 1:length(inds)){
           if(retdata){
-            retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
+            retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
           }
           image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
                 zlim=c(0,max(unlist(lapply(evalsim@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
-          title(main=paste("step",i), outer=TRUE)
         }
       }
     }else if(length(plot_items)<=6){
       par(mfrow=c(2,ceiling(length(plot_items)/2)))
-      title(main=paste("step",i), outer=TRUE)
       for(j in 1:length(inds)){
         if(retdata){
-          retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
+          retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
         }
         image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
-              zlim=c(0,max(unlist(lapply(evalsim@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
+              zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
       }
     }else{
       par(mfrow=c(3,ceiling(length(plot_items)/3)))
-      title(main=paste("step",i), outer=TRUE)
       for(j in 1:length(inds)){
         if(retdata){
-          retlist[[subnam[inds[j]]]][[j]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
+          retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
         }
         image(matrix(meds[[inds[j]]],nrow=object@n,ncol=object@m),axes=F,main=subnam[inds[j]],
-              zlim=c(0,max(unlist(lapply(evalsim@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
+              zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
       }
     }
-    if(plot_items[1]=='population'){
+    if(plot_items[1]=='Population'){
       if(retdata){
-        retlist[['population']][[j]] = object@simlist[[i]]
+        retlist[['Population']][[paste0("time",(i-1))]] = object@simlist[[i]]
       }
       if(phencol){
         plot(object@simlist[[i]][,c('x','y')],xlim=c(0,object@n),ylim=c(0,object@m),xlab='',ylab='',
@@ -833,13 +862,15 @@ setMethod("evalArena", "Eval", function(object, plot_items='population', phencol
       }else{
         plot(object@simlist[[i]][,c('x','y')],xlim=c(0,object@n),ylim=c(0,object@m),xlab='',ylab='',
              pch=object@simlist[[i]]$type-1,axes=FALSE,cex=1,main='Population', col=object@simlist[[i]]$type)
+
       }
     }
   }
+  par(old.par)
+  title(sub=paste("step",i))
   if(retdata){
     return(retlist)
   }
-  par(old.par)
 })
 
 #' @title Function for plotting the overall change as curves
@@ -872,12 +903,8 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
   rownames(growths) = names(object@specs)
   subs <- matrix(0, nrow=length(medplot), ncol=length(object@simlist))
   rownames(subs) = medplot
-  for(i in 1:length(object@simlist)){
+  for(i in seq_along(object@simlist)){
     simdat <- object@simlist[[i]]
-    #count <- table(simdat[,'type'])
-    #for(j in 1:length(count)){
-    #  growths[j,i] <- count[j]
-    #}
     abun <- table(simdat$type)
     for(j in 1:length(abun)){
       growths[as.numeric(names(abun[j])),i] = abun[j]
@@ -894,28 +921,75 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
     }
   }
   par(mfrow=c(2,1))
-  times = c(1:length(object@simlist)*object@tstep)
+  times = c((seq_along(object@simlist)-1)*object@tstep)
   plot(times, times, xlim=c(0,max(times)), ylim=c(0,max(growths)),
        type='n', xlab='time in h', ylab='number of individuals on grid',
        main='Population')
   for(i in 1:nrow(growths)){
     lines(times, growths[i,], col=i, type='b', pch=i-1)
   }
-  # and length(object@specs) > 1
   if(legend){legend('topleft',legend=rownames(growths),col=1:nrow(growths), cex=ifelse(length(object@specs)==1,1,0.4/log10(nrow(growths)+1)),pch=(0:nrow(growths)-1),lwd=1, bty="n")}
-  #if(legend){legend('topleft',legend=rownames(growths),col=1:nrow(growths), cex=0.4/log10(nrow(growths)+1),pch=(0:nrow(growths)-1),lwd=1, bty="n")}
   plot(times, times, xlim=c(0,max(times)), ylim=c(0,max(subs)),
        type='n', xlab='time in h', ylab='concentration in mmol per gridcell',
        main='Substance concentrations')
   for(i in 1:nrow(subs)){
     lines(times, subs[i,], col=i)
   }
+  par(old.par)
   if(legend){legend('right',legend=rownames(subs),col=1:nrow(subs),cex=0.4/log10(nrow(subs)+1),lwd=1)}
   if(retdata){
     return(list('Population'=growths,'Substances'=subs))
   }
-  par(old.par)
 })
+
+
+setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), num=10){standardGeneric("plotCurves2")})
+setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), num=10){
+  if(num>length(object@mediac) || num<1) stop("Number of substances invalid")
+  # first get the correct (ie. complete) medlist
+  prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
+  list <- lapply(prelist, function(x){lapply(x, sum)})
+  mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
+  #remove substances that should be ignored
+  ignore_subs <- which(object@mediac %in% ignore)
+  if(length(ignore_subs) != 0){
+    mat <- mat[-ignore_subs,]
+    mediac <- object@mediac[-ignore_subs]}
+  else mediac <- object@mediac
+  rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
+  mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
+  mat_nice <- tail(mat[order(mat_var),], num)
+  
+  if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
+  matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
+          xlab='time in h', ylab='amount of substance in mmol',
+          main='Strongly changing substances')
+  legend(legendpos, rownames(mat_nice), col=cols, cex=0.7, fill=cols)
+})
+
+
+#' @title Function for plotting the overall change in reaction activity
+#'
+#' @description The generic function \code{plotTotFlux} plots the time course of reactions with high variation in activity for an \code{Eval} object.
+#'
+#' @param object An object of class Eval.
+setGeneric("plotTotFlux", function(object, legendpos="topright", num=20){standardGeneric("plotTotFlux")})
+setMethod("plotTotFlux", "Eval", function(object, legendpos="topright", num=20){
+  if(num<1) stop("Number of reactions invalid")
+  list <- lapply(object@mfluxlist, function(x){
+    unlist(x)
+  })
+  mat  <- do.call(cbind, list)
+  mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
+  mat_nice <- tail(mat[order(mat_var),], num)
+  
+  if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
+  matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=3,
+          xlab='time in h', ylab='reaction activity in mmol/(h * g_DW)',
+          main='Highly active reactions')
+  legend(legendpos, rownames(mat_nice), col=cols, cex=0.6, fill=cols)
+})
+
 
 #' @title Function for getting a matrix of phenotypes from the dataset
 #'
@@ -936,9 +1010,9 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 #' eval <- simEnv(arena,10)
 #' phenmat <- getPhenoMat(eval)
 #' }
-setGeneric("getPhenoMat", function(object, step="total"){standardGeneric("getPhenoMat")})
-setMethod("getPhenoMat", "Eval", function(object, step="total"){
-  if(step=="total"){
+setGeneric("getPhenoMat", function(object, time="total"){standardGeneric("getPhenoMat")})
+setMethod("getPhenoMat", "Eval", function(object, time="total"){
+  if(time=="total"){
     numphens <- unlist(lapply(object@phenotypes,function(x){return(length(x))}))
     phentypes <- vector()
     for(i in seq_along(numphens)){
@@ -959,13 +1033,17 @@ setMethod("getPhenoMat", "Eval", function(object, step="total"){
     phenmat <- ifelse(phenmat==-1,2,phenmat)
     return(phenmat)
   }else{
-    typestep = object@simlist[[step]]$type
-    phenstep = object@simlist[[step]]$phenotype
+    time = time+1 #index in R start at 1, but the first state is 0
+    typestep = object@simlist[[time]]$type
+    phenstep = object@simlist[[time]]$phenotype
     typenam = names(object@phenotypes)
     phens = list()
     for(i in levels(as.factor(typestep))){
       tphen = object@phenotypes[[as.numeric(i)]]
       phens[[typenam[as.numeric(i)]]] = tphen[as.numeric(levels(as.factor(phenstep[which(typestep==as.numeric(i))])))]
+      if(length(phens[[typenam[as.numeric(i)]]])==0){ #will this cause a problem?
+        phens = phens[-as.numeric(i)]
+      }
     }
     
     numphens <- unlist(lapply(phens,function(x){return(length(x))}))
@@ -1011,9 +1089,9 @@ setMethod("getPhenoMat", "Eval", function(object, step="total"){
 #' eval <- simEnv(arena,10)
 #' minePheno(eval)
 #' }
-setGeneric("minePheno", function(object, plot_type="pca", legend=F, step="total"){standardGeneric("minePheno")})
-setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, step="total"){
-  phenmat <- getPhenoMat(object, step)
+setGeneric("minePheno", function(object, plot_type="pca", legend=F, time="total"){standardGeneric("minePheno")})
+setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, time="total"){
+  phenmat <- getPhenoMat(object, time)
   if(nrow(phenmat)<=1){
     stop('not enough phenotypes to analyze.')
   }
@@ -1045,8 +1123,116 @@ setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, step=
   }
 })
 
+#' @title Function for selecting phenotypes which occured on the arena from specific iterations and species
+#'
+#' @description The generic function \code{selPheno} selects phenotypes from specific simulation step in an \code{Eval} object.
+#'
+#' @param object An object of class Eval.
+#' @param time A numeric vector giving the simulation steps which should be plotted. 
+#' @param type A names indicating the species of interest in the arena.
+#' @param reduce A boolean variable indicating if the resulting matrix should be reduced.
+#' @return Returns a matrix with the substrate usage and the number of individuals using the phenotype. 
+#' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages.
+#' @seealso \code{\link{Eval-class}} and \code{\link{getPhenoMat}}
+#' @examples
+#' \dontrun{
+#' data(Ec_core)
+#' ecore <- Ec_core #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' eval <- simEnv(arena,10)
+#' selPheno(eval,time=10,type='ecoli_core_model',reduce=T)
+#' }
+setGeneric("selPheno", function(object, time, type, reduce=F){standardGeneric("selPheno")})
+setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
+  arena = getArena(object, time)
+  type_num = which(names(arena@specs)==type)
+  pabund = as.matrix(table(arena@orgdat[which(arena@orgdat$type == type_num),'phenotype']))
+  rownames(pabund) = paste(type,'phen',rownames(pabund),sep='_')
+  rownames(pabund)[which(rownames(pabund)==paste(type,'phen_0',sep='_'))] = 'inactive'
+  colnames(pabund) = 'individuals'
+  pmat = getPhenoMat(object, time)
+  pmatsp = pmat[which(rownames(pmat) == type),]
+  if(is.vector(pmatsp)){
+    pmatsp = t(as.matrix(pmatsp))
+  }else{
+    pmatsp = as.matrix(pmatsp)
+  }
+  if(reduce){
+    if(nrow(pmatsp)==1){
+      pmatsp = t(as.matrix(pmatsp[,-which(apply(pmatsp,2,sum)==0)]))
+    }else{
+      pmatsp = pmatsp[,-which(apply(pmatsp,2,sum)==0)]
+    }
+  }
+  if(length(grep('inactive',rownames(pabund)))!=0){
+    rownames(pmatsp) = rownames(pabund)[-which(rownames(pabund)=="inactive")]
+    pmatsp = as.data.frame(pmatsp)
+    pmatsp['inactive',]=rep(0,ncol(pmatsp))
+  }else{
+    rownames(pmatsp) = rownames(pabund)
+    pmatsp = as.data.frame(pmatsp)
+  }
+  pmatsp[,'individuals']=rep(NA,nrow(pmatsp))
+  pmatsp[rownames(pabund),'individuals'] = pabund[,'individuals']
+  pmatsp
+  return(as.matrix(pmatsp))
+})
+
 #show function for class Eval
 
 setMethod(show, signature(object="Eval"), function(object){
-  print(paste('Evaluation results of ',length(object@medlist),' simulation steps.',sep=''))
+  print(paste('Evaluation results of ',length(object@medlist)-1,' simulation steps.',sep=''))
+})
+
+
+setGeneric("getCorrM", function(object, reactions=TRUE, bacs=TRUE, substrates=TRUE){standardGeneric("getCorrM")})
+setMethod("getCorrM", "Eval", function(object, reactions=TRUE, bacs=TRUE, substrates=TRUE){
+  mat <- matrix(0,0,length(object@medlist))
+  if(substrates){
+    prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
+    list <- lapply(prelist, function(x){lapply(x, sum)})
+    mat_sub <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
+    rownames(mat_sub) <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
+    mat <- rbind(mat, mat_sub)
+  }
+  
+  if(reactions){
+    list <- lapply(object@mfluxlist, function(x){
+      unlist(x)
+    })
+    mat_rea  <- do.call(cbind, list)
+    mat <- rbind(mat, mat_rea)
+  }
+  
+  if(bacs){
+    list <- lapply(object@simlist, function(x){
+      occ <- table(x$type)
+      unlist(lapply(seq_along(object@specs), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
+    })
+    mat_bac  <- do.call(cbind, list)
+    rownames(mat_bac) <- names(object@specs)
+    mat <- rbind(mat, mat_bac)
+  }
+  
+  corr <- cor(t(mat))
+  corr[is.na(corr)] <- 0
+  return(corr)
+})
+  
+
+setGeneric("checkCorr", function(object, corr=NULL, tocheck=list()){standardGeneric("checkCorr")})
+setMethod("checkCorr", "Eval", function(object, corr=NULL, tocheck=list()){
+  if(is.null(corr)) corr <- getCorrM(object)
+
+  lapply(tocheck, function(feature){
+    dat <- corr[feature,]
+    dat <- dat[-which(names(dat)==feature)]
+    dat <- dat[order(dat)]
+    dat_interest <- c(head(dat), tail(dat))
+    barplot(names.arg=names(dat_interest), height=dat_interest, las=2, main=paste("Highest correlations of", feature))
+  })
 })
