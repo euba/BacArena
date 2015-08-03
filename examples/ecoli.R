@@ -20,9 +20,6 @@ addOrg(arena, bac, amount=11, x=c((arena@n/2-5):(arena@n/2+5)), y=c((arena@m/2-5
 addSubs(arena, smax=20, difunc="cpp", difspeed=1)
 sim <- simEnv(arena, time=1000)
 
-setwd("~/uni/omics-course/lec/05/")
-save(sim, file="ecoli_sim.RData")
-
 #
 # Evaluation
 #

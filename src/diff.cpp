@@ -101,6 +101,7 @@ void diffuseNaiveCpp(Rcpp::NumericMatrix y, bool donut){
 // [[Rcpp::export]]
 void diffuseSteveCpp(Rcpp::NumericMatrix y, bool donut, double D, double h, double tstep){
   //pde is solved numerical by stencil method (Differenzenstern)
+  //ref: Albramowitz 1965, 25.3.30, p. 885
   int n = y.ncol();
   int m = y.nrow();
   //double D     = 1.0; // diff const
