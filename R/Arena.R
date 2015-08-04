@@ -987,7 +987,13 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
     }))})
   mat_phen  <- do.call(cbind, list)
   
-  mat_with_phen <- rbind(mat_bac, mat_phen)
+  list <- lapply(object@simlist, function(x){
+    sum(x$growth)
+  })
+  mat_biom  <- do.call(cbind, list)
+  rownames(mat_biom) <- "biomass"
+  
+  mat_with_phen <- rbind(mat_bac, mat_phen, mat_biom)
   
   len <- dim(mat_with_phen)[1]
   if(len>length(colpal3)) cols <- colpal1[1:len] else cols <- colpal3[1:len]
