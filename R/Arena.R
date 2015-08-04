@@ -461,7 +461,7 @@ setMethod("simEnv", "Arena", function(object, time){
         submat <- as.matrix(arena@media[[j]]@diffmat)
         apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
         switch(arena@media[[j]]@difunc,
-               "pde"={diffuseGrajdeanuCpp(submat, donut=FALSE, mu=arena@media[[j]]@difspeed)},
+               "pde"={diffuseSteveCpp(submat, donut=FALSE, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
                "cpp"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveCpp(submat, donut=FALSE)}},
                "r"={for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
                stop("Simulation function for Organism object not defined yet.")) 
