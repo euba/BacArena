@@ -33,9 +33,9 @@ install_github("euba/bacarena")
 
 ## Documentation
 
-A tutorial is available: https://github.com/euba/BacArena/blob/master/vignettes/BacArena-Introduction.pdf
+A tutorial is available: [Introduction](https://github.com/euba/BacArena/raw/master/vignettes/BacArena-Introduction.pdf) 
 
 
 ## Issues
 
-Please report bugs, disorders or features you would like to see: (https://github.com/euba/BacArena/issues)
+Please report bugs, disorders or features you would like to see: [Issues](https://github.com/euba/BacArena/issues)
