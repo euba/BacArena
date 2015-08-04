@@ -126,7 +126,8 @@ void diffuseSteveCpp(Rcpp::NumericMatrix y, bool donut, double D, double h, doub
       else if(i==n-1 && j==m-1)     c=y_old(n-1,0) + y_old(0,m-1) + y_old(n-1,m-2) + y_old(n-2,m-1);
       
       double u = D/(h*h) * (c - 4 * y_old(i,j));
-      y(i,j) = y_old(i,j) + u * tstep;
+      //y(i,j) = y_old(i,j) + u * tstep;
+      y(i,j) = y_old(i,j) + u * 0.1;
     }
   }
 }
