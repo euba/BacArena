@@ -1,25 +1,41 @@
-oop
+# BacArena
 
-BacArena
-========
+BacArena is an agent based modeling framework for cellular communities.
+Existing genome-scale metabolic models can be used to simulate growth and interactions in time and space.
+In BacArena two well established methods are merged: a) Flux balance analysis to predict the activity of
+metabolic reactions and b) Agenda based modelling 
+It has been  efficiently implemented in R language (with some C++ routines) and is freely available (soon on cran).
 
-BacArena is an agent based modeling framework for microbial communities.
+Features:
+- Each organism is represented individually
+- Simulation of >10 different species and thousands of organisms on your desktop computer
+- Diffusion of substances
+- Detection of different phenotypes
+- Chemotaxis
+- Kinetics of reactions
+- Separation of simulation and evaluation
+- Rich evaluation methods (data mining)
+- Reproducible simulations
+- Object oriented implementation
+- Easily expandable due to rule based approach
 
-See <a href="./doc/documentation.pdf" type="application/pdf">Documentation</a>
+
+## Installation
+
+- To install the latest release:
+  ``R CMD install https://github.com/euba/BacArena/releases/download/0.9/BacArena_0.9.tar.gz``
+
+- To install the development version:
+  ```R
+library(devtools)
+install_github("euba/bacarena")
+```
+
+## Documentation
+
+A tutorial is available: https://github.com/euba/BacArena/blob/master/vignettes/BacArena-Introduction.pdf
 
 
-Microbial communities are essential for global ecosystems and human health.
-Computational modeling of microbial consortia is thus a major goal in systems biology and microbial ecology. 
+## Issues
 
-<i>BacArena</i> is a project to simulate bacterial behaviour in communities. A lot of progress is done in the last years to gain genome wide metabolic reconstructions of certain organisms, which open a wide field of mathematical analysis [1], [2]. <br>
-One of this new methods is flux balanced analysis (fba) [3] to estimate optimal metabolic fluxes under certain constraints. By this work advanced models are possible, which are available in a defined, exchangeable format (<i>SBML</i>) [5]. The idea of this project is to use this existing reconstructions and put them in a spatial and temporal environment to study their possible interactions.
-This is achieved by the combination of agent based modeling [4] with fba. Each bacterium is considered as an agent with individual states, own properties and rules to act. Agents are located on a grid where they can move and interact via metabolic exchanges computed by fba.
-
-The starting point for our project is curiosity of what could be done with this huge models. We just throw those models into an arena to see what kind of actions will evolve.
-
-
-[1] Lewis et. al ,,Constraining the metabolic genotype–phenotype relationship using a phylogeny of in silico methods'' Nature Reviews Microbiology 10, 291-305 (April 2012)<br>
-[2] Feist et. al ,,Available predictive genome-scale metabolic network reconstructions'' http://systemsbiology.ucsd.edu/InSilicoOrganisms/OtherOrganisms <br>
-[3] http://en.wikipedia.org/wiki/Flux_balance_analysis <br>
-[4] http://en.wikipedia.org/wiki/Agent-based_model <br>
-[5] http://en.wikipedia.org/wiki/SBML <br>
+Please report bugs, disorders or features you would like to see: (https://github.com/euba/BacArena/issues)
