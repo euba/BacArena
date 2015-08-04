@@ -292,6 +292,7 @@ setMethod("growExp", "Organism", function(object, growth){
   if(object@fbasol$obj > 0) grow_accum <- (object@fbasol$obj * growth + growth)
   else grow_accum <- growth - object@deathrate
   return(grow_accum)
+  #return(object@fbasol$obj * growth + growth - object@deathrate)
 })
 
 #' @title Lysis function of organismal cells by adding biomass_compounds to the medium
@@ -614,7 +615,7 @@ setMethod("budging", "Bac", function(object, population, j, hood, repli=F){
 #' @param j The number of the iteration of interest.
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
 #' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.
-#' @details Bacterial individuals undergo the step by step the following procedures: First the individuals are constrained with \code{constrain} to the substrate environment, then flux balance analysis is computed with \code{optimizeLP}, after this the substrate concentrations are updated with \code{consume}, then the bacterial growth is implemented with \code{growth}, the potential new phenotypes are added with \code{checkPhen}, finally the additional and conditional functions \code{lysis}, \code{move} or \code{chemotaxis} are performed. Can be used as a wrapper for all important bacterial functions in a function similar to \code{simEnv}.
+#' @details Bacterial individuals undergo step by step the following procedures: First the individuals are constrained with \code{constrain} to the substrate environment, then flux balance analysis is computed with \code{optimizeLP}, after this the substrate concentrations are updated with \code{consume}, then the bacterial growth is implemented with \code{growth}, the potential new phenotypes are added with \code{checkPhen}, finally the additional and conditional functions \code{lysis}, \code{move} or \code{chemotaxis} are performed. Can be used as a wrapper for all important bacterial functions in a function similar to \code{simEnv}.
 #' @seealso \code{\link{Bac-class}}, \code{\link{Arena-class}}, \code{\link{simEnv}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{growth}, \code{checkPhen}, \code{lysis}, \code{move} and \code{chemotaxis}
 #' @examples
 #' NULL

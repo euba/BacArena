@@ -639,7 +639,7 @@ Eval <- function(arena){
   subc = rep(0, length(arena@mediac))
   names(subc) <- arena@mediac
   new("Eval", n=arena@n, m=arena@m, tstep=arena@tstep, specs=arena@specs, mediac=arena@mediac, occmat=Matrix(), subchange=subc,
-      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir, mfluxlist=list())
+      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir, mfluxlist=list(), seed=arena@seed)
 }
 
 ########################################################################################################
@@ -991,7 +991,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
     sum(x$growth)
   })
   mat_biom  <- do.call(cbind, list)
-  rownames(mat_biom) <- "biomass"
+  rownames(mat_biom) <- "biomass [g]"
   
   mat_with_phen <- rbind(mat_bac, mat_phen, mat_biom)
   
