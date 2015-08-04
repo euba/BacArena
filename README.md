@@ -1,9 +1,11 @@
 # BacArena
 
 BacArena is an agent based modeling framework for cellular communities.
+
 Existing genome-scale metabolic models can be used to simulate growth and interactions in time and space.
 In BacArena two well established methods are merged: a) Flux balance analysis to predict the activity of
-metabolic reactions and b) Agenda based modelling 
+metabolic reactions and b) Agent based modelling in order to provide an environment.
+
 It has been  efficiently implemented in R language (with some C++ routines) and is freely available (soon on cran).
 
 Features:
@@ -23,10 +25,10 @@ Features:
 ## Installation
 
 - To install the latest release:
-  ``R CMD install https://github.com/euba/BacArena/releases/download/0.9/BacArena_0.9.tar.gz``
+  ```R CMD install https://github.com/euba/BacArena/releases/download/0.9/BacArena_0.9.tar.gz```
 
 - To install the development version:
-  ```R
+  ```r
 library(devtools)
 install_github("euba/bacarena")
 ```
