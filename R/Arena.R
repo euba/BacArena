@@ -92,6 +92,8 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #' @param x A numeric vector giving the x positions of individuals on the grid.
 #' @param y A numeric vector giving the y positions of individuals on the grid.
 #' @param growth A numeric vector giving the starting biomass of the individuals.
+#' @param mean A numeric giving the mean of starting biomass (used for normal distribution) if growth is not defined
+#' @param sd A numeric giving the standard derivation of starting biomass (used for normal distribution) if growth is not defined
 #' @details The arguments \code{x} and \code{y} should be in the same length as the number of organisms added (given by the argument \code{amount}).
 #' @seealso \code{\link{Arena-class}} and \code{\link{Bac-class}} 
 #' @examples
@@ -102,8 +104,8 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' }
-setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=1){standardGeneric("addOrg")})
-setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=1){
+setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=NULL, mean=1, sd=0.25){standardGeneric("addOrg")})
+setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=NULL, mean=1, sd=0.25){
   if(amount+sum(object@occmat) > object@n*object@m){
     stop("More individuals than space on the grid")
   }
@@ -142,7 +144,8 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
     yp = cmbs[sel,2]
     neworgdat[(lastind+1):(amount+lastind),'x']=xp
     neworgdat[(lastind+1):(amount+lastind),'y']=yp
-    neworgdat[(lastind+1):(amount+lastind),'growth']=rep(growth, amount)
+    if(is.numeric(growth)) neworgdat[(lastind+1):(amount+lastind),'growth'] = rep(growth, amount)
+    else neworgdat[(lastind+1):(amount+lastind),'growth'] = abs(rnorm(amount, mean=mean, sd=sd))
     neworgdat[(lastind+1):(amount+lastind),'type']=rep(type, amount)
     neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(ptype, amount)
     newoccmat <- as.matrix(newoccmat)
@@ -153,7 +156,8 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   }else{
     neworgdat[(lastind+1):(amount+lastind),'x']=x
     neworgdat[(lastind+1):(amount+lastind),'y']=y
-    neworgdat[(lastind+1):(amount+lastind),'growth']=rep(growth, amount)
+    if(is.numeric(growth)) neworgdat[(lastind+1):(amount+lastind),'growth'] = rep(growth, amount)
+    else neworgdat[(lastind+1):(amount+lastind),'growth'] = abs(rnorm(amount, mean=mean, sd=sd))
     neworgdat[(lastind+1):(amount+lastind),'type']=rep(type, amount)
     neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(ptype, amount)
     newoccmat <- as.matrix(newoccmat)
