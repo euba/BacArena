@@ -966,9 +966,35 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
   
   if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
   matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
-          xlab='time in h', ylab='amount of substance in mmol',
+          xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of substance in mmol',
           main='Strongly changing substances')
   legend(legendpos, rownames(mat_nice), col=cols, cex=0.7, fill=cols)
+  
+  
+  list <- lapply(object@simlist, function(x){
+    occ <- table(x$type)
+    unlist(lapply(seq_along(object@specs), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
+  })
+  mat_bac  <- do.call(cbind, list)
+  rownames(mat_bac) <- names(object@specs)
+  
+  list <- lapply(object@simlist, function(x){
+    unlist(lapply(seq_along(object@specs), function(j){
+      occ <- table(x[which(x$type==j),]$phenotype)
+      p <- unlist(lapply(seq_along(object@phenotypes[[j]]), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
+      names(p) <- paste0(names(object@specs)[j], "_pheno", seq_along(object@phenotypes[[j]]))
+      p
+    }))})
+  mat_phen  <- do.call(cbind, list)
+  
+  mat_with_phen <- rbind(mat_bac, mat_phen)
+  
+  len <- dim(mat_with_phen)[1]
+  if(len>length(colpal3)) cols <- colpal1[1:len] else cols <- colpal3[1:len]
+  matplot(t(mat_with_phen), type='b', col=cols, pch=1, lty=1, lwd=5,
+          xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of organisms',
+          main='Growth curve')
+  legend(legendpos, rownames(mat_with_phen), col=cols, cex=0.7, fill=cols)
 })
 
 
