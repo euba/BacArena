@@ -893,60 +893,27 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 #' }
 setGeneric("getPhenoMat", function(object, time="total"){standardGeneric("getPhenoMat")})
 setMethod("getPhenoMat", "Eval", function(object, time="total"){
-  if(time=="total"){
-    numphens <- unlist(lapply(object@phenotypes,function(x){return(length(x))}))
-    phentypes <- vector()
-    for(i in seq_along(numphens)){
-      phentypes <- c(phentypes, rep(names(numphens)[i],numphens[i]))
-    }
-    phentypes <- as.factor(phentypes)
-    phenmat <- matrix(0, nrow=length(phentypes), ncol=length(object@mediac))
-    colnames(phenmat) <- object@mediac
-    rownames(phenmat) <- phentypes
-    pind <- 0
-    for(i in 1:length(object@phenotypes)){
-      for(j in 1:numphens[i]){
-        pvec <- object@phenotypes[[i]][[j]]
-        pind <- pind + 1
-        phenmat[pind, names(pvec)] <- pvec
-      }
-    }
-    phenmat <- ifelse(phenmat==-1,2,phenmat)
-    return(phenmat)
-  }else{
-    time = time+1 #index in R start at 1, but the first state is 0
-    typestep = object@simlist[[time]]$type
-    phenstep = object@simlist[[time]]$phenotype
-    typenam = names(object@phenotypes)
-    phens = list()
-    for(i in levels(as.factor(typestep))){
-      tphen = object@phenotypes[[as.numeric(i)]]
-      phens[[typenam[as.numeric(i)]]] = tphen[as.numeric(levels(as.factor(phenstep[which(typestep==as.numeric(i))])))]
-      if(length(phens[[typenam[as.numeric(i)]]])==0){ #will this cause a problem?
-        phens = phens[-as.numeric(i)]
-      }
-    }
-    
-    numphens <- unlist(lapply(phens,function(x){return(length(x))}))
-    phentypes <- vector()
-    for(i in seq_along(numphens)){
-      phentypes <- c(phentypes, rep(names(numphens)[i],numphens[i]))
-    }
-    phentypes <- as.factor(phentypes)
-    phenmat <- matrix(0, nrow=length(phentypes), ncol=length(object@mediac))
-    colnames(phenmat) <- object@mediac
-    rownames(phenmat) <- phentypes
-    pind <- 0
-    for(i in 1:length(phens)){
-      for(j in 1:numphens[i]){
-        pvec <- phens[[i]][[j]]
-        pind <- pind + 1
-        phenmat[pind, names(pvec)] <- pvec
-      }
-    }
-    phenmat <- ifelse(phenmat==-1,2,phenmat)
-    return(phenmat)
+  phenspec = list()
+  for(i in names(object@specs)){
+    phenspec[[i]] = object@phenotypes[which(names(object@phenotypes)==i)]
+    names(phenspec[[i]]) = seq_along(phenspec[[i]])
   }
+  phens = unlist(phenspec)
+  if(time != "total"){
+    time = time+1 #index in R start at 1, but the first state is 0
+    tdat = object@simlist[[time]][,c('type','phenotype')]
+    #tdat = tdat[-which(is.na(tdat$phenotype)),]
+    tphen = factor(paste(names(object@specs)[tdat$type],tdat$phenotype,sep="."))
+    pinds = which(names(phens) %in% levels(tphen))
+    if(length(pinds)!=0){phens = phens[pinds]}
+  }
+  phenmat <- matrix(0, nrow=length(phens), ncol=length(object@mediac))
+  colnames(phenmat) <- object@mediac
+  rownames(phenmat) <- names(phens)
+  for(i in 1:nrow(phenmat)){
+    phenmat[i,] = as.numeric(unlist(strsplit(phens[i],split={})))
+  }
+  return(phenmat)
 })
 
 #' @title Function for mining/analyzing phenotypes which occured on the arena
@@ -973,6 +940,8 @@ setMethod("getPhenoMat", "Eval", function(object, time="total"){
 setGeneric("minePheno", function(object, plot_type="pca", legend=F, time="total"){standardGeneric("minePheno")})
 setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, time="total"){
   phenmat <- getPhenoMat(object, time)
+  splitr = strsplit(rownames(phenmat),'\\.')
+  rownames(phenmat) = unlist(lapply(splitr, function(x){return(paste(x[1:(length(x)-1)],collapse='.'))}))
   if(nrow(phenmat)<=1){
     stop('not enough phenotypes to analyze.')
   }
@@ -1031,11 +1000,14 @@ setGeneric("selPheno", function(object, time, type, reduce=F){standardGeneric("s
 setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
   arena = getArena(object, time)
   type_num = which(names(arena@specs)==type)
+  arena@orgdat[which(is.na(arena@orgdat$phenotype)),] = 0
   pabund = as.matrix(table(arena@orgdat[which(arena@orgdat$type == type_num),'phenotype']))
   rownames(pabund) = paste(type,'phen',rownames(pabund),sep='_')
   rownames(pabund)[which(rownames(pabund)==paste(type,'phen_0',sep='_'))] = 'inactive'
   colnames(pabund) = 'individuals'
   pmat = getPhenoMat(object, time)
+  splitr = strsplit(rownames(pmat),'\\.')
+  rownames(pmat) = unlist(lapply(splitr, function(x){return(paste(x[1:(length(x)-1)],collapse='.'))}))
   pmatsp = pmat[which(rownames(pmat) == type),]
   if(is.vector(pmatsp)){
     pmatsp = t(as.matrix(pmatsp))

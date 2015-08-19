@@ -1,5 +1,5 @@
 # load libraries and other R files to have everything in place
-setwd('C:/Users/eugen.bauer/Documents/GitHub/BacArena')
+setwd('E:/GitRep/BacArena')
 setwd("/Users/euba/GitRep/BacArena/")
 setwd("~/uni/bacarena")
 library(Rcpp)
@@ -16,9 +16,12 @@ set.seed(5000)
 data(Ec_core)
 ecore = Ec_core
 bace = Bac(model=ecore, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growtype="exponential",
-           speed=10, type="ecore1", lyse=F)
-arena = Arena(n=30, m=30, stir=F)
-addOrg(arena, bace, amount=30, x=1:30, y=rep(1,30))
+           speed=10, type="ec.ore1", lyse=F)
+bace2 = Bac(model=ecore, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growtype="exponential",
+           speed=10, type="ec.ore2", lyse=F)
+arena = Arena(n=100, m=100, stir=F)
+addOrg(arena, bace, amount=100, x=1:100, y=rep(1,100))
+addOrg(arena, bace2, amount=1, x=50, y=50)
 addSubs(arena, smax=20, difunc="cpp", difspeed=1)
 
 setwd('benchmark')
