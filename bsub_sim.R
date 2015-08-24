@@ -12,10 +12,23 @@ source(file="R/Substance.R")
 source(file="R/Organism.R")
 Rcpp::sourceCpp("src/diff.cpp")
 
-setwd("P:/BACARENA/Comparison/MatNet/P_aeruginosa/")
+setwd("E:/BACARENA/Comparison/MatNet/P_aeruginosa/")
+setwd("/Volumes/PHD/BACARENA/B_subtilis/")
 
 library(sybilSBML)
-model = readSBMLmod("E:/BACARENA/Comparison/MatNet/P_aeruginosa/modelPOA.xml")
+model = readSBMLmod("/Volumes/PHD/BACARENA/B_subtilis/Bs_iYO844_flux1.xml")
+model@lowbnd[grep("EX",model@react_id)]
+modelB = changeBounds(model,model@react_id[grep("EX_",model@react_id)],lb=-10)
+
+bace1 = Bac(model=modelB, deathrate=0.1, duplirate=1, growthlimit=0.05, growtype="exponential",
+            speed=5, type="Bsubtilis", lyse=F)
+arena = Arena(n=100, m=100, stir=F, tstep=1)
+addOrg(arena, bace1, amount=1, x=arena@n/2, y=arena@m/2, growth = 0.5)
+addSubs(arena, smax=10, difunc="cpp", difspeed=1)#, mediac=minmed)
+
+print(system.time(evalsim <- simEnv(arena, time=30)))
+
+evalArena(evalsim,phencol=T)
 
 # find out what external metabolites (medium) the model has
 metrans = model@met_name
@@ -51,7 +64,7 @@ modelP = changeBounds(model,c("EX_EC0007", #Oxygen
                               "EX_EC0021", #Iron
                               "EX_EC0065", #Proton
                               "EX_EC0197" #Potassium
-                              ),lb=-Inf)
+),lb=-Inf)
 
 bace1 = Bac(model=modelP, deathrate=0.05, duplirate=1, growthlimit=0.05, growtype="exponential",
             speed=5, type="PAO", lyse=F)
@@ -60,17 +73,3 @@ addOrg(arena, bace1, amount=1, x=arena@n/2, y=arena@m/2)
 addSubs(arena, smax=50, difunc="cpp", difspeed=1, mediac=minmed)
 
 print(system.time(evalsim <- simEnv(arena, time=100)))
-
-library(animation)
-oopts = ani.options(ffmpeg = "C:/ffmpeg.exe")
-saveVideo({
-  ani.options(interval = 0.5)
-  evalArena(evalsim, phencol=T, plot_items=c('Population'))
-},video.name = "PAO_pop_phen_bio2.avi", other.opts = "-b 600k")
-
-library(animation)
-oopts = ani.options(ffmpeg = "C:/ffmpeg.exe")
-saveVideo({
-  ani.options(interval = 0.5)
-  evalArena(evalsim, phencol=T)
-},video.name = "PAO_pop6.avi", other.opts = "-b 600k")
