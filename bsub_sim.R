@@ -14,17 +14,24 @@ Rcpp::sourceCpp("src/diff.cpp")
 
 setwd("E:/BACARENA/Comparison/MatNet/P_aeruginosa/")
 setwd("/Volumes/PHD/BACARENA/B_subtilis/")
+setwd("E:/BACARENA/B_subtilis/")
 
 library(sybilSBML)
-model = readSBMLmod("/Volumes/PHD/BACARENA/B_subtilis/Bs_iYO844_flux1.xml")
-model@lowbnd[grep("EX",model@react_id)]
-modelB = changeBounds(model,model@react_id[grep("EX_",model@react_id)],lb=-10)
+msgg = c("EX_k(e)","EX_mops(e)","EX_mg2(e)","EX_ca2(e)","EX_mn2(e)","EX_fe3(e)","EX_zn2(e)","EX_thym(e)",
+         "EX_glyc(e)","EX_glu_L(e)","EX_co2(e)","EX_o2(e)","EX_pi(e)","EX_h2o(e)","EX_h(e)")
+model = readSBMLmod("Bs_iYO844_flux1.xml")
+modelB = changeBounds(model,model@react_id[grep("EX_",model@react_id)],lb=-100)
+#modelB = changeBounds(model,msgg,lb=-100)
 
-bace1 = Bac(model=modelB, deathrate=0.1, duplirate=1, growthlimit=0.05, growtype="exponential",
-            speed=5, type="Bsubtilis", lyse=F)
-arena = Arena(n=100, m=100, stir=F, tstep=1)
-addOrg(arena, bace1, amount=1, x=arena@n/2, y=arena@m/2, growth = 0.5)
-addSubs(arena, smax=10, difunc="cpp", difspeed=1)#, mediac=minmed)
+#minmed = model@react_id[grep("EX",model@react_id)][which(model@lowbnd[grep("EX",model@react_id)]<0)]
+#modelB = changeBounds(model,model@react_id[grep("EX_",model@react_id)],lb=-10)
+#modelB = changeBounds(model,setdiff(model@react_id[grep("EX_",model@react_id)],minmed),lb=-50)
+
+bace1 = Bac(model=modelB, deathrate=0.05, duplirate=1, growthlimit=0.05, growtype="exponential",
+            speed=2, type="Bsubtilis", lyse=F)
+arena = Arena(n=100, m=100, stir=F, tstep=2)
+addOrg(arena, bace1, amount=1, x=arena@n/2, y=arena@m/2, growth = 0.05)
+addSubs(arena, smax=1000, difunc="cpp", difspeed=1, mediac=msgg)
 
 print(system.time(evalsim <- simEnv(arena, time=30)))
 
