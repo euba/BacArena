@@ -12,7 +12,6 @@
 #' @slot media A list of objects of class \code{\link{Substance-class}} for each compound in the environment.
 #' @slot phenotypes A list of unique phenotypes (metabolites consumed and produced), which occurred in the environment.
 #' @slot mediac A character vector containing the names of all substances in the environment.
-#' @slot occmat A sparse matrix showing which cells in the environment are occupied by individuals.
 #' @slot tstep A number giving the time (in h) per iteration.
 #' @slot stir A boolean variable indicating if environment should be stirred.
 #' @slot mflux A vector containing highly used metabolic reactions within the arena
@@ -23,9 +22,8 @@ setClass("Arena",
            orgdat="data.frame",
            specs="list",
            media="list",
-           phenotypes="list",
+           phenotypes="character",
            mediac="character",
-           occmat="Matrix",
            tstep="numeric",
            stir="logical",
            mflux="list",
@@ -40,12 +38,9 @@ setClass("Arena",
 ########################################################################################################
 
 Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
-                  specs=list(),media=list(),mediac=character(),phenotypes=list(),occmat=Matrix(0L,nrow=n,ncol=m,sparse=T),stir=F,mflux=list(), seed=numeric(0)){
-  #seed <- ifelse(length(seed)==0, sample(1:.Machine$integer.max,1), seed) # lame ...
-  seed <- ifelse(length(seed)==0, sample(1:10000,1), seed)
-  set.seed(seed)
+                  specs=list(),media=list(),mediac=character(),phenotypes=character(),stir=F,mflux=list()){
   new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs,
-      media=media, mediac=mediac, phenotypes=phenotypes, occmat=occmat, stir=stir, mflux=mflux, seed=seed)
+      media=media, mediac=mediac, phenotypes=phenotypes, stir=stir, mflux=mflux)
 }
 
 ########################################################################################################
@@ -62,8 +57,6 @@ setGeneric("phenotypes", function(object){standardGeneric("phenotypes")})
 setMethod("phenotypes", "Arena", function(object){return(object@phenotypes)})
 setGeneric("mediac", function(object){standardGeneric("mediac")})
 setMethod("mediac", "Arena", function(object){return(object@mediac)})
-setGeneric("occmat", function(object){standardGeneric("occmat")})
-setMethod("occmat", "Arena", function(object){return(object@occmat)})
 setGeneric("tstep", function(object){standardGeneric("tstep")})
 setMethod("tstep", "Arena", function(object){return(object@tstep)})
 setGeneric("stir", function(object){standardGeneric("stir")})
@@ -106,16 +99,14 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #' }
 setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=NULL, mean=1, sd=0.25){standardGeneric("addOrg")})
 setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=NULL, mean=1, sd=0.25){
-  if(amount+sum(object@occmat) > object@n*object@m){
+  if(amount+nrow(object@orgdat) > object@n*object@m){
     stop("More individuals than space on the grid")
   }
   n <- object@n
   m <- object@m
   spectype <- specI@type
-  newoccmat <- object@occmat
   neworgdat <- object@orgdat
   newspecs <- object@specs
-  newphens <- object@phenotypes[[spectype]]
   newspecs[[spectype]] <- specI
   type <- which(names(newspecs)==spectype)
   newmflux <- object@mflux
@@ -124,13 +115,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   newmflux[[spectype]] <- numeric(length(specI@lbnd))
   names(newmflux[[spectype]]) <- names(specI@lbnd)
   
-  if(length(newphens)!=0){
-    ptype <- as.integer(checkPhen(object, specI))
-    newphens <- object@phenotypes[[spectype]]
-  }else{
-    newphens[[1]] <- getPhenotype(specI)
-    ptype=as.integer(1)
-  }
+  type <- which(names(newspecs)==spectype) 
   lastind <- nrow(object@orgdat)
   if(length(x*y)==0){
     cmbs = expand.grid(1:n,1:m)
@@ -147,65 +132,24 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
     if(is.numeric(growth)) neworgdat[(lastind+1):(amount+lastind),'growth'] = rep(growth, amount)
     else neworgdat[(lastind+1):(amount+lastind),'growth'] = abs(rnorm(amount, mean=mean, sd=sd))
     neworgdat[(lastind+1):(amount+lastind),'type']=rep(type, amount)
-    neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(ptype, amount)
-    newoccmat <- as.matrix(newoccmat)
-    for(i in 1:length(xp)){
-      newoccmat[xp[i],yp[i]] = type
-    }
-    newoccmat <- Matrix(newoccmat,sparse=T)
+    neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(NA, amount)
   }else{
     neworgdat[(lastind+1):(amount+lastind),'x']=x
     neworgdat[(lastind+1):(amount+lastind),'y']=y
     if(is.numeric(growth)) neworgdat[(lastind+1):(amount+lastind),'growth'] = rep(growth, amount)
     else neworgdat[(lastind+1):(amount+lastind),'growth'] = abs(rnorm(amount, mean=mean, sd=sd))
     neworgdat[(lastind+1):(amount+lastind),'type']=rep(type, amount)
-    neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(ptype, amount)
-    newoccmat <- as.matrix(newoccmat)
-    for(i in 1:length(x)){
-      newoccmat[x[i],y[i]] = type
-    }
-    newoccmat <- Matrix(newoccmat,sparse=T)
+    neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(NA, amount)
   }
   if(sum(duplicated(paste(neworgdat$x,neworgdat$y,sep="_")))!=0){
     stop("You have multiple individuals in the same position! Make sure that your x an y positions are unique")
   }
-  eval.parent(substitute(object@occmat <- newoccmat))
   eval.parent(substitute(object@orgdat <- neworgdat))
   eval.parent(substitute(object@specs <- newspecs))
-  eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
+  #eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
   eval.parent(substitute(object@mediac <- union(object@mediac, specI@medium)))
   eval.parent(substitute(object@mflux <- newmflux))
 })
-
-
-# setGeneric("addOrg2", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){standardGeneric("addOrg2")})
-# setMethod("addOrg2", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=1, ...){
-#   if(amount+sum(object@occmat) > object@n*object@m){
-#     stop("More individuals than space on the grid")
-#   }
-#   spectype <- specI@type
-#   newspecs <- object@specs
-#   newphens <- object@phenotypes[[spectype]]
-#   newspecs[[spectype]] <- specI
-#   type <- which(names(newspecs)==spectype)
-#   
-#   if(length(newphens)!=0){
-#     ptype <- as.integer(checkPhen(object, specI))
-#     newphens <- object@phenotypes[[spectype]]
-#   }else{
-#     newphens[[1]] <- getPhenotype(specI)
-#     ptype=as.integer(1)
-#   }
-#   l = addBacCpp(object@occmat, object@orgdat, amount, growth, type, ptype)
-#   newoccmat = l[["occmat"]]
-#   neworgdat = l[["orgdat"]]
-#   
-#   eval.parent(substitute(object@occmat <- newoccmat))
-#   eval.parent(substitute(object@orgdat <- neworgdat))
-#   eval.parent(substitute(object@specs <- newspecs))
-#   eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
-#   eval.parent(substitute(object@mediac <- union(object@mediac, specI@medium)))
-# })
 
 #' @title Add substances to the environment
 #'
@@ -335,8 +279,8 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
   gradn = floor(object@n*steep)
   gradm = floor(object@m*steep)
   switch(position,
-         'top'={for(i in 1:object@m){newdiffmat[0:gradm+1,i]=seq(smax,0,length.out=gradm+1)}},
-         'bottom'={for(i in 1:object@m){newdiffmat[gradm:object@m,i]=seq(0,smax,length.out=gradm+1)}},
+         'top'={for(i in 1:object@m){newdiffmat[0:gradm+1,i]=rev(seq(0,smax,length.out=gradm+1))}},
+         'bottom'={for(i in 1:object@m){newdiffmat[object@m:(object@m-gradm),i]=rev(seq(0,smax,length.out=gradm+1))}},
          'right'={for(i in 1:object@n){newdiffmat[i,gradn:object@n]=seq(0,smax,length.out=gradn+1)}},
          'left'={for(i in 1:object@n){newdiffmat[i,0:gradn+1]=seq(smax,0,length.out=gradn+1)}},
          stop("Positions must be top, bottom, right and left."))
@@ -367,7 +311,6 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
 setGeneric("changeOrg", function(object, neworgdat){standardGeneric("changeOrg")})
 setMethod("changeOrg", "Arena", function(object, neworgdat){
   eval.parent(substitute(object@orgdat <- neworgdat))
-  eval.parent(substitute(object@occmat <- Matrix(dat2mat(object), sparse=T)))
 })
 
 #' @title Function for checking phenotypes in the environment
@@ -390,28 +333,24 @@ setMethod("changeOrg", "Arena", function(object, neworgdat){
 #' }
 setGeneric("checkPhen", function(object, org, cutoff=1e-6){standardGeneric("checkPhen")})
 setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
-  ptype <- 0
+  pind <- 0
   if(org@fbasol$obj>=cutoff){
-    phenotypes <- object@phenotypes[[org@type]]
-    phenspec <- getPhenotype(org, cutoff=0.1)
-    if(length(phenspec) != 0){
-      for(i in 1:length(phenotypes)){
-        inlist <- intersect(names(phenotypes[[i]]),names(phenspec))
-        if(sum(phenotypes[[i]][inlist]==phenspec[inlist])==length(inlist)){
-          ptype=i
-          break
-        }
-      }
-      if(ptype==0){
-        ptype = length(phenotypes)+1
-        phenotypes[[ptype]] <- phenspec
-        object2 <- object
-        object2@phenotypes[[org@type]] <- phenotypes
-        eval.parent(substitute(object <- object2)) #has to be like this, otherwise there is a problem with the slot name!
-      }
+    test = getPhenotype(org, cutoff=1e-6)
+    tspec = org@type
+    pvec = rep(0,length(object@mediac))
+    names(pvec) = object@mediac
+    pvec[names(test)] = test
+    pvec <- paste(pvec,collapse='')
+    phenc <- object@phenotypes
+    phensel <- phenc[which(names(phenc)==tspec)]
+    pind <- which(phensel==pvec)
+    if(length(pind)==0){
+      pind = length(phensel)+1
+      names(pvec) = tspec
+      eval.parent(substitute(object@phenotypes <- c(phenc,pvec)))
     }
   }
-  return(ptype)
+  return(pind)
 })
 
 #' @title Main function for simulating all processes in the environment
@@ -438,7 +377,19 @@ setMethod("simEnv", "Arena", function(object, time){
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
-         stop("Please supply an Arena object."))
+         stop("Please supply an object of class Arena."))
+  for(i in names(arena@specs)){
+    phensel <- arena@phenotypes[which(names(arena@phenotypes)==i)]
+    if(length(phensel)==0){
+      test = getPhenotype(arena@specs[[i]], cutoff=1e-6)
+      pvec = rep(0,length(arena@mediac))
+      names(pvec) = arena@mediac
+      pvec[names(test)] = test
+      pvec <- paste(pvec,collapse='')
+      names(pvec) = i
+      arena@phenotypes <- c(arena@phenotypes,pvec)
+    }
+  }
   addEval(evaluation, arena)
   sublb <- getSublb(arena)
   for(i in 1:time){
@@ -451,6 +402,7 @@ setMethod("simEnv", "Arena", function(object, time){
              "Human"= {arena = simHum(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
              stop("Simulation function for Organism object not defined yet.")) 
     }
+    #print(arena@orgdat)
     test <- is.na(arena@orgdat$growth)
     if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
     rm("test")
@@ -459,13 +411,17 @@ setMethod("simEnv", "Arena", function(object, time){
       sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
       for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
         submat <- as.matrix(arena@media[[j]]@diffmat)
-        apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
-        switch(arena@media[[j]]@difunc,
-               "pde"={diffuseSteveCpp(submat, donut=FALSE, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
-               "cpp"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveCpp(submat, donut=FALSE)}},
-               "r"={for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
-               stop("Simulation function for Organism object not defined yet.")) 
-        arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
+        if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
+          apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
+        }
+        if(arena@n*arena@m != sum(submat==mean(submat))){
+          switch(arena@media[[j]]@difunc,
+                 "pde"={diffuseSteveCpp(submat, donut=FALSE, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
+                 "cpp"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveCpp(submat, donut=FALSE)}},
+                 "r"={for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
+                 stop("Simulation function for Organism object not defined yet.")) 
+          arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
+        }
         sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
       }
       sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
@@ -476,7 +432,7 @@ setMethod("simEnv", "Arena", function(object, time){
       sublb <- stirEnv(arena, sublb)
     }
     addEval(evaluation, arena)
-    if(sum(arena@occmat)==0){
+    if(nrow(arena@orgdat)==0){
       print("All organisms died!")
       break
     }
@@ -554,13 +510,8 @@ setMethod("stirEnv", "Arena", function(object, sublb){
   sel <- sample(1:nrow(cmbs),selength)
   neworgdat[,'x'] <- cmbs[sel,1]
   neworgdat[,'y'] <- cmbs[sel,2]
-  newoccmat <- matrix(0,object@n,object@m)
   if(length(sit) != 0){neworgdat <- rbind(neworgdat,sitorgdat)}
-  for(i in 1:nrow(neworgdat)){
-    newoccmat[neworgdat[i,'x'],neworgdat[i,'y']] = neworgdat[i,'type']
-  }
   eval.parent(substitute(object@orgdat <- neworgdat))
-  eval.parent(substitute(object@occmat <- Matrix(newoccmat,sparse=T)))
   #stir all the substrates + modify substrates
   sublb_tmp <- matrix(0,nrow=nrow(object@orgdat),ncol=(length(object@mediac)))
   sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
@@ -596,7 +547,7 @@ setGeneric("dat2mat", function(object){standardGeneric("dat2mat")})
 setMethod("dat2mat", "Arena", function(object){
   newoccmat <- matrix(0,object@n,object@m)
   for(i in 1:nrow(object@orgdat)){
-    newoccmat[object@orgdat[i,'x'],object@orgdat[i,'y']] = object@orgdat[i,'type']
+    newoccmat[object@orgdat[i,'y'],object@orgdat[i,'x']] = object@orgdat[i,'type']
   }
   return(newoccmat)
 })
@@ -604,7 +555,7 @@ setMethod("dat2mat", "Arena", function(object){
 #show function for class Arena
 
 setMethod(show, "Arena", function(object){
-  print(paste('Arena of size ',object@n,'x',object@m,' with ',sum(ifelse(as.matrix(object@occmat)==0,0,1)),
+  print(paste('Arena of size ',object@n,'x',object@m,' with ',nrow(object@orgdat),
               ' organisms of ',length(object@specs),' species.',sep=''))
 })
 
@@ -638,8 +589,8 @@ setClass("Eval",
 Eval <- function(arena){
   subc = rep(0, length(arena@mediac))
   names(subc) <- arena@mediac
-  new("Eval", n=arena@n, m=arena@m, tstep=arena@tstep, specs=arena@specs, mediac=arena@mediac, occmat=Matrix(), subchange=subc,
-      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir, mfluxlist=list(), seed=arena@seed)
+  new("Eval", n=arena@n, m=arena@m, tstep=arena@tstep, specs=arena@specs, mediac=arena@mediac, subchange=subc,
+      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir, mfluxlist=list())
 }
 
 ########################################################################################################
@@ -740,15 +691,10 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
     x@diffmat <- Matrix(meds[[x@name]],nrow=n,ncol=m,sparse=T)
     return(x)
   },meds=extractMed(object,time), n=object@n, m=object@m)
-  
   occdat <- object@simlist[[time]]
-  newoccmat <- matrix(0, nrow=object@n, ncol=object@m)
-  apply(occdat, 1, function(x){
-    newoccmat[x[4],x[5]] <<- x[2]
-  })
   
   arena <- Arena(n=object@n, m=object@m, tstep=object@tstep, specs=object@specs, mediac=object@mediac,
-                 phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, occmat=Matrix(newoccmat,sparse=T), stir=object@stir)
+                 phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, stir=object@stir)
   return(arena)
 })
 
@@ -1048,60 +994,27 @@ setMethod("plotTotFlux", "Eval", function(object, legendpos="topright", num=20){
 #' }
 setGeneric("getPhenoMat", function(object, time="total"){standardGeneric("getPhenoMat")})
 setMethod("getPhenoMat", "Eval", function(object, time="total"){
-  if(time=="total"){
-    numphens <- unlist(lapply(object@phenotypes,function(x){return(length(x))}))
-    phentypes <- vector()
-    for(i in seq_along(numphens)){
-      phentypes <- c(phentypes, rep(names(numphens)[i],numphens[i]))
-    }
-    phentypes <- as.factor(phentypes)
-    phenmat <- matrix(0, nrow=length(phentypes), ncol=length(object@mediac))
-    colnames(phenmat) <- object@mediac
-    rownames(phenmat) <- phentypes
-    pind <- 0
-    for(i in 1:length(object@phenotypes)){
-      for(j in 1:numphens[i]){
-        pvec <- object@phenotypes[[i]][[j]]
-        pind <- pind + 1
-        phenmat[pind, names(pvec)] <- pvec
-      }
-    }
-    phenmat <- ifelse(phenmat==-1,2,phenmat)
-    return(phenmat)
-  }else{
-    time = time+1 #index in R start at 1, but the first state is 0
-    typestep = object@simlist[[time]]$type
-    phenstep = object@simlist[[time]]$phenotype
-    typenam = names(object@phenotypes)
-    phens = list()
-    for(i in levels(as.factor(typestep))){
-      tphen = object@phenotypes[[as.numeric(i)]]
-      phens[[typenam[as.numeric(i)]]] = tphen[as.numeric(levels(as.factor(phenstep[which(typestep==as.numeric(i))])))]
-      if(length(phens[[typenam[as.numeric(i)]]])==0){ #will this cause a problem?
-        phens = phens[-as.numeric(i)]
-      }
-    }
-    
-    numphens <- unlist(lapply(phens,function(x){return(length(x))}))
-    phentypes <- vector()
-    for(i in seq_along(numphens)){
-      phentypes <- c(phentypes, rep(names(numphens)[i],numphens[i]))
-    }
-    phentypes <- as.factor(phentypes)
-    phenmat <- matrix(0, nrow=length(phentypes), ncol=length(object@mediac))
-    colnames(phenmat) <- object@mediac
-    rownames(phenmat) <- phentypes
-    pind <- 0
-    for(i in 1:length(phens)){
-      for(j in 1:numphens[i]){
-        pvec <- phens[[i]][[j]]
-        pind <- pind + 1
-        phenmat[pind, names(pvec)] <- pvec
-      }
-    }
-    phenmat <- ifelse(phenmat==-1,2,phenmat)
-    return(phenmat)
+  phenspec = list()
+  for(i in names(object@specs)){
+    phenspec[[i]] = object@phenotypes[which(names(object@phenotypes)==i)]
+    names(phenspec[[i]]) = seq_along(phenspec[[i]])
   }
+  phens = unlist(phenspec)
+  if(time != "total"){
+    time = time+1 #index in R start at 1, but the first state is 0
+    tdat = object@simlist[[time]][,c('type','phenotype')]
+    #tdat = tdat[-which(is.na(tdat$phenotype)),]
+    tphen = factor(paste(names(object@specs)[tdat$type],tdat$phenotype,sep="."))
+    pinds = which(names(phens) %in% levels(tphen))
+    if(length(pinds)!=0){phens = phens[pinds]}
+  }
+  phenmat <- matrix(0, nrow=length(phens), ncol=length(object@mediac))
+  colnames(phenmat) <- object@mediac
+  rownames(phenmat) <- names(phens)
+  for(i in 1:nrow(phenmat)){
+    phenmat[i,] = as.numeric(unlist(strsplit(phens[i],split={})))
+  }
+  return(phenmat)
 })
 
 #' @title Function for mining/analyzing phenotypes which occured on the arena
@@ -1128,6 +1041,8 @@ setMethod("getPhenoMat", "Eval", function(object, time="total"){
 setGeneric("minePheno", function(object, plot_type="pca", legend=F, time="total"){standardGeneric("minePheno")})
 setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, time="total"){
   phenmat <- getPhenoMat(object, time)
+  splitr = strsplit(rownames(phenmat),'\\.')
+  rownames(phenmat) = unlist(lapply(splitr, function(x){return(paste(x[1:(length(x)-1)],collapse='.'))}))
   if(nrow(phenmat)<=1){
     stop('not enough phenotypes to analyze.')
   }
@@ -1186,11 +1101,14 @@ setGeneric("selPheno", function(object, time, type, reduce=F){standardGeneric("s
 setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
   arena = getArena(object, time)
   type_num = which(names(arena@specs)==type)
+  arena@orgdat[which(is.na(arena@orgdat$phenotype)),] = 0
   pabund = as.matrix(table(arena@orgdat[which(arena@orgdat$type == type_num),'phenotype']))
   rownames(pabund) = paste(type,'phen',rownames(pabund),sep='_')
   rownames(pabund)[which(rownames(pabund)==paste(type,'phen_0',sep='_'))] = 'inactive'
   colnames(pabund) = 'individuals'
   pmat = getPhenoMat(object, time)
+  splitr = strsplit(rownames(pmat),'\\.')
+  rownames(pmat) = unlist(lapply(splitr, function(x){return(paste(x[1:(length(x)-1)],collapse='.'))}))
   pmatsp = pmat[which(rownames(pmat) == type),]
   if(is.vector(pmatsp)){
     pmatsp = t(as.matrix(pmatsp))
