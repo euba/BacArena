@@ -1,5 +1,5 @@
 # load libraries and other R files to have everything in place
-setwd('E:/GitRep/BacArena')
+setwd('P:/GitRep/BacArena')
 setwd("/Users/euba/GitRep/BacArena/")
 setwd("~/uni/bacarena")
 library(Rcpp)
@@ -14,15 +14,19 @@ Rcpp::sourceCpp("src/diff.cpp")
 
 setwd("E:/BACARENA/Comparison/MatNet/P_aeruginosa/")
 setwd("/Volumes/PHD/BACARENA/B_subtilis/")
-setwd("E:/BACARENA/B_subtilis/")
+setwd("P:/BACARENA/B_subtilis/")
 
 library(sybilSBML)
-msgg = c("EX_k(e)","EX_mops(e)","EX_mg2(e)","EX_ca2(e)","EX_mn2(e)","EX_fe3(e)","EX_zn2(e)","EX_thym(e)",
-         "EX_glyc(e)","EX_glu_L(e)","EX_co2(e)","EX_o2(e)","EX_pi(e)","EX_h2o(e)","EX_h(e)")
 model = readSBMLmod("Bs_iYO844_flux1.xml")
+msgg = c("EX_k(e)","EX_mops(e)","EX_mg2(e)","EX_ca2(e)","EX_mn2(e)","EX_fe3(e)","EX_zn2(e)","EX_thym(e)",
+         "EX_glyc(e)","EX_glu_L(e)","EX_co2(e)","EX_o2(e)","EX_pi(e)","EX_h2o(e)","EX_h(e)",
+         "EX_so4(e)") #added as a sulfur source
 modelB = changeBounds(model,model@react_id[grep("EX_",model@react_id)],lb=0)
-modelB = changeBounds(modelB,msgg,lb=-1000)
+modelB = changeBounds(modelB,msgg,lb=-c(5,100,2,0.7,0.05,0.1,0.001,0.002,68.4,29.6,1000,1000,1000,1000,1000,10))
 
+optimizeProb(modelB)
+optimizeProb(model)
+#EX_so4(e),EX_pi(e),EX_o2(e),EX_na1(e),EX_nh4(e),EX_mg2(e),EX_k(e),EX_h(e),EX_h2o(e),EX_glc(e),EX_fe3(e),EX_co2(e),EX_ca2(e)
 
 #minmed = model@react_id[grep("EX",model@react_id)][which(model@lowbnd[grep("EX",model@react_id)]<0)]
 #modelB = changeBounds(model,model@react_id[grep("EX_",model@react_id)],lb=-10)
