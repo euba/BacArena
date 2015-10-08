@@ -49,14 +49,14 @@ addOrg(arena, bace1, amount=1, x=arena@n/2, y=arena@m/2, growth = 0.5)
 #addSubs(arena, smax=10000, difunc="cpp", difspeed=1, mediac = msgg)
 
 #addSubs(arena, smax=1000, difunc="cpp", difspeed=1)
-#addSubs(arena, difunc="cpp", difspeed=1, mediac = msgg,
-#        smax = c(5,100,2,0.7,0.05,0.1,0.001,0.002,68.4,29.6,1000,1000,1000,1000,1000,10))
+addSubs(arena, difunc="cpp", difspeed=1, mediac = msgg,
+        smax = c(5,100,2,0.7,0.05,0.1,0.001,0.002,68.4,29.6,1000,1000,1000,1000,1000,10))
 #addSubs(arena, difunc="cpp", difspeed=1, mediac = msgg2,
 #        smax = c(5,100,2,0.7,0.05,0.1,0.001,0.002,68.4,29.6,1000,1000,1000,1000,1000,10))
 #addSubs(arena, difunc="cpp", difspeed=1, mediac = c(msgg,"EX_nh4(e)"),
 #        smax = c(5,100,2,0.7,0.05,0.1,0.001,0.002,68.4,29.6,1000,1000,1000,1000,1000,10,1000))
-addSubs(arena, difunc="cpp", difspeed=1, mediac = msggtest,
-        smax = c(5,100,2,0.7,0.05,0.1,0.001,68.4,29.6,1000,1000,1000,1000,1000,10))
+#addSubs(arena, difunc="cpp", difspeed=1, mediac = msggtest,
+#        smax = c(5,100,2,0.7,0.05,0.1,0.001,68.4,29.6,1000,1000,1000,1000,1000,10))
 
 
 print(system.time(evalsim <- simEnv(arena, time=40)))
@@ -84,3 +84,32 @@ grw = plotCurves(evalsim,retdata=T)$Substances
 plot(((c(grw['EX_nh4(e)',],0)-c(0,grw['EX_nh4(e)',]))/c(0,grw['EX_nh4(e)',]))[-c(1,122)],type='l')
 plot(((c(grw['EX_glu_L(e)',],0)-c(0,grw['EX_glu_L(e)',]))/c(0,grw['EX_glu_L(e)',]))[-c(1,122)],type='l')
 plot(((c(grw['EX_glyc(e)',],0)-c(0,grw['EX_glyc(e)',]))/c(0,grw['EX_glyc(e)',]))[-c(1,122)],type='l')
+
+#################################################################
+######################## Phenotype analysis
+#################################################################
+max(matrix(evalsim@medlist[[41]][['EX_nh4(e)']],100,100))
+
+evalsim@simlist[[41]]$phenotype
+getPhenoMat(evalsim,time=40)[,'EX_nh4(e)']
+
+#plot ammonia uptake phenotypes
+nuse = getPhenoMat(evalsim)[,'EX_nh4(e)'] #other interesting compounds: 'EX_h(e)','EX_pi(e)','EX_man1p(e)','EX_man6p(e)','EX_chor(e)','EX_succ(e)','EX_fum(e)','EX_for(e)','EX_cit(e)','EX_6pgc(e)','EX_acac(e)','EX_pep(e)','EX_btd_RR(e)','EX_ac(e)','EX_ppa(e)','EX_dha(e)','EX_lac_L(e)','EX_pyr(e)','EX_tyr_L(e)','EX_thym(e)','EX_glyclt(e)'
+pop = evalsim@simlist[[41]]
+pop$phenotype_n = 1
+pop$phenotype_n[which(pop$phenotype!=0)] = nuse[paste('Bsubtilis.',pop$phenotype[which(pop$phenotype!=0)],sep='')] + 1
+
+#pop$phenotype_n[which(pop$phenotype!=0)]
+plot(pop[,c('x','y')],xlim=c(0,evalsim@n),ylim=c(0,evalsim@m),xlab='',ylab='',
+     axes=FALSE,cex=1, col=pop$phenotype_n, pch=19)
+
+nuse = getPhenoMat(evalsim)[,'EX_glyclt(e)']
+pop = evalsim@simlist[[41]]
+pop$phenotype_n = 1
+pop$phenotype_n[which(pop$phenotype!=0)] = nuse[paste('Bsubtilis.',pop$phenotype[which(pop$phenotype!=0)],sep='')] + 1
+
+#pop$phenotype_n[which(pop$phenotype!=0)]
+plot(pop[,c('x','y')],xlim=c(0,evalsim@n),ylim=c(0,evalsim@m),xlab='',ylab='',
+     axes=FALSE,cex=1, col=pop$phenotype_n, pch=19)
+
+sort(evalsim@subchange)
