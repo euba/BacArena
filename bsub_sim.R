@@ -20,7 +20,7 @@ setwd("/Users/euba/GitRep/BacArena/B_subtilis/")
 library(sybilSBML)
 model = readSBMLmod("Bs_iYO844_flux1.xml")
 msgg = c("EX_k(e)","EX_mops(e)","EX_mg2(e)","EX_ca2(e)","EX_mn2(e)","EX_fe3(e)","EX_zn2(e)","EX_thym(e)",
-         "EX_glyc(e)","EX_glu_L(e)","EX_co2(e)","EX_o2(e)","EX_pi(e)","EX_h2o(e)","EX_h(e)",
+         "EX_glyc(e)","EX_gln_L(e)","EX_co2(e)","EX_o2(e)","EX_pi(e)","EX_h2o(e)","EX_h(e)",
          "EX_so4(e)") #added as a sulfur source
 msgg2 = c("EX_k(e)","EX_mops(e)","EX_mg2(e)","EX_ca2(e)","EX_mn2(e)","EX_fe3(e)","EX_zn2(e)","EX_thym(e)",
          "EX_glyc(e)","EX_nh4(e)","EX_co2(e)","EX_o2(e)","EX_pi(e)","EX_h2o(e)","EX_h(e)",
@@ -30,11 +30,21 @@ msggtest = c("EX_k(e)","EX_mops(e)","EX_mg2(e)","EX_ca2(e)","EX_mn2(e)","EX_fe3(
           "EX_so4(e)") #added as a sulfur source
 modelB = changeBounds(model,model@react_id[grep("EX_",model@react_id)],lb=0)
 #modelB = changeBounds(modelB,msgg,lb=-c(5,100,2,0.7,0.05,0.1,0.001,0.002,68.4,29.6,1000,1000,1000,1000,1000,10))
-modelB = changeBounds(model,model@react_id[grep("EX_",model@react_id)],lb=-20)
+modelB = changeBounds(model,model@react_id[grep("EX_",model@react_id)],lb=-30)
 modelB = changeBounds(modelB,c("EX_co2(e)","EX_o2(e)","EX_pi(e)","EX_h2o(e)","EX_h(e)",
                                "EX_no2(e)","EX_no3(e)","EX_nh4(e)"),lb=-1000)
 
-optimizeProb(modelB)
+flx = optimizeProb(modelB,retOptSol=F)
+
+modelB2 = changeBounds(model,model@react_id[grep("EX_",model@react_id)],lb=0)
+#modelB2 = changeBounds(modelB2,msgg,lb=-c(5,100,2,0.7,0.05,0.1,0.001,0.002,68.4,29.6,1000,1000,1000,1000,1000,10))
+modelB2 = changeBounds(modelB2,msgg,lb=-c(30,30,30,30,30,30,30,30,30,30,1000,1000,1000,1000,1000,30))
+flx = optimizeProb(modelB2,retOptSol=F)
+flx$fluxes[which(modelB2@react_id == "EX_glu_L(e)")]
+flx$fluxes[which(modelB2@react_id == "EX_nh4(e)")]
+exflx = flx$fluxes[grep("EX_",model@react_id)]
+names(exflx) = model@react_id[grep("EX_",model@react_id)]
+exflx[which(exflx!=0)]
 optimizeProb(model)
 #EX_so4(e),EX_pi(e),EX_o2(e),EX_na1(e),EX_nh4(e),EX_mg2(e),EX_k(e),EX_h(e),EX_h2o(e),EX_glc(e),EX_fe3(e),EX_co2(e),EX_ca2(e)
 
@@ -50,7 +60,7 @@ addOrg(arena, bace1, amount=1, x=arena@n/2, y=arena@m/2, growth = 0.5)
 
 #addSubs(arena, smax=1000, difunc="cpp", difspeed=1)
 addSubs(arena, difunc="cpp", difspeed=1, mediac = msgg,
-        smax = c(5,100,2,0.7,0.05,0.1,0.001,0.002,68.4,29.6,1000,1000,1000,1000,1000,10))
+        smax = c(5,100,2,0.7,0.05,0.1,0.001,0.002,68.4*10,29.6*1,1000,1000,1000,1000,1000,10))
 #addSubs(arena, difunc="cpp", difspeed=1, mediac = msgg2,
 #        smax = c(5,100,2,0.7,0.05,0.1,0.001,0.002,68.4,29.6,1000,1000,1000,1000,1000,10))
 #addSubs(arena, difunc="cpp", difspeed=1, mediac = c(msgg,"EX_nh4(e)"),
@@ -59,7 +69,7 @@ addSubs(arena, difunc="cpp", difspeed=1, mediac = msgg,
 #        smax = c(5,100,2,0.7,0.05,0.1,0.001,68.4,29.6,1000,1000,1000,1000,1000,10))
 
 
-print(system.time(evalsim <- simEnv(arena, time=40)))
+print(system.time(evalsim <- simEnv(arena, time=30)))
 #save(evalsim,file='Bsub_biofilm_nh4_nitrogen.RData')
 evalArena(evalsim,phencol=T)
 plotCurves(evalsim,reduce=T)
@@ -88,23 +98,15 @@ plot(((c(grw['EX_glyc(e)',],0)-c(0,grw['EX_glyc(e)',]))/c(0,grw['EX_glyc(e)',]))
 #################################################################
 ######################## Phenotype analysis
 #################################################################
-max(matrix(evalsim@medlist[[41]][['EX_nh4(e)']],100,100))
+max(matrix(evalsim@medlist[[30]][['EX_nh4(e)']],100,100))
 
-evalsim@simlist[[41]]$phenotype
-getPhenoMat(evalsim,time=40)[,'EX_nh4(e)']
+evalsim@simlist[[30]]$phenotype
+getPhenoMat(evalsim,time=30)[,'EX_nh4(e)']
+table(getPhenoMat(evalsim,time=30)[,'EX_nh4(e)'])
 
 #plot ammonia uptake phenotypes
 nuse = getPhenoMat(evalsim)[,'EX_nh4(e)'] #other interesting compounds: 'EX_h(e)','EX_pi(e)','EX_man1p(e)','EX_man6p(e)','EX_chor(e)','EX_succ(e)','EX_fum(e)','EX_for(e)','EX_cit(e)','EX_6pgc(e)','EX_acac(e)','EX_pep(e)','EX_btd_RR(e)','EX_ac(e)','EX_ppa(e)','EX_dha(e)','EX_lac_L(e)','EX_pyr(e)','EX_tyr_L(e)','EX_thym(e)','EX_glyclt(e)'
-pop = evalsim@simlist[[41]]
-pop$phenotype_n = 1
-pop$phenotype_n[which(pop$phenotype!=0)] = nuse[paste('Bsubtilis.',pop$phenotype[which(pop$phenotype!=0)],sep='')] + 1
-
-#pop$phenotype_n[which(pop$phenotype!=0)]
-plot(pop[,c('x','y')],xlim=c(0,evalsim@n),ylim=c(0,evalsim@m),xlab='',ylab='',
-     axes=FALSE,cex=1, col=pop$phenotype_n, pch=19)
-
-nuse = getPhenoMat(evalsim)[,'EX_glyclt(e)']
-pop = evalsim@simlist[[41]]
+pop = evalsim@simlist[[30]]
 pop$phenotype_n = 1
 pop$phenotype_n[which(pop$phenotype!=0)] = nuse[paste('Bsubtilis.',pop$phenotype[which(pop$phenotype!=0)],sep='')] + 1
 
