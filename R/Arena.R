@@ -761,7 +761,7 @@ setMethod("extractMed", "Eval", function(object, time=length(object@medlist)){
 setGeneric("evalArena", function(object, plot_items='Population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){standardGeneric("evalArena")})
 setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){ #index in R start at 1, but the first state is 0
   time = time+1
-  old.par <- par(no.readonly = TRUE)
+  #old.par <- par(no.readonly = TRUE)
   if(retdata){
     retlist = list()
     for(i in 1:length(plot_items)){
@@ -817,7 +817,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
     }
   }
   #title(main=paste("step",i), outer=TRUE)
-  par(old.par)
+  #par(old.par)
   if(retdata){
     return(retlist)
   }
