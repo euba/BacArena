@@ -176,19 +176,21 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   if(length(smax) != length(mediac) && length(smax) != 1){
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
-  if(sum(mediac %in% object@mediac)==length(mediac)){
+  if(sum(mediac %in% object@mediac) != length(mediac)){stop("Substance does not exist in medium.")}
+  if(length(smax) == 1){
+    smax = rep(smax,length(mediac))
+  }
+  if(length(object@media) == 0){
     newmedia <- list()
     sapply(object@mediac, function(x, n, m){
       newmedia[[x]] <<- Substance(n, m, 0, name=x, difunc=difunc)
     }, n=object@n, m=object@m)
-    if(length(smax) == 1){
-      smax = rep(smax,length(mediac))
-    }
-    for(i in 1:length(mediac)){
-      newmedia[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], name=mediac[i], difunc=difunc, difspeed=difspeed)
-    }
-    eval.parent(substitute(object@media <- newmedia))
-  }else stop("Substance can't be produced or taken up by the organisms on the grid")
+  }else{newmedia <- object@media}
+  for(i in 1:length(mediac)){
+    newdmat = newmedia[[mediac[i]]]@diffmat + Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=T)
+    newmedia[[mediac[i]]]@diffmat <- newdmat
+  }
+  eval.parent(substitute(object@media <- newmedia))
 })
 
 #' @title Change substances in the environment
@@ -217,7 +219,28 @@ setMethod("changeSub", "Arena", function(object, smax, mediac){
                                                                   difunc=object@media[[mediac[i]]]@difunc,
                                                                   difspeed=object@media[[mediac[i]]]@difspeed)))
     }
-  }else stop("Substance does not exist in medium")
+  }else stop("Substance does not exist in medium.")
+})
+
+#' @title Remove all substances in the environment
+#'
+#' @description The generic function \code{flushSubs} removes specific substances in the environment.
+#'
+#' @param object An object of class Arena.
+#' @seealso \code{\link{Arena-class}} and \code{\link{addSubs}} 
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addSubs(arena) #add all substances with no concentrations.
+#' changeSub(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
+#' flushSubs(arena) #remove all created substance concentrations
+#' }
+setGeneric("flushSubs", function(object){standardGeneric("flushSubs")})
+setMethod("flushSubs", "Arena", function(object){
+  eval.parent(substitute(object@media <- list()))
 })
 
 #' @title Change substance concentration patterns in the environment
@@ -271,8 +294,8 @@ setMethod("changeDiff", "Arena", function(object, newdiffmat, mediac){
 #' createGradient(arena,smax=50,mediac=c("EX_glc(e)","EX_o2(e)","EX_pi(e)"),
 #'              position='top',steep=0.5)
 #' }
-setGeneric("createGradient", function(object, mediac, position, smax, steep){standardGeneric("createGradient")})
-setMethod("createGradient", "Arena", function(object, mediac, position, smax, steep){
+setGeneric("createGradient", function(object, mediac, position, smax, steep, add=F){standardGeneric("createGradient")})
+setMethod("createGradient", "Arena", function(object, mediac, position, smax, steep, add=F){
   if(steep<=0 || steep>=1){stop("Steepness must be in between 0 and 1.")}
   mediac = intersect(mediac,object@mediac)
   newdiffmat <- matrix(0,nrow=object@n,ncol=object@m)
@@ -285,7 +308,11 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
          'left'={for(i in 1:object@n){newdiffmat[i,0:gradn+1]=seq(smax,0,length.out=gradn+1)}},
          stop("Positions must be top, bottom, right and left."))
   for(i in 1:length(mediac)){
-    eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix(newdiffmat, sparse=T)))
+    if(add){
+      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- object@media[[mediac[i]]]@diffmat + Matrix(newdiffmat, sparse=T)))
+    }else{
+      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix(newdiffmat, sparse=T)))
+    }
   }
 })
 
@@ -761,7 +788,7 @@ setMethod("extractMed", "Eval", function(object, time=length(object@medlist)){
 setGeneric("evalArena", function(object, plot_items='Population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){standardGeneric("evalArena")})
 setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){ #index in R start at 1, but the first state is 0
   time = time+1
-  old.par <- par(no.readonly = TRUE)
+  #old.par <- par(no.readonly = TRUE)
   if(retdata){
     retlist = list()
     for(i in 1:length(plot_items)){
@@ -817,7 +844,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
     }
   }
   #title(main=paste("step",i), outer=TRUE)
-  par(old.par)
+  #par(old.par)
   if(retdata){
     return(retlist)
   }
