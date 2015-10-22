@@ -309,7 +309,7 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
          stop("Positions must be top, bottom, right and left."))
   for(i in 1:length(mediac)){
     if(add){
-      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- object@media[[mediac[i]]]@diffmat + Matrix(newdiffmat, sparse=T)))
+      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix(as.matrix(object@media[[mediac[i]]]@diffmat)+newdiffmat, sparse=T)))
     }else{
       eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix(newdiffmat, sparse=T)))
     }
