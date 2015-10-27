@@ -17,6 +17,9 @@
 #' @slot mflux A vector containing highly used metabolic reactions within the arena
 #' @slot n A number giving the horizontal size of the environment.
 #' @slot m A number giving the vertical size of the environment.
+#' @slot Lx A number giving the horizontal grid size in cm.
+#' @slot Ly A number giving the vertical grid size in cm.
+#' @slot geometry A list containing grid geometry parameter 
 setClass("Arena",
          representation(
            orgdat="data.frame",
@@ -29,6 +32,9 @@ setClass("Arena",
            mflux="list",
            n="integer",
            m="integer",
+           geometry="list",
+           Lx="numeric",
+           Ly="numeric",
            seed="numeric"
         )
 )
@@ -38,9 +44,20 @@ setClass("Arena",
 ########################################################################################################
 
 Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
-                  specs=list(),media=list(),mediac=character(),phenotypes=character(),stir=F,mflux=list()){
+                  specs=list(),media=list(),mediac=character(),phenotypes=character(),stir=F,mflux=list(), seed=numeric(0), 
+                  geometry=list(), Lx=10, Ly=10){
+  # set random seed
+  seed <- ifelse(length(seed)==0, sample(1:10000,1), seed)
+  set.seed(seed)
+  
+  # set geometry for diffusion
+  x.grid  <- setup.grid.1D(x.up = 0, L = Lx, N = n)
+  y.grid  <- setup.grid.1D(x.up = 0, L = Ly, N = m)
+  grid2D <- setup.grid.2D(x.grid, y.grid)
+  geo_list <- list(grid2D=grid2D)
+  
   new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs,
-      media=media, mediac=mediac, phenotypes=phenotypes, stir=stir, mflux=mflux)
+    media=media, mediac=mediac, phenotypes=phenotypes, stir=stir, mflux=mflux, seed=seed, geometry=geo_list, Lx=Lx, Ly=Ly)
 }
 
 ########################################################################################################
@@ -67,6 +84,8 @@ setGeneric("n", function(object){standardGeneric("n")})
 setMethod("n", "Arena", function(object){return(object@n)})
 setGeneric("m", function(object){standardGeneric("m")})
 setMethod("m", "Arena", function(object){return(object@m)})
+setGeneric("geometry", function(object){standardGeneric("geometry")})
+setMethod("geometry", "Arena", function(object){return(object@geometry)})
 setGeneric("seed", function(object){standardGeneric("seed")})
 setMethod("seed", "Arena", function(object){return(object@seed)})
 
@@ -443,7 +462,8 @@ setMethod("simEnv", "Arena", function(object, time){
         }
         if(arena@n*arena@m != sum(submat==mean(submat))){
           switch(arena@media[[j]]@difunc,
-                 "pde"={diffuseSteveCpp(submat, donut=FALSE, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
+                 "pde"={for(k in 1:arena@media[[j]]@difspeed){diffusePDE(arena@media[[j]], object)}},
+                 "pde2"={diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
                  "cpp"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveCpp(submat, donut=FALSE)}},
                  "r"={for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
                  stop("Simulation function for Organism object not defined yet.")) 
@@ -585,6 +605,22 @@ setMethod(show, "Arena", function(object){
   print(paste('Arena of size ',object@n,'x',object@m,' with ',nrow(object@orgdat),
               ' organisms of ',length(object@specs),' species.',sep=''))
 })
+
+
+#' @title Function to print basic units used in Arena
+#'
+#' @description The generic function \code{units} lists units of the most important parameters 
+#'
+#' @param object An object of class Arena.
+setGeneric("units", function(object){standardGeneric("units")})
+setMethod("units", "Arena", function(object){
+  print(paste("flux unit:","mmol/(h*g_dw)"))
+  print(paste("arena grid cells:",object@n,"x",object@m))
+  print(paste("arena grid size [cm]:",object@Lx,"x",object@Ly))
+  })
+  
+
+
 
 # Eval is a subclass of Arena containing function to reduce the size of simulations and evalution of results
 
@@ -1217,3 +1253,5 @@ setMethod("checkCorr", "Eval", function(object, corr=NULL, tocheck=list()){
     barplot(names.arg=names(dat_interest), height=dat_interest, las=2, main=paste("Highest correlations of", feature))
   })
 })
+
+

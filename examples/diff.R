@@ -1,12 +1,42 @@
 library(microbenchmark)
 
+
+library(Rcpp)
+library(RcppArmadillo)
+Rcpp::sourceCpp("src/diff.cpp")
+
+source(file="R/Arena.R")
+source(file="R/Substance.R")
+source(file="R/Organism.R")
+source(file="R/Stuff.R")
+
+
+arena = Arena(n=10, m=10, stir=F)
+bac = Bac(model=Ec_core, deathrate=0.0, duplirate=1, growthlimit=0.05, growtype="exponential",
+          speed=0, type="ecore", lyse=T)
+addOrg(arena, bac, amount=1, x=1, y=1)
+addSubs(arena, smax=0, difunc="pde", difspeed=1)
+arena@media$`EX_co2(e)`@diffmat[ceiling(arena@n/2),ceiling(arena@m/2)] <- 100
+sim <- simEnv(arena, time=2)
+sim@media$`EX_co2(e)`@diffmat
+
+sim@medlist[[2]]$`EX_co2(e)`
+
+
+co2_dat <- c(evalArena())
+evalArena(sim, plot_items = "EX_co2(e)", time=2)
+evalArena(sim, plot_items = c("Population", "EX_co2(e)", "EX_o2(e)", "EX_for(e)"), time=5)
+image(outb, ask = FALSE, mfrow = c(3, 3), main = paste("time", times))
+
+
+
 setwd("~/uni/bacarena")
 Rcpp::sourceCpp("src/diff.cpp")
 
 
 library(ReacTran)
-n=100
-m=100
+n=10
+m=10
 x.grid  <- setup.grid.1D(x.up = 0, L = 10, N = n)
 y.grid  <- setup.grid.1D(x.up = 0, L = 10, N = m)
 grid2D <- setup.grid.2D(x.grid, y.grid)
@@ -27,7 +57,7 @@ print(ma)
 #outb <- ode.2D (y = ma, func = Diff2d, t = 1:2, parms=NULL,
 #                dim = c(n, m), lrw = 950000)
 outb <- ode.2D (y = ma, func = Diff2d, t = 1:2, parms=NULL,
-                dim = c(n, m), method="rk4")
+                dim = c(n, m), lrw=16000)
 
 ma <- matrix(outb[2,][-1], ncol=m, nrow=n)
 print(ma)
