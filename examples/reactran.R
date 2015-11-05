@@ -18,14 +18,17 @@ C.x.down <- rep(0, times = n)
 C.y.up   <- rep(1, times = m)
 C.y.down <- rep(0, times = m)
 
+D.grid    <- setup.prop.2D(value = D, y.value = D, grid = grid2D)
+
 Diff2d <- function (t, y, pars)  {
   with (as.list(pars), {
     print(test)
+  #  D.grid    <- setup.prop.2D(value = D, y.value = D, grid = grid2D)
     CONC  <- matrix(nrow = n, ncol = m, data = y)
-  #  dCONC <- tran.2D(CONC, grid = grid2D, D.grid = D.grid,
-  #                   C.x.up = C.x.up, C.x.down = C.x.down,
-  #                   C.y.up = C.y.up, C.y.down = C.y.down)$dC
-    dCONC <- tran.2D(CONC, grid = grid2D, D.grid = D.grid)$dC
+    dCONC <- tran.2D(CONC, grid = grid2D, D.grid = D.grid,
+                     C.x.up = C.x.up, C.x.down = C.x.down,
+                     C.y.up = C.y.up, C.y.down = C.y.down)$dC
+  
     return (list(dCONC))
   })
 }

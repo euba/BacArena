@@ -1,26 +1,32 @@
 library(microbenchmark)
 
-
+setwd("~/uni/bacarena")
 library(Rcpp)
 library(RcppArmadillo)
 Rcpp::sourceCpp("src/diff.cpp")
-
+library(Matrix)
+library(sybil)
+library(ReacTran)
 source(file="R/Arena.R")
 source(file="R/Substance.R")
 source(file="R/Organism.R")
 source(file="R/Stuff.R")
 
 
-arena = Arena(n=10, m=10, stir=F)
+arena = Arena(n=51, m=51, stir=F)
+data(Ec_core)
 bac = Bac(model=Ec_core, deathrate=0.0, duplirate=1, growthlimit=0.05, growtype="exponential",
           speed=0, type="ecore", lyse=T)
 addOrg(arena, bac, amount=1, x=1, y=1)
 addSubs(arena, smax=0, difunc="pde", difspeed=1)
 arena@media$`EX_co2(e)`@diffmat[ceiling(arena@n/2),ceiling(arena@m/2)] <- 100
-sim <- simEnv(arena, time=2)
-sim@media$`EX_co2(e)`@diffmat
-
-sim@medlist[[2]]$`EX_co2(e)`
+arena@media$`EX_co2(e)`@difspeed=0.1
+sim <- simEnv(arena, time=8)
+sim@medlist[[2]]$`EX_co2(e)`[50]
+out <- lapply(sim@medlist, function(x){matrix(x$`EX_co2(e)`, nrow=arena@n)})
+par(mfrow = c(ceiling(sqrt(length(out))), ceiling(sqrt(length(out)))))
+for(i in 1:length(out)){image(out[[i]], main=paste("time",i))}
+par(mfrow=c(1,1))
 
 
 co2_dat <- c(evalArena())

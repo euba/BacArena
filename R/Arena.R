@@ -462,10 +462,10 @@ setMethod("simEnv", "Arena", function(object, time){
         }
         if(arena@n*arena@m != sum(submat==mean(submat))){
           switch(arena@media[[j]]@difunc,
-                 "pde"={for(k in 1:arena@media[[j]]@difspeed){diffusePDE(arena@media[[j]], object)}},
-                 "pde2"={diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
-                 "cpp"={for(k in 1:arena@media[[j]]@difspeed){diffuseNaiveCpp(submat, donut=FALSE)}},
-                 "r"={for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
+                 "pde"  = {submat <- diffusePDE(arena@media[[j]], geometry=arena@geometry)},
+                 "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
+                 "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
+                 "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
                  stop("Simulation function for Organism object not defined yet.")) 
           arena@media[[j]]@diffmat <- Matrix(submat, sparse=T)
         }

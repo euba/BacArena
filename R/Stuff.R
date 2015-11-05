@@ -28,13 +28,13 @@ colpal3 = c(
   "#232C16" # Dark Olive Green
 )
 
-# Diffusion function
+# Diffusion pde solver function
 Diff2d <- function (t, y, parms)  {
-  # Arena object is in parms
+  # geometry values are in parms
   with (as.list(parms), {
-    D.grid    <- setup.prop.2D(value = D, y.value = D, grid = arena@geometry$grid2D)
-    CONC  <- matrix(nrow = arena@n, ncol = arena@m, data = y)
-    dCONC <- tran.2D(CONC, grid = arena@geometry$grid2D, D.grid = D.grid)$dC
+    D.grid    <- setup.prop.2D(value = D, y.value = D, grid = geometry.grid2D)
+    CONC  <- matrix(nrow = geometry.grid2D$x.N, ncol = geometry.grid2D$y.N, data = y)
+    dCONC <- tran.2D(CONC, grid = geometry.grid2D, D.grid = D.grid)$dC
     return (list(dCONC))
   })
 }
