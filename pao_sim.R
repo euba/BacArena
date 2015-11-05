@@ -8,7 +8,11 @@ library(compiler)
 #setwd("/Users/euba/GitRep/BacArena/")
 setwd("uni/bacarena")
 #setwd('P:/GitRep/BacArena')
+library(ReacTran)
+setwd('P:/GitRep/BacArena')
+
 source(file="R/Arena.R")
+source(file="R/Stuff.R")
 source(file="R/Substance.R")
 source(file="R/Organism.R")
 source(file="R/Stuff.R")
@@ -21,6 +25,10 @@ library(sybilSBML)
 #model = readSBMLmod("P:/BACARENA/Comparison/MatNet/P_aeruginosa/modelPOA.xml")
 model = readSBMLmod("modelPOA.xml")
 load("poa_model.RData")
+SYBIL_SETTINGS("SOLVER","sybilGUROBI") #setting solver to GUROBI
+model = readSBMLmod("P:/BACARENA/Comparison/MatNet/P_aeruginosa/modelPOA.xml")
+#load('P:/GitRep/BacArena/poa_model.RData')
+#load('/Users/euba/GitRep/BacArena/poa_model.RData')
 
 set.seed(100)
 # paramters from MatNet:
@@ -32,9 +40,12 @@ set.seed(100)
 modelP = changeBounds(model,model@react_id[grep("EX",model@react_id)],lb=-1000)
 #modelP = model
 
-modelP = changeBounds(modelP,"EX_EC0011",lb=0)
-modelP = changeBounds(modelP,"EX_EC0065",lb=0)
+#modelP = changeBounds(modelP,"EX_EC0011",lb=0)
+#modelP@met_name[which(modelP@met_id=='EC0011[None]')]
+#modelP = changeBounds(modelP,"EX_EC0065",lb=0)
+#modelP@met_name[which(modelP@met_id=='EC0065[None]')]
 modelP = changeBounds(modelP,"EX_EC0027",lb=-10)
+modelP@met_name[which(modelP@met_id=='EC0027[None]')]
 
 # modelPm = changeBounds(modelP,"EX_EC0036",lb=0)
 # #modelPm = changeBounds(modelPm,"EX_EC0065",lb=0)
@@ -44,12 +55,12 @@ modelP = changeBounds(modelP,"EX_EC0027",lb=-10)
 
 bace = Bac(model=modelP, deathrate=0.05, duplirate=1, growthlimit=0.05, growtype="exponential",
             speed=2, type="PAO", lyse=F)
-arena = Arena(n=150, m=150, stir=F, tstep=0.5)
-addOrg(arena, bace, amount=1, x=75, y=75)
+arena = Arena(n=100, m=100, stir=F, tstep=0.5)
+addOrg(arena, bace, amount=1, x=50, y=50)
 addSubs(arena, smax=50, difunc="cpp", difspeed=1,
         mediac=model@react_id[grep("EX",model@react_id)][which(model@lowbnd[grep("EX",model@react_id)] < -1)])
 
-#print(system.time(evalsim <- simEnv(arena, time=50)))
+print(system.time(evalsim <- simEnv(arena, time=50)))
 
 preps = list()
 for(i in 1:20){
@@ -58,6 +69,7 @@ for(i in 1:20){
 }
 
 evalArena(evalsim, phencol=T)
+
 
 par(mfrow=c(2,3))
 evalArena(evalsim, phencol=T, time = c(20,40,50))
@@ -166,6 +178,7 @@ par(mfrow=c(1,1))
 #c(20,35,50)
 #cmp = 'EX_EC0036'
 cmp = 'EX_EC0029'
+modelP@met_name[which(modelP@met_id=='EC0036[None]')]
 i = 50
 nuse = getPhenoMat(evalsim)[,cmp] #other interesting compounds: 'EX_h(e)','EX_pi(e)','EX_man1p(e)','EX_man6p(e)','EX_chor(e)','EX_succ(e)','EX_fum(e)','EX_for(e)','EX_cit(e)','EX_6pgc(e)','EX_acac(e)','EX_pep(e)','EX_btd_RR(e)','EX_ac(e)','EX_ppa(e)','EX_dha(e)','EX_lac_L(e)','EX_pyr(e)','EX_tyr_L(e)','EX_thym(e)','EX_glyclt(e)'
 pop = evalsim@simlist[[i]]
@@ -180,9 +193,9 @@ par(mfrow=c(1,1))
 #cmp = 'EX_EC0036'
 cmp = 'EX_EC0029'
 i = 50
-nuse = getPhenoMat(evalsim_m)[,cmp] #other interesting compounds: 'EX_h(e)','EX_pi(e)','EX_man1p(e)','EX_man6p(e)','EX_chor(e)','EX_succ(e)','EX_fum(e)','EX_for(e)','EX_cit(e)','EX_6pgc(e)','EX_acac(e)','EX_pep(e)','EX_btd_RR(e)','EX_ac(e)','EX_ppa(e)','EX_dha(e)','EX_lac_L(e)','EX_pyr(e)','EX_tyr_L(e)','EX_thym(e)','EX_glyclt(e)'
-pop = evalsim_m@simlist[[i]]
+nuse = getPhenoMat(evalsim)[,cmp] #other interesting compounds: 'EX_h(e)','EX_pi(e)','EX_man1p(e)','EX_man6p(e)','EX_chor(e)','EX_succ(e)','EX_fum(e)','EX_for(e)','EX_cit(e)','EX_6pgc(e)','EX_acac(e)','EX_pep(e)','EX_btd_RR(e)','EX_ac(e)','EX_ppa(e)','EX_dha(e)','EX_lac_L(e)','EX_pyr(e)','EX_tyr_L(e)','EX_thym(e)','EX_glyclt(e)'
+pop = evalsim@simlist[[i]]
 pop$phenotype_n = 1
 pop$phenotype_n[which(pop$phenotype!=0)] = nuse[paste('PAO.',pop$phenotype[which(pop$phenotype!=0)],sep='')] + 1
-plot(pop[,c('x','y')],xlim=c(0,evalsim_m@n),ylim=c(0,evalsim_m@m),xlab='',ylab='',
+plot(pop[,c('x','y')],xlim=c(0,evalsim@n),ylim=c(0,evalsim@m),xlab='',ylab='',
      axes=FALSE,cex=0.5, col=pop$phenotype_n, pch=19)
