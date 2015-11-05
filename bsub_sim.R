@@ -16,6 +16,7 @@ setwd("E:/BACARENA/Comparison/MatNet/P_aeruginosa/")
 setwd("/Volumes/PHD/BACARENA/B_subtilis/")
 setwd("P:/BACARENA/B_subtilis/")
 setwd("/Users/euba/GitRep/BacArena/B_subtilis/")
+setwd("B_subtilis/")
 
 library(sybilSBML)
 model = readSBMLmod("Bs_iYO844_flux1.xml")

@@ -28,6 +28,18 @@ colpal3 = c(
   "#232C16" # Dark Olive Green
 )
 
+# Diffusion function
+Diff2d <- function (t, y, parms)  {
+  # Arena object is in parms
+  with (as.list(parms), {
+    D.grid    <- setup.prop.2D(value = D, y.value = D, grid = arena@geometry$grid2D)
+    CONC  <- matrix(nrow = arena@n, ncol = arena@m, data = y)
+    dCONC <- tran.2D(CONC, grid = arena@geometry$grid2D, D.grid = D.grid)$dC
+    return (list(dCONC))
+  })
+}
+
+
 openArena <- function(){
   data(Ec_core)
   bac = Bac(model=Ec_core, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growtype="exponential",

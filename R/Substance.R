@@ -123,9 +123,26 @@ setMethod("diffuseCpp", "Substance", function(object){
   eval.parent(substitute(object@diffmat <- Matrix(submat, sparse=T)))
 })
 
+
+setGeneric("diffusePDE", function(object, arena){standardGeneric("diffusePDE")})
+setMethod("diffusePDE", "Substance", function(object, arena){
+  print(object)
+  init_mat <- as.matrix(object@diffmat)
+  print(init_mat)
+  solution <- ode.2D (y = init_mat, func = Diff2d, t = 1:2, parms = c(arena=arena, D=object@difspeed),
+                   dim = c(arena@n, arena@m), method="lsodes", lrw=16000)
+  diff_mat <- matrix(data=solution[2,][-1], ncol=ncol(init_mat), nrow=nrow(init_mat))
+  print(diff_mat)
+  eval.parent(substitute(object@diffmat <- Matrix(diff_mat, sparse=T)))
+})
+
+
+
+
+
 #' @title Function for diffusion using a partial differential equation
 #'
-#' @description The generic function \code{diffusePDE} implements a partial differential equation after Grajdeanu (2007).
+#' @description The generic function \code{diffusePDE2} implements a partial differential equation after Grajdeanu (2007).
 #'
 #' @param object An object of class Substance.
 #' @details The function is a wrapper of the \code{C++} function \code{diffuseGrajdeanuCpp}. 
@@ -133,14 +150,24 @@ setMethod("diffuseCpp", "Substance", function(object){
 #' @examples
 #' \dontrun{
 #' sub <- Substance(n=20,m=20,smax=40,name='test',difunc='pde') #initialize test substance
-#' diffusePDE(sub)
+#' diffusePDE2(sub)
 #' }
-setGeneric("diffusePDE", function(object){standardGeneric("diffusePDE")})
-setMethod("diffusePDE", "Substance", function(object){
+setGeneric("diffusePDE2", function(object){standardGeneric("diffusePDE2")})
+setMethod("diffusePDE2", "Substance", function(object){
   submat <- as.matrix(object@diffmat)
   diffuseGrajdeanuCpp(submat, donut=FALSE, mu=object@difspeed)
   eval.parent(substitute(object@diffmat <- Matrix(submat, sparse=T)))
 })
+
+setGeneric("diffusePDE3", function(object){standardGeneric("diffusePDE3")})
+setMethod("diffusePDE3", "Substance", function(object){
+  submat <- as.matrix(object@diffmat)
+  diffuseSteveCpp(submat, donut=FALSE, D=object@difspeed, h=1, tstep=0.1)
+  eval.parent(substitute(object@diffmat <- Matrix(submat, sparse=T)))
+})
+
+
+
 
 #show function for class Substance
 

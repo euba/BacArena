@@ -1,5 +1,3 @@
-setwd("P:/BACARENA/Comparison/MatNet/P_aeruginosa/")
-
 ##Loading the required packages## 
 library(sybil)
 #library(sybilSBML)
@@ -7,18 +5,22 @@ library(Rcpp)
 library(RcppArmadillo)
 library(sybil)
 library(compiler)
-setwd("/Users/euba/GitRep/BacArena/")
+#setwd("/Users/euba/GitRep/BacArena/")
+setwd("uni/bacarena")
 #setwd('P:/GitRep/BacArena')
 source(file="R/Arena.R")
 source(file="R/Substance.R")
 source(file="R/Organism.R")
+source(file="R/Stuff.R")
 Rcpp::sourceCpp("src/diff.cpp")
 
-SYBIL_SETTINGS("SOLVER","sybilGUROBI") #setting solver to GUROBI
+#SYBIL_SETTINGS("SOLVER","sybilGUROBI") #setting solver to GUROBI
+SYBIL_SETTINGS("SOLVER") #setting solver to GUROBI
 
 library(sybilSBML)
 #model = readSBMLmod("P:/BACARENA/Comparison/MatNet/P_aeruginosa/modelPOA.xml")
-load('/Users/euba/GitRep/BacArena/poa_model.RData')
+model = readSBMLmod("modelPOA.xml")
+load("poa_model.RData")
 
 set.seed(100)
 # paramters from MatNet:

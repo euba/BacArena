@@ -2,7 +2,7 @@ setwd("~/uni/bacarena")
 library(Rcpp)
 library(RcppArmadillo)
 library(sybil)
-library(compiler) # byte code 
+library(ReacTran)
 source(file="R/Arena.R")
 source(file="R/Substance.R")
 source(file="R/Organism.R")
@@ -18,7 +18,7 @@ bac = Bac(model=Ec_core, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growty
 arena = Arena(n=50, m=50, stir=F, seed=8904)
 addOrg(arena, bac, amount=11, x=c((arena@n/2-5):(arena@n/2+5)), y=c((arena@m/2-5):(arena@m/2+5)))
 addSubs(arena, smax=20, difunc="pde", difspeed=1)
-sim <- simEnv(arena, time=1000)
+sim <- simEnv(arena, time=2)
 
 #
 # Evaluation
