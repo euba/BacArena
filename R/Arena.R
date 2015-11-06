@@ -55,8 +55,9 @@ Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0
   y.grid  <- setup.grid.1D(x.up = 0, L = Ly, N = m)
   grid2D <- setup.grid.2D(x.grid, y.grid)
   #get parameter for diffusion pde solver
-  lrw <- estimate_lrw(n,m)
-  geo_list <- list(grid2D=grid2D, lrw=lrw)
+  #lrw <- estimate_lrw(n,m)
+  #geo_list <- list(grid2D=grid2D, lrw=lrw)
+  geo_list <- list(grid2D=grid2D)
   
   new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs,
     media=media, mediac=mediac, phenotypes=phenotypes, stir=stir, mflux=mflux, seed=seed, geometry=geo_list, Lx=Lx, Ly=Ly)
@@ -430,7 +431,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NA){
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
          stop("Please supply an object of class Arena."))
-  if(is.na(lrw)){lrw=((arena@n*arena@m)*18.5 + 20)*10}
+  if(is.na(lrw)){lrw=estimate_lrw(arena@n,arena@m)}
   for(i in names(arena@specs)){
     phensel <- arena@phenotypes[which(names(arena@phenotypes)==i)]
     if(length(phensel)==0){
