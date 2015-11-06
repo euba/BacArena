@@ -7,20 +7,21 @@ Rcpp::sourceCpp("src/diff.cpp")
 library(Matrix)
 library(sybil)
 library(ReacTran)
+library(deSolve)
 source(file="R/Arena.R")
 source(file="R/Substance.R")
 source(file="R/Organism.R")
 source(file="R/Stuff.R")
 
 
-arena = Arena(n=51, m=51, stir=F)
+arena = Arena(n=101, m=101, stir=F)
 data(Ec_core)
 bac = Bac(model=Ec_core, deathrate=0.0, duplirate=1, growthlimit=0.05, growtype="exponential",
           speed=0, type="ecore", lyse=T)
 addOrg(arena, bac, amount=1, x=1, y=1)
 addSubs(arena, smax=0, difunc="pde", difspeed=1)
 arena@media$`EX_co2(e)`@diffmat[ceiling(arena@n/2),ceiling(arena@m/2)] <- 100
-arena@media$`EX_co2(e)`@difspeed=0.1
+arena@media$`EX_co2(e)`@difspeed=0.5
 sim <- simEnv(arena, time=8)
 sim@medlist[[2]]$`EX_co2(e)`[50]
 out <- lapply(sim@medlist, function(x){matrix(x$`EX_co2(e)`, nrow=arena@n)})
@@ -28,6 +29,18 @@ par(mfrow = c(ceiling(sqrt(length(out))), ceiling(sqrt(length(out)))))
 for(i in 1:length(out)){image(out[[i]], main=paste("time",i))}
 par(mfrow=c(1,1))
 
+
+
+x=c(10*10, 25*25, 51*51, 61*61, 71*71, 81*81, 91*91, 101*101)
+y=c(16000, 25000, 160000, 230000, 330000, 430000, 580000, 710000)
+lm <- lm(y~x)
+summary(lm)
+plot(x,y)
+(z <- line(x,y))
+abline(coef(lm))
+abline(coef=c(0, lm$coefficients[2]))
+
+line())
 
 co2_dat <- c(evalArena())
 evalArena(sim, plot_items = "EX_co2(e)", time=2)
