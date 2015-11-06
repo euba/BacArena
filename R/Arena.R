@@ -190,8 +190,8 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' arena <- Arena(20,20) #initialize the environment
 #' addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
 #' }
-setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=1){standardGeneric("addSubs")})
-setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=1){
+setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=0.1){standardGeneric("addSubs")})
+setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=0.1){
   if(length(smax) != length(mediac) && length(smax) != 1){
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
@@ -422,12 +422,13 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' }
-setGeneric("simEnv", function(object, time){standardGeneric("simEnv")})
-setMethod("simEnv", "Arena", function(object, time){
+setGeneric("simEnv", function(object, time, lrw=NA){standardGeneric("simEnv")})
+setMethod("simEnv", "Arena", function(object, time, lrw=NA){
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
          stop("Please supply an object of class Arena."))
+  if(is.na(lrw)){lrw=((arena@n*arena@m)*18.5 + 20)*10}
   for(i in names(arena@specs)){
     phensel <- arena@phenotypes[which(names(arena@phenotypes)==i)]
     if(length(phensel)==0){
@@ -466,7 +467,7 @@ setMethod("simEnv", "Arena", function(object, time){
         }
         if(arena@n*arena@m != sum(submat==mean(submat))){
           switch(arena@media[[j]]@difunc,
-                 "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, geometry=arena@geometry)},
+                 "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, geometry=arena@geometry, lrw)},
                  "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
                  "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
                  "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
