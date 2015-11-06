@@ -18,13 +18,14 @@ bac = Bac(model=Ec_core, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growty
 arena = Arena(n=50, m=50, stir=F, seed=8904)
 addOrg(arena, bac, amount=11, x=c((arena@n/2-5):(arena@n/2+5)), y=c((arena@m/2-5):(arena@m/2+5)))
 addSubs(arena, smax=20, difunc="pde", difspeed=1)
-sim <- simEnv(arena, time=2)
+createGradient(arena,smax=20,mediac="EX_o2(e)",position='left',steep=0.5)
+sim <- simEnv(arena, time=20)
 
 #
 # Evaluation
 #
 plotCurves(sim)
-evalArena(sim, plot_items = c("Population", "EX_glc(e)", "EX_o2(e)", "EX_for(e)"), time=10)
+evalArena(sim, plot_items = c("Population", "EX_glc(e)", "EX_o2(e)", "EX_for(e)"))#, time=10)
 evalArena(sim, plot_items = c("Population", "EX_glc(e)", "EX_ac(e)", "EX_o2(e)"), time=10) 
 evalArena(sim, plot_items = "Population")
 plotCurves2(sim)

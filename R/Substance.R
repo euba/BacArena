@@ -32,7 +32,7 @@ Substance <- function(n, m, smax, diffmat={}, name, difunc="pde", difspeed=1, ..
   if(length(diffmat)==0){
     diffmat = Matrix(smax, nrow=n, ncol=m, sparse=T)
   }
-  new("Substance", smax=smax, diffmat=diffmat, name=name, difunc=difunc, difspeed=round(difspeed), ...)
+  new("Substance", smax=smax, diffmat=diffmat, name=name, difunc=difunc, difspeed=difspeed, ...)
 }
 
 ########################################################################################################
@@ -105,10 +105,10 @@ setMethod("diffuseR", "Substance", function(object){
 })
 
 
-setGeneric("diffusePDE", function(object, geometry){standardGeneric("diffusePDE")})
-setMethod("diffusePDE", "Substance", function(object, geometry){
-  init_mat <- as.matrix(object@diffmat)
-  solution <- ode.2D (y = init_mat, func = Diff2d, t = 1:2, parms = c(geometry=geometry, D=object@difspeed),
+setGeneric("diffusePDE", function(object, init_mat, geometry){standardGeneric("diffusePDE")})
+setMethod("diffusePDE", "Substance", function(object, init_mat, geometry){
+  #init_mat <- as.matrix(object@diffmat)
+  solution <- ode.2D(y = init_mat, func = Diff2d, t = 1:2, parms = c(geometry=geometry, D=object@difspeed),
                    dim = c(geometry$grid2D$x.N, geometry$grid2D$y.N), method="lsodes", lrw=160000)
   diff_mat <- matrix(data=solution[2,][-1], ncol=ncol(init_mat), nrow=nrow(init_mat))
   return(diff_mat)

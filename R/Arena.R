@@ -199,11 +199,15 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   if(length(smax) == 1){
     smax = rep(smax,length(mediac))
   }
+  if(length(difspeed)!=length(mediac)){difspeed = rep(difspeed,length(mediac))}
   if(length(object@media) == 0){
     newmedia <- list()
-    sapply(object@mediac, function(x, n, m){
-      newmedia[[x]] <<- Substance(n, m, 0, name=x, difunc=difunc)
-    }, n=object@n, m=object@m)
+    for(i in 1:length(mediac)){
+      newmedia[[mediac[i]]] <- Substance(object@n, object@m, 0, name=mediac[i], difunc=difunc, difspeed=difspeed[i])
+    }
+    #sapply(object@mediac, function(x, n, m){
+    #  newmedia[[x]] <<- Substance(n, m, 0, name=x, difunc=difunc)
+    #}, n=object@n, m=object@m)
   }else{newmedia <- object@media}
   for(i in 1:length(mediac)){
     newdmat = newmedia[[mediac[i]]]@diffmat + Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=T)
@@ -325,7 +329,7 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
          'bottom'={for(i in 1:object@m){newdiffmat[object@m:(object@m-gradm),i]=rev(seq(0,smax,length.out=gradm+1))}},
          'right'={for(i in 1:object@n){newdiffmat[i,gradn:object@n]=seq(0,smax,length.out=gradn+1)}},
          'left'={for(i in 1:object@n){newdiffmat[i,0:gradn+1]=seq(smax,0,length.out=gradn+1)}},
-         stop("Positions must be top, bottom, right and left."))
+         stop("Positions must be top, bottom, right, or left."))
   for(i in 1:length(mediac)){
     if(add){
       eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix(as.matrix(object@media[[mediac[i]]]@diffmat)+newdiffmat, sparse=T)))
@@ -462,7 +466,7 @@ setMethod("simEnv", "Arena", function(object, time){
         }
         if(arena@n*arena@m != sum(submat==mean(submat))){
           switch(arena@media[[j]]@difunc,
-                 "pde"  = {submat <- diffusePDE(arena@media[[j]], geometry=arena@geometry)},
+                 "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, geometry=arena@geometry)},
                  "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
                  "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
                  "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
