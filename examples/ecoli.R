@@ -18,7 +18,7 @@ bac = Bac(model=Ec_core, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growty
 arena = Arena(n=90, m=90, stir=F, seed=8904)
 #addOrg(arena, bac, amount=11, x=c((arena@n/2-5):(arena@n/2+5)), y=c((arena@m/2-5):(arena@m/2+5)))
 addOrg(arena, bac, amount=1, x=round(n(arena)/2), y=round(m(arena)/2))
-addSubs(arena, smax=10,difspeed=5)
+addSubs(arena, smax=10,difspeed=0.1)
 #addSubs(arena, smax=c(20,50), mediac=c("EX_glc(e)","EX_o2(e)"), difunc="pde", difspeed=c(0.2,5))
 #createGradient(arena,smax=20,mediac="EX_o2(e)",position='left',steep=0.5)
 #createGradient(arena,smax=20,mediac=arena@mediac,position='left',steep=0.5)
