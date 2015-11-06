@@ -54,7 +54,9 @@ Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0
   x.grid  <- setup.grid.1D(x.up = 0, L = Lx, N = n)
   y.grid  <- setup.grid.1D(x.up = 0, L = Ly, N = m)
   grid2D <- setup.grid.2D(x.grid, y.grid)
-  geo_list <- list(grid2D=grid2D)
+  #get parameter for diffusion pde solver
+  lrw <- estimate_lrw(n,m)
+  geo_list <- list(grid2D=grid2D, lrw=lrw)
   
   new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs,
     media=media, mediac=mediac, phenotypes=phenotypes, stir=stir, mflux=mflux, seed=seed, geometry=geo_list, Lx=Lx, Ly=Ly)
