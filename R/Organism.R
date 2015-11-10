@@ -14,12 +14,14 @@
 #' @slot fbasol A list with the solutions of the flux balance analysis.
 #' @slot lyse A boolean variable indicating if the organism should lyse after death.
 #' @slot feat A list containing conditional features for the object (contains at the momement only biomass components for lysis).
-#' @slot deathrate A numeric value giving the factor by which the growth should be reduced in every iteration.
+#' @slot deathrate A numeric value giving the factor by which the growth should be reduced in every iteration (unit: fg)
 #' @slot duplirate A numeric value giving the growth cut off at which the organism is duplicated.
 #' @slot growthlimit A numeric value giving the growth limit at which the organism dies.
 #' @slot growtype A character vector giving the functional type for growth (linear or exponential).
 #' @slot kinetics A List containing Km and v_max values for each reactions.
 #' @slot speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
+#' @slot cellvol A numeric value indicating the volume that one organism occupies (unit: \mu cm^3)
+#' @slot cellweight A numeric value giving the maximal dry weight of single organism (unit: fg)
 setClass("Organism",
          representation(
            lbnd="numeric",
@@ -35,6 +37,8 @@ setClass("Organism",
            growthlimit="numeric",
            growtype="character",
            kinetics="list",
+           cellvol="numeric",
+           cellweight="numeric",
            speed="integer"
          )
 )
@@ -44,7 +48,8 @@ setClass("Organism",
 ########################################################################################################
 
 Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_comp=NA, deathrate, duplirate, growthlimit,
-                     growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", kinetics=list(), speed=2, ...){ #the constructor requires the model, after that it is not stored anymore
+                     growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", kinetics=list(), 
+                     cellvol=3.5, cellweight=1172, speed=2, ...){ #the constructor requires the model, after that it is not stored anymore
   rxname = react_id(model)
   lpobject <- sysBiolAlg(model, algorithm=algo)
   fbasol <- optimizeProb(lpobject)
@@ -79,7 +84,8 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_c
   }
   new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
       fbasol=fbasol, lyse=lyse, feat=feat, deathrate=deathrate, duplirate=duplirate,
-      growthlimit=growthlimit, growtype=growtype, kinetics=list(), speed=as.integer(speed), ...)
+      growthlimit=growthlimit, growtype=growtype, kinetics=list(), cellvol=cellvol, 
+      cellweight=cellweight, speed=as.integer(speed), ...)
 }
 
 ########################################################################################################

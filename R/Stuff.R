@@ -42,7 +42,7 @@ Diff2d <- function (t, y, parms)  {
 # function estimates lrw array size paremeter needed to solve stiffy diffusion pde with solver lsodes
 estimate_lrw <- function(grid_n, grid_m){
   x=c(10*10, 25*25, 51*51, 61*61, 71*71, 81*81, 91*91, 101*101)
-  y=c(16000, 25000, 160000, 230000, 330000, 430000, 580000, 710000)
+  y=c(3901, 29911, 160000, 230000, 330000, 430000, 580000, 710000)
   lm <- lm(y~x)
   #summary(lm)
   #plot(x,y)

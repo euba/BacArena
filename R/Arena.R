@@ -612,21 +612,13 @@ setMethod("dat2mat", "Arena", function(object){
 setMethod(show, "Arena", function(object){
   print(paste('Arena of size ',object@n,'x',object@m,' with ',nrow(object@orgdat),
               ' organisms of ',length(object@specs),' species.',sep=''))
-})
-
-
-#' @title Function to print basic units used in Arena
-#'
-#' @description The generic function \code{units} lists units of the most important parameters 
-#'
-#' @param object An object of class Arena.
-setGeneric("units", function(object){standardGeneric("units")})
-setMethod("units", "Arena", function(object){
   print(paste("flux unit:","mmol/(h*g_dw)"))
   print(paste("arena grid cells:",object@n,"x",object@m))
   print(paste("arena grid size [cm]:",object@Lx,"x",object@Ly))
-  })
-  
+  print(paste("area of one grid cell [cm^2]:", (object@Lx*object@Ly)/(object@n*object@m)))
+  print(paste("maximal amount of E. coli cells in one grid cell:", round((object@Lx*object@Ly)/(object@n*object@m)/(3.5^(2/3)*10^(-8)),1) ))
+})
+
 
 
 
