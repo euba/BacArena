@@ -191,8 +191,12 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' optimizeLP(org)
 #' }
-setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){standardGeneric("optimizeLP")})
-setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){ #this function has to be extended to contain also additional solvers
+setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, scalefactor){standardGeneric("optimizeLP")})
+setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, scalefactor=1){ #this function has to be extended to contain also additional solvers
+  print(scalefactor)
+  print(lb)
+  lb <- scalefactor * lb # scale bounds
+  lpob@S[,which(lpob@obj_coef==1)] * scalefactor # scale biomass reaction
   switch(problem(lpob)@solver,
          glpkAPI=setColsBndsGLPK(problem(lpob)@oobj, 1:length(lb), #specific for GLPK!
                                     lb=lb, ub=ub),
@@ -202,7 +206,9 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
                       ind=1:length(lb),lu=rep('U',length(lb)),bd=lb)) #specific for CPLEX
   fbasl <- optimizeProb(lpob)
   names(fbasl$fluxes) <- names(object@lbnd)
-  eval.parent(substitute(object@fbasol <- fbasl))
+  print(fbasl$fluxes)
+  stop("asd")
+  eval.parent(substitute(object@fbasol <- fbasl/scalefactor))
 })
 
 #' @title Function to account for the consumption and production of substances
@@ -570,9 +576,16 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 #' NULL
 setGeneric("simBac", function(object, arena, j, sublb){standardGeneric("simBac")})
 setMethod("simBac", "Bac", function(object, arena, j, sublb){
+  accurary <- 0.01
+  scalefac <- accurary/min(sublb[j,object@medium])
+  #print(scalefac)
+  
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium],
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep)
-  optimizeLP(object, lb=lobnd)
+  
+  # changed optimizeLP to work with scalefactor!!!
+  optimizeLP(object, lb=lobnd, scalefactor=scalefac)
+  
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,])))
   dead <- growth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
