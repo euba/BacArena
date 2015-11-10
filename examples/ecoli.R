@@ -15,14 +15,14 @@ Rcpp::sourceCpp("src/diff.cpp")
 data(Ec_core)
 bac = Bac(model=Ec_core, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growtype="exponential",
            speed=1, type="ecore", lyse=T)
-arena = Arena(n=90, m=90, stir=F, seed=8904)
+arena = Arena(n=100, m=100, stir=F, seed=8904, Lx=0.15, Ly=0.15, tstep=0.5)
 #addOrg(arena, bac, amount=11, x=c((arena@n/2-5):(arena@n/2+5)), y=c((arena@m/2-5):(arena@m/2+5)))
 addOrg(arena, bac, amount=1, x=round(n(arena)/2), y=round(m(arena)/2))
-addSubs(arena, smax=10,difspeed=0.1)
-#addSubs(arena, smax=c(20,50), mediac=c("EX_glc(e)","EX_o2(e)"), difunc="pde", difspeed=c(0.2,5))
+addSubs(arena, smax=50,difspeed=6.7e-07*60) #0.02412#0.072
+#addSubs(arena, smax=10, mediac=c("EX_o2(e)","EX_h(e)","EX_co2(e)","EX_o2(e)","EX_pi(e)"), difunc="pde", difspeed=rep(0.072,5))
 #createGradient(arena,smax=20,mediac="EX_o2(e)",position='left',steep=0.5)
 #createGradient(arena,smax=20,mediac=arena@mediac,position='left',steep=0.5)
-sim <- simEnv(arena, time=30)
+sim <- simEnv(arena, time=30,lrw=3319427)
 
 #1x1 -> 1
 #10x10 -> 1870
@@ -59,7 +59,7 @@ plot(are,lrw,type="b")
 # Evaluation
 #
 plotCurves(sim)
-evalArena(sim, plot_items = c("Population", "EX_glc(e)", "EX_o2(e)", "EX_for(e)"),phencol=T)#, time=10)
+evalArena(sim, plot_items = c("Population", "EX_glc(e)", "EX_o2(e)", "EX_ac(e)"),phencol=T)#, time=10)
 evalArena(sim, plot_items = c("Population", "EX_glc(e)", "EX_ac(e)", "EX_o2(e)"), time=10) 
 evalArena(sim, plot_items = "Population")
 plotCurves2(sim)
