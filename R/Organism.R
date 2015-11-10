@@ -15,7 +15,7 @@
 #' @slot lyse A boolean variable indicating if the organism should lyse after death.
 #' @slot feat A list containing conditional features for the object (contains at the momement only biomass components for lysis).
 #' @slot deathrate A numeric value giving the factor by which the growth should be reduced in every iteration (unit: fg)
-#' @slot duplirate A numeric value giving the growth cut off at which the organism is duplicated.
+#' @slot duplival A numeric value giving the growth cut off at which the organism is duplicated. (Attention depends on grid geometry and is set by arena.addorg())
 #' @slot growthlimit A numeric value giving the growth limit at which the organism dies.
 #' @slot growtype A character vector giving the functional type for growth (linear or exponential).
 #' @slot kinetics A List containing Km and v_max values for each reactions.
@@ -33,7 +33,7 @@ setClass("Organism",
            lyse="logical",
            feat="list",
            deathrate="numeric",
-           duplirate="numeric",
+           duplival="numeric",
            growthlimit="numeric",
            growtype="character",
            kinetics="list",
@@ -47,8 +47,8 @@ setClass("Organism",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_comp=NA, deathrate, duplirate, growthlimit,
-                     growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", kinetics=list(), 
+Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_comp=NA, deathrate, growthlimit,
+                     growtype="exponential", lyse=F, feat=list(), duplival=NA, csuffix="\\[c\\]", esuffix="\\[e\\]", kinetics=list(), 
                      cellvol=3.5, cellweight=1172, speed=2, ...){ #the constructor requires the model, after that it is not stored anymore
   rxname = react_id(model)
   lpobject <- sysBiolAlg(model, algorithm=algo)
@@ -83,7 +83,7 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_c
     feat[["biomass"]] <- biomets
   }
   new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
-      fbasol=fbasol, lyse=lyse, feat=feat, deathrate=deathrate, duplirate=duplirate,
+      fbasol=fbasol, lyse=lyse, feat=feat, deathrate=deathrate, duplival=numeric(),
       growthlimit=growthlimit, growtype=growtype, kinetics=list(), cellvol=cellvol, 
       cellweight=cellweight, speed=as.integer(speed), ...)
 }
@@ -110,8 +110,8 @@ setGeneric("feat", function(object){standardGeneric("feat")})
 setMethod("feat", "Organism", function(object){return(object@feat)})
 setGeneric("deathrate", function(object){standardGeneric("deathrate")})
 setMethod("deathrate", "Organism", function(object){return(object@deathrate)})
-setGeneric("duplirate", function(object){standardGeneric("duplirate")})
-setMethod("duplirate", "Organism", function(object){return(object@duplirate)})
+setGeneric("duplival", function(object){standardGeneric("duplival")})
+setMethod("duplival", "Organism", function(object){return(object@duplival)})
 setGeneric("growthlimit", function(object){standardGeneric("growthlimit")})
 setMethod("growthlimit", "Organism", function(object){return(object@growthlimit)})
 setGeneric("growtype", function(object){standardGeneric("growtype")})
@@ -140,7 +140,7 @@ setMethod("speed", "Organism", function(object){return(object@speed)})
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,duplirate=0.5,
+#' org <- Organism(ecore,deathrate=0.05,duplival=0.5,
 #'            growthlimit=0.05,growtype="exponential") #initialize an organism
 #' lobnds <- constrain(org,medium(org),lbnd(org)[medium(org)],1,1)
 #' }
@@ -187,7 +187,7 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,duplirate=0.5,
+#' org <- Organism(ecore,deathrate=0.05,duplival=0.5,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' optimizeLP(org)
 #' }
@@ -241,7 +241,7 @@ setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,duplirate=0.5,
+#' org <- Organism(ecore,deathrate=0.05,duplival=0.5,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' getPhenotype(org)
 #' }
@@ -266,7 +266,7 @@ setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,duplirate=0.5,
+#' org <- Organism(ecore,deathrate=0.05,duplival=0.5,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' growLin(org,1)
 #' }
@@ -289,7 +289,7 @@ setMethod("growLin", "Organism", function(object, growth){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,duplirate=0.5,
+#' org <- Organism(ecore,deathrate=0.05,duplival=0.5,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' growExp(org,1)
 #' }
@@ -393,7 +393,7 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -444,8 +444,8 @@ setClass("Bac",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Bac <- function(model, deathrate, duplirate, speed=2, growthlimit, growtype, chem='', ...){
-  new("Bac", Organism(model=model, deathrate=deathrate, duplirate=duplirate, growtype=growtype,
+Bac <- function(model, deathrate, duplival, speed=2, growthlimit, growtype, chem='', ...){
+  new("Bac", Organism(model=model, deathrate=deathrate, duplival=duplival, growtype=growtype,
                       growthlimit=growthlimit, speed=speed, ...), chem=chem)
 }
 
@@ -473,7 +473,7 @@ setMethod("chem", "Bac", function(object){return(object@chem)})
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -490,7 +490,7 @@ setMethod("growth", "Bac", function(object, population, j){
          stop("Growth type must be either linear or exponential"))
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
-  if(popvec$growth > object@duplirate){
+  if(popvec$growth > object@duplival){
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
               population@n, population@m, popvec$x, popvec$y)
     if(length(freenb) != 0){
@@ -526,7 +526,7 @@ setMethod("growth", "Bac", function(object, population, j){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplirate=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -623,10 +623,10 @@ setClass("Human",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Human <- function(model, deathrate, duplirate, growthlimit, growtype,
+Human <- function(model, deathrate, duplival, growthlimit, growtype,
                   objective=model@react_id[which(model@obj_coef==1)], speed=0, ...){
   model <- changeObjFunc(model, objective)
-  new("Human", Organism(model=model, deathrate=deathrate, duplirate=duplirate, growtype=growtype,
+  new("Human", Organism(model=model, deathrate=deathrate, duplival=duplival, growtype=growtype,
                         growthlimit=growthlimit, speed=speed, ...), objective=objective)
 }
 
@@ -654,7 +654,7 @@ setMethod("objective", "Human", function(object){return(object@objective)})
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' human <- Human(ecore,deathrate=0.05,duplirate=0.5,
+#' human <- Human(ecore,deathrate=0.05,duplival=0.5,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' changeFobj(human,'EX_glc(e)',ecore)
 #' }
@@ -678,7 +678,7 @@ setMethod("changeFobj", "Human", function(object, new_fobj, model, alg="fba"){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' human <- Human(ecore,deathrate=0.05,duplirate=0.5,
+#' human <- Human(ecore,deathrate=0.05,duplival=0.5,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,human,amount=10) #add 10 organisms
@@ -695,7 +695,7 @@ setMethod("cellgrowth", "Human", function(object, population, j){
          stop("Growth type must be either linear or exponential"))
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
-  if(popvec$growth > object@duplirate){
+  if(popvec$growth > object@duplival){
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
                         population@n, population@m, popvec$x, popvec$y)
     if(length(freenb) != 0){
