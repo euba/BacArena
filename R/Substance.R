@@ -12,7 +12,7 @@
 #' @slot diffmat A sparse matrix containing all concentrations of the substance in the environment.
 #' @slot name A character vector representing the name of the substance.
 #' @slot difunc A character vector ("pde","cpp" or "r") describing the function for diffusion.
-#' @slot difspeed A number indicating the diffusion speed (given by number of cells per iteration).
+#' @slot difspeed A number indicating the diffusion speed (given by cm^2/s).
 setClass("Substance",
          representation(
            smax = "numeric",
@@ -108,7 +108,8 @@ setMethod("diffuseR", "Substance", function(object){
 setGeneric("diffusePDE", function(object, init_mat, geometry, lrw){standardGeneric("diffusePDE")})
 setMethod("diffusePDE", "Substance", function(object, init_mat, geometry, lrw){
   #init_mat <- as.matrix(object@diffmat)
-  solution <- ode.2D(y = init_mat, func = Diff2d, t = 1:2, parms = c(geometry=geometry, D=object@difspeed),
+  D <- object@difspeed*3600*object@tstep # change unit of diff const to cm^2/h
+  solution <- ode.2D(y = init_mat, func = Diff2d, t = 1:2, parms = c(geometry=geometry, D=D),
                    dim = c(geometry$grid2D$x.N, geometry$grid2D$y.N), method="lsodes", lrw=lrw)#160000
   diff_mat <- matrix(data=solution[2,][-1], ncol=ncol(init_mat), nrow=nrow(init_mat))
   return(diff_mat)

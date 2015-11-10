@@ -610,13 +610,16 @@ setMethod("dat2mat", "Arena", function(object){
 #show function for class Arena
 
 setMethod(show, "Arena", function(object){
+  ecoli_cellweight = 3.5
+  ecoli_cellvol = 1172
   print(paste('Arena of size ',object@n,'x',object@m,' with ',nrow(object@orgdat),
               ' organisms of ',length(object@specs),' species.',sep=''))
   print(paste("flux unit:","mmol/(h*g_dw)"))
   print(paste("arena grid cells:",object@n,"x",object@m))
   print(paste("arena grid size [cm]:",object@Lx,"x",object@Ly))
   print(paste("area of one grid cell [cm^2]:", (object@Lx*object@Ly)/(object@n*object@m)))
-  print(paste("maximal amount of E. coli cells in one grid cell:", round((object@Lx*object@Ly)/(object@n*object@m)/(3.5^(2/3)*10^(-8)),1) ))
+  print(paste("maximal amount of E. coli cells in one grid cell:", round((object@Lx*object@Ly)/(object@n*object@m)/(ecoli_cellweight^(2/3)*10^(-8)),1) ))
+  print(paste("maximal amount of E.coli dry weight in one grid cell [fg]:", round((object@Lx*object@Ly)/(object@n*object@m)/(ecoli_cellweight^(2/3)*10^(-8))*ecoli_cellvol,1)  ))
 })
 
 

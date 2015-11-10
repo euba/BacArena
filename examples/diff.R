@@ -1,9 +1,9 @@
 library(microbenchmark)
 
 setwd("~/uni/bacarena")
-library(Rcpp)
-library(RcppArmadillo)
-Rcpp::sourceCpp("src/diff.cpp")
+#library(Rcpp)
+#library(RcppArmadillo)
+#Rcpp::sourceCpp("src/diff.cpp")
 library(Matrix)
 library(sybil)
 library(ReacTran)
@@ -14,7 +14,8 @@ source(file="R/Organism.R")
 source(file="R/Stuff.R")
 
 
-arena = Arena(n=101, m=101, stir=F)
+arena = Arena(n=100, m=100, stir=F)
+show(arena)
 data(Ec_core)
 bac = Bac(model=Ec_core, deathrate=0.0, duplirate=1, growthlimit=0.05, growtype="exponential",
           speed=0, type="ecore", lyse=T)
@@ -32,7 +33,7 @@ par(mfrow=c(1,1))
 
 
 x=c(10*10, 25*25, 51*51, 61*61, 71*71, 81*81, 91*91, 101*101)
-y=c(16000, 25000, 160000, 230000, 330000, 430000, 580000, 710000)
+y=c(3901, 29911, 160000, 230000, 330000, 430000, 580000, 710000)
 lm <- lm(y~x)
 summary(lm)
 plot(x,y)
@@ -54,8 +55,8 @@ Rcpp::sourceCpp("src/diff.cpp")
 
 
 library(ReacTran)
-n=10
-m=10
+n=50
+m=50
 x.grid  <- setup.grid.1D(x.up = 0, L = 10, N = n)
 y.grid  <- setup.grid.1D(x.up = 0, L = 10, N = m)
 grid2D <- setup.grid.2D(x.grid, y.grid)

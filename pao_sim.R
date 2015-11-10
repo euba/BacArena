@@ -1,4 +1,5 @@
 ##Loading the required packages## 
+library(ReacTran)
 library(sybil)
 #library(sybilSBML)
 library(Rcpp)
@@ -8,7 +9,6 @@ library(compiler)
 #setwd("/Users/euba/GitRep/BacArena/")
 setwd("uni/bacarena")
 #setwd('P:/GitRep/BacArena')
-library(ReacTran)
 setwd('P:/GitRep/BacArena')
 
 source(file="R/Arena.R")
@@ -17,9 +17,6 @@ source(file="R/Substance.R")
 source(file="R/Organism.R")
 source(file="R/Stuff.R")
 Rcpp::sourceCpp("src/diff.cpp")
-
-#SYBIL_SETTINGS("SOLVER","sybilGUROBI") #setting solver to GUROBI
-SYBIL_SETTINGS("SOLVER") #setting solver to GUROBI
 
 library(sybilSBML)
 #model = readSBMLmod("P:/BACARENA/Comparison/MatNet/P_aeruginosa/modelPOA.xml")
@@ -57,7 +54,7 @@ bace = Bac(model=modelP, deathrate=0.05, duplirate=1, growthlimit=0.05, growtype
             speed=2, type="PAO", lyse=F)
 arena = Arena(n=100, m=100, stir=F, tstep=0.5)
 addOrg(arena, bace, amount=1, x=50, y=50)
-addSubs(arena, smax=50, difunc="cpp", difspeed=1,
+addSubs(arena, smax=50, difunc="pde", difspeed=1,
         mediac=model@react_id[grep("EX",model@react_id)][which(model@lowbnd[grep("EX",model@react_id)] < -1)])
 
 print(system.time(evalsim <- simEnv(arena, time=50)))
