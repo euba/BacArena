@@ -35,7 +35,8 @@ setClass("Arena",
            geometry="list",
            Lx="numeric",
            Ly="numeric",
-           seed="numeric"
+           seed="numeric",
+           scale="numeric"
         )
 )
 
@@ -47,9 +48,9 @@ Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0
                   specs=list(),media=list(),mediac=character(),phenotypes=character(),stir=F,mflux=list(), seed=numeric(0), 
                   geometry=list(), Lx=10, Ly=10){
   # set random seed
+  SYBIL_SETTINGS("TOLERANCE",1E20) #set tolerance of FBA value higher
   seed <- ifelse(length(seed)==0, sample(1:10000,1), seed)
   set.seed(seed)
-  
   # set geometry for diffusion
   x.grid  <- setup.grid.1D(x.up = 0, L = Lx, N = n)
   y.grid  <- setup.grid.1D(x.up = 0, L = Ly, N = m)
@@ -58,8 +59,8 @@ Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0
   #lrw <- estimate_lrw(n,m)
   #geo_list <- list(grid2D=grid2D, lrw=lrw)
   geo_list <- list(grid2D=grid2D)
-  
-  new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs,
+  scale = (Lx*Ly)/(n*m)
+  new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs, scale=scale,
     media=media, mediac=mediac, phenotypes=phenotypes, stir=stir, mflux=mflux, seed=seed, geometry=geo_list, Lx=Lx, Ly=Ly)
 }
 
@@ -91,7 +92,8 @@ setGeneric("geometry", function(object){standardGeneric("geometry")})
 setMethod("geometry", "Arena", function(object){return(object@geometry)})
 setGeneric("seed", function(object){standardGeneric("seed")})
 setMethod("seed", "Arena", function(object){return(object@seed)})
-
+setGeneric("scale", function(object){standardGeneric("scale")})
+setMethod("scale", "Arena", function(object){return(object@scale)})
 
 ########################################################################################################
 ###################################### METHODS #########################################################
@@ -119,8 +121,8 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' }
-setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=NULL, mean=1, sd=0.25){standardGeneric("addOrg")})
-setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=NULL, mean=1, sd=0.25){
+setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=0.489, mean=0.489, sd=0.132){standardGeneric("addOrg")})
+setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=0.489, mean=0.489, sd=0.132){
   if(amount+nrow(object@orgdat) > object@n*object@m){
     stop("More individuals than space on the grid")
   }
@@ -129,7 +131,6 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   spectype <- specI@type
   neworgdat <- object@orgdat
   newspecs <- object@specs
-  specI@duplival <- (object@Lx*object@Ly)/(object@n*object@m)/(specI@cellvol^(2/3)*10^(-8))*specI@cellweight # calculate value for duplication according to grid
   newspecs[[spectype]] <- specI
   type <- which(names(newspecs)==spectype)
   newmflux <- object@mflux
@@ -194,16 +195,17 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' arena <- Arena(20,20) #initialize the environment
 #' addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
 #' }
-setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=0.1){standardGeneric("addSubs")})
-setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=0.1){
+setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=0.1, unit="mmol/cell"){standardGeneric("addSubs")})
+setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=0.1, unit="mmol/cell"){
   if(length(smax) != length(mediac) && length(smax) != 1){
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
   if(sum(mediac %in% object@mediac) != length(mediac)){stop("Substance does not exist in medium.")}
-  smax <- (smax/100)*((object@Lx*object@Ly)/(object@n*object@m))  # conversion of mMol in mmol/grid_cell
+  if(intersect(unit,c("mmol/cell","mM"))){stop("Wrong unit for concentration.")}
   if(length(smax) == 1){
     smax = rep(smax,length(mediac))
   }
+  if(unit=="mM"){smax <- (smax*0.01)*object@scale}  # conversion of mMol in mmol/grid_cell
   if(length(difspeed)!=length(mediac)){difspeed = rep(difspeed,length(mediac))}
   if(length(object@media) == 0){
     newmedia <- list()
@@ -453,10 +455,13 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NA){
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
     for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
       org <- arena@specs[[arena@orgdat[j,'type']]]
+      bacnum = (arena@scale/(specI@cellvol^(2/3)*10^(-8))) #calculate the number of bacteria individuals per gridcell
+      sublb = (sublb/bacnum)*(10^12) #convert substance availabity to per bacterium and then convert to fmol per gridcell
       switch(class(org),
              "Bac"= {arena = simBac(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
              "Human"= {arena = simHum(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
-             stop("Simulation function for Organism object not defined yet.")) 
+             stop("Simulation function for Organism object not defined yet."))
+      sublb = (sublb*bacnum)/(10^12) #convert again to mmol per gridcell
     }
     #print(arena@orgdat)
     test <- is.na(arena@orgdat$growth)

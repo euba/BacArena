@@ -47,9 +47,9 @@ setClass("Organism",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_comp=NA, deathrate, growthlimit,
+Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_comp=NA, deathrate=0.21, growthlimit=0.083, cellweight=1.172, cellvol=3.5,
                      growtype="exponential", lyse=F, feat=list(), duplival=NA, csuffix="\\[c\\]", esuffix="\\[e\\]", kinetics=list(), 
-                     cellvol=3.5, cellweight=1172, speed=2, ...){ #the constructor requires the model, after that it is not stored anymore
+                     speed=2, ...){ #the constructor requires the model, after that it is not stored anymore
   rxname = react_id(model)
   lpobject <- sysBiolAlg(model, algorithm=algo)
   fbasol <- optimizeProb(lpobject)
@@ -573,7 +573,8 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium],
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep)
   optimizeLP(object, lb=lobnd)
-  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,])))
+  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,]*
+                                                (arena@scale/(object@cellvol^(2/3)*10^(-8)))))) #scale consumption to the number of cells in gridcell
   dead <- growth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
   
