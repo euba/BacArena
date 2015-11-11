@@ -15,7 +15,6 @@
 #' @slot lyse A boolean variable indicating if the organism should lyse after death.
 #' @slot feat A list containing conditional features for the object (contains at the momement only biomass components for lysis).
 #' @slot deathrate A numeric value giving the factor by which the growth should be reduced in every iteration (unit: fg)
-#' @slot duplival A numeric value giving the growth cut off at which the organism is duplicated. (Attention depends on grid geometry and is set by arena.addorg())
 #' @slot growthlimit A numeric value giving the growth limit at which the organism dies.
 #' @slot growtype A character vector giving the functional type for growth (linear or exponential).
 #' @slot kinetics A List containing Km and v_max values for each reactions.
@@ -33,7 +32,6 @@ setClass("Organism",
            lyse="logical",
            feat="list",
            deathrate="numeric",
-           duplival="numeric",
            growthlimit="numeric",
            growtype="character",
            kinetics="list",
@@ -48,7 +46,7 @@ setClass("Organism",
 ########################################################################################################
 
 Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_comp=NA, deathrate=0.21, growthlimit=0.083, cellweight=1.172, cellvol=3.5,
-                     growtype="exponential", lyse=F, feat=list(), duplival=NA, csuffix="\\[c\\]", esuffix="\\[e\\]", kinetics=list(), 
+                     growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", kinetics=list(), 
                      speed=2, ...){ #the constructor requires the model, after that it is not stored anymore
   rxname = react_id(model)
   lpobject <- sysBiolAlg(model, algorithm=algo)
@@ -83,7 +81,7 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_c
     feat[["biomass"]] <- biomets
   }
   new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
-      fbasol=fbasol, lyse=lyse, feat=feat, deathrate=deathrate, duplival=numeric(),
+      fbasol=fbasol, lyse=lyse, feat=feat, deathrate=deathrate,
       growthlimit=growthlimit, growtype=growtype, kinetics=list(), cellvol=cellvol, 
       cellweight=cellweight, speed=as.integer(speed), ...)
 }
@@ -110,8 +108,6 @@ setGeneric("feat", function(object){standardGeneric("feat")})
 setMethod("feat", "Organism", function(object){return(object@feat)})
 setGeneric("deathrate", function(object){standardGeneric("deathrate")})
 setMethod("deathrate", "Organism", function(object){return(object@deathrate)})
-setGeneric("duplival", function(object){standardGeneric("duplival")})
-setMethod("duplival", "Organism", function(object){return(object@duplival)})
 setGeneric("growthlimit", function(object){standardGeneric("growthlimit")})
 setMethod("growthlimit", "Organism", function(object){return(object@growthlimit)})
 setGeneric("growtype", function(object){standardGeneric("growtype")})
@@ -444,9 +440,8 @@ setClass("Bac",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Bac <- function(model, deathrate, duplival, speed=2, growthlimit, growtype, chem='', ...){
-  new("Bac", Organism(model=model, deathrate=deathrate, duplival=duplival, growtype=growtype,
-                      growthlimit=growthlimit, speed=speed, ...), chem=chem)
+Bac <- function(model, chem='', ...){
+  new("Bac", Organism(model=model, ...), chem=chem)
 }
 
 ########################################################################################################
@@ -490,7 +485,7 @@ setMethod("growth", "Bac", function(object, population, j){
          stop("Growth type must be either linear or exponential"))
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
-  if(popvec$growth > object@duplival){
+  if(popvec$growth > object@cellweight){
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
               population@n, population@m, popvec$x, popvec$y)
     if(length(freenb) != 0){
@@ -573,8 +568,7 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium],
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep)
   optimizeLP(object, lb=lobnd)
-  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,]*
-                                                (arena@scale/(object@cellvol^(2/3)*10^(-8)))))) #scale consumption to the number of cells in gridcell
+  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,]))) #scale consumption to the number of cells?
   dead <- growth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
   
@@ -624,11 +618,9 @@ setClass("Human",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Human <- function(model, deathrate, duplival, growthlimit, growtype,
-                  objective=model@react_id[which(model@obj_coef==1)], speed=0, ...){
+Human <- function(model, objective=model@react_id[which(model@obj_coef==1)], speed=0, ...){
   model <- changeObjFunc(model, objective)
-  new("Human", Organism(model=model, deathrate=deathrate, duplival=duplival, growtype=growtype,
-                        growthlimit=growthlimit, speed=speed, ...), objective=objective)
+  new("Human", Organism(model=model, speed=speed, ...), objective=objective)
 }
 
 ########################################################################################################
@@ -696,7 +688,7 @@ setMethod("cellgrowth", "Human", function(object, population, j){
          stop("Growth type must be either linear or exponential"))
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
-  if(popvec$growth > object@duplival){
+  if(popvec$growth > object@cellweight){
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
                         population@n, population@m, popvec$x, popvec$y)
     if(length(freenb) != 0){

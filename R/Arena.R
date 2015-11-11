@@ -48,7 +48,6 @@ Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0
                   specs=list(),media=list(),mediac=character(),phenotypes=character(),stir=F,mflux=list(), seed=numeric(0), 
                   geometry=list(), Lx=10, Ly=10){
   # set random seed
-  SYBIL_SETTINGS("TOLERANCE",1E20) #set tolerance of FBA value higher
   seed <- ifelse(length(seed)==0, sample(1:10000,1), seed)
   set.seed(seed)
   # set geometry for diffusion
@@ -121,8 +120,8 @@ setMethod("scale", "Arena", function(object){return(object@scale)})
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' }
-setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=0.489, mean=0.489, sd=0.132){standardGeneric("addOrg")})
-setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=0.489, mean=0.489, sd=0.132){
+setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=NA, mean=0.489, sd=0.132){standardGeneric("addOrg")})
+setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=NA, mean=0.489, sd=0.132){
   if(amount+nrow(object@orgdat) > object@n*object@m){
     stop("More individuals than space on the grid")
   }
@@ -201,7 +200,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
   if(sum(mediac %in% object@mediac) != length(mediac)){stop("Substance does not exist in medium.")}
-  if(intersect(unit,c("mmol/cell","mM"))){stop("Wrong unit for concentration.")}
+  if(length(intersect(unit,c("mmol/cell","mM")))==0){stop("Wrong unit for concentration.")}
   if(length(smax) == 1){
     smax = rep(smax,length(mediac))
   }
@@ -435,6 +434,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NA){
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
          stop("Please supply an object of class Arena."))
+  #SYBIL_SETTINGS("TOLERANCE",1E20) #set tolerance of FBA value higher
   if(is.na(lrw)){lrw=estimate_lrw(arena@n,arena@m)}
   for(i in names(arena@specs)){
     phensel <- arena@phenotypes[which(names(arena@phenotypes)==i)]
@@ -455,13 +455,13 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NA){
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
     for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
       org <- arena@specs[[arena@orgdat[j,'type']]]
-      bacnum = (arena@scale/(specI@cellvol^(2/3)*10^(-8))) #calculate the number of bacteria individuals per gridcell
-      sublb = (sublb/bacnum)*(10^12) #convert substance availabity to per bacterium and then convert to fmol per gridcell
+      bacnum = (arena@scale/(org@cellvol^(2/3)*10^(-8))) #calculate the number of bacteria individuals per gridcell
+      sublb[,arena@mediac] = (sublb[,arena@mediac]/bacnum)*(10^12) #convert substance availabity to per bacterium and then convert to fmol per gridcell
       switch(class(org),
              "Bac"= {arena = simBac(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
              "Human"= {arena = simHum(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
              stop("Simulation function for Organism object not defined yet."))
-      sublb = (sublb*bacnum)/(10^12) #convert again to mmol per gridcell
+      sublb[,arena@mediac] = (sublb[,arena@mediac]*bacnum)/(10^12) #convert again to mmol per gridcell
     }
     #print(arena@orgdat)
     test <- is.na(arena@orgdat$growth)
@@ -477,7 +477,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NA){
         }
         if(arena@n*arena@m != sum(submat==mean(submat))){
           switch(arena@media[[j]]@difunc,
-                 "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, geometry=arena@geometry, lrw)},
+                 "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, geometry=arena@geometry, lrw, tstep=object@tstep)},
                  "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
                  "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
                  "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
