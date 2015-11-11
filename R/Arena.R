@@ -200,6 +200,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
   if(sum(mediac %in% object@mediac) != length(mediac)){stop("Substance does not exist in medium.")}
+  smax <- (smax/100)*((object@Lx*object@Ly)/(object@n*object@m))  # conversion of mMol in mmol/grid_cell
   if(length(smax) == 1){
     smax = rep(smax,length(mediac))
   }
