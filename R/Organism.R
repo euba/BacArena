@@ -568,7 +568,9 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep)
   optimizeLP(object, lb=lobnd)
-  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum))) #scale consumption to the number of cells?
+  
+  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum))) #scale consumption to the number of cells?
+
   dead <- growth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
   
@@ -728,7 +730,7 @@ setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep)
   optimizeLP(object, lb=lobnd)
-  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum))) #rescale from population size
+  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum))) #rescale from population size
   dead <- cellgrowth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
   if(dead && object@lyse){

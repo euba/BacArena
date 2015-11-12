@@ -18,14 +18,14 @@ SYBIL_SETTINGS("SOLVER","sybilGUROBI") #setting solver to GUROBI
 data(Ec_core)
 bac = Bac(model=Ec_core, growtype="exponential",
            speed=1, type="ecore", lyse=F)
-arena = Arena(n=200, m=200, stir=F, seed=8904, Lx=10, Ly=10, tstep=0.5)
+arena = Arena(n=200, m=200, stir=F, seed=8904, Lx=0.03, Ly=0.03, tstep=0.5)
 #addOrg(arena, bac, amount=11, x=c((arena@n/2-5):(arena@n/2+5)), y=c((arena@m/2-5):(arena@m/2+5)))
 addOrg(arena, bac, amount=500)#, x=arena@n/2, y=arena@m/2)
-addSubs(arena, smax=0.01, difspeed=6.7e-9, unit='mM') #0.02412#0.072
+addSubs(arena, smax=0.1, difspeed=6.7e-20, unit='mM') #0.02412#0.072
 #addSubs(arena, smax=10, mediac=c("EX_o2(e)","EX_h(e)","EX_co2(e)","EX_o2(e)","EX_pi(e)"), difunc="pde", difspeed=rep(0.072,5))
 #createGradient(arena,smax=20,mediac="EX_o2(e)",position='left',steep=0.5)
 #createGradient(arena,smax=20,mediac=arena@mediac,position='left',steep=0.5)
-sim <- simEnv(arena, time=5, lrw=8389186)
+sim <- simEnv(arena, time=10, lrw=8389186)
 
 SYBIL_SETTINGS("TOLERANCE",1E-6) #set tolerance of FBA value higher
 SYBIL_SETTINGS("MAXIMUM",1) #set tolerance of FBA value higher
