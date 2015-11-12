@@ -453,17 +453,16 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NA){
   for(i in 1:time){
     cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
+    sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
     for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
       org <- arena@specs[[arena@orgdat[j,'type']]]
-      bacnum = (arena@scale/(org@cellvol^(2/3)*10^(-8))) #calculate the number of bacteria individuals per gridcell
-      sublb[,arena@mediac] = (sublb[,arena@mediac]/bacnum)*(10^12) #convert substance availabity to per bacterium and then convert to fmol per gridcell
+      bacnum = round((arena@scale/(org@cellvol^(2/3)*10^(-8)))) #calculate the number of bacteria individuals per gridcell
       switch(class(org),
-             "Bac"= {arena = simBac(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
-             "Human"= {arena = simHum(org, arena, j, sublb)}, #the sublb matrix will be modified within this function
+             "Bac"= {arena = simBac(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
+             "Human"= {arena = simHum(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
              stop("Simulation function for Organism object not defined yet."))
-      sublb[,arena@mediac] = (sublb[,arena@mediac]*bacnum)/(10^12) #convert again to mmol per gridcell
     }
-    #print(arena@orgdat)
+    sublb[,arena@mediac] = sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
     test <- is.na(arena@orgdat$growth)
     if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
     rm("test")

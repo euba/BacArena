@@ -213,10 +213,10 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
 #' @seealso \code{\link{Organism-class}}
 #' @examples
 #' NULL
-setGeneric("consume", function(object, sublb, cutoff=1e-6){standardGeneric("consume")})
-setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6){
+setGeneric("consume", function(object, sublb, cutoff=1e-6, bacnum){standardGeneric("consume")})
+setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum){
   if(object@fbasol$obj>=cutoff && !is.na(object@fbasol$obj)){
-    flux = object@fbasol$fluxes[object@medium]
+    flux = object@fbasol$fluxes[object@medium]*bacnum #scale flux to whole population size
     flux = na.omit(ifelse(abs(flux)<=cutoff,NA,flux))
     sublb[names(flux)] = round(sublb[names(flux)]+flux, 6)
   }
@@ -563,12 +563,12 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 #' @seealso \code{\link{Bac-class}}, \code{\link{Arena-class}}, \code{\link{simEnv}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{growth}, \code{checkPhen}, \code{lysis}, \code{move} and \code{chemotaxis}
 #' @examples
 #' NULL
-setGeneric("simBac", function(object, arena, j, sublb){standardGeneric("simBac")})
-setMethod("simBac", "Bac", function(object, arena, j, sublb){
-  lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium],
+setGeneric("simBac", function(object, arena, j, sublb, bacnum){standardGeneric("simBac")})
+setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum){
+  lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep)
   optimizeLP(object, lb=lobnd)
-  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,]))) #scale consumption to the number of cells?
+  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum))) #scale consumption to the number of cells?
   dead <- growth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
   
@@ -723,12 +723,12 @@ setMethod("cellgrowth", "Human", function(object, population, j){
 #' @seealso \code{\link{Human-class}}, \code{\link{Arena-class}}, \code{\link{simEnv}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{cellgrowth}, \code{checkPhen} and \code{lysis}
 #' @examples
 #' NULL
-setGeneric("simHum", function(object, arena, j, sublb){standardGeneric("simHum")})
-setMethod("simHum", "Human", function(object, arena, j, sublb){
-  lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium],
+setGeneric("simHum", function(object, arena, j, sublb, bacnum){standardGeneric("simHum")})
+setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum){
+  lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep)
   optimizeLP(object, lb=lobnd)
-  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,])))
+  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum))) #rescale from population size
   dead <- cellgrowth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
   if(dead && object@lyse){
