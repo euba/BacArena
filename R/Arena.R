@@ -19,7 +19,7 @@
 #' @slot m A number giving the vertical size of the environment.
 #' @slot Lx A number giving the horizontal grid size in cm.
 #' @slot Ly A number giving the vertical grid size in cm.
-#' @slot geometry A list containing grid geometry parameter 
+#' @slot gridgeometry A list containing grid geometry parameter 
 setClass("Arena",
          representation(
            orgdat="data.frame",
@@ -32,7 +32,7 @@ setClass("Arena",
            mflux="list",
            n="integer",
            m="integer",
-           geometry="list",
+           gridgeometry="list",
            Lx="numeric",
            Ly="numeric",
            seed="numeric",
@@ -46,7 +46,7 @@ setClass("Arena",
 
 Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
                   specs=list(),media=list(),mediac=character(),phenotypes=character(),stir=F,mflux=list(), seed=numeric(0), 
-                  geometry=list(), Lx=10, Ly=10){
+                  gridgeometry=list(), Lx=10, Ly=10){
   # set random seed
   seed <- ifelse(length(seed)==0, sample(1:10000,1), seed)
   set.seed(seed)
@@ -60,7 +60,7 @@ Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0
   geo_list <- list(grid2D=grid2D)
   scale = (Lx*Ly)/(n*m)
   new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs, scale=scale,
-    media=media, mediac=mediac, phenotypes=phenotypes, stir=stir, mflux=mflux, seed=seed, geometry=geo_list, Lx=Lx, Ly=Ly)
+    media=media, mediac=mediac, phenotypes=phenotypes, stir=stir, mflux=mflux, seed=seed, gridgeometry=geo_list, Lx=Lx, Ly=Ly)
 }
 
 ########################################################################################################
@@ -87,8 +87,8 @@ setGeneric("n", function(object){standardGeneric("n")})
 setMethod("n", "Arena", function(object){return(object@n)})
 setGeneric("m", function(object){standardGeneric("m")})
 setMethod("m", "Arena", function(object){return(object@m)})
-setGeneric("geometry", function(object){standardGeneric("geometry")})
-setMethod("geometry", "Arena", function(object){return(object@geometry)})
+setGeneric("gridgeometry", function(object){standardGeneric("gridgeometry")})
+setMethod("gridgeometry", "Arena", function(object){return(object@gridgeometry)})
 setGeneric("seed", function(object){standardGeneric("seed")})
 setMethod("seed", "Arena", function(object){return(object@seed)})
 setGeneric("scale", function(object){standardGeneric("scale")})
@@ -209,7 +209,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   if(length(object@media) == 0){
     newmedia <- list()
     for(i in 1:length(mediac)){
-      newmedia[[mediac[i]]] <- Substance(object@n, object@m, 0, name=mediac[i], difunc=difunc, difspeed=difspeed[i])
+      newmedia[[mediac[i]]] <- Substance(object@n, object@m, 0, name=mediac[i], difunc=difunc, difspeed=difspeed[i], gridgeometry=object@gridgeometry)
     }
     #sapply(object@mediac, function(x, n, m){
     #  newmedia[[x]] <<- Substance(n, m, 0, name=x, difunc=difunc)
@@ -246,7 +246,7 @@ setMethod("changeSub", "Arena", function(object, smax, mediac){
     for(i in 1:length(mediac)){
       eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i],
                                                                   difunc=object@media[[mediac[i]]]@difunc,
-                                                                  difspeed=object@media[[mediac[i]]]@difspeed)))
+                                                                  difspeed=object@media[[mediac[i]]]@difspeed, gridgeometry=object@gridgeometry)))
     }
   }else stop("Substance does not exist in medium.")
 })
@@ -476,7 +476,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NA){
         }
         if(arena@n*arena@m != sum(submat==mean(submat))){
           switch(arena@media[[j]]@difunc,
-                 "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, geometry=arena@geometry, lrw, tstep=object@tstep)},
+                 "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
                  "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
                  "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
                  "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},

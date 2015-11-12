@@ -19,7 +19,8 @@ setClass("Substance",
            diffmat = "Matrix",
            name = "character",
            difunc = "character",
-           difspeed = "numeric"
+           difspeed = "numeric",
+           diffgeometry = "list"
          )
 )
 
@@ -28,11 +29,13 @@ setClass("Substance",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Substance <- function(n, m, smax, diffmat={}, name, difunc="pde", difspeed=1, ...){
+Substance <- function(n, m, smax, diffmat={}, name, difunc="pde", difspeed=1, gridgeometry, diffgeometry=list(), ...){
   if(length(diffmat)==0){
     diffmat = Matrix(smax, nrow=n, ncol=m, sparse=T)
   }
-  new("Substance", smax=smax, diffmat=diffmat, name=name, difunc=difunc, difspeed=difspeed, ...)
+  Dgrid <- setup.prop.2D(value = difspeed, grid = gridgeometry$grid2D)
+  diffgeometry <- list(Dgrid=Dgrid)
+  new("Substance", smax=smax, diffmat=diffmat, name=name, difunc=difunc, difspeed=difspeed, diffgeometry=diffgeometry, ...)
 }
 
 ########################################################################################################
@@ -105,12 +108,12 @@ setMethod("diffuseR", "Substance", function(object){
 })
 
 
-setGeneric("diffusePDE", function(object, init_mat, geometry, lrw, tstep){standardGeneric("diffusePDE")})
-setMethod("diffusePDE", "Substance", function(object, init_mat, geometry, lrw, tstep){
+setGeneric("diffusePDE", function(object, init_mat, gridgeometry, lrw, tstep){standardGeneric("diffusePDE")})
+setMethod("diffusePDE", "Substance", function(object, init_mat, gridgeometry, lrw, tstep){
   #init_mat <- as.matrix(object@diffmat)
   D <- object@difspeed*3600 # change unit of diff const to cm^2/h
-  solution <- ode.2D(y = init_mat, func = Diff2d, t=c(0,0+tstep), parms = c(geometry=geometry, D=D),
-                   dim = c(geometry$grid2D$x.N, geometry$grid2D$y.N), method="lsodes", lrw=lrw)#160000
+  solution <- ode.2D(y = init_mat, func = Diff2d, t=c(0,0+tstep), parms = c(gridgeometry=gridgeometry, diffgeometry=object@diffgeometry),
+                   dim = c(gridgeometry$grid2D$x.N, gridgeometry$grid2D$y.N), method="lsodes", lrw=lrw)#160000
   diff_mat <- matrix(data=solution[2,][-1], ncol=ncol(init_mat), nrow=nrow(init_mat))
   return(diff_mat)
 })

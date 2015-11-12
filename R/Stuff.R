@@ -32,9 +32,9 @@ colpal3 = c(
 Diff2d <- function (t, y, parms)  {
   # geometry values are in parms
   with (as.list(parms), {
-    D.grid    <- setup.prop.2D(value = D, y.value = D, grid = geometry.grid2D)
-    CONC  <- matrix(nrow = geometry.grid2D$x.N, ncol = geometry.grid2D$y.N, data = y)
-    dCONC <- tran.2D(CONC, grid = geometry.grid2D, D.grid = D.grid)$dC
+    #D.grid    <- setup.prop.2D(value = D, grid = geometry.grid2D)
+    CONC  <- matrix(nrow = gridgeometry.grid2D$x.N, ncol = gridgeometry.grid2D$y.N, data = y)
+    dCONC <- tran.2D(CONC, grid = gridgeometry.grid2D, D.grid = diffgeometry.Dgrid)$dC
     return (list(dCONC))
   })
 }
