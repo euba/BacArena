@@ -108,8 +108,8 @@ setMethod("diffuseR", "Substance", function(object){
 setGeneric("diffusePDE", function(object, init_mat, geometry, lrw, tstep){standardGeneric("diffusePDE")})
 setMethod("diffusePDE", "Substance", function(object, init_mat, geometry, lrw, tstep){
   #init_mat <- as.matrix(object@diffmat)
-  D <- object@difspeed*3600*tstep # change unit of diff const to cm^2/h
-  solution <- ode.2D(y = init_mat, func = Diff2d, t = 1:2, parms = c(geometry=geometry, D=D),
+  D <- object@difspeed*3600 # change unit of diff const to cm^2/h
+  solution <- ode.2D(y = init_mat, func = Diff2d, t=c(0,0+tstep), parms = c(geometry=geometry, D=D),
                    dim = c(geometry$grid2D$x.N, geometry$grid2D$y.N), method="lsodes", lrw=lrw)#160000
   diff_mat <- matrix(data=solution[2,][-1], ncol=ncol(init_mat), nrow=nrow(init_mat))
   return(diff_mat)
