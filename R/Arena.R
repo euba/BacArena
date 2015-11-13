@@ -456,7 +456,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NA){
     sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
     for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
       org <- arena@specs[[arena@orgdat[j,'type']]]
-      bacnum = round((arena@scale/(org@cellvol^(2/3)*10^(-8)))) #calculate the number of bacteria individuals per gridcell
+      bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
       switch(class(org),
              "Bac"= {arena = simBac(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
              "Human"= {arena = simHum(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
@@ -616,7 +616,7 @@ setMethod("dat2mat", "Arena", function(object){
 #show function for class Arena
 
 setMethod(show, "Arena", function(object){
-  ecoli_cellvol = 3.5
+  ecoli_cellarea = 4.42
   ecoli_cellweight = 1172
   print(paste('Arena of size ',object@n,'x',object@m,' with ',nrow(object@orgdat),
               ' organisms of ',length(object@specs),' species.',sep=''))
@@ -624,8 +624,8 @@ setMethod(show, "Arena", function(object){
   print(paste("arena grid cells:",object@n,"x",object@m))
   print(paste("arena grid size [cm]:",object@Lx,"x",object@Ly))
   print(paste("area of one grid cell [cm^2]:", (object@Lx*object@Ly)/(object@n*object@m)))
-  print(paste("maximal amount of E. coli cells in one grid cell:", round((object@Lx*object@Ly)/(object@n*object@m)/(ecoli_cellvol^(2/3)*10^(-8)),1) ))
-  dwpgc <- (object@Lx*object@Ly)/(object@n*object@m)/(ecoli_cellvol^(2/3)*10^(-8))*ecoli_cellweight
+  print(paste("maximal amount of E. coli cells in one grid cell:", round((object@Lx*object@Ly)/(object@n*object@m)/(ecoli_cellarea*10^(-8)),2) ))
+  dwpgc <- (object@Lx*object@Ly)/(object@n*object@m)/(ecoli_cellarea*10^(-8))*ecoli_cellweight
   print(paste("maximal amount of E.coli dry weight in one grid cell [fg]:", round(dwpgc,1)))
   scaleF <- 15-3*floor(log10(dwpgc)/3)
   print(paste(3*floor(log10(dwpgc)/3)))
