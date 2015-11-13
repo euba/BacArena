@@ -16,16 +16,18 @@ SYBIL_SETTINGS("SOLVER","sybilGUROBI") #setting solver to GUROBI
 # Simulation
 #
 data(Ec_core)
+Ec_core = changeBounds(Ec_core,react_id(findExchReact(Ec_core)),lb=-1000)
 bac = Bac(model=Ec_core, growtype="exponential", cellarea=4.42,
            speed=1, type="ecore", lyse=F)
-arena = Arena(n=200, m=200, stir=F, seed=8904, Lx=0.05, Ly=0.05, tstep=0.5)
+arena = Arena(n=200, m=200, stir=F, seed=8904, Lx=0.05, Ly=0.05, tstep=0.2)
 #addOrg(arena, bac, amount=11, x=c((arena@n/2-5):(arena@n/2+5)), y=c((arena@m/2-5):(arena@m/2+5)))
-addOrg(arena, bac, amount=500)#, x=arena@n/2, y=arena@m/2)
-addSubs(arena, smax=0.1, difspeed=6.7e-12, unit='mM') #0.02412#0.072
+addOrg(arena, bac, amount=1, x=arena@n/2, y=arena@m/2,growth = 0.9)
+#addOrg(arena, bac, amount=arena@n, x=1:arena@n, y=arena@m/2)
+addSubs(arena, smax=0.005, difspeed=6.7e-6, unit='mM') #0.02412#0.072
 #addSubs(arena, smax=10, mediac=c("EX_o2(e)","EX_h(e)","EX_co2(e)","EX_o2(e)","EX_pi(e)"), difunc="pde", difspeed=rep(0.072,5))
 #createGradient(arena,smax=20,mediac="EX_o2(e)",position='left',steep=0.5)
 #createGradient(arena,smax=20,mediac=arena@mediac,position='left',steep=0.5)
-sim <- simEnv(arena, time=10, lrw=26937744)
+sim <- simEnv(arena, time=120, lrw=26937744)
 
 SYBIL_SETTINGS("TOLERANCE",1E-6) #set tolerance of FBA value higher
 SYBIL_SETTINGS("MAXIMUM",1) #set tolerance of FBA value higher
@@ -69,7 +71,7 @@ plot(are,lrw,type="b")
 #
 plotCurves(sim)
 evalArena(sim, plot_items = c("Population", "EX_glc(e)", "EX_o2(e)", "EX_ac(e)"),phencol=T)#, time=10)
-evalArena(sim, plot_items = c("Population", "EX_glc(e)", "EX_ac(e)", "EX_o2(e)"), time=10) 
+evalArena(sim, plot_items = c("Population", "EX_glc(e)", "EX_ac(e)", "EX_o2(e)"),phencol=T, time=96) 
 evalArena(sim, plot_items = "Population")
 plotCurves2(sim)
 
