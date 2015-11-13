@@ -13,6 +13,9 @@
 #' @slot name A character vector representing the name of the substance.
 #' @slot difunc A character vector ("pde","cpp" or "r") describing the function for diffusion.
 #' @slot difspeed A number indicating the diffusion speed (given by cm^2/s).
+#' @slot diffgeometry Diffusion coefficient defined on all grid cells (initially set by constructor).
+#' @slot velogeometry Advective velocity defined on all grid cells (initially disabled).
+#' @slot pde R-function that computes the values of the derivatives in the diffusion system
 setClass("Substance",
          representation(
            smax = "numeric",
@@ -20,7 +23,9 @@ setClass("Substance",
            name = "character",
            difunc = "character",
            difspeed = "numeric",
-           diffgeometry = "list"
+           diffgeometry = "list",
+           #velogeometry = "list",
+           pde = "character"
          )
 )
 
@@ -29,13 +34,13 @@ setClass("Substance",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Substance <- function(n, m, smax, diffmat={}, name, difunc="pde", difspeed=1, gridgeometry, diffgeometry=list(), ...){
+Substance <- function(n, m, smax, diffmat={}, name, difunc="pde", difspeed=1, gridgeometry, diffgeometry=list(), pde="Diff2d", ...){
   if(length(diffmat)==0){
     diffmat = Matrix(smax, nrow=n, ncol=m, sparse=T)
   }
   Dgrid <- setup.prop.2D(value = difspeed, grid = gridgeometry$grid2D)
   diffgeometry <- list(Dgrid=Dgrid)
-  new("Substance", smax=smax, diffmat=diffmat, name=name, difunc=difunc, difspeed=difspeed, diffgeometry=diffgeometry, ...)
+  new("Substance", smax=smax, diffmat=diffmat, name=name, difunc=difunc, difspeed=difspeed, diffgeometry=diffgeometry, pde=pde, ...)
 }
 
 ########################################################################################################
@@ -112,7 +117,7 @@ setGeneric("diffusePDE", function(object, init_mat, gridgeometry, lrw, tstep){st
 setMethod("diffusePDE", "Substance", function(object, init_mat, gridgeometry, lrw, tstep){
   #init_mat <- as.matrix(object@diffmat)
   D <- object@difspeed*3600 # change unit of diff const to cm^2/h
-  solution <- ode.2D(y = init_mat, func = Diff2d, t=c(0,0+tstep), parms = c(gridgeometry=gridgeometry, diffgeometry=object@diffgeometry),
+  solution <- ode.2D(y = init_mat, func = get(object@pde), t=c(0,0+tstep), parms = c(gridgeometry=gridgeometry, diffgeometry=object@diffgeometry),
                    dim = c(gridgeometry$grid2D$x.N, gridgeometry$grid2D$y.N), method="lsodes", lrw=lrw)#160000
   diff_mat <- matrix(data=solution[2,][-1], ncol=ncol(init_mat), nrow=nrow(init_mat))
   return(diff_mat)
