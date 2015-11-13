@@ -19,7 +19,7 @@
 #' @slot growtype A character vector giving the functional type for growth (linear or exponential).
 #' @slot kinetics A List containing Km and v_max values for each reactions.
 #' @slot speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
-#' @slot cellvol A numeric value indicating the volume that one organism occupies (unit: \mu cm^3)
+#' @slot cellarea A numeric value indicating the surface that one organism occupies (unit: \mu cm^2)
 #' @slot cellweight A numeric value giving the maximal dry weight of single organism (unit: fg)
 setClass("Organism",
          representation(
@@ -35,7 +35,7 @@ setClass("Organism",
            growthlimit="numeric",
            growtype="character",
            kinetics="list",
-           cellvol="numeric",
+           cellarea="numeric",
            cellweight="numeric",
            speed="integer"
          )
@@ -45,7 +45,7 @@ setClass("Organism",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_comp=NA, deathrate=0.21, growthlimit=0.083, cellweight=1.172, cellvol=3.5,
+Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_comp=NA, deathrate=0.21, growthlimit=0.083, cellweight=1.172, cellarea=4.42,
                      growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", kinetics=list(), 
                      speed=2, ...){ #the constructor requires the model, after that it is not stored anymore
   rxname = react_id(model)
@@ -82,7 +82,7 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_c
   }
   new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
       fbasol=fbasol, lyse=lyse, feat=feat, deathrate=deathrate,
-      growthlimit=growthlimit, growtype=growtype, kinetics=list(), cellvol=cellvol, 
+      growthlimit=growthlimit, growtype=growtype, kinetics=list(), cellarea=cellarea, 
       cellweight=cellweight, speed=as.integer(speed), ...)
 }
 
@@ -440,7 +440,7 @@ setClass("Bac",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Bac <- function(model, chem='', ...){
+Bac <- function(model, chem='', deathrate=0.21, growthlimit=0.083, cellweight=1.172, cellarea=4.42, ...){
   new("Bac", Organism(model=model, ...), chem=chem)
 }
 
