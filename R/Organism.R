@@ -140,17 +140,20 @@ setMethod("speed", "Organism", function(object){return(object@speed)})
 #'            growthlimit=0.05,growtype="exponential") #initialize an organism
 #' lobnds <- constrain(org,medium(org),lbnd(org)[medium(org)],1,1)
 #' }
-setGeneric("constrain", function(object, reacts, lb, dryweight, time){standardGeneric("constrain")})
-setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time){
+setGeneric("constrain", function(object, reacts, lb, dryweight, time, scale){standardGeneric("constrain")})
+setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time, scale){
   lobnd <- object@lbnd*dryweight*time #costrain according to flux definition: mmol/(gDW*hr)
   #lobnd[reacts] <- ifelse(lb<=lobnd[reacts], ifelse(lobnd[reacts]==0, lb, lobnd[reacts]), lb) #check if lower bounds in biological relevant range
   lobnd[reacts] <- ifelse(lb<=lobnd[reacts], lobnd[reacts], lb) #check if lower bounds in biological relevant range
-#   lobnd[names(object@kinetics)] <- unlist(lapply(names(object@kinetics), function(name){
-#     Km  <- object@kinetics[[name]][["Km"]]
-#     vmax<- object@kinetics[[name]][["vmax"]]
-#     s   <- -lb[[name]] # change sign to get concentrations
-#     -vmax*s/(Km + s)
-#   }))
+  if(length(object@kinetics) != 0){
+    lobnd[names(object@kinetics)] <- unlist(lapply(names(object@kinetics), function(name){
+      Km  <- (object@kinetics[[name]][["Km"]]*0.01*scale)*10^12 #scale mM to fmol/gridcell
+      vmax <- object@kinetics[[name]][["vmax"]]*10^12*(dryweight*10^(-12)) #scale to fmol/h
+      s   <- -lb[name] # change sign to get concentrations
+      lnew = -(vmax*s/(Km + s))*time
+      if(lnew < s){return(lnew)}else{return(s)}
+    }))
+  }
   return(lobnd)
 })
 
@@ -566,7 +569,7 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 setGeneric("simBac", function(object, arena, j, sublb, bacnum){standardGeneric("simBac")})
 setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
-                     dryweight=arena@orgdat[j,"growth"], time=arena@tstep)
+                     dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
   optimizeLP(object, lb=lobnd)
   
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum))) #scale consumption to the number of cells?
@@ -728,7 +731,7 @@ setMethod("cellgrowth", "Human", function(object, population, j){
 setGeneric("simHum", function(object, arena, j, sublb, bacnum){standardGeneric("simHum")})
 setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
-                     dryweight=arena@orgdat[j,"growth"], time=arena@tstep)
+                     dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
   optimizeLP(object, lb=lobnd)
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum))) #rescale from population size
   dead <- cellgrowth(object, arena, j)

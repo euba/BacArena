@@ -17,7 +17,7 @@ Ec_core = changeBounds(Ec_core,react_id(findExchReact(Ec_core)),lb=-1000)
 bac = Bac(model=Ec_core, growtype="exponential", cellarea=4.42,
           speed=2, type="ecore", lyse=F)
 
-setKinetics(bac, exchangeR="EX_glc(e)", Km=5, vmax=10)
+setKinetics(bac, exchangeR="EX_glc(e)", Km=0.01, vmax=7.56)
 
 arena = Arena(n=10, m=10, stir=F)
 addOrg(arena, bac, amount=1)

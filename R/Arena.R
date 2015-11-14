@@ -179,7 +179,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' @description The generic function \code{addSubs} adds specific substances to the environment.
 #'
 #' @param object An object of class Arena.
-#' @param smax A number indicating the maximum substance concentration per grid cell.
+#' @param smax A number indicating the maximum substance concentration per grid cell
 #' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
 #' @param smax A numeric vector indicating the maximum substance concentration per grid cell.
 #' @slot difunc A character vector ("pde","cpp" or "r") describing the function for diffusion.
@@ -200,20 +200,18 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
   if(sum(mediac %in% object@mediac) != length(mediac)){stop("Substance does not exist in medium.")}
-  if(length(intersect(unit,c("mmol/cell","mM")))==0){stop("Wrong unit for concentration.")}
+  if(length(intersect(unit,c("mmol/cell","mM","mmol/arena")))==0){stop("Wrong unit for concentration.")}
   if(length(smax) == 1){
     smax = rep(smax,length(mediac))
   }
   if(unit=="mM"){smax <- (smax*0.01)*object@scale}  # conversion of mMol in mmol/grid_cell
+  if(unit=="mmol/arena"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
   if(length(difspeed)!=length(mediac)){difspeed = rep(difspeed,length(mediac))}
   if(length(object@media) == 0){
     newmedia <- list()
     for(i in 1:length(mediac)){
       newmedia[[mediac[i]]] <- Substance(object@n, object@m, 0, name=mediac[i], difunc=difunc, difspeed=difspeed[i], gridgeometry=object@gridgeometry)
     }
-    #sapply(object@mediac, function(x, n, m){
-    #  newmedia[[x]] <<- Substance(n, m, 0, name=x, difunc=difunc)
-    #}, n=object@n, m=object@m)
   }else{newmedia <- object@media}
   if(add){
     for(i in 1:length(mediac)){

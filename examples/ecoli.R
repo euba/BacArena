@@ -17,8 +17,8 @@ SYBIL_SETTINGS("SOLVER","sybilGUROBI") #setting solver to GUROBI
 #
 data(Ec_core)
 Ec_core = changeBounds(Ec_core,react_id(findExchReact(Ec_core)),lb=-1000)
-bac = Bac(model=Ec_core, growtype="exponential", cellarea=4.42,
-           speed=1, type="ecore", lyse=F)
+bac = Bac(model=Ec_core, growtype="exponential", cellarea=4.42, lyse=F)
+setKinetics(bac, exchangeR="EX_glc(e)", Km=0.01, vmax=7.56)
 arena = Arena(n=200, m=200, stir=F, seed=8904, Lx=0.05, Ly=0.05, tstep=0.2)
 #addOrg(arena, bac, amount=11, x=c((arena@n/2-5):(arena@n/2+5)), y=c((arena@m/2-5):(arena@m/2+5)))
 addOrg(arena, bac, amount=1, x=arena@n/2, y=arena@m/2,growth = 0.9)
