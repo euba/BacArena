@@ -151,7 +151,8 @@ setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time,
       vmax <- object@kinetics[[name]][["vmax"]]*10^12*(dryweight*10^(-12)) #scale to fmol/h
       s   <- -lb[name] # change sign to get concentrations
       lnew = -(vmax*s/(Km + s))*time
-      if(lnew < s){return(lnew)}else{return(s)}
+      if(abs(lnew)>s){if(-s>=lobnd[name]){lnew=-s}else{lnew=lobnd[name]}}
+      return(lnew)
     }))
   }
   return(lobnd)
