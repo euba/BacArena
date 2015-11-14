@@ -194,8 +194,8 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' arena <- Arena(20,20) #initialize the environment
 #' addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
 #' }
-setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=0.1, unit="mmol/cell"){standardGeneric("addSubs")})
-setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=0.1, unit="mmol/cell"){
+setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=T){standardGeneric("addSubs")})
+setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=T){
   if(length(smax) != length(mediac) && length(smax) != 1){
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
@@ -215,9 +215,17 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
     #  newmedia[[x]] <<- Substance(n, m, 0, name=x, difunc=difunc)
     #}, n=object@n, m=object@m)
   }else{newmedia <- object@media}
-  for(i in 1:length(mediac)){
-    newdmat = newmedia[[mediac[i]]]@diffmat + Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=T)
-    newmedia[[mediac[i]]]@diffmat <- newdmat
+  if(add){
+    for(i in 1:length(mediac)){
+      newdmat = newmedia[[mediac[i]]]@diffmat + Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=T)
+      newmedia[[mediac[i]]]@diffmat <- newdmat
+      newmedia[[mediac[i]]]@difspeed = difspeed[i]
+    }
+  }else{
+    for(i in 1:length(mediac)){
+      newmedia[[mediac[i]]]@diffmat <- Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=T)
+      newmedia[[mediac[i]]]@difspeed = difspeed[i]
+    }
   }
   eval.parent(substitute(object@media <- newmedia))
 })
@@ -434,7 +442,6 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NA){
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
          stop("Please supply an object of class Arena."))
-  #SYBIL_SETTINGS("TOLERANCE",1E20) #set tolerance of FBA value higher
   if(is.na(lrw)){lrw=estimate_lrw(arena@n,arena@m)}
   for(i in names(arena@specs)){
     phensel <- arena@phenotypes[which(names(arena@phenotypes)==i)]

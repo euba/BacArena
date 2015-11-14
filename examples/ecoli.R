@@ -23,11 +23,11 @@ arena = Arena(n=200, m=200, stir=F, seed=8904, Lx=0.05, Ly=0.05, tstep=0.2)
 #addOrg(arena, bac, amount=11, x=c((arena@n/2-5):(arena@n/2+5)), y=c((arena@m/2-5):(arena@m/2+5)))
 addOrg(arena, bac, amount=1, x=arena@n/2, y=arena@m/2,growth = 0.9)
 #addOrg(arena, bac, amount=arena@n, x=1:arena@n, y=arena@m/2)
-addSubs(arena, smax=0.005, difspeed=6.7e-6, unit='mM') #0.02412#0.072
+addSubs(arena, smax=0.05, difspeed=6.7e-6, unit='mM') #0.02412#0.072
 #addSubs(arena, smax=10, mediac=c("EX_o2(e)","EX_h(e)","EX_co2(e)","EX_o2(e)","EX_pi(e)"), difunc="pde", difspeed=rep(0.072,5))
 #createGradient(arena,smax=20,mediac="EX_o2(e)",position='left',steep=0.5)
 #createGradient(arena,smax=20,mediac=arena@mediac,position='left',steep=0.5)
-sim <- simEnv(arena, time=120, lrw=26937744)
+sim <- simEnv(arena, time=10, lrw=26937744)
 
 SYBIL_SETTINGS("TOLERANCE",1E-6) #set tolerance of FBA value higher
 SYBIL_SETTINGS("MAXIMUM",1) #set tolerance of FBA value higher
@@ -71,7 +71,7 @@ plot(are,lrw,type="b")
 #
 plotCurves(sim)
 evalArena(sim, plot_items = c("Population", "EX_glc(e)", "EX_o2(e)", "EX_ac(e)"),phencol=T)#, time=10)
-evalArena(sim, plot_items = c("Population", "EX_glc(e)", "EX_ac(e)", "EX_o2(e)"),phencol=T, time=96) 
+evalArena(sim, plot_items = c("Population", "EX_glc(e)", "EX_ac(e)", "EX_o2(e)"),phencol=T, time=120) 
 evalArena(sim, plot_items = "Population")
 plotCurves2(sim)
 
@@ -81,8 +81,8 @@ plotTotFlux(sim, legendpos = "topleft")
 
 
 library(animation)
-#oopts = ani.options(ffmpeg = "C:/ffmpeg.exe")
+oopts = ani.options(ffmpeg = "/Users/euba/bin/ffmpeg/ffmpeg")
 saveVideo({
   ani.options(interval = 0.5)
-  evalArena(sim, phencol=T)
-},video.name = "ecoli.avi", other.opts = "-b 600k")
+  evalArena(sim, phencol=T, plot_items = c('Population','EX_EC0029',"EX_EC0027","EX_EC0007"))
+},video.name = "pao_sim.mp4", other.opts = "-b 600k")
