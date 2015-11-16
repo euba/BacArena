@@ -22,7 +22,7 @@ setKinetics(bac, exchangeR="EX_glc(e)", Km=0.01, vmax=7.56)
 arena = Arena(n=10, m=10, stir=F)
 addOrg(arena, bac, amount=1)
 addSubs(arena, smax=0, difunc="cpp", difspeed=1)
-addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)", "EX_h2o(e)", "EX_h2o(e)", "EX_h(e)", "EX_nh4(e)"), difunc="cpp", difspeed=1)
+addSubs(arena,1,c("EX_glc(e)","EX_o2(e)","EX_pi(e)", "EX_h2o(e)", "EX_h2o(e)", "EX_h(e)", "EX_nh4(e)"), difunc="cpp", difspeed=1)
 res <- simEnv(arena, time=50)
 
 plotCurves2(res)

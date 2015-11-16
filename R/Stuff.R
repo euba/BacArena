@@ -59,7 +59,7 @@ estimate_lrw <- function(grid_n, grid_m){
   #plot(x,y)
   #abline(coef(lm))
   #abline(coef=c(0, lm$coefficients[2]))
-  lrw <- as.numeric(lm$coefficients[2]*grid_n*grid_m + 10000)
+  lrw <- as.numeric(lm$coefficients[2]*grid_n*grid_m + grid_n*grid_m*100)
   #lrw <- ((grid_n*grid_m)*18.5 + 20)*10 -> alternative function
   return(lrw)
 }

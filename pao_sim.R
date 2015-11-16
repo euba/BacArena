@@ -6,10 +6,10 @@ library(Rcpp)
 library(RcppArmadillo)
 library(sybil)
 library(compiler)
-#setwd("/Users/euba/GitRep/BacArena/")
-setwd("uni/bacarena")
+setwd("/Users/euba/GitRep/BacArena/")
+#setwd("uni/bacarena")
 #setwd('P:/GitRep/BacArena')
-setwd('P:/GitRep/BacArena')
+#setwd('P:/GitRep/BacArena')
 
 source(file="R/Arena.R")
 source(file="R/Stuff.R")
@@ -27,33 +27,41 @@ SYBIL_SETTINGS("SOLVER","sybilGUROBI") #setting solver to GUROBI
 #load('P:/GitRep/BacArena/poa_model.RData')
 load('/Users/euba/GitRep/BacArena/poa_model.RData')
 
-set.seed(100)
-# paramters from MatNet:
-# if cellMass >= 2
-# cellDeathThreshold = 0
-#model@lowbnd[grep("EX",model@react_id)]
-#model = changeBounds(model,"EX_EC0027",lb=-10)
-#model@react_id[grep("EX",model@react_id)][which(model@lowbnd[grep("EX",model@react_id)]==-10)]
+medium = read.csv('/Users/euba/Minimal_medium.csv')
 modelP = changeBounds(model,model@react_id[grep("EX",model@react_id)],lb=-1000)
-#modelP = model
+#modelP = changeBounds(modelP,"EX_EC0027",lb=-10)
+#modelP@met_name[which(modelP@met_id=='EC0027[None]')]
 
-#modelP = changeBounds(modelP,"EX_EC0011",lb=0)
-#modelP@met_name[which(modelP@met_id=='EC0011[None]')]
-#modelP = changeBounds(modelP,"EX_EC0065",lb=0)
-#modelP@met_name[which(modelP@met_id=='EC0065[None]')]
-modelP = changeBounds(modelP,"EX_EC0027",lb=-10)
-modelP@met_name[which(modelP@met_id=='EC0027[None]')]
+# bac = Bac(model=modelP, growtype="exponential", lyse=F)
+# setKinetics(bac, exchangeR="EX_EC0027", Km=0.01, vmax=7.56)
+# arena = Arena(n=200, m=200, stir=F, seed=8904, Lx=0.05, Ly=0.05, tstep=0.5)
+# addOrg(arena, bac, amount=1, x=arena@n/2, y=arena@m/2,growth = 0.9)
+# addSubs(arena, smax=0, difspeed=1.675e-6, unit='mM')
+# #addSubs(arena, smax=0.05, difspeed=1.675e-6, unit='mM',
+# #        mediac=model@react_id[grep("EX",model@react_id)][which(model@lowbnd[grep("EX",model@react_id)] < -1)])
+# addSubs(arena, smax=medium$Concentration, difspeed=medium$diffusion.constant, unit='mM', 
+#         mediac=as.character(medium$Reaction.ID))
+# #addSubs(arena, smax=10, mediac=c("EX_o2(e)","EX_h(e)","EX_co2(e)","EX_o2(e)","EX_pi(e)"), difunc="pde", difspeed=rep(0.072,5))
+# #createGradient(arena,smax=20,mediac="EX_o2(e)",position='left',steep=0.5)
+# #createGradient(arena,smax=20,mediac=arena@mediac,position='left',steep=0.5)
+# print(system.time(sim <- simEnv(arena, time=96)))
 
-bac = Bac(model=modelP, growtype="exponential", cellarea=4.42, lyse=F)
-arena = Arena(n=200, m=200, stir=F, seed=8904, Lx=0.05, Ly=0.05, tstep=0.2)
-addOrg(arena, bac, amount=1, x=arena@n/2, y=arena@m/2,growth = 0.9)
-addSubs(arena, smax=0, difspeed=1.675e-6, unit='mM')
-addSubs(arena, smax=0.05, difspeed=1.675e-6, unit='mM',
-        mediac=model@react_id[grep("EX",model@react_id)][which(model@lowbnd[grep("EX",model@react_id)] < -1)])
-#addSubs(arena, smax=10, mediac=c("EX_o2(e)","EX_h(e)","EX_co2(e)","EX_o2(e)","EX_pi(e)"), difunc="pde", difspeed=rep(0.072,5))
-#createGradient(arena,smax=20,mediac="EX_o2(e)",position='left',steep=0.5)
-#createGradient(arena,smax=20,mediac=arena@mediac,position='left',steep=0.5)
-print(system.time(sim <- simEnv(arena, time=240, lrw=26937744)))
+simlist = list()
+for(i in 1:5){
+  print(i)
+  bac = Bac(model=modelP, growtype="exponential", lyse=F, speed=5)
+  setKinetics(bac, exchangeR="EX_EC0027", Km=0.01, vmax=7.56)
+  arena = Arena(n=200, m=200, stir=F, seed=i*100, Lx=0.05, Ly=0.05, tstep=0.5)
+  addOrg(arena, bac, amount=1, x=arena@n/2, y=arena@m/2,growth = 0.9)
+  addSubs(arena, smax=0, difspeed=1.675e-6, unit='mM')
+  addSubs(arena, smax=0.05, difspeed=medium$diffusion.constant, unit='mM', 
+          mediac=as.character(medium$Reaction.ID))
+  print(system.time(simlist[[i]] <- simEnv(arena, time=96)))
+}
+sim = simlist[[1]]
+evalsim = sim
+
+modelP@met_name[which(modelP@met_id=='EC0029[None]')]
 
 
 write.csv(cbind(rxn=model@react_id[grep("EX",model@react_id)][which(model@lowbnd[grep("EX",model@react_id)] < -1)],
@@ -81,7 +89,7 @@ for(i in 1:20){
 }
 
 plotCurves(sim)
-evalArena(sim, phencol=T,plot_items = c('Population','EX_EC0029',"EX_EC0027","EX_EC0007"))
+evalArena(sim, phencol=T,plot_items = c('Population','EX_EC0029',"EX_EC0027","EX_EC0007"),time=48)
 
 
 par(mfrow=c(2,3))
@@ -150,12 +158,12 @@ for(i in 1:length(evalsim@simlist)){
   }
 }
 
-par(mfrow=c(4,5))
+par(mfrow=c(4,4))
 for(sub in names(which(sort(evalsim@subchange)!=0))){
   nuse = getPhenoMat(evalsim)[,sub]
   pop = evalsim@simlist[[i]]
   pop$phenotype_n = 1
-  pop$phenotype_n[which(pop$phenotype!=0)] = nuse[paste('PAO.',pop$phenotype[which(pop$phenotype!=0)],sep='')] + 1
+  pop$phenotype_n[which(pop$phenotype!=0)] = nuse[paste('modelPOA.',pop$phenotype[which(pop$phenotype!=0)],sep='')] + 1
   plot(pop[,c('x','y')],xlim=c(0,evalsim@n),ylim=c(0,evalsim@m),xlab='',ylab='',
        axes=FALSE,cex=0.5, col=pop$phenotype_n, pch=19, main=sub)
 }
@@ -166,7 +174,7 @@ modelP@met_name[which(modelP@met_id=='EC0036[None]')]
 modelP@met_name[which(modelP@met_id=='EC0029[None]')]
 modelP@met_name[which(modelP@met_id=='EC0065[None]')]
 
-modelP@met_name[which(modelP@met_id=='EC0071[None]')]
+modelP@met_name[which(modelP@met_id=='EC0021[None]')]
 modelP@met_name[which(modelP@met_id=='EC0957[None]')]
 modelP@met_name[which(modelP@met_id=='EC0115[None]')]
 modelP@met_name[which(modelP@met_id=='EC0035[None]')]
@@ -177,7 +185,7 @@ for(sub in names(which(sort(evalsim_m@subchange)!=0))){
   nuse = getPhenoMat(evalsim_m)[,sub]
   pop = evalsim_m@simlist[[i]]
   pop$phenotype_n = 1
-  pop$phenotype_n[which(pop$phenotype!=0)] = nuse[paste('PAO.',pop$phenotype[which(pop$phenotype!=0)],sep='')] + 1
+  pop$phenotype_n[which(pop$phenotype!=0)] = nuse[paste('modelPOA.',pop$phenotype[which(pop$phenotype!=0)],sep='')] + 1
   plot(pop[,c('x','y')],xlim=c(0,evalsim_m@n),ylim=c(0,evalsim_m@m),xlab='',ylab='',
        axes=FALSE,cex=0.5, col=pop$phenotype_n, pch=19, main=sub)
 }
@@ -189,16 +197,20 @@ for(sub in names(which(sort(evalsim_m@subchange)!=0))){
 par(mfrow=c(3,3))
 par(mfrow=c(1,1))
 #c(20,35,50)
-#cmp = 'EX_EC0036'
+#cmp = 'EX_EC0214'
+#cmp = 'EX_EC0098'
+#cmp = 'EX_EC0359'
 cmp = 'EX_EC0029'
+#cmp = 'EX_EC0007'
+#cmp = 'EX_EC0021'
 modelP@met_name[which(modelP@met_id=='EC0029[None]')]
-i = 50
+i = 60
 nuse = getPhenoMat(evalsim)[,cmp] #other interesting compounds: 'EX_h(e)','EX_pi(e)','EX_man1p(e)','EX_man6p(e)','EX_chor(e)','EX_succ(e)','EX_fum(e)','EX_for(e)','EX_cit(e)','EX_6pgc(e)','EX_acac(e)','EX_pep(e)','EX_btd_RR(e)','EX_ac(e)','EX_ppa(e)','EX_dha(e)','EX_lac_L(e)','EX_pyr(e)','EX_tyr_L(e)','EX_thym(e)','EX_glyclt(e)'
 pop = evalsim@simlist[[i]]
 pop$phenotype_n = 1
-pop$phenotype_n[which(pop$phenotype!=0)] = nuse[paste('PAO.',pop$phenotype[which(pop$phenotype!=0)],sep='')] + 1
+pop$phenotype_n[which(pop$phenotype!=0)] = nuse[paste('modelPOA.',pop$phenotype[which(pop$phenotype!=0)],sep='')] + 1
 plot(pop[,c('x','y')],xlim=c(0,evalsim@n),ylim=c(0,evalsim@m),xlab='',ylab='',
-     axes=FALSE,cex=0.5, col=pop$phenotype_n, pch=19)
+     axes=FALSE,cex=(pop$growth/max(pop$growth)), col=pop$phenotype_n, pch=19)
 
 par(mfrow=c(3,3))
 par(mfrow=c(1,1))

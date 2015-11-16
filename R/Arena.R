@@ -200,12 +200,13 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
   if(sum(mediac %in% object@mediac) != length(mediac)){stop("Substance does not exist in medium.")}
-  if(length(intersect(unit,c("mmol/cell","mM","mmol/arena")))==0){stop("Wrong unit for concentration.")}
+  if(length(intersect(unit,c("mmol/cell","mM","mmol/arena","mmol/cm2")))==0){stop("Wrong unit for concentration.")}
   if(length(smax) == 1){
     smax = rep(smax,length(mediac))
   }
   if(unit=="mM"){smax <- (smax*0.01)*object@scale}  # conversion of mMol in mmol/grid_cell
-  if(unit=="mmol/arena"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
+  if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
+  if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
   if(length(difspeed)!=length(mediac)){difspeed = rep(difspeed,length(mediac))}
   if(length(object@media) == 0){
     newmedia <- list()
@@ -217,7 +218,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
     for(i in 1:length(mediac)){
       newdmat = newmedia[[mediac[i]]]@diffmat + Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=T)
       newmedia[[mediac[i]]]@diffmat <- newdmat
-      newmedia[[mediac[i]]]@difspeed = difspeed[i]
+      #newmedia[[mediac[i]]]@difspeed = difspeed[i]
     }
   }else{
     for(i in 1:length(mediac)){
@@ -329,10 +330,14 @@ setMethod("changeDiff", "Arena", function(object, newdiffmat, mediac){
 #' createGradient(arena,smax=50,mediac=c("EX_glc(e)","EX_o2(e)","EX_pi(e)"),
 #'              position='top',steep=0.5)
 #' }
-setGeneric("createGradient", function(object, mediac, position, smax, steep, add=F){standardGeneric("createGradient")})
-setMethod("createGradient", "Arena", function(object, mediac, position, smax, steep, add=F){
+setGeneric("createGradient", function(object, mediac, position, smax, steep, add=F, unit='mmol/cell'){standardGeneric("createGradient")})
+setMethod("createGradient", "Arena", function(object, mediac, position, smax, steep, add=F, unit='mmol/cell'){
   if(steep<=0 || steep>=1){stop("Steepness must be in between 0 and 1.")}
+  if(length(intersect(unit,c("mmol/cell","mM","mmol/cm2","mmol/arena")))==0){stop("Wrong unit for concentration.")}
   mediac = intersect(mediac,object@mediac)
+  if(unit=="mM"){smax <- (smax*0.01)*object@scale}  # conversion of mMol in mmol/grid_cell
+  if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
+  if(unit=="mmol/arena"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
   newdiffmat <- matrix(0,nrow=object@n,ncol=object@m)
   gradn = floor(object@n*steep)
   gradm = floor(object@m*steep)
@@ -479,7 +484,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NA){
         if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
           apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
         }
-        if(arena@n*arena@m != sum(submat==mean(submat))){
+        if(arena@n*arena@m!=sum(submat==mean(submat)) && arena@media[[j]]@difspeed!=0){
           switch(arena@media[[j]]@difunc,
                  "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
                  "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
