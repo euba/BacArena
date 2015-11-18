@@ -439,8 +439,8 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' }
-setGeneric("simEnv", function(object, time, lrw=NA){standardGeneric("simEnv")})
-setMethod("simEnv", "Arena", function(object, time, lrw=NA){
+setGeneric("simEnv", function(object, time, lrw=NA, continue=F){standardGeneric("simEnv")})
+setMethod("simEnv", "Arena", function(object, time, lrw=NA, continue=F){
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
@@ -463,19 +463,21 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NA){
   for(i in 1:time){
     cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
-    sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
-    for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
-      org <- arena@specs[[arena@orgdat[j,'type']]]
-      bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
-      switch(class(org),
-             "Bac"= {arena = simBac(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
-             "Human"= {arena = simHum(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
-             stop("Simulation function for Organism object not defined yet."))
+    if(nrow(arena@orgdat) > 0){ # if there are organisms left
+      sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
+      for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
+        org <- arena@specs[[arena@orgdat[j,'type']]]
+        bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
+        switch(class(org),
+               "Bac"= {arena = simBac(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
+               "Human"= {arena = simHum(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
+               stop("Simulation function for Organism object not defined yet."))
+      }
+      sublb[,arena@mediac] = sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
+      test <- is.na(arena@orgdat$growth)
+      if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
+      rm("test")
     }
-    sublb[,arena@mediac] = sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
-    test <- is.na(arena@orgdat$growth)
-    if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
-    rm("test")
     if(!arena@stir){
       sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
       sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
@@ -503,7 +505,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NA){
       sublb <- stirEnv(arena, sublb)
     }
     addEval(evaluation, arena)
-    if(nrow(arena@orgdat)==0){
+    if(nrow(arena@orgdat)==0 & !continue){
       print("All organisms died!")
       break
     }
