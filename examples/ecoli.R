@@ -85,5 +85,5 @@ library(animation)
 oopts = ani.options(ffmpeg = "/Users/euba/bin/ffmpeg/ffmpeg")
 saveVideo({
   ani.options(interval = 0.5)
-  evalArena(sim, phencol=T, plot_items = c('Population','EX_EC0029',"EX_EC0027","EX_EC0007"))
+  videoPhen(evalsim)
 },video.name = "pao_sim.mp4", other.opts = "-b 600k")
