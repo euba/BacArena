@@ -38,17 +38,47 @@ Diff2d <- function (t, y, parms)  {
   })
 }
 
-
+# advection + diffusion + conservation
+AdvecDiffConserv2d <- function (t, y, parms)  {
+  # geometry values are in parms
+  with (as.list(parms), {
+    vgrid <- setup.prop.2D(value = 1, y.value=0, grid = gridgeometry.grid2D)
+    CONC  <- matrix(nrow = gridgeometry.grid2D$x.N, ncol = gridgeometry.grid2D$y.N, data = y)
+    dCONC <- tran.2D(CONC, grid = gridgeometry.grid2D, D.grid = diffgeometry.Dgrid, 
+                     v.grid = vgrid, flux.x.down=0, flux.x.up=0, flux.y.up=0, flux.y.down=0)$dC
+    return (list(dCONC))
+  })
+}
 
 AdvecDiff2d <- function (t, y, parms)  {
   # geometry values are in parms
   with (as.list(parms), {
     vgrid <- setup.prop.2D(value = 1, y.value=0, grid = gridgeometry.grid2D)
     CONC  <- matrix(nrow = gridgeometry.grid2D$x.N, ncol = gridgeometry.grid2D$y.N, data = y)
-    dCONC <- tran.2D(CONC, grid = gridgeometry.grid2D, D.grid = diffgeometry.Dgrid, v.grid = vgrid)$dC
+    #dCONC <- tran.2D(CONC, grid = gridgeometry.grid2D, D.grid = diffgeometry.Dgrid, v.grid = vgrid, C.x.down=rep(0.1, gridgeometry.grid2D$x.N))$dC
+    dCONC <- tran.2D(CONC, grid = gridgeometry.grid2D, D.grid = diffgeometry.Dgrid, 
+                     v.grid = vgrid, 
+                     C.y.down=rep(1, gridgeometry.grid2D$x.N),
+                     flux.x.down=1, flux.x.up=-1, flux.y.up=0, flux.y.down=0)$dC
     return (list(dCONC))
   })
 }
+
+BoundDiff2d <- function (t, y, parms)  {
+  # geometry values are in parms
+  with (as.list(parms), {
+    CONC  <- matrix(nrow = gridgeometry.grid2D$x.N, ncol = gridgeometry.grid2D$y.N, data = y)
+    dCONC <- tran.2D(CONC, grid = gridgeometry.grid2D, D.grid = diffgeometry.Dgrid, 
+                     C.y.down=rep(1, gridgeometry.grid2D$x.N),
+                     C.y.up=rep(1, gridgeometry.grid2D$x.N),
+                     C.x.down=rep(1, gridgeometry.grid2D$x.N),
+                     #flux.x.down=0, flux.x.up=0, flux.y.up=0, flux.y.down=0,
+                     C.x.up=rep(1, gridgeometry.grid2D$x.N))$dC
+    return (list(dCONC))
+  })
+}
+
+
 
 # function estimates lrw array size paremeter needed to solve stiffy diffusion pde with solver lsodes
 estimate_lrw <- function(grid_n, grid_m){

@@ -14,21 +14,30 @@ source(file="R/Organism.R")
 source(file="R/Stuff.R")
 
 
-arena = Arena(n=100, m=100, stir=F, Lx=10, Ly=10)
+arena = Arena(n=11, m=11, stir=F, Lx=10, Ly=5)
 #show(arena)
 data(Ec_core)
 bac = Bac(model=Ec_core, growtype="exponential",
           speed=0, deathrate=0, type="ecore", lyse=F)
+bac = Bac(model=Ec_core, growtype="exponential", cellarea=4.42, lyse=F, deathrate=0)
 addOrg(arena, bac, amount=1, x=1, y=1)
 addSubs(arena, smax=0, difunc="pde", difspeed=1)
 arena@media$`EX_co2(e)`@diffmat[ceiling(arena@n/2),ceiling(arena@m/2)] <- 100
-arena@media$`EX_co2(e)`@difspeed=0.5
-arena@media$`EX_co2(e)`@pde="AdvecDiff2d"
-sim <- simEnv(arena, time=8)
-#sim@medlist[[2]]$`EX_co2(e)`[50]
+arena@media$`EX_co2(e)`@difspeed=0.1
+arena@media$`EX_co2(e)`@pde="BoundDiff2d"
+#arena@media$`EX_co2(e)`@pde="Diff2d"
+sim <- simEnv(arena, time=14, continue=T)
+#sim@medlist[[2]]$`EX_co2(e)`[15]
 out <- lapply(sim@medlist, function(x){matrix(x$`EX_co2(e)`, nrow=arena@n)})
 par(mfrow = c(ceiling(sqrt(length(out))), ceiling(sqrt(length(out)))))
 for(i in 1:length(out)){image(out[[i]], main=paste("time",i))}
+
+par(mfrow=c(1,1))
+conservation <- lapply(sim@medlist, function(x){sum(matrix(x$`EX_co2(e)`, nrow=arena@n))})
+plot(seq(1, length(conservation)), unlist(conservation), type="b")
+
+t(round(out[[2]],2))
+
 par(mfrow=c(1,1))
 plotCurves2(sim)
 
