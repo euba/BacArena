@@ -49,7 +49,7 @@ modelP = changeBounds(model,model@react_id[grep("EX",model@react_id)],lb=-1000)
 simlist = list()
 for(i in 1:5){
   print(i)
-  bac = Bac(model=modelP, growtype="exponential", lyse=F)
+  bac = Bac(model=modelP, growtype="exponential", deathrate=0)
   setKinetics(bac, exchangeR="EX_EC0027", Km=0.01, vmax=7.56)
   arena = Arena(n=200, m=200, stir=F, seed=i*100, Lx=0.05, Ly=0.05, tstep=0.5)
   addOrg(arena, bac, amount=1, x=arena@n/2, y=arena@m/2,growth = 0.9)
@@ -195,7 +195,7 @@ for(sub in names(which(sort(evalsim_m@subchange)!=0))){
 ######################## Analysis
 #################################################################
 
-evalsim=simlist[[4]] #4
+#evalsim=simlist[[q]] #4
 par(mfrow=c(3,3))
 par(mfrow=c(1,1))
 #c(20,35,50)
@@ -214,14 +214,14 @@ modelP@met_name[which(modelP@met_id=='EC0029[None]')]
 modelP@met_name[which(modelP@met_id=='EC0036[None]')]
 modelP@met_name[which(modelP@met_id=='EC0011[None]')]
 modelP@met_name[which(modelP@met_id=='EC0009[None]')]
-i = 96
+i = 72
 nuse = getPhenoMat(evalsim)[,cmp] #other interesting compounds: 'EX_h(e)','EX_pi(e)','EX_man1p(e)','EX_man6p(e)','EX_chor(e)','EX_succ(e)','EX_fum(e)','EX_for(e)','EX_cit(e)','EX_6pgc(e)','EX_acac(e)','EX_pep(e)','EX_btd_RR(e)','EX_ac(e)','EX_ppa(e)','EX_dha(e)','EX_lac_L(e)','EX_pyr(e)','EX_tyr_L(e)','EX_thym(e)','EX_glyclt(e)'
 pop = evalsim@simlist[[i]]
 pop$phenotype_n = 1
 pop$phenotype_n[which(pop$phenotype!=0)] = nuse[paste('modelPOA.',pop$phenotype[which(pop$phenotype!=0)],sep='')] + 1
 plot(pop[,c('x','y')],xlim=c(0,evalsim@n),ylim=c(0,evalsim@m),xlab='',ylab='',
      axes=FALSE,cex=(pop$growth/max(pop$growth)), col=pop$phenotype_n, pch=19)
-#hist(pop$growth,breaks=100)
+hist(pop$growth,breaks=100)
 plot(pop[,c('x','y')],xlim=c(0,evalsim@n),ylim=c(0,evalsim@m),xlab='',ylab='',
      axes=FALSE,cex=(pop$growth/max(pop$growth)), col=pop$phenotype+1, pch=19)
 
@@ -244,33 +244,103 @@ plot(pop[,c('x','y')],xlim=c(0,evalsim@n),ylim=c(0,evalsim@m),xlab='',ylab='',
 library(scales)
 library(ggplot2)
 library(reshape2)
+library(RColorBrewer)
 
 pop = matrix(0,nrow=length(simlist),ncol=length(simlist[[1]]@simlist))
-#phen = matrix(0,nrow=length(simlist),ncol=length(simlist[[1]]@simlist))
+phenlist = lapply(c('dead',apply(getPhenoMat(simlist[[1]]),1,function(x){paste(x,collapse='')})),function(x){
+  return(matrix(0,nrow=length(simlist),ncol=length(simlist[[1]]@simlist)))
+})
+names(phenlist) = c('dead',apply(getPhenoMat(simlist[[1]]),1,function(x){paste(x,collapse='')}))
 subs = lapply(which(simlist[[1]]@subchange!=0),function(x){
   return(matrix(0,nrow=length(simlist),ncol=length(simlist[[1]]@simlist)))
 })
 for(i in 1:length(simlist)){
   dat = plotCurves(simlist[[i]],retdata=T) 
   pop[i,] = dat$Population
+  pheno = c('dead',apply(getPhenoMat(simlist[[i]]),1,function(x){paste(x,collapse='')}))
+  names(pheno)[1] = 'modelPOA.0'
   for(j in names(which(simlist[[1]]@subchange!=0))){
     subs[[j]][i,] = (dat$Substance[j,])/(0.01*6.25e-08)
   }
+  for(j in 1:length(pheno)){
+    for(k in 2:length(simlist[[i]]@simlist)){
+      ptab = table(simlist[[i]]@simlist[[k]]$phenotype)
+      if(gsub("modelPOA.",'',names(pheno)[j]) %in% names(ptab)){
+        #print(phenlist[[pheno[j]]])
+        phenlist[[pheno[j]]][i,k] = ptab[gsub("modelPOA.",'',names(pheno)[j])]
+      }
+    }
+  }
 }
+names(phenlist) = 0:(length(phenlist)-1)
+phenlist[['7']] = phenlist[['7']]+phenlist[['9']]
+phenlist[['14']] = phenlist[['1']]+phenlist[['3']]+phenlist[['4']]+phenlist[['10']]+
+  phenlist[['11']]+phenlist[['12']]+phenlist[['13']]+phenlist[['14']]
+phenlist = phenlist[-which(names(phenlist) %in% c('1','3','4','9','10','11','12','13'))]
+names(phenlist) = c('Metabolically inactive','Glucose respiration','Succinate, Acetate, CO2 production',
+                    'Acetate production / Succinate consumption','Succinate, Acetate consumption',
+                    'Succinate, Acetate production','Other phenotypes')
+pcol=c('black',"#96CED5","#76D73C","#D4477D","#D19EC4","#C17E73","#CBC594")
 
 pgrowth = apply(pop,2,mean)
 psd = apply(pop,2,sd)
 sconc = do.call(rbind,lapply(subs,function(x){apply(x,2,mean)}))
 ssd = do.call(rbind,lapply(subs,function(x){apply(x,2,sd)}))
 
-scientific_10 <- function(x) {
-  parse(text=gsub("e", " %*% 10^", scientific_format()(x)))
-}
+do.call(rbind,lapply(subs,function(x){apply(x,2,mean)}))
+
+#phendat = melt(rbind(do.call(rbind,lapply(phenlist,function(x){apply(x,2,mean)})),apply(pop,2,mean)))
+phendat = melt(rbind(do.call(rbind,lapply(phenlist,function(x){apply(x,2,mean)}))))
+colnames(phendat) = c('Phenotypes','time','mean')
+#phendat$sd = melt(rbind(do.call(rbind,lapply(phenlist,function(x){apply(x,2,sd)})),apply(pop,2,mean)))[,3]
+phendat$sd = melt(do.call(rbind,lapply(phenlist,function(x){apply(x,2,function(x){sd(x)/sqrt(length(x))})})))[,3]
+phendat$time = (phendat$time-1)/2
+#phendat = phendat[-which(phendat$phens %in% c(3,4,10:14)),]
+ggplot(phendat, aes(x=time, y=mean, colour=Phenotypes, group=Phenotypes)) + 
+  geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=0.3,size=1) +
+  geom_line(size=1.2) +
+  #geom_point(size=5, shape=20) + # 21 is filled circle
+  xlab("Time in h") +
+  ylab("Number of bacterial cells") +
+  geom_vline(xintercept = c(17,20,30,48), colour="black", linetype = "longdash",size=1.5) +
+  scale_y_continuous(label=scientific_format()) +
+  scale_color_manual(values=pcol) +
+  theme_bw(base_size = 30) +
+  theme(#legend.position='none',
+    legend.text=element_text(size=14),
+    #legend.key=element_blank(),
+    legend.title = element_text(size=20),
+    axis.text.x = element_text(size=20),
+    axis.text.y = element_text(size=20),
+    axis.title.y = element_text(size=30,vjust=0.5),
+    #panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(colour='black',size=2),
+    axis.ticks = element_line(size=1,color='black'),
+    plot.title = element_text(size=20)) #1200x400           # Position legend in bottom right
+
+evalsim = simlist[[1]]
+phen = getPhenoMat(evalsim)[-1,]
+i = 48*2 #30,40,45,60,96
+pop = evalsim@simlist[[i+1]]
+pop$phenotype[which(pop$phenotype==9)] = 7
+pop$phenotype[which(pop$phenotype %in% c(3,4,10:14))] = 14
+pop$phenotype[which(pop$phenotype==0)] = 1
+pop$phenotype[which(pop$phenotype==2)] = 2
+pop$phenotype[which(pop$phenotype==5)] = 3
+pop$phenotype[which(pop$phenotype==6)] = 4
+pop$phenotype[which(pop$phenotype==7)] = 5
+pop$phenotype[which(pop$phenotype==8)] = 6
+pop$phenotype[which(pop$phenotype==14)] = 7
+plot(pop[,c('x','y')],xlim=c(0,evalsim@n),ylim=c(0,evalsim@m),xaxt='n',yaxt='n',ann=FALSE,
+     axes=T,cex=0.5, col=pcol[pop$phenotype], pch=19)#1000
+
 popdat = data.frame('mean'=apply(pop,2,mean),'sd'=apply(pop,2,sd),'time'=0:96/2)
 ggplot(popdat, aes(x=time, y=mean)) + 
   geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=0.3,size=1) +
   geom_line(size=1.2) +
   #geom_point(size=5, shape=20) + # 21 is filled circle
+  geom_vline(xintercept = c(17,20,30,48), colour="black", linetype = "longdash",size=1.5) +
   xlab("Time in h") +
   ylab("Number of bacterial cells") +
   scale_y_continuous(label=scientific_format()) +
@@ -288,28 +358,31 @@ ggplot(popdat, aes(x=time, y=mean)) +
         axis.ticks = element_line(size=1,color='black'),
         plot.title = element_text(size=20)) #12x6           # Position legend in bottom right
 
+subcol = setdiff(colpal2,pcol)
+names(subcol) = c('Acetate','CO2','D-Glucose','Glycolaldehyde','NH4+','Orthophosphate','Oxygen','Succinate','Sulfate')
 trans = modelP@met_name
 names(trans) = paste('EX',gsub('\\[None\\]','',modelP@met_id),sep='_')
 trans = gsub('\\[e\\]','',trans)
 subdat = melt(do.call(rbind,lapply(subs,function(x){apply(x,2,mean)})))
-colnames(subdat) = c('subs','time','mean')
-subdat$sd = melt(do.call(rbind,lapply(subs,function(x){apply(x,2,sd)})))[,3]
+colnames(subdat) = c('Substances','time','mean')
+subdat$sd = melt(do.call(rbind,lapply(subs,function(x){apply(x,2,function(x){sd(x)/sqrt(length(x))})})))[,3]
 subdat$time = (subdat$time-1)/2
-subdat$subs = trans[gsub('_E','_',subdat$subs)]
-subdat = subdat[-which(subdat$subs %in% c('Biomass','H2O','H+')),]
-ggplot(subdat, aes(x=time, y=mean, colour=subs, group=subs)) + 
+subdat$Substances = trans[gsub('_E','_',subdat$Substances)]
+subdat = subdat[-which(subdat$Substances %in% c('Biomass','H2O','H+')),]
+ggplot(subdat, aes(x=time, y=mean, colour=Substances, group=Substances)) + 
   geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=0.3,size=1) +
   geom_line(size=1.2) +
   #geom_point(size=5, shape=20) + # 21 is filled circle
+  geom_vline(xintercept = c(17,20,30,48), colour="black", linetype = "longdash",size=1.5) +
   xlab("Time in h") +
-  ylab("Substance concentration in mM") +
+  ylab("Concentration in mM") +
   scale_y_continuous(label=scientific_format()) +
-  scale_color_manual(values=colpal2) +
+  scale_color_manual(values=subcol) +
   theme_bw(base_size = 30) +
   theme(#legend.position='none',
         legend.text=element_text(size=14),
         #legend.key=element_blank(),
-        legend.title = element_blank(),
+        legend.title = element_text(size=20),
         axis.text.x = element_text(size=20),
         axis.text.y = element_text(size=20),
         axis.title.y = element_text(size=30,vjust=0.5),
@@ -319,8 +392,32 @@ ggplot(subdat, aes(x=time, y=mean, colour=subs, group=subs)) +
         axis.ticks = element_line(size=1,color='black'),
         plot.title = element_text(size=20)) #12x6           # Position legend in bottom right
 
-cols = colpal2[c(1,3,7,8)]
+library(NMF)
+library(vegan)
+library(RColorBrewer)
+
 evalsim = simlist[[1]]
+i = 48*2 #17,20,30,48
+sub = matrix(evalsim@medlist[[i+1]][['EX_EC0007']],ncol=200,nrow=200)
+image(sub)
+aheatmap(sub/(0.01*6.25e-08),scale="none", Rowv=NA, Colv=NA, labRo=NA, labCol=NA,
+         color=colorRampPalette(c("seashell", subcol['Oxygen']))(100))#580x533
+
+i = 48*2 #17,20,30,48
+#sub = matrix(0,ncol=200,nrow=200)
+sub = matrix(evalsim@medlist[[i+1]][['EX_EC0029']],ncol=200,nrow=200)
+aheatmap(sub/(0.01*6.25e-08),scale="none", Rowv=NA, Colv=NA, labRo=NA, labCol=NA,breaks=0.025,
+         color=colorRampPalette(c("seashell", subcol['Acetate']))(100))#580x533
+i = 48*2 #17,20,30,48
+sub = matrix(evalsim@medlist[[i+1]][['EX_EC0036']],ncol=200,nrow=200)
+aheatmap(sub/(0.01*6.25e-08),scale="none", Rowv=NA, Colv=NA, labRo=NA, labCol=NA,breaks=0.025,
+         color=colorRampPalette(c("seashell", subcol['Succinate']))(100))#580x533
+
+
+
+evalsim = simlist[[1]]
+cols = colpal2[c(1,3,7,8)]
+evalsim = simlist[[4]]
 phen = getPhenoMat(evalsim)[-1,]
 phen = phen[,which(apply(phen,2,sum)!=0)]
 colnames(phen) = trans[gsub('_E','_',colnames(phen))]
@@ -328,10 +425,10 @@ cmp = 'EX_EC0029'
 cmp = 'EX_EC0036'
 cmp = 'EX_EC0027'
 cmp = 'EX_EC0007'
-i = 45
+i = 96 #30,40,45,60,96
 pop = evalsim@simlist[[i]]
 plot(pop[,c('x','y')],xlim=c(0,evalsim@n),ylim=c(0,evalsim@m),xaxt='n',yaxt='n',ann=FALSE,
-     axes=T,cex=(pop$growth/max(pop$growth)), col=pop$phenotype+1, pch=19)#700x750
+     axes=T,cex=(pop$growth/max(pop$growth)), col=pcol[pop$phenotype+1], pch=19)#700x750
 videoPhen = function(evalsim){
   for(i in 1:length(evalsim@simlist)){
     pop = evalsim@simlist[[i]]
@@ -339,3 +436,21 @@ videoPhen = function(evalsim){
          axes=T,cex=(pop$growth/max(pop$growth)), col=pop$phenotype+1, pch=19)#700x750
   }
 }
+
+2 = 'Glycolaldehyde production'
+#3 = 'Glycolaldehyde, Acetate production'
+#4 = 'Glycolaldehyde production / Acetate consumption'
+5 = 'Succinate, Acetate, CO2 production'
+6 = 'Acetate production / Succinate consumption'
+7 = 'Succinate, Acetate consumption'
+8 = 'Succinate, Acetate production'
+#9 = 'Succinate, Acetate consumption'= 7
+
+
+10 = 'Glycolaldehyde, Acetate production / Succinate consumption' = 6
+11 = 'Succinate, Acetate production'
+12 = 'Succinate, Acetate production' = 11
+13 = 'Succinate, Acetate production' = 11
+14 = 'Glycolaldehyde, Succinate, Acetate production' = 5
+phen[,c(2,5,9)]
+c(8,9,10,12,14,15)
