@@ -991,8 +991,8 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 })
 
 
-setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), num=10){standardGeneric("plotCurves2")})
-setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), num=10){
+setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), num=10, phencol=F){standardGeneric("plotCurves2")})
+setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), num=10, phencol=F){
   if(num>length(object@mediac) || num<1) stop("Number of substances invalid")
   # first get the correct (ie. complete) medlist
   prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
@@ -1014,7 +1014,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
           main='Strongly changing substances')
   legend(legendpos, rownames(mat_nice), col=cols, cex=0.7, fill=cols)
   
-  
+  # get bacs
   list <- lapply(object@simlist, function(x){
     occ <- table(x$type)
     unlist(lapply(seq_along(object@specs), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
@@ -1022,22 +1022,34 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
   mat_bac  <- do.call(cbind, list)
   rownames(mat_bac) <- names(object@specs)
   
-  list <- lapply(object@simlist, function(x){
-    unlist(lapply(seq_along(object@specs), function(j){
-      occ <- table(x[which(x$type==j),]$phenotype)
-      p <- unlist(lapply(seq_along(object@phenotypes[[j]]), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
-      names(p) <- paste0(names(object@specs)[j], "_pheno", seq_along(object@phenotypes[[j]]))
-      p
-    }))})
-  mat_phen  <- do.call(cbind, list)
   
+  # biomass
   list <- lapply(object@simlist, function(x){
     sum(x$growth)
   })
   mat_biom  <- do.call(cbind, list)
-  rownames(mat_biom) <- "biomass [g]"
+  rownames(mat_biom) <- "biomass [fg]"
   
-  mat_with_phen <- rbind(mat_bac, mat_phen, mat_biom)
+  # get pheno
+  if(phencol){
+    pheno_nr <- table(names(object@phenotypes))
+    list <- lapply(object@simlist, function(x){ # time step
+      unlist(lapply(seq_along(object@specs), function(j){ # bac type
+        occ <- table(x[which(x$type==j),]$phenotype)
+        #p <- unlist(lapply(seq_along(object@phenotypes[[j]]), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
+        p <- unlist(lapply(seq(0,pheno_nr[[names(object@specs[j])]]), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
+        names(p) <- paste0(names(object@specs)[j], "_pheno", seq(0,pheno_nr[[names(object@specs[j])]]))
+        p
+      }))})
+    mat_phen  <- do.call(cbind, list)
+    mat_with_phen <- rbind(mat_bac, mat_phen, mat_biom)
+  }
+  else{
+    mat_with_phen <- rbind(mat_bac, mat_biom)
+  }
+
+  
+  
   
   len <- dim(mat_with_phen)[1]
   if(len>length(colpal3)) cols <- colpal1[1:len] else cols <- colpal3[1:len]
