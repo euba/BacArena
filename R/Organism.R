@@ -445,7 +445,8 @@ setClass("Bac",
 ########################################################################################################
 
 Bac <- function(model, chem='', deathrate=0.21, growthlimit=0.083, cellweight=1.172, cellarea=4.42, ...){
-  new("Bac", Organism(model=model, ...), chem=chem)
+  new("Bac", Organism(model=model, deathrate=deathrate, growthlimit=growthlimit, cellweight=cellweight, 
+                      cellarea=cellarea, ...), chem=chem)
 }
 
 ########################################################################################################
