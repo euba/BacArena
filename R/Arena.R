@@ -1090,8 +1090,8 @@ setMethod("plotTotFlux", "Eval", function(object, legendpos="topright", num=20){
 #' eval <- simEnv(arena,10)
 #' phenmat <- getPhenoMat(eval)
 #' }
-setGeneric("getPhenoMat", function(object, time="total"){standardGeneric("getPhenoMat")})
-setMethod("getPhenoMat", "Eval", function(object, time="total"){
+setGeneric("getPhenoMat", function(object, time="total", sparse=F){standardGeneric("getPhenoMat")})
+setMethod("getPhenoMat", "Eval", function(object, time="total", sparse=F){
   phenspec = list()
   for(i in names(object@specs)){
     phenspec[[i]] = object@phenotypes[which(names(object@phenotypes)==i)]
@@ -1111,6 +1111,9 @@ setMethod("getPhenoMat", "Eval", function(object, time="total"){
   rownames(phenmat) <- names(phens)
   for(i in 1:nrow(phenmat)){
     phenmat[i,] = as.numeric(unlist(strsplit(phens[i],split={})))
+  }
+  if(sparse){
+    phenmat <- phenmat[,which(colSums(abs(phenmat))!=0)]
   }
   return(phenmat)
 })
