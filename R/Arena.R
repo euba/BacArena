@@ -878,7 +878,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
             retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
           }
           image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=paste(subnam[inds[j]], ": #", i),
-                zlim=c(0,max(unlist(lapply(evalsim@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
+                zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
         }
       }
     }else if(length(plot_items)<=6){
