@@ -1080,6 +1080,7 @@ setMethod("plotTotFlux", "Eval", function(object, legendpos="topright", num=20){
           xlab='time in h', ylab='reaction activity in mmol/(h * g_DW)',
           main='Highly active reactions')
   legend(legendpos, rownames(mat_nice), col=cols, cex=0.6, fill=cols)
+  return(rownames(mat_nice))
 })
 
 
