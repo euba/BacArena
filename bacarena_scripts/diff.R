@@ -13,23 +13,30 @@ source(file="R/Substance.R")
 source(file="R/Organism.R")
 source(file="R/Stuff.R")
 
-
+data(Ec_core)
 arena = Arena(n=11, m=11, stir=F, Lx=5, Ly=5)
 bac = Bac(model=Ec_core, growtype="exponential",
           speed=0, deathrate=0, type="ecore", lyse=F)
 bac = Bac(model=Ec_core, growtype="exponential", cellarea=4.42, lyse=F)
 addOrg(arena, bac, amount=1, x=1, y=1)
 addSubs(arena, smax=5, unit="mM", difunc="pde", difspeed=1)
-changeSub(arena, smax=0, "EX_o2(e)")
+changeSub(arena, smax=0, "EX_co2(e)")
 #changeSub(arena,20,c("EX_glc(e)","EX_pi(e)", "EX_h2o(e)", "EX_h(e)", "EX_nh4(e"))
-arena@media$`EX_o2(e)`@difspeed=1
-arena@media$`EX_o2(e)`@pde="BoundDiff2d"
-sim <- simEnv(arena, time=50, continue=T)
-out <- lapply(sim@medlist, function(x){matrix(x$`EX_o2(e)`, nrow=arena@n)})
+arena@media$`EX_co2(e)`@difspeed=0.5
+arena@media$`EX_co2(e)`@boundS=0.1
+arena@media$`EX_co2(e)`@pde="InfluxBoundDiff2d"
+sim <- simEnv(arena, time=15, continue=T)
+out <- lapply(sim@medlist, function(x){matrix(x$`EX_co2(e)`, nrow=arena@n)})
 par(mfrow = c(ceiling(sqrt(length(out))), ceiling(sqrt(length(out)))))
-for(i in 1:length(out)){image(out[[i]], main=paste("time",i))}
-t(round(out[[1]],2))
+out_min <- min(sapply(out, min))
+out_max <- max(sapply(out, max))
+for(i in 1:length(out)){image(out[[i]], main=paste("time",i), zlim=c(out_min, out_max))}
+t(round(out[[3]],2))
 
+
+
+min <- min(sapply(out, min))
+max <- max(sapply(out, max))
 
 
 par(mfrow=c(1,1))
