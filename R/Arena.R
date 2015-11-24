@@ -247,9 +247,12 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
 #' addSubs(arena) #add all substances with no concentrations.
 #' changeSub(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
 #' }
-setGeneric("changeSub", function(object, smax, mediac){standardGeneric("changeSub")})
-setMethod("changeSub", "Arena", function(object, smax, mediac){
+setGeneric("changeSub", function(object, smax, mediac, unit="mmol/cell"){standardGeneric("changeSub")})
+setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell"){
   if(sum(mediac %in% names(object@media))==length(mediac)){
+    if(unit=="mM"){smax <- (smax*0.01)*object@scale}  # conversion of mMol in mmol/grid_cell
+    if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
+    if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
     for(i in 1:length(mediac)){
       eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i],
                                                                   difunc=object@media[[mediac[i]]]@difunc,
