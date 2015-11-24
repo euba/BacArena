@@ -991,8 +991,10 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 })
 
 
-setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), num=10, phencol=F){standardGeneric("plotCurves2")})
-setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), num=10, phencol=F){
+setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"),
+                                   num=10, phencol=F, dict=None){standardGeneric("plotCurves2")})
+setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), 
+                                          num=10, phencol=F, dict=NULL){
   if(num>length(object@mediac) || num<1) stop("Number of substances invalid")
   # first get the correct (ie. complete) medlist
   prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
@@ -1012,7 +1014,11 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
   matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
           xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of substance in mmol',
           main='Strongly changing substances')
-  legend(legendpos, rownames(mat_nice), col=cols, cex=0.7, fill=cols)
+  if(length(dict) > 0){
+    new_names = unlist(lapply(rownames(mat_nice), function(x){dic[[x]]}))
+    legend(legendpos, new_names, col=cols, cex=0.7, fill=cols)
+  }
+  else legend(legendpos, rownames(mat_nice), col=cols, cex=0.7, fill=cols)
   
   # get bacs
   list <- lapply(object@simlist, function(x){
