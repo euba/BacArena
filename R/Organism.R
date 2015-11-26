@@ -193,14 +193,7 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' }
 setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){standardGeneric("optimizeLP")})
 setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){ #this function has to be extended to contain also additional solvers
-  switch(problem(lpob)@solver,
-         glpkAPI=setColsBndsGLPK(problem(lpob)@oobj, 1:length(lb), #specific for GLPK!
-                                    lb=lb, ub=ub),
-         clpAPI=chgColLowerCLP(problem(lpob)@oobj, lb=lb), #specific for CLP
-         sybilGUROBI=changeColsBnds(problem(lpob), lb=lb, ub=ub), #specific for Gurobi
-         chgBndsCPLEX(env=problem(lpob)@oobj@env,lp=problem(lpob)@oobj@lp, ncols=1:length(lb),
-                      ind=1:length(lb),lu=rep('U',length(lb)),bd=lb)) #specific for CPLEX
-  fbasl <- optimizeProb(lpob)
+  fbasl <- optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
   names(fbasl$fluxes) <- names(object@lbnd)
   eval.parent(substitute(object@fbasol <- fbasl))
 })
@@ -579,7 +572,7 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum){
   dead <- growth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
   
-  type <- object@type
+    type <- object@type
   arena@mflux[[type]] <- arena@mflux[[type]] + object@fbasol$fluxes # remember active fluxes
 
   if(dead && object@lyse){
