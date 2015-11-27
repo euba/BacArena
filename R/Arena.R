@@ -995,7 +995,7 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 
 
 setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"),
-                                   num=10, phencol=F, dict=None){standardGeneric("plotCurves2")})
+                                   num=10, phencol=F, dict=NULL){standardGeneric("plotCurves2")})
 setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), 
                                           num=10, phencol=F, dict=NULL){
   if(num>length(object@mediac) || num<1) stop("Number of substances invalid")
@@ -1009,7 +1009,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
     mat <- mat[-ignore_subs,]
     mediac <- object@mediac[-ignore_subs]}
   else mediac <- object@mediac
-  rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
+  #rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
   mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
   mat_nice <- tail(mat[order(mat_var),], num)
   
@@ -1264,6 +1264,71 @@ setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
 setMethod(show, signature(object="Eval"), function(object){
   print(paste('Evaluation results of ',length(object@medlist)-1,' simulation steps.',sep=''))
 })
+
+
+
+
+setGeneric("statPheno", function(object, type=1, phenotype_nr, dict=NULL){standardGeneric("statPheno")})
+setMethod("statPheno", "Eval", function(object, type=1, phenotype_nr, dict=NULL){
+  spec <- names(sim@specs[type])
+  all  <- sim@phenotypes[ names(sim@phenotypes) == spec ]
+  phen <- all[phenotype_nr]
+  mediac <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
+  if(length(dict) > 0) mediac <- unlist(lapply(mediac, function(x){dic[[x]]}))
+  
+  v <- as.numeric(unlist(strsplit(phen, split={})))
+  names(v) <- mediac
+  
+  cat(paste("\nproduced by", spec,"\n"))
+  print(names(v[which(v==1)]))
+  cat(paste("\nconsumed by", spec,"\n"))
+  print(names(v[which(v==2)]))
+  
+  # substrates
+  prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
+  list <- lapply(prelist, function(x){lapply(x, sum)})
+  mat_sub <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
+  rownames(mat_sub) <- mediac
+  
+  occ <- unlist(lapply(seq_along(object@simlist), function(t){dim(object@simlist[[t]][which(object@simlist[[t]]$type==type & object@simlist[[t]]$phenotype==phenotype_nr),])[1]}))
+  if(sum(occ)==0){
+    cat("\n occurence of phenotype over time\n")
+    print(occ)
+    stop("Phenotype never lived?!")
+  }
+  #intervals <- get_intervals(which(occ>0))
+  t_lb <- min(which(occ>0))
+  t_ub <- max(which(occ>0))
+  cat(paste("\n", spec, "occured between time steps"))
+  #print(split(intervals, ceiling(seq_along(intervals)/2)))
+  print(paste0(t_lb, "-", t_ub))
+  
+  # get substances whose dynamic correlate with investigated phenotype
+  mat <- rbind(mat_sub, phenotype=occ)[,t_lb:t_ub]
+  corr <- cor(t(mat))
+  corr[is.na(corr)] <- 0
+  high_corr <- tail(sort(abs(corr[dim(mat)[1],])), n=10)
+  cat("\nsubstance with highest correlation\n")
+  print(high_corr)
+  
+  par(mfrow=c(2,1))
+  mat_nice <- mat[names(high_corr),][-length(high_corr), ]
+  num <- dim(mat_nice)[1]
+  if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
+  matplot(x=seq(t_lb, t_ub), y=t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
+          xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of substance in mmol',
+          main='correlated substances')
+  legend("topleft", rownames(mat_nice), col=cols, cex=0.7, fill=cols)
+  
+  mat_pheno <- mat["phenotype",]
+  plot(y=mat_pheno, x=seq(t_lb, t_ub), type='l', col="black", pch=1, lty=1, lwd=5,
+          xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of organisms',
+          main=paste('Growth curve', spec, "phenotype", phenotype_nr))
+  
+  par(mfrow=c(1,1))
+  
+})
+
 
 
 setGeneric("getCorrM", function(object, reactions=TRUE, bacs=TRUE, substrates=TRUE){standardGeneric("getCorrM")})
