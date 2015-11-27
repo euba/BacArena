@@ -136,7 +136,7 @@ setMethod("speed", "Organism", function(object){return(object@speed)})
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,duplival=0.5,
+#' org <- Organism(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize an organism
 #' lobnds <- constrain(org,medium(org),lbnd(org)[medium(org)],1,1)
 #' }
@@ -187,7 +187,7 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,duplival=0.5,
+#' org <- Organism(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' optimizeLP(org)
 #' }
@@ -234,7 +234,7 @@ setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,duplival=0.5,
+#' org <- Organism(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' getPhenotype(org)
 #' }
@@ -259,7 +259,7 @@ setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,duplival=0.5,
+#' org <- Organism(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' growLin(org,1)
 #' }
@@ -282,7 +282,7 @@ setMethod("growLin", "Organism", function(object, growth){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,duplival=0.5,
+#' org <- Organism(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' growExp(org,1)
 #' }
@@ -386,7 +386,7 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -466,7 +466,7 @@ setMethod("chem", "Bac", function(object){return(object@chem)})
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -519,7 +519,7 @@ setMethod("growth", "Bac", function(object, population, j){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -647,7 +647,7 @@ setMethod("objective", "Human", function(object){return(object@objective)})
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' human <- Human(ecore,deathrate=0.05,duplival=0.5,
+#' human <- Human(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' changeFobj(human,'EX_glc(e)',ecore)
 #' }
@@ -671,7 +671,7 @@ setMethod("changeFobj", "Human", function(object, new_fobj, model, alg="fba"){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' human <- Human(ecore,deathrate=0.05,duplival=0.5,
+#' human <- Human(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,human,amount=10) #add 10 organisms

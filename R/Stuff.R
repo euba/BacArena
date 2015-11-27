@@ -120,3 +120,4 @@ openArena <- function(){
   sim <- simEnv(arena, time=30)  
   return(sim)
 }
+

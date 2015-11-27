@@ -115,7 +115,7 @@ setMethod("scale", "Arena", function(object){return(object@scale)})
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -189,7 +189,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
@@ -241,7 +241,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addSubs(arena) #add all substances with no concentrations.
@@ -270,7 +270,7 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addSubs(arena) #add all substances with no concentrations.
@@ -294,7 +294,7 @@ setMethod("flushSubs", "Arena", function(object){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -325,7 +325,7 @@ setMethod("changeDiff", "Arena", function(object, newdiffmat, mediac){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -370,7 +370,7 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -396,7 +396,7 @@ setMethod("changeOrg", "Arena", function(object, neworgdat){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' checkPhen(arena,bac) #returns 1 as the index of the current phenotype in the list.
@@ -435,7 +435,7 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -530,7 +530,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NA, continue=F){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -561,7 +561,7 @@ setMethod("getSublb", "Arena", function(object){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -616,7 +616,7 @@ setMethod("stirEnv", "Arena", function(object, sublb){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -723,7 +723,7 @@ setMethod("subchange", "Eval", function(object){return(object@subchange)})
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -777,7 +777,7 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -811,7 +811,7 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -848,7 +848,7 @@ setMethod("extractMed", "Eval", function(object, time=length(object@medlist)){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -939,7 +939,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -1104,7 +1104,7 @@ setMethod("plotTotFlux", "Eval", function(object, legendpos="topright", num=20){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -1153,7 +1153,7 @@ setMethod("getPhenoMat", "Eval", function(object, time="total", sparse=F){
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -1212,7 +1212,7 @@ setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, time=
 #' \dontrun{
 #' data(Ec_core)
 #' ecore <- Ec_core #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,duplival=0.5,
+#' bac <- Bac(ecore,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
@@ -1267,11 +1267,32 @@ setMethod(show, signature(object="Eval"), function(object){
 
 
 
-
-setGeneric("statPheno", function(object, type=1, phenotype_nr, dict=NULL){standardGeneric("statPheno")})
-setMethod("statPheno", "Eval", function(object, type=1, phenotype_nr, dict=NULL){
-  spec <- names(sim@specs[type])
-  all  <- sim@phenotypes[ names(sim@phenotypes) == spec ]
+#' @title Function for investigating a specific phenotype of an organism
+#'
+#' @description The generic function \code{statPheno} provides statistical and visual information about a certain phenotype.
+#'
+#' @param object An object of class Eval.
+#' @param type A number indicating the Organism type of the phenotype to be investigated (from orgdat)
+#' @param phenotype_nr A number indicating the phenotype to be investigated (from orgdat)
+#' @param dict A character vector of all substance IDs with names that should be used instead of possibly cryptic IDs
+#' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages.
+#' @seealso \code{\link{Eval-class}}
+#' @examples
+#' \dontrun{
+#' data(Ec_core)
+#' ecore <- Ec_core #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' eval <- simEnv(arena,10)
+#' statPheno(eval, type_nr=1, phenotype_nr=2)
+#' }
+setGeneric("statPheno", function(object, type_nr=1, phenotype_nr, dict=NULL){standardGeneric("statPheno")})
+setMethod("statPheno", "Eval", function(object, type_nr=1, phenotype_nr, dict=NULL){
+  spec <- names(object@specs[type_nr])
+  all  <- object@phenotypes[ names(object@phenotypes) == spec ]
   phen <- all[phenotype_nr]
   mediac <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
   if(length(dict) > 0) mediac <- unlist(lapply(mediac, function(x){dic[[x]]}))
@@ -1290,42 +1311,43 @@ setMethod("statPheno", "Eval", function(object, type=1, phenotype_nr, dict=NULL)
   mat_sub <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
   rownames(mat_sub) <- mediac
   
-  occ <- unlist(lapply(seq_along(object@simlist), function(t){dim(object@simlist[[t]][which(object@simlist[[t]]$type==type & object@simlist[[t]]$phenotype==phenotype_nr),])[1]}))
+  occ <- unlist(lapply(seq_along(object@simlist), function(t){dim(object@simlist[[t]][which(object@simlist[[t]]$type==type_nr & object@simlist[[t]]$phenotype==phenotype_nr),])[1]}))
   if(sum(occ)==0){
     cat("\n occurence of phenotype over time\n")
     print(occ)
-    stop("Phenotype never lived?!")
+    stop("This phenotype has never lived?!")
   }
-  #intervals <- get_intervals(which(occ>0))
   t_lb <- min(which(occ>0))
   t_ub <- max(which(occ>0))
   cat(paste("\n", spec, "occured between time steps"))
-  #print(split(intervals, ceiling(seq_along(intervals)/2)))
   print(paste0(t_lb, "-", t_ub))
   
   # get substances whose dynamic correlate with investigated phenotype
   mat <- rbind(mat_sub, phenotype=occ)[,t_lb:t_ub]
   corr <- cor(t(mat))
   corr[is.na(corr)] <- 0
-  high_corr <- tail(sort(abs(corr[dim(mat)[1],])), n=10)
+  sorted <- sort(corr[dim(mat)[1],])
+  high_corr <- c(tail(sorted, n=5), head(sorted, n=5))
   cat("\nsubstance with highest correlation\n")
   print(high_corr)
   
-  par(mfrow=c(2,1))
-  mat_nice <- mat[names(high_corr),][-length(high_corr), ]
-  num <- dim(mat_nice)[1]
-  if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
-  matplot(x=seq(t_lb, t_ub), y=t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
-          xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of substance in mmol',
-          main='correlated substances')
-  legend("topleft", rownames(mat_nice), col=cols, cex=0.7, fill=cols)
-  
-  mat_pheno <- mat["phenotype",]
-  plot(y=mat_pheno, x=seq(t_lb, t_ub), type='l', col="black", pch=1, lty=1, lwd=5,
-          xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of organisms',
-          main=paste('Growth curve', spec, "phenotype", phenotype_nr))
-  
-  par(mfrow=c(1,1))
+  if( length(high_corr) > 0){
+    par(mfrow=c(2,1))
+    mat_nice <- mat_sub[names(high_corr)[names(high_corr)!="phenotype"],][,t_lb:t_ub]
+    num <- dim(mat_nice)[1]
+    if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
+    matplot(x=seq(t_lb, t_ub), y=t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
+            xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of substance in mmol',
+            main='correlated substances')
+    legend("topleft", rownames(mat_nice), col=cols, cex=0.4, fill=cols)
+    
+    mat_pheno <- mat["phenotype",]
+    plot(y=mat_pheno, x=seq(t_lb, t_ub), type='l', col="black", pch=1, lty=1, lwd=5,
+            xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of organisms',
+            main=paste('Growth curve', spec, "phenotype", phenotype_nr))
+    
+    par(mfrow=c(1,1))
+  }
   
 })
 
