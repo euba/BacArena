@@ -1007,9 +1007,10 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
   ignore_subs <- which(object@mediac %in% ignore)
   if(length(ignore_subs) != 0){
     mat <- mat[-ignore_subs,]
-    mediac <- object@mediac[-ignore_subs]}
-  else mediac <- object@mediac
-  #rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
+    mediac <- object@mediac[-ignore_subs]
+  } else mediac <- object@mediac
+  
+  rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
   mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
   mat_nice <- tail(mat[order(mat_var),], num)
   
@@ -1020,8 +1021,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
   if(length(dict) > 0){
     new_names = unlist(lapply(rownames(mat_nice), function(x){dic[[x]]}))
     legend(legendpos, new_names, col=cols, cex=0.7, fill=cols)
-  }
-  else legend(legendpos, rownames(mat_nice), col=cols, cex=0.7, fill=cols)
+  } else legend(legendpos, rownames(mat_nice), col=cols, cex=0.7, fill=cols)
   
   # get bacs
   list <- lapply(object@simlist, function(x){
@@ -1051,10 +1051,11 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
         p
       }))})
     mat_phen  <- do.call(cbind, list)
-    mat_with_phen <- rbind(mat_bac, mat_phen, mat_biom)
-  }
-  else{
-    mat_with_phen <- rbind(mat_bac, mat_biom)
+    #mat_with_phen <- rbind(mat_bac, mat_phen, mat_biom)
+    mat_with_phen <- rbind(mat_bac, mat_phen)
+  } else{
+    #mat_with_phen <- rbind(mat_bac, mat_biom)
+    mat_with_phen <- mat_bac
   }
 
   
@@ -1350,6 +1351,62 @@ setMethod("statPheno", "Eval", function(object, type_nr=1, phenotype_nr, dict=NU
   }
   
 })
+
+
+setGeneric("findCrossFeeding", function(object){standardGeneric("findCrossFeeding")})
+setMethod("findCrossFeeding", "Eval", function(object){
+
+  # 1) Time: get occupation matrix for all phenotypes (occ_phen)
+  pheno_nr <- table(names(object@phenotypes))
+  list <- lapply(object@simlist, function(x){ # time step
+    unlist(lapply(seq_along(object@specs), function(j){ # bac type
+      occ <- table(x[which(x$type==j),]$phenotype)
+      p <- unlist(lapply(seq(0,pheno_nr[[names(object@specs[j])]]), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
+      names(p) <- paste0(names(object@specs)[j], "_pheno", seq(0,pheno_nr[[names(object@specs[j])]]))
+      p
+    }))})
+  mat_phen  <- do.call(cbind, list)
+  occ_phen  <- mat_phen != 0
+  
+  # 2) Substances: get matrix of substrates that could consumed and produced by phenotypes in principle
+  mediac <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
+  if(length(dict) > 0) mediac <- unlist(lapply(mediac, function(x){dic[[x]]}))
+  phens <- object@phenotypes
+  phenmat <- matrix(0, nrow=length(phens), ncol=length(object@mediac))
+  colnames(phenmat) <- mediac
+  counter = vector("numeric", length(object@specs))
+  names(counter) <- names(object@specs)
+  new_names = unlist(lapply(names(phens), function(x){
+    counter[x] <<- counter[x] + 1
+    paste0(x, "_pheno", counter[x])
+  }))
+  rownames(phenmat) <- new_names
+  for(i in 1:nrow(phenmat)){
+    phenmat[i,] = as.numeric(unlist(strsplit(phens[i],split={})))
+  }
+  phenmat_bin <- replace(phenmat, phenmat==2, -1)
+  phenmat_abs <- abs(phenmat_bin)
+  res <- phenmat_bin[,which(abs(colSums(phenmat_bin)) != colSums(phenmat_abs))]
+  
+
+  # 3) Combinatorics: check for all pairs of phenotypes if they 
+  #    i) occured in the same time steps and 
+  #   ii) exchange at least one substance
+  combi <- combn(rownames(phenmat), 2)
+  for(i in 1:ncol(combi)){
+    co_occ <- which(occ_phen[combi[,i][1],] & occ_phen[combi[,i][2],]==T)    #which(occ_phen["modelPOA_new_pheno13",] & occ_phen["modelPOA_new_pheno5",]==T)
+    if( length(co_occ) > 0 ){
+      ex_both     <- res[c(combi[,i][1], combi[,i][2]),]
+      feeding_index <- which(colSums(ex_both)==0 & colSums(abs(ex_both))!=0)
+      if(length(feeding_index)>0){
+        feeding <- ex_both[,feeding_index]
+        cat("\npossible cross feeding at time steps\n")
+        print(co_occ)
+        print(feeding)
+      }
+    }
+  }
+  })
 
 
 
