@@ -1,2 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^model/.+$
+^bacarena_scripts/.+$
+^examples/.+$
+^sim/.+$
+^.*\\.log$

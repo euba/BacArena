@@ -33,14 +33,14 @@ ecore <- Ec_core
 The model is already integrated in the sybil R package by default. Alternatively you can also load your own model of interest with commands of the sybil and libSBML. After we loaded the model, we convert it into an object of class Bac by calling its constructor
 
 ```{r}
-bac <- Bac(ecore,deathrate=0.1,duplirate=1,
-           growthlimit=0.05,growtype="exponential")
+bac <- Bac(ecore, growtype="exponential",
+           cellarea=4.42, lyse=T)
 ```
 
 Now we have to set up an environment in which the organisms can interact
 
 ```{r}
-arena <- Arena(100,100)
+arena = Arena(n=200, m=200, Lx=0.05, Ly=0.05)
 ```
 
 Here, we chose 100 times 100 as the grid size of the environment. Next we want to put our created organism in its environment by
@@ -52,19 +52,19 @@ addOrg(arena,bac,amount=1,x=50,y=50)
 With this command we added one individual of our bacterium in the middle of the environment (by its x and y position). Next we can add the substances to the environment
 
 ```{r}
-addSubs(arena,30)
+addSubs(arena, smax=0.05, difspeed=6.7e-6, unit='mM') 
 ```
 
 Now we added all possible substances to the environment arena with a concentration 40 mmol per gridcell. Finally, we can start the simulation with
 
 ```{r}
-eval <- simEnv(arena,20)
+eval <- simEnv(arena,time=20)
 ```
 
 The object eval stores all 20 simulation steps, that we performed. After we retrieve the eval object we can plot now the results of the simulation
 
 ```{r}
-plotCurves(eval)
+plotCurves2(eval)
 ```
 
 This will plot the growth curve and curves of substance concentration changes over the 20 simulation steps. If we are interested in the spatial and temporal changes of our constructed population we can use 
