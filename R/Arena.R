@@ -1004,7 +1004,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
   list <- lapply(prelist, function(x){lapply(x, sum)})
   mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
   #remove substances that should be ignored
-  ignore_subs <- which(object@mediac %in% ignore)
+  ignore_subs <- which(object@mediac %in% ignore | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% ignore)
   if(length(ignore_subs) != 0){
     mat <- mat[-ignore_subs,]
     mediac <- object@mediac[-ignore_subs]
