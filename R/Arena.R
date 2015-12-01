@@ -1,3 +1,4 @@
+globalVariables(c("diffuseSteveCpp"))
 
 ########################################################################################################
 ###################################### Arena CLASS ################################################
@@ -6,6 +7,7 @@
 #' Structure of the S4 class "Arena"
 #' 
 #' Structure of the S4 class \code{Arena} to represent the environment in which Organisms and Substances interact.
+#' @import ReacTran Matrix
 #'
 #' @slot orgdat A data frame collecting information about the accumulated growth, type, phenotype, x and y position for each individual in the environment.
 #' @slot specs A list of organism types and their associated parameters.
@@ -54,9 +56,7 @@ Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0
   x.grid  <- setup.grid.1D(x.up = 0, L = Lx, N = n)
   y.grid  <- setup.grid.1D(x.up = 0, L = Ly, N = m)
   grid2D <- setup.grid.2D(x.grid, y.grid)
-  #get parameter for diffusion pde solver
-  #lrw <- estimate_lrw(n,m)
-  #geo_list <- list(grid2D=grid2D, lrw=lrw)
+  lrw <- estimate_lrw(n,m) #get parameter for diffusion pde solver
   geo_list <- list(grid2D=grid2D)
   scale = (Lx*Ly)/(n*m)
   new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs, scale=scale,
@@ -1019,7 +1019,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
           xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of substance in mmol',
           main='Strongly changing substances')
   if(length(dict) > 0){
-    new_names = unlist(lapply(rownames(mat_nice), function(x){dic[[x]]}))
+    new_names = unlist(lapply(rownames(mat_nice), function(x){dict[[x]]}))
     legend(legendpos, new_names, col=cols, cex=0.7, fill=cols)
   } else legend(legendpos, rownames(mat_nice), col=cols, cex=0.7, fill=cols)
   
@@ -1353,8 +1353,10 @@ setMethod("statPheno", "Eval", function(object, type_nr=1, phenotype_nr, dict=NU
 })
 
 
-setGeneric("findCrossFeeding", function(object){standardGeneric("findCrossFeeding")})
-setMethod("findCrossFeeding", "Eval", function(object){
+
+
+setGeneric("findCrossFeeding", function(object, dict=NULL){standardGeneric("findCrossFeeding")})
+setMethod("findCrossFeeding", "Eval", function(object, dict=NULL){
 
   # 1) Time: get occupation matrix for all phenotypes (occ_phen)
   pheno_nr <- table(names(object@phenotypes))
@@ -1370,7 +1372,7 @@ setMethod("findCrossFeeding", "Eval", function(object){
   
   # 2) Substances: get matrix of substrates that could consumed and produced by phenotypes in principle
   mediac <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
-  if(length(dict) > 0) mediac <- unlist(lapply(mediac, function(x){dic[[x]]}))
+  if(length(dict) > 0) mediac <- unlist(lapply(mediac, function(x){dict[[x]]}))
   phens <- object@phenotypes
   phenmat <- matrix(0, nrow=length(phens), ncol=length(object@mediac))
   colnames(phenmat) <- mediac
