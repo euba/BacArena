@@ -7,6 +7,7 @@
 #' Structure of the S4 class "Substance"
 #' 
 #' Structure of the S4 class \code{Substance} representing substances in the environment which can be produced or consumed.
+#' @import ReacTran Matrix deSolve
 #'
 #' @slot smax A number representing the start concentration of the substance for each grid cell in the environment. 
 #' @slot diffmat A sparse matrix containing all concentrations of the substance in the environment.
@@ -114,13 +115,29 @@ setMethod("diffuseR", "Substance", function(object){
   eval.parent(substitute(object@diffmat <- as(smat, "sparseMatrix")))
 })
 
-
+#' @title Function for diffusion of the Substance matrix
+#'
+#' @description The generic function \code{diffusePDE} implements the diffusion by the solving diffusion equation.
+#'
+#' @param object An object of class Substance.
+#' @param init_mat A matrix with values to be used by the diffusion.
+#' @param gridgeometry A list specifying the geometry of the Arena
+#' @param tstep A numeric value giving the time step of integration
+#' @param lrw A numeric value needed by solver to estimate array size (by default lwr is estimated in the arena constructor by the function estimate_lrw())
+#' @details Partial differential equation is solved to model 2d diffusion process in the arena.
+#' @seealso \code{\link{Substance-class}} and \code{\link{diffuseCpp}}
+#' @examples
+#' \dontrun{
+#' sub <- Substance(n=20,m=20,smax=40,name='test') #initialize test substance
+#' arena <- Arena(n=100, m=100, stir=F, Lx=0.025, Ly=0.025)
+#' diffusePDE(sub, arena@geometry, arena@lrw, arena@tstep)
+#' }
 setGeneric("diffusePDE", function(object, init_mat, gridgeometry, lrw, tstep){standardGeneric("diffusePDE")})
 setMethod("diffusePDE", "Substance", function(object, init_mat, gridgeometry, lrw, tstep){
   #init_mat <- as.matrix(object@diffmat)
   D <- object@difspeed*3600 # change unit of diff const to cm^2/h
-  solution <- ode.2D(y = init_mat, func = get(object@pde), t=c(0,0+tstep), parms = c(gridgeometry=gridgeometry, diffgeometry=object@diffgeometry, boundS=object@boundS),
-                   dim = c(gridgeometry$grid2D$x.N, gridgeometry$grid2D$y.N), method="lsodes", lrw=lrw)#160000
+  solution <- ode.2D(y = init_mat, func = get(object@pde), times=c(0,0+tstep), parms = c(gridgeometry=gridgeometry, diffgeometry=object@diffgeometry, boundS=object@boundS),
+                     dimens = c(gridgeometry$grid2D$x.N, gridgeometry$grid2D$y.N), method="lsodes", lrw=lrw)#160000
   diff_mat <- matrix(data=solution[2,][-1], ncol=ncol(init_mat), nrow=nrow(init_mat))
   return(diff_mat)
 })
