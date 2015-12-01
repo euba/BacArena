@@ -7,7 +7,7 @@ globalVariables(c("diffuseSteveCpp"))
 #' Structure of the S4 class "Arena"
 #' 
 #' Structure of the S4 class \code{Arena} to represent the environment in which Organisms and Substances interact.
-#' @import ReacTran Matrix
+#' @import methods ReacTran Matrix Rcpp
 #'
 #' @slot orgdat A data frame collecting information about the accumulated growth, type, phenotype, x and y position for each individual in the environment.
 #' @slot specs A list of organism types and their associated parameters.
@@ -56,7 +56,6 @@ Arena <- function(n,m,tstep=1,orgdat=data.frame(growth=numeric(0),type=integer(0
   x.grid  <- setup.grid.1D(x.up = 0, L = Lx, N = n)
   y.grid  <- setup.grid.1D(x.up = 0, L = Ly, N = m)
   grid2D <- setup.grid.2D(x.grid, y.grid)
-  lrw <- estimate_lrw(n,m) #get parameter for diffusion pde solver
   geo_list <- list(grid2D=grid2D)
   scale = (Lx*Ly)/(n*m)
   new("Arena", n=as.integer(n), m=as.integer(m), tstep=tstep, orgdat=orgdat, specs=specs, scale=scale,
@@ -179,11 +178,12 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' @description The generic function \code{addSubs} adds specific substances to the environment.
 #'
 #' @param object An object of class Arena.
-#' @param smax A number indicating the maximum substance concentration per grid cell
 #' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
 #' @param smax A numeric vector indicating the maximum substance concentration per grid cell.
-#' @slot difunc A character vector ("pde","cpp" or "r") describing the function for diffusion.
-#' @slot difspeed A number indicating the diffusion speed (given by number of cells per iteration).
+#' @param unit A character used as chemical unit to set the amount of the substances to be added (valid values are: mmol/cell, mmol/cm2, mmol/arena, mM)
+#' @param difunc A character vector ("pde","cpp" or "r") describing the function for diffusion.
+#' @param difspeed A number indicating the diffusion speed (given by number of cells per iteration).
+#' @param add A boolean variable defining whether the amount of substance should be summed or replaced
 #' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub} can be used to modify the concentrations of specific substances.} 
 #' @seealso \code{\link{Arena-class}} and \code{\link{changeSub}} 
 #' @examples
@@ -236,6 +236,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
 #' @param object An object of class Arena.
 #' @param smax A number indicating the maximum substance concentration per grid cell.
 #' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
+#' @param unit A character used as chemical unit to set the amount of the substances to be added (valid values are: mmol/cell, mmol/cm2, mmol/arena, mM)
 #' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub}} can be used to modify the concentrations of specific substances.
 #' @seealso \code{\link{Arena-class}} and \code{\link{addSubs}} 
 #' @examples
@@ -245,7 +246,8 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addSubs(arena) #add all substances with no concentrations.
-#' changeSub(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
+#' changeSub(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) 
+#' #add substances glucose, oxygen and phosphate
 #' }
 setGeneric("changeSub", function(object, smax, mediac, unit="mmol/cell"){standardGeneric("changeSub")})
 setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell"){
@@ -274,7 +276,8 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(20,20) #initialize the environment
 #' addSubs(arena) #add all substances with no concentrations.
-#' changeSub(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
+#' changeSub(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) 
+#' #add substances glucose, oxygen and phosphate
 #' flushSubs(arena) #remove all created substance concentrations
 #' }
 setGeneric("flushSubs", function(object){standardGeneric("flushSubs")})
@@ -290,7 +293,7 @@ setMethod("flushSubs", "Arena", function(object){
 #' @param newdiffmat A matrix giving the new gradient matrix of the specific substances in the environment.
 #' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
 #' @details This function can be used to add gradients of specific substances in the environment. The default conditions in \code{changeSubs} assumes an equal concentration in every grid cell of the environment. 
-#' @seealso \code{\link{Arena-class}} and \code{\link{changeSubs}} 
+#' @seealso \code{\link{Arena-class}} and \code{\link{changeSub}} 
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
@@ -300,7 +303,8 @@ setMethod("flushSubs", "Arena", function(object){
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,30) #add all substances with no concentrations.
 #' gradient <- matrix(1:200,20,20)
-#' changeDiff(arena,gradient,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
+#' changeDiff(arena,gradient,c("EX_glc(e)","EX_o2(e)","EX_pi(e)"))
+#' # add substances glucose, oxygen and phosphate
 #' }
 setGeneric("changeDiff", function(object, newdiffmat, mediac){standardGeneric("changeDiff")})
 setMethod("changeDiff", "Arena", function(object, newdiffmat, mediac){
@@ -319,9 +323,11 @@ setMethod("changeDiff", "Arena", function(object, newdiffmat, mediac){
 #' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
 #' @param position A character vector giving the position (top, bottom, right and left) of the gradient.
 #' @param smax A number giving the maximum concentration of the substance.
+#' @param add A boolean variable defining whether the amount of substance should be summed or replaced
 #' @param steep A number between 0 and 1 giving the steepness of the gradient (concentration relative to the arena size).
+#' @param unit A character used as chemical unit to set the amount of the substances to be added (valid values are: mmol/cell, mmol/cm2, mmol/arena, mM)
 #' @details This function can be used to add gradients of specific substances in the environment. 
-#' @seealso \code{\link{Arena-class}} and \code{\link{changeSubs}} 
+#' @seealso \code{\link{Arena-class}} and \code{\link{changeSub}} 
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
@@ -429,6 +435,8 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
 #'
 #' @param object An object of class Arena or Eval.
 #' @param time A number giving the number of iterations to perform for the simulation
+#' @param lrw A numeric value needed by solver to estimate array size (by default lwr is estimated in the simEnv() by the function estimate_lrw())
+#' @param continue A boolean indicating whether the simulation should be continued or restarted.
 #' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
 #' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
 #' @seealso \code{\link{Arena-class}} and \code{\link{Eval-class}}
@@ -448,7 +456,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NA, continue=F){
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
          stop("Please supply an object of class Arena."))
-  if(is.na(lrw)){lrw=estimate_lrw(arena@n,arena@m)}
+  if(is.null(lrw)){lrw=estimate_lrw(arena@n,arena@m)}
   for(i in names(arena@specs)){
     phensel <- arena@phenotypes[which(names(arena@phenotypes)==i)]
     if(length(phensel)==0){
@@ -993,7 +1001,30 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
   }
 })
 
-
+#' @title Function for plotting the overall change as curves with maximally distinct colors
+#'
+#' @description The generic function \code{plotCurves2} plots the growth curves and concentration changes of the most changing substances from simulation steps in an \code{Eval} object using maximally distinct colors.
+#'
+#' @param object An object of class Eval.
+#' @param legendpos A character variable declaring the position of the legend
+#' @param ignore A list of character variables with substance names that sould be omitted in the plot
+#' @param num An integer defining the number of substrates to be plot
+#' @param phencol Boolean variable indicating whether phenotypes should be higlighted
+#' @param dict List defining new substance names. List entries are intepreted as old names and the list names as the new ones.
+#' @return Returns two graphs in one plot: the growth curves and the curves of concentration changes
+#' @details The parameter \code{retdata} can be used to access the data used for the returned plots to create own custom plots. 
+#' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' eval <- simEnv(arena,10)
+#' plotCurves2(eval)
+#' }
 setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"),
                                    num=10, phencol=F, dict=NULL){standardGeneric("plotCurves2")})
 setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), 
@@ -1075,6 +1106,19 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
 #' @description The generic function \code{plotTotFlux} plots the time course of reactions with high variation in activity for an \code{Eval} object.
 #'
 #' @param object An object of class Eval.
+#' @param legendpos A character variable declaring the position of the legend
+#' @param num An integer defining the number of substrates to be plot
+#' @examples
+#' \dontrun{
+#' ecore <- model #get Escherichia coli core metabolic model
+#' bac <- Bac(ecore,deathrate=0.05,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(20,20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' eval <- simEnv(arena,10)
+#' plotTotFlux(eval)
+#' }
 setGeneric("plotTotFlux", function(object, legendpos="topright", num=20){standardGeneric("plotTotFlux")})
 setMethod("plotTotFlux", "Eval", function(object, legendpos="topright", num=20){
   if(num<1) stop("Number of reactions invalid")
@@ -1099,6 +1143,8 @@ setMethod("plotTotFlux", "Eval", function(object, legendpos="topright", num=20){
 #' @description The generic function \code{getPhenoMat} reconstructs a matrix with the usage of exchange reactions of the different organisms in the environment.
 #'
 #' @param object An object of class Eval.
+#' @param time An integer indicating the time step to be used (default value is character "total")
+#' @param sparse A boolean indicating whether zero entries should be removed from return matrix
 #' @return Returns a matrix with different phenotypes of the organism as rows and all possible exchange reactions as columns. A value of 1 means secretion, 2 means uptake and 0 means no usage of the substance of interest.
 #' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages.
 #' @seealso \code{\link{Eval-class}} and \code{\link{getPhenotype}}
@@ -1149,6 +1195,7 @@ setMethod("getPhenoMat", "Eval", function(object, time="total", sparse=F){
 #' @param plot_type A character vector giving the plot which should be returned (either "pca" for a principle coordinate analysis or "hclust" for hierarchical clustering).
 #' @param legend Boolean variable indicating if legend should be plotted
 #' @return Returns a plot for each simulation step representing the similarity of phenotypes of organisms within the environment. 
+#' @param time An integer indicating the time step to be used (default value is character "total")
 #' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages.
 #' @seealso \code{\link{Eval-class}} and \code{\link{getPhenoMat}}
 #' @examples
@@ -1273,7 +1320,7 @@ setMethod(show, signature(object="Eval"), function(object){
 #' @description The generic function \code{statPheno} provides statistical and visual information about a certain phenotype.
 #'
 #' @param object An object of class Eval.
-#' @param type A number indicating the Organism type of the phenotype to be investigated (from orgdat)
+#' @param type_nr A number indicating the Organism type of the phenotype to be investigated (from orgdat)
 #' @param phenotype_nr A number indicating the phenotype to be investigated (from orgdat)
 #' @param dict A character vector of all substance IDs with names that should be used instead of possibly cryptic IDs
 #' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages.
@@ -1296,7 +1343,7 @@ setMethod("statPheno", "Eval", function(object, type_nr=1, phenotype_nr, dict=NU
   all  <- object@phenotypes[ names(object@phenotypes) == spec ]
   phen <- all[phenotype_nr]
   mediac <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
-  if(length(dict) > 0) mediac <- unlist(lapply(mediac, function(x){dic[[x]]}))
+  if(length(dict) > 0) mediac <- unlist(lapply(mediac, function(x){dict[[x]]}))
   
   v <- as.numeric(unlist(strsplit(phen, split={})))
   names(v) <- mediac

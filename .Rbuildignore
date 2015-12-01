@@ -4,4 +4,4 @@
 ^bacarena_scripts/.+$
 ^examples/.+$
 ^sim/.+$
-^.*\\.log$
+.*log

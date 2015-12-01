@@ -5,6 +5,7 @@
 #' Structure of the S4 class "Organism"
 #' 
 #' Structure of the S4 class \code{Organism} representing the organisms present in the environment.
+#' @import sybil methods
 #'
 #' @slot lbnd A numeric vector containing the lower bounds of the model structure.
 #' @slot ubnd A numeric vector containing the upper bounds of the model structure.
@@ -19,7 +20,7 @@
 #' @slot growtype A character vector giving the functional type for growth (linear or exponential).
 #' @slot kinetics A List containing Km and v_max values for each reactions.
 #' @slot speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
-#' @slot cellarea A numeric value indicating the surface that one organism occupies (unit: \mu cm^2)
+#' @slot cellarea A numeric value indicating the surface that one organism occupies (unit: mu cm^2)
 #' @slot cellweight A numeric value giving the maximal dry weight of single organism (unit: fg)
 setClass("Organism",
          representation(
@@ -130,6 +131,7 @@ setMethod("speed", "Organism", function(object){return(object@speed)})
 #' @param lb A numeric vector giving the constraint values of lower bounds (e.g. avaible metabolite concentrations
 #' @param dryweight A number giving the current dryweight of the organism.
 #' @param time A number giving the time intervals for each simulation step.
+#' @param scale A numeric defining the scaling (units for linear programming has to be in certain range)
 #' @return Returns the lower bounds, which carry the constraints and names of relevant reactions.
 #' @details The constraints are calculated according to the flux definition as mmol/(gDW*hr) with the parameters \code{dryweight} and \code{time}.
 #' @seealso \code{\link{Organism-class}}
@@ -205,6 +207,7 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
 #' @param object An object of class Organisms.
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
 #' @param cutoff A number giving the cutoff value by which value of objective function is considered greater than 0.
+#' @param bacnum integer indicating the number of bacteria individuals per gridcell
 #' @return Returns the updated vector containing the substance concentrations in the current position of the individual of interest.
 #' @details The consumption is implemented by adding the flux of the exchange reactions to the current substance concentrations.
 #' @seealso \code{\link{Organism-class}}
@@ -319,11 +322,13 @@ setMethod("lysis", "Organism", function(object, sublb, factor=object@growthlimit
 #' @description The generic function \code{emptyHood} gives a free space which is present in the Moore neighbourhood of an individual of interest.
 #'
 #' @param object An object of class Organisms.
-#' @param occmat A matrix giving where the individuals in environment are occupying a specific position.
 #' @param x A number giving the x position of the individual of interest in its environment.
 #' @param y A number giving the y position of the individual of interest in its environment.
+#' @param n A number giving the horizontal size of the environment.
+#' @param m A number giving the vertical size of the environment.
+#' @param pos A dataframe with all occupied x and y positions 
 #' @return Returns the free position in the Moore neighbourhood, which is not occupied by other individuals. If there is no free space \code{NULL} is returned.
-#' @seealso \code{\link{Organism-class}} and \code{\link{getHood}}
+#' @seealso \code{\link{Organism-class}}
 #' @examples
 #' NULL
 setGeneric("emptyHood", function(object, pos, n, m, x, y){standardGeneric("emptyHood")})
@@ -348,11 +353,13 @@ setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y){
 #' @description The generic function \code{NemptyHood} gives a free space which is present in the Moore neighbourhood of an individual of interest.
 #'
 #' @param object An object of class Organisms.
-#' @param occmat A matrix giving where the individuals in environment are occupying a specific position.
 #' @param x A number giving the x position of the individual of interest in its environment.
 #' @param y A number giving the y position of the individual of interest in its environment.
+#' @param n A number giving the horizontal size of the environment.
+#' @param m A number giving the vertical size of the environment.
+#' @param pos A dataframe with all occupied x and y positions 
 #' @return Returns the free position in the Moore neighbourhood, which is not occupied by other individuals. If there is no free space \code{NULL} is returned.
-#' @seealso \code{\link{Organism-class}} and \code{\link{getHood}}
+#' @seealso \code{\link{Organism-class}}
 #' @examples
 #' NULL
 setGeneric("NemptyHood", function(object, pos, n, m, x, y){standardGeneric("NemptyHood")})
@@ -379,10 +386,12 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
 #' @description The generic function \code{move} implements a random movement in the Moore neighbourhood of an individual.
 #'
 #' @param object An object of class Organism.
-#' @param population An object of class Arena.
 #' @param j The number of the iteration of interest.
+#' @param n A number giving the horizontal size of the environment.
+#' @param m A number giving the vertical size of the environment.
+#' @param pos A dataframe with all occupied x and y positions 
 #' @details Organisms move in a random position the Moore neighbourhood, which is not occupied by other individuals. If there is no free space the individuals stays in the same position.
-#' @seealso \code{\link{Organism-class}}, \code{\link{getHood}} and \code{\link{emptyHood}}
+#' @seealso \code{\link{Organism-class}}, \code{\link{emptyHood}}
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
@@ -515,7 +524,7 @@ setMethod("growth", "Bac", function(object, population, j){
 #' @param population An object of class Arena.
 #' @param j The number of the iteration of interest.
 #' @details Bacteria move to a position in the Moore neighbourhood which has the highest concentration of the prefered substrate, which is not occupied by other individuals. The prefered substance is given by slot \code{chem} in the \code{Bac} object. If there is no free space the individuals stays in the same position. If the concentration in the Moore neighbourhood has the same concentration in every position, then random movement is implemented.
-#' @seealso \code{\link{Bac-class}}, \code{\link{getHood}} and \code{\link{emptyHood}}
+#' @seealso \code{\link{Bac-class}} and \code{\link{emptyHood}}
 #' @examples
 #' \dontrun{
 #' ecore <- model #get Escherichia coli core metabolic model
@@ -553,8 +562,9 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 #' @description The generic function \code{simBac} implements all neccessary functions for the individuals to update the complete environment. 
 #'
 #' @param object An object of class Bac.
-#' @param population An object of class Arena.
+#' @param arena An object of class Arena defining the environment.
 #' @param j The number of the iteration of interest.
+#' @param bacnum integer indicating the number of bacteria individuals per gridcell
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
 #' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.
 #' @details Bacterial individuals undergo step by step the following procedures: First the individuals are constrained with \code{constrain} to the substrate environment, then flux balance analysis is computed with \code{optimizeLP}, after this the substrate concentrations are updated with \code{consume}, then the bacterial growth is implemented with \code{growth}, the potential new phenotypes are added with \code{checkPhen}, finally the additional and conditional functions \code{lysis}, \code{move} or \code{chemotaxis} are performed. Can be used as a wrapper for all important bacterial functions in a function similar to \code{simEnv}.
@@ -715,8 +725,9 @@ setMethod("cellgrowth", "Human", function(object, population, j){
 #' @description The generic function \code{simHum} implements all neccessary functions for the individuals to update the complete environment. 
 #'
 #' @param object An object of class Human.
-#' @param population An object of class Arena.
 #' @param j The number of the iteration of interest.
+#' @param arena An object of class Arena defining the environment.
+#' @param bacnum integer indicating the number of bacteria individuals per gridcell
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
 #' @return Returns the updated enivironment of the \code{arena} parameter with all new positions of individuals on the grid and all new substrate concentrations.
 #' @details Human cell individuals undergo the step by step the following procedures: First the individuals are constrained with \code{constrain} to the substrate environment, then flux balance analysis is computed with \code{optimizeLP}, after this the substrate concentrations are updated with \code{consume}, then the cell growth is implemented with \code{cellgrowth}, the potential new phenotypes are added with \code{checkPhen}, finally the conditional function \code{lysis} is performed. Can be used as a wrapper for all important cell functions in a function similar to \code{simEnv}.
