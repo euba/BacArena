@@ -5,7 +5,9 @@
 #' Structure of the S4 class "Organism"
 #' 
 #' Structure of the S4 class \code{Organism} representing the organisms present in the environment.
-#' @import sybil methods
+#' @import methods
+#' @export Organism
+#' @exportClass Organism
 #'
 #' @slot lbnd A numeric vector containing the lower bounds of the model structure.
 #' @slot ubnd A numeric vector containing the upper bounds of the model structure.
@@ -50,17 +52,17 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_c
                      growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", kinetics=list(), 
                      speed=2, ...){ #the constructor requires the model, after that it is not stored anymore
   rxname = react_id(model)
-  lpobject <- sysBiolAlg(model, algorithm=algo)
-  fbasol <- optimizeProb(lpobject)
+  lpobject <- sybil::sysBiolAlg(model, algorithm=algo)
+  fbasol <- sybil::optimizeProb(lpobject)
   names(fbasol$fluxes) = rxname
   lobnd = lowbnd(model)
   names(lobnd) = rxname
   upbnd = uppbnd(model)
   names(upbnd) = rxname
   if(is.na(ex)){
-    medc <- react_id(findExchReact(model))
+    medc <- react_id(sybil::findExchReact(model))
   }else{
-    medc <- react_id(findExchReact(model))
+    medc <- react_id(sybil::findExchReact(model))
     medc <- medc[grep(ex, medc)]
   }
   if(!is.na(ex_comp)){
@@ -72,7 +74,7 @@ Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_c
     rownames(stochmat) <- met_id(model)
     stoch <- stochmat[,which(model@obj_coef==1)] #find stochiometry of biomass components
     biomets <- stoch[-which(stoch==0)]
-    exs <- findExchReact(model)
+    exs <- sybil::findExchReact(model)
     extrans <- react_id(exs)
     names(extrans) <- met_id(exs)
     extrans <- extrans[which(extrans %in% medc)]
@@ -195,7 +197,7 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' }
 setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){standardGeneric("optimizeLP")})
 setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){ #this function has to be extended to contain also additional solvers
-  fbasl <- optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
+  fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
   names(fbasl$fluxes) <- names(object@lbnd)
   eval.parent(substitute(object@fbasol <- fbasl))
 })
@@ -432,6 +434,8 @@ setMethod(show, signature(object="Organism"), function(object){
 #' Structure of the S4 class "Bac"
 #' 
 #' Structure of the S4 class \code{Bac} inheriting from class \code{\link{Organism-class}} representing bacterial cells.
+#' @export Bac
+#' @exportClass Bac
 #'
 #' @slot budge A boolean vector indicating if budging (bacteria in the souronding area are pushed away) should be implemented.
 #' @slot chem A character vector indicating name of substance which is the chemotaxis attractant. Empty character vector if no chemotaxis.
@@ -615,6 +619,8 @@ setMethod(show, signature(object="Bac"), function(object){
 #' Structure of the S4 class "Human"
 #' 
 #' Structure of the S4 class \code{Human} inheriting from class \code{\link{Organism-class}} representing human cells.
+#' @export Human
+#' @exportClass Human
 #'
 #' @slot objective A character vector representing the current reaction which should be used as an objective function for the flux balance analysis.
 setClass("Human",
@@ -664,7 +670,7 @@ setMethod("objective", "Human", function(object){return(object@objective)})
 setGeneric("changeFobj", function(object, new_fobj, model, alg="fba"){standardGeneric("changeFobj")})
 setMethod("changeFobj", "Human", function(object, new_fobj, model, alg="fba"){
   eval.parent(substitute(object@objective <- new_fobj)) #(pseudo) call by reference implementation
-  model <- changeObjFunc(model, new_fobj)
+  model <- sybil::changeObjFunc(model, new_fobj)
   eval.parent(substitute(object@lpobj <- sysBiolAlg(model, algorithm=alg))) #the lp object has to be updated according to the new objective
 })
 

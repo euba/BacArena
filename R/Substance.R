@@ -7,7 +7,9 @@
 #' Structure of the S4 class "Substance"
 #' 
 #' Structure of the S4 class \code{Substance} representing substances in the environment which can be produced or consumed.
-#' @import methods ReacTran Matrix deSolve
+#' @import methods
+#' @export Substance
+#' @exportClass Substance
 #'
 #' @slot smax A number representing the start concentration of the substance for each grid cell in the environment. 
 #' @slot diffmat A sparse matrix containing all concentrations of the substance in the environment.
@@ -39,9 +41,9 @@ setClass("Substance",
 
 Substance <- function(n, m, smax, diffmat={}, name, difunc="pde", difspeed=1, gridgeometry, diffgeometry=list(), pde="Diff2d", boundS=0, ...){
   if(length(diffmat)==0){
-    diffmat = Matrix(smax, nrow=n, ncol=m, sparse=T)
+    diffmat = Matrix::Matrix(smax, nrow=n, ncol=m, sparse=T)
   }
-  Dgrid <- setup.prop.2D(value = difspeed, grid = gridgeometry$grid2D)
+  Dgrid <- ReacTran::setup.prop.2D(value = difspeed, grid = gridgeometry$grid2D)
   diffgeometry <- list(Dgrid=Dgrid)
   new("Substance", smax=smax, diffmat=diffmat, name=name, difunc=difunc, difspeed=difspeed, diffgeometry=diffgeometry, pde=pde, boundS=0, ...)
 }
@@ -68,6 +70,7 @@ setMethod("difspeed", "Substance", function(object){return(object@difspeed)})
 #' @title Function for naive diffusion (neighbourhood) of the Substance matrix
 #'
 #' @description The generic function \code{diff} implements the diffusion in the Moore neighbourhood in \code{R}.
+#' export diffuseR
 #'
 #' @param object An object of class Substance.
 #' @details The diffusion is implemented by iterating through each cell in the grid and taking the cell with the lowest concentration in the Moore neighbourhood to update the concentration of both by their mean.
@@ -118,6 +121,7 @@ setMethod("diffuseR", "Substance", function(object){
 #' @title Function for diffusion of the Substance matrix
 #'
 #' @description The generic function \code{diffusePDE} implements the diffusion by the solving diffusion equation.
+#' @export diffusePDE
 #'
 #' @param object An object of class Substance.
 #' @param init_mat A matrix with values to be used by the diffusion.
@@ -135,9 +139,10 @@ setMethod("diffuseR", "Substance", function(object){
 setGeneric("diffusePDE", function(object, init_mat, gridgeometry, lrw=NULL, tstep){standardGeneric("diffusePDE")})
 setMethod("diffusePDE", "Substance", function(object, init_mat, gridgeometry, lrw=NULL, tstep){
   #init_mat <- as.matrix(object@diffmat)
-  if(is.null(lrw)){lrw=estimate_lrw(gridgeometry$grid2D$x.N, gridgeometry$grid2D$y.N)}
+  if(is.null(lrw)){
+    lrw=estimate_lrw(gridgeometry$grid2D$x.N, gridgeometry$grid2D$y.N)}
   D <- object@difspeed*3600 # change unit of diff const to cm^2/h
-  solution <- ode.2D(y = init_mat, func = get(object@pde), times=c(0,0+tstep), parms = c(gridgeometry=gridgeometry, diffgeometry=object@diffgeometry, boundS=object@boundS),
+  solution <- deSolve::ode.2D(y = init_mat, func = get(object@pde), times=c(0,0+tstep), parms = c(gridgeometry=gridgeometry, diffgeometry=object@diffgeometry, boundS=object@boundS),
                      dimens = c(gridgeometry$grid2D$x.N, gridgeometry$grid2D$y.N), method="lsodes", lrw=lrw)#160000
   diff_mat <- matrix(data=solution[2,][-1], ncol=ncol(init_mat), nrow=nrow(init_mat))
   return(diff_mat)
