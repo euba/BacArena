@@ -1,8 +1,13 @@
 ---
-title: "BacArena - Individual based modeling of metabolisms"
+title: "BacArena - An Agent-Based Modeling Framework for Cellular Communities"
 author: "Eugen Bauer and Johannes Zimmermann"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
+  rmarkdown::pdf_vignette:
+    toc: true
+#output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
   %\VignetteEngine{knitr::rmarkdown}
@@ -33,17 +38,16 @@ ecore <- Ec_core
 The model is already integrated in the sybil R package by default. Alternatively you can also load your own model of interest with commands of the sybil and libSBML. After we loaded the model, we convert it into an object of class Bac by calling its constructor
 
 ```{r}
-bac <- Bac(ecore, growtype="exponential",
-           cellarea=4.42, lyse=T)
+bac <- Bac(ecore, growtype="exponential", cellarea=4.42, lyse=T)
 ```
 
 Now we have to set up an environment in which the organisms can interact
 
 ```{r}
-arena = Arena(n=200, m=200, Lx=0.05, Ly=0.05)
+arena = Arena(n=100, m=100, Lx=0.025, Ly=0.025)
 ```
 
-Here, we chose 100 times 100 as the grid size of the environment. Next we want to put our created organism in its environment by
+Here, we chose 100 times 100 as the grid size of the environment and a physical area of 0.25mm times 0.25mm. Next we want to put our created organism in its environment by
 
 ```{r}
 addOrg(arena,bac,amount=1,x=50,y=50)
@@ -76,12 +80,14 @@ evalArena(eval,time=20)
 This will produce multiple plots one by one for each simulation step with the spatial structure of the population (black dots represent individuals). We can also investigate the spatial change of the population together with the main subtrate glucose
 
 ```{r}
+par(mar=c(1,1,1,1))
 evalArena(eval,c("Population","EX_glc(e)"),time=20)
 ```
 
 Here we only plot the last result of the simulation steps given by the parameter time. At the same time we can also integrate the visualization of different phenotypes into the population 
 
 ```{r}
+par(mar=c(1,1,1,1))
 evalArena(eval,c("Population","EX_glc(e)"),phencol=T,time=20)
 ```
 
@@ -104,7 +110,7 @@ The object pmat carries now the different phenotypes which are defined by used e
 Now we want to multiple organisms or organism types in the environment. For this we create two different types of the *Escherichia coli* core metabolic model: A wildtype *E. coli* and an auxotrophic mutant which is unable to use aerobic respiration.
 
 ```{r}
-bac1 <- Bac(ecore,deathrate=0.1,duplirate=1,type="ecoli_wt",
+bac1 <- Bac(ecore,deathrate=0.1,type="ecoli_wt",
            growthlimit=0.05,growtype="exponential")
 ```
 
@@ -112,14 +118,14 @@ Now we create the auxotrophic mutant by using basic commands of the sybil packag
 
 ```{r}
 ecore_aux <- changeBounds(ecore,"EX_o2(e)",lb=0)
-bac2 <- Bac(ecore_aux,deathrate=0.1,duplirate=1,type="ecoli_aux",
+bac2 <- Bac(ecore_aux,deathrate=0.1,type="ecoli_aux",
            growthlimit=0.05,growtype="exponential")
 ```
 
 Again we set up an environment and insert organisms and substances
 
 ```{r}
-arena <- Arena(100,100)
+arena = Arena(n=100, m=100, Lx=0.025, Ly=0.025)
 addOrg(arena,bac1,amount=1,x=25,y=50)
 addOrg(arena,bac2,amount=1,x=75,y=50)
 addSubs(arena,100)
@@ -129,12 +135,13 @@ eval <- simEnv(arena,20)
 Here we put the both organism types we created next to each other (given by their x position) in the environment and then started the simulation for 20 time steps. Next we perform again all evaluation steps
 
 ```{r}
-plotCurves(eval)
+plotCurves2(eval)
 ```
 
 And the spatial pattern of the community with the substances glucose, acetate and oxygen:
 
 ```{r}
+par(mar=c(1,1,1,1))
 evalArena(eval,c("Population","EX_glc(e)","EX_ac(e)","EX_o2(e)"),
           time=20)
 ```
