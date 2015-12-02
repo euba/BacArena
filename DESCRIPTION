@@ -13,18 +13,19 @@ Description: BacArena can be used for simulation of organisms living in
     along with data analysis techniques.
 URL: https://github.com/euba/BacArena
 BugReports: https://github.com/euba/BacArena/issues
-Depends:
+Depends: 
     R (>= 3.0.0),
     sybil (>= 1.3.0),
     ReacTran (>= 1.4.2),
     deSolve (>= 1.12),
     Matrix (>= 1.2)
-Imports:
+Imports: 
     methods,
     Rcpp
-Suggests:
+Suggests: 
     knitr,
-    cplexAPI
+    cplexAPI,
+    rmarkdown
 LinkingTo: Rcpp,
     RcppArmadillo
 License: GPL-3
