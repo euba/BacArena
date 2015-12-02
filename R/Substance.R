@@ -7,7 +7,7 @@
 #' Structure of the S4 class "Substance"
 #' 
 #' Structure of the S4 class \code{Substance} representing substances in the environment which can be produced or consumed.
-#' @import methods
+#' @import ReacTran deSolve
 #' @export Substance
 #' @exportClass Substance
 #'
@@ -17,7 +17,6 @@
 #' @slot difunc A character vector ("pde","cpp" or "r") describing the function for diffusion.
 #' @slot difspeed A number indicating the diffusion speed (given by cm^2/s).
 #' @slot diffgeometry Diffusion coefficient defined on all grid cells (initially set by constructor).
-#' @slot velogeometry Advective velocity defined on all grid cells (initially disabled).
 #' @slot pde R-function that computes the values of the derivatives in the diffusion system
 #' @slot boundS A number defining the attached amount of substance at the boundary (Warning: boundary-function must be set in pde!)
 setClass("Substance",
@@ -28,7 +27,6 @@ setClass("Substance",
            difunc = "character",
            difspeed = "numeric",
            diffgeometry = "list",
-           #velogeometry = "list",
            pde = "character",
            boundS = "numeric"
          )
@@ -69,8 +67,8 @@ setMethod("difspeed", "Substance", function(object){return(object@difspeed)})
 
 #' @title Function for naive diffusion (neighbourhood) of the Substance matrix
 #'
-#' @description The generic function \code{diff} implements the diffusion in the Moore neighbourhood in \code{R}.
-#' export diffuseR
+#' @description The generic function \code{diffuseR} implements the diffusion in the Moore neighbourhood in \code{R}.
+#' @export
 #'
 #' @param object An object of class Substance.
 #' @details The diffusion is implemented by iterating through each cell in the grid and taking the cell with the lowest concentration in the Moore neighbourhood to update the concentration of both by their mean.
@@ -121,7 +119,7 @@ setMethod("diffuseR", "Substance", function(object){
 #' @title Function for diffusion of the Substance matrix
 #'
 #' @description The generic function \code{diffusePDE} implements the diffusion by the solving diffusion equation.
-#' @export diffusePDE
+#' @export
 #'
 #' @param object An object of class Substance.
 #' @param init_mat A matrix with values to be used by the diffusion.

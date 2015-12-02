@@ -5,7 +5,7 @@
 #' Structure of the S4 class "Organism"
 #' 
 #' Structure of the S4 class \code{Organism} representing the organisms present in the environment.
-#' @import methods
+#' @import sybil
 #' @export Organism
 #' @exportClass Organism
 #'
@@ -48,35 +48,35 @@ setClass("Organism",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Organism <- function(model, typename=mod_desc(model), algo="fba", ex="EX_", ex_comp=NA, deathrate=0.21, growthlimit=0.083, cellweight=1.172, cellarea=4.42,
+Organism <- function(model, typename=sybil::mod_desc(model), algo="fba", ex="EX_", ex_comp=NA, deathrate=0.21, growthlimit=0.083, cellweight=1.172, cellarea=4.42,
                      growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", kinetics=list(), 
                      speed=2, ...){ #the constructor requires the model, after that it is not stored anymore
-  rxname = react_id(model)
+  rxname = sybil::react_id(model)
   lpobject <- sybil::sysBiolAlg(model, algorithm=algo)
   fbasol <- sybil::optimizeProb(lpobject)
   names(fbasol$fluxes) = rxname
-  lobnd = lowbnd(model)
+  lobnd = sybil::lowbnd(model)
   names(lobnd) = rxname
-  upbnd = uppbnd(model)
+  upbnd = sybil::uppbnd(model)
   names(upbnd) = rxname
   if(is.na(ex)){
-    medc <- react_id(sybil::findExchReact(model))
+    medc <- sybil::react_id(sybil::findExchReact(model))
   }else{
-    medc <- react_id(sybil::findExchReact(model))
+    medc <- sybil::react_id(sybil::findExchReact(model))
     medc <- medc[grep(ex, medc)]
   }
   if(!is.na(ex_comp)){
     medc <- medc[grep(ex_comp, medc)]
   }
   if(lyse){
-    stochmat <- as.matrix(S(model))
+    stochmat <- as.matrix(sybil::S(model))
     colnames(stochmat) <- rxname
-    rownames(stochmat) <- met_id(model)
+    rownames(stochmat) <- sybil::met_id(model)
     stoch <- stochmat[,which(model@obj_coef==1)] #find stochiometry of biomass components
     biomets <- stoch[-which(stoch==0)]
     exs <- sybil::findExchReact(model)
-    extrans <- react_id(exs)
-    names(extrans) <- met_id(exs)
+    extrans <- sybil::react_id(exs)
+    names(extrans) <- sybil::met_id(exs)
     extrans <- extrans[which(extrans %in% medc)]
     names(biomets) <- gsub(csuffix,esuffix,names(biomets))
     biomets <- biomets[which(names(biomets) %in% names(extrans))]
@@ -127,6 +127,7 @@ setMethod("speed", "Organism", function(object){return(object@speed)})
 #' @title Function for constraining the models based on metabolite concentrations
 #'
 #' @description The generic function \code{constrain} changes the constraints of the model representation of an organism.
+#' @export
 #'
 #' @param object An object of class Organisms.
 #' @param reacts A character vector giving the names of reactions which should be constrained.
@@ -181,6 +182,7 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' @title Function for computing the linear programming according to the model structure 
 #'
 #' @description The generic function \code{optimizeLP} implements a linear programming based on the problem structure and refined constraints.
+#' @export
 #'
 #' @param object An object of class Organisms.
 #' @param lpob A linear programing object encoding the problem to solve.
@@ -205,6 +207,7 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
 #' @title Function to account for the consumption and production of substances
 #'
 #' @description The generic function \code{consume} implements the consumption and production of substances based on the flux of exchange reactions of organisms
+#' @export
 #'
 #' @param object An object of class Organisms.
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
@@ -230,6 +233,7 @@ setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum){
 #' @title Function to extract the phenotype of an organism object
 #'
 #' @description The generic function \code{getPhenotype} implements an identification of organism phenotypes.
+#' @export
 #'
 #' @param object An object of class Organisms.
 #' @param cutoff A number giving the cutoff value by which value of objective function is considered greater than 0.
@@ -255,6 +259,7 @@ setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6){
 #' @title Function for letting organisms grow linearly
 #'
 #' @description The generic function \code{growLin} implements a growth model of organisms in their environment.
+#' @export
 #'
 #' @param object An object of class Organisms.
 #' @param growth A number indicating the current biomass, which has to be updated. 
@@ -278,6 +283,7 @@ setMethod("growLin", "Organism", function(object, growth){
 #' @title Function for letting organisms grow exponentially
 #'
 #' @description The generic function \code{growExp} implements a growth model of organisms in their environment.
+#' @export
 #'
 #' @param object An object of class Organisms.
 #' @param growth A number indicating the current biomass, which has to be updated. 
@@ -302,6 +308,7 @@ setMethod("growExp", "Organism", function(object, growth){
 #' @title Lysis function of organismal cells by adding biomass_compounds to the medium
 #'
 #' @description The generic function \code{lysis} implements cell lysis by the stochiometric concentration of the biomass compounds of organisms to the concentration of substances in the environment
+#' @export
 #'
 #' @param object An object of class Organisms.
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
@@ -322,6 +329,7 @@ setMethod("lysis", "Organism", function(object, sublb, factor=object@growthlimit
 #' @title Function to check if the there is a free place in the Moore neighbourhood
 #'
 #' @description The generic function \code{emptyHood} gives a free space which is present in the Moore neighbourhood of an individual of interest.
+#' @export
 #'
 #' @param object An object of class Organisms.
 #' @param x A number giving the x position of the individual of interest in its environment.
@@ -353,6 +361,7 @@ setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y){
 #' @title Function to check if the there is a free place in the Moore neighbourhood
 #'
 #' @description The generic function \code{NemptyHood} gives a free space which is present in the Moore neighbourhood of an individual of interest.
+#' @export
 #'
 #' @param object An object of class Organisms.
 #' @param x A number giving the x position of the individual of interest in its environment.
@@ -386,6 +395,7 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
 #' @title Function for random movement of organisms
 #'
 #' @description The generic function \code{move} implements a random movement in the Moore neighbourhood of an individual.
+#' @export
 #'
 #' @param object An object of class Organism.
 #' @param j The number of the iteration of interest.
@@ -437,7 +447,6 @@ setMethod(show, signature(object="Organism"), function(object){
 #' @export Bac
 #' @exportClass Bac
 #'
-#' @slot budge A boolean vector indicating if budging (bacteria in the souronding area are pushed away) should be implemented.
 #' @slot chem A character vector indicating name of substance which is the chemotaxis attractant. Empty character vector if no chemotaxis.
 setClass("Bac",
          contains="Organism",
@@ -469,6 +478,7 @@ setMethod("chem", "Bac", function(object){return(object@chem)})
 #' @title Function implementing a growth model of a bacterium
 #'
 #' @description The generic function \code{growth} implements different growth models for an object of class Bac.
+#' @export
 #'
 #' @param object An object of class Bac.
 #' @param population An object of class Arena.
@@ -523,6 +533,7 @@ setMethod("growth", "Bac", function(object, population, j){
 #' @title Function for chemotaxis of bacteria to their prefered substrate
 #'
 #' @description The generic function \code{chemotaxis} implements a bacterial movement in the Moore neighbourhood to the highest substrate concentration.
+#' @export
 #'
 #' @param object An object of class Bac.
 #' @param population An object of class Arena.
@@ -564,6 +575,7 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 #' @title Function for one simulation iteration for objects of Bac class
 #'
 #' @description The generic function \code{simBac} implements all neccessary functions for the individuals to update the complete environment. 
+#' @export
 #'
 #' @param object An object of class Bac.
 #' @param arena An object of class Arena defining the environment.
@@ -635,7 +647,7 @@ setClass("Human",
 ########################################################################################################
 
 Human <- function(model, objective=model@react_id[which(model@obj_coef==1)], speed=0, ...){
-  model <- changeObjFunc(model, objective)
+  model <- sybil::changeObjFunc(model, objective)
   new("Human", Organism(model=model, speed=speed, ...), objective=objective)
 }
 
@@ -653,6 +665,7 @@ setMethod("objective", "Human", function(object){return(object@objective)})
 #' @title Function for changing the objective function of the model
 #'
 #' @description The generic function \code{changeFobj} changes the objective function, which is used for the linear programming in \code{optimizeLP}.
+#' @export
 #'
 #' @param object An object of class Human.
 #' @param new_fobj A character vector giving the reaction name of the new objective function.
@@ -677,6 +690,7 @@ setMethod("changeFobj", "Human", function(object, new_fobj, model, alg="fba"){
 #' @title Function implementing a growth model of a human cell
 #'
 #' @description The generic function \code{cellgrowth} implements different growth models for an object of class Human.
+#' @export
 #'
 #' @param object An object of class Human.
 #' @param population An object of class Arena.
@@ -729,6 +743,7 @@ setMethod("cellgrowth", "Human", function(object, population, j){
 #' @title Function for one simulation iteration for objects of Human class
 #'
 #' @description The generic function \code{simHum} implements all neccessary functions for the individuals to update the complete environment. 
+#' @export
 #'
 #' @param object An object of class Human.
 #' @param j The number of the iteration of interest.

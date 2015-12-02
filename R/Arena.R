@@ -1,4 +1,4 @@
-globalVariables(c("diffuseSteveCpp"))
+globalVariables(c("diffuseNaiveCpp","diffuseSteveCpp"))
 
 ########################################################################################################
 ###################################### Arena CLASS ################################################
@@ -7,7 +7,7 @@ globalVariables(c("diffuseSteveCpp"))
 #' Structure of the S4 class "Arena"
 #' 
 #' Structure of the S4 class \code{Arena} to represent the environment in which Organisms and Substances interact.
-#' @import methods Matrix Rcpp
+#' @import Matrix Rcpp
 #' @export Arena
 #' @exportClass Arena
 #'
@@ -24,6 +24,8 @@ globalVariables(c("diffuseSteveCpp"))
 #' @slot Lx A number giving the horizontal grid size in cm.
 #' @slot Ly A number giving the vertical grid size in cm.
 #' @slot gridgeometry A list containing grid geometry parameter 
+#' @slot seed An integer refering to the random number seed used to be reproducible
+#' @slot scale A numeric defining the scale factor used for intern unit conversion.
 setClass("Arena",
          representation(
            orgdat="data.frame",
@@ -102,7 +104,7 @@ setMethod("scale", "Arena", function(object){return(object@scale)})
 #' @title Add individuals to the environment
 #'
 #' @description The generic function \code{addOrg} adds individuals to the environment.
-#' @export addOrg
+#' @export
 #'
 #' @param object An object of class Arena.
 #' @param specI An object of class Organism.
@@ -179,7 +181,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' @title Add substances to the environment
 #'
 #' @description The generic function \code{addSubs} adds specific substances to the environment.
-#' @export addSubs
+#' @export
 #'
 #' @param object An object of class Arena.
 #' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
@@ -236,7 +238,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
 #' @title Change substances in the environment
 #'
 #' @description The generic function \code{changeSub} changes specific substances in the environment.
-#' @export changeSub
+#' @export
 #'
 #' @param object An object of class Arena.
 #' @param smax A number indicating the maximum substance concentration per grid cell.
@@ -271,7 +273,7 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
 #' @title Remove all substances in the environment
 #'
 #' @description The generic function \code{flushSubs} removes specific substances in the environment.
-#' @export flushSubs
+#' @export
 #'
 #' @param object An object of class Arena.
 #' @seealso \code{\link{Arena-class}} and \code{\link{addSubs}} 
@@ -294,7 +296,7 @@ setMethod("flushSubs", "Arena", function(object){
 #' @title Change substance concentration patterns in the environment
 #'
 #' @description The generic function \code{changeDiff} changes specific substance concentration patterns in the environment.
-#' @export changeDiff
+#' @export
 #'
 #' @param object An object of class Arena.
 #' @param newdiffmat A matrix giving the new gradient matrix of the specific substances in the environment.
@@ -325,7 +327,7 @@ setMethod("changeDiff", "Arena", function(object, newdiffmat, mediac){
 #' @title Change substance concentration patterns in the environment according to a gradient
 #'
 #' @description The generic function \code{createGradient} changes specific substance concentration patterns in the environment.
-#' @export createGradient
+#' @export
 #'
 #' @param object An object of class Arena.
 #' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
@@ -376,7 +378,7 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
 #' @title Change organisms in the environment
 #'
 #' @description The generic function \code{changeOrg} changes organisms in the environment.
-#' @export changeOrg
+#' @export
 #'
 #' @param object An object of class Arena.
 #' @param neworgdat A data frame with new information about the accumulated growth, type, phenotype, x and y position for each individual in the environment.
@@ -401,7 +403,7 @@ setMethod("changeOrg", "Arena", function(object, neworgdat){
 #' @title Function for checking phenotypes in the environment
 #'
 #' @description The generic function \code{checkPhen} checks and adds the phenotypes of organisms in the environment.
-#' @export checkPhen
+#' @export
 #'
 #' @param object An object of class Arena.
 #' @param org An object of class Organism.
@@ -442,7 +444,7 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
 #' @title Main function for simulating all processes in the environment
 #'
 #' @description The generic function \code{simEnv} for a simple simulation of the environment.
-#' @export simEnv
+#' @export
 #'
 #' @param object An object of class Arena or Eval.
 #' @param time A number giving the number of iterations to perform for the simulation
@@ -542,7 +544,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F){
 #' @title Function for calculated the substrate concentration for every organism
 #'
 #' @description The generic function \code{getSublb} calculates the substrate concentration for every individual in the environment based on their x and y position.
-#' @export getSublb
+#' @export
 #'
 #' @param object An object of class Arena.
 #' @return Returns the substrate concentration for every individual in the environment with substrates as well as x and y positions as columns and rows for each organism.
@@ -572,7 +574,7 @@ setMethod("getSublb", "Arena", function(object){
 #' @title Function for stirring/mixing the complete evironment
 #'
 #' @description The generic function \code{stirEnv} simulates the event of mixing all substrates and organisms in the environment.
-#' @export stirEnv
+#' @export
 #'
 #' @param object An object of class Arena.
 #' @param sublb A matrix with the substrate concentration for every individual in the environment based on their x and y position.
@@ -630,7 +632,7 @@ setMethod("stirEnv", "Arena", function(object, sublb){
 #' @title Function for transforming the organism data frame to a presence/absence matrix of organisms
 #'
 #' @description The generic function \code{dat2mat} simulates the event of mixing all substrates and organisms in the environment.
-#' @export dat2mat
+#' @export
 #'
 #' @param object An object of class Arena.
 #' @return Returns the presence/absence matrix of organisms on the grid based on the \code{orgdat} slot of the \code{Arena} class.
@@ -696,6 +698,7 @@ setMethod(show, "Arena", function(object){
 #'
 #' @slot medlist A list of compressed medium concentrations (only changes of concentrations are stored) per time step.
 #' @slot simlist A list of the organism features per time step.
+#' @slot mfluxlist A list of containing highly used metabolic reactions per time step. 
 #' @slot subchange A vector of all substrates with numbers indicating the degree of change in the overall simulation.
 setClass("Eval",
          contains="Arena",
@@ -738,7 +741,7 @@ setMethod("subchange", "Eval", function(object){return(object@subchange)})
 #' @title Function for adding a simulation step
 #'
 #' @description The generic function \code{addEval} adds results of a simulation step to an \code{Eval} object.
-#' @export addEval
+#' @export
 #'
 #' @param object An object of class Eval.
 #' @param arena An object of class Arena.
@@ -793,7 +796,7 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
 #' @title Function for re-constructing an Arena object from a simulation step
 #'
 #' @description The generic function \code{getArena} re-constructs an \code{Arena} object from a simulation step within an \code{Eval} object.
-#' @export getArena
+#' @export
 #'
 #' @param object An object of class Eval.
 #' @param time A number giving the simulation step of interest.
@@ -828,7 +831,7 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
 #' @title Function for re-constructing a medium concentrations from simulations
 #'
 #' @description The generic function \code{extractMed} re-constructs a list of vectors of medium concentrations from a simulation step in an \code{Eval} object.
-#' @export extractMed
+#' @export
 #'
 #' @param object An object of class Eval.
 #' @param time A number giving the simulation step of interest.
@@ -863,7 +866,7 @@ setMethod("extractMed", "Eval", function(object, time=length(object@medlist)){
 #' @title Function for plotting spatial and temporal change of populations and/or concentrations
 #'
 #' @description The generic function \code{evalArena} plots heatmaps from the simulation steps in an \code{Eval} object.
-#' @export evalArena
+#' @export
 #'
 #' @param object An object of class Eval.
 #' @param plot_items A character vector giving the items, which should be plotted.
@@ -955,7 +958,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
 #' @title Function for plotting the overall change as curves
 #'
 #' @description The generic function \code{plotCurves} plots the growth curves and concentration changes of substances from simulation steps in an \code{Eval} object.
-#' @export plotCurves
+#' @export
 #'
 #' @param object An object of class Eval.
 #' @param medplot A character vector giving the name of substances which should be plotted.
@@ -1025,7 +1028,7 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 #' @title Function for plotting the overall change as curves with maximally distinct colors
 #'
 #' @description The generic function \code{plotCurves2} plots the growth curves and concentration changes of the most changing substances from simulation steps in an \code{Eval} object using maximally distinct colors.
-#' @export plotCurves2
+#' @export
 #'
 #' @param object An object of class Eval.
 #' @param legendpos A character variable declaring the position of the legend
@@ -1126,7 +1129,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
 #' @title Function for plotting the overall change in reaction activity
 #'
 #' @description The generic function \code{plotTotFlux} plots the time course of reactions with high variation in activity for an \code{Eval} object.
-#' @export plotTotFlux
+#' @export
 #'
 #' @param object An object of class Eval.
 #' @param legendpos A character variable declaring the position of the legend
@@ -1164,7 +1167,7 @@ setMethod("plotTotFlux", "Eval", function(object, legendpos="topright", num=20){
 #' @title Function for getting a matrix of phenotypes from the dataset
 #'
 #' @description The generic function \code{getPhenoMat} reconstructs a matrix with the usage of exchange reactions of the different organisms in the environment.
-#' @export getPhenoMat
+#' @export
 #'
 #' @param object An object of class Eval.
 #' @param time An integer indicating the time step to be used (default value is character "total")
@@ -1214,7 +1217,7 @@ setMethod("getPhenoMat", "Eval", function(object, time="total", sparse=F){
 #' @title Function for mining/analyzing phenotypes which occured on the arena
 #'
 #' @description The generic function \code{minePheno} mines the similarity and differences of phenotypes reconstructed by \code{getPhenoMat} for each simulation step in an \code{Eval} object.
-#' @export minePheno
+#' @export
 #'
 #' @param object An object of class Eval.
 #' @param plot_type A character vector giving the plot which should be returned (either "pca" for a principle coordinate analysis or "hclust" for hierarchical clustering).
@@ -1273,7 +1276,7 @@ setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, time=
 #' @title Function for selecting phenotypes which occured on the arena from specific iterations and species
 #'
 #' @description The generic function \code{selPheno} selects phenotypes from specific simulation step in an \code{Eval} object.
-#' @export selPheno
+#' @export
 #'
 #' @param object An object of class Eval.
 #' @param time A numeric vector giving the simulation steps which should be plotted. 
@@ -1344,7 +1347,7 @@ setMethod(show, signature(object="Eval"), function(object){
 #' @title Function for investigating a specific phenotype of an organism
 #'
 #' @description The generic function \code{statPheno} provides statistical and visual information about a certain phenotype.
-#' @export statPheno
+#' @export
 #'
 #' @param object An object of class Eval.
 #' @param type_nr A number indicating the Organism type of the phenotype to be investigated (from orgdat)
@@ -1485,10 +1488,12 @@ setMethod("findCrossFeeding", "Eval", function(object, dict=NULL){
   })
 
 
+
+
 #' @title Function to compute and return correlation matrix
 #'
 #' @description The generic function \code{getCorrM} returns the correlation matrix of several objects.
-#' @export getCorrM
+#' @export
 #'
 #' @param object An object of class Eval.
 #' @param reactions A boolean indicating whether reactions should be included in correlation matrix
@@ -1546,7 +1551,7 @@ setMethod("getCorrM", "Eval", function(object, reactions=TRUE, bacs=TRUE, substr
 #' @title Function to show correlations of a simulated organism or substrate
 #'
 #' @description The generic function \code{checkCorr} returns the correlation matrix of several objects.
-#' @export checkCorr
+#' @export
 #'
 #' @param object An object of class Eval.
 #' @param corr A correlation matrix (\code{\link{getCorrM}})
