@@ -10,6 +10,7 @@
 #' @import ReacTran deSolve
 #' @export Substance
 #' @exportClass Substance
+#' @rdname Substance
 #'
 #' @slot smax A number representing the start concentration of the substance for each grid cell in the environment. 
 #' @slot diffmat A sparse matrix containing all concentrations of the substance in the environment.
@@ -29,6 +30,11 @@ setClass("Substance",
            diffgeometry = "list",
            pde = "character",
            boundS = "numeric"
+         ),
+         prototype(
+           difunc = "pde",
+           pde="Diff2d",
+           boundS = 0
          )
 )
 
@@ -37,13 +43,25 @@ setClass("Substance",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Substance <- function(n, m, smax, diffmat={}, name, difunc="pde", difspeed=1, gridgeometry, diffgeometry=list(), pde="Diff2d", boundS=0, ...){
-  if(length(diffmat)==0){
-    diffmat = Matrix::Matrix(smax, nrow=n, ncol=m, sparse=T)
-  }
+#' Constructor of the S4 class \code{Substance}
+#' 
+#' The constructor to get a new object of class \code{Substance}
+#' @export
+#' @name Substance-constructor
+#' 
+#' @param smax A number representing the start concentration of the substance for each grid cell in the environment. 
+#' @param difspeed A number indicating the diffusion speed (given by cm^2/s).
+#' @param n A number giving the horizontal size of the environment.
+#' @param m A number giving the vertical size of the environment.
+#' @param gridgeometry A list containing grid geometry parameter 
+#' @param ... Arguments of \code{\link{Substance-class}}
+#' @return Object of class \code{Substance}
+Substance <- function(n, m, smax, gridgeometry, difspeed=1, ...){
+  diffmat <- Matrix::Matrix(smax, nrow=n, ncol=m, sparse=T)
+  
   Dgrid <- ReacTran::setup.prop.2D(value = difspeed, grid = gridgeometry$grid2D)
   diffgeometry <- list(Dgrid=Dgrid)
-  new("Substance", smax=smax, diffmat=diffmat, name=name, difunc=difunc, difspeed=difspeed, diffgeometry=diffgeometry, pde=pde, boundS=0, ...)
+  new("Substance", smax=smax, diffmat=diffmat, difspeed=difspeed, diffgeometry=diffgeometry, ...)
 }
 
 ########################################################################################################
@@ -69,6 +87,7 @@ setMethod("difspeed", "Substance", function(object){return(object@difspeed)})
 #'
 #' @description The generic function \code{diffuseR} implements the diffusion in the Moore neighbourhood in \code{R}.
 #' @export
+#' @rdname diffuseR
 #'
 #' @param object An object of class Substance.
 #' @details The diffusion is implemented by iterating through each cell in the grid and taking the cell with the lowest concentration in the Moore neighbourhood to update the concentration of both by their mean.
@@ -79,6 +98,8 @@ setMethod("difspeed", "Substance", function(object){return(object@difspeed)})
 #' diffuseR(sub)
 #' }
 setGeneric("diffuseR", function(object){standardGeneric("diffuseR")})
+#' @export
+#' @rdname diffuseR
 setMethod("diffuseR", "Substance", function(object){
   smat <- as(object@diffmat, "matrix")
   smatn <- matrix(NA, nrow=dim(smat)[1]+2, ncol=dim(smat)[2]+2) #define environment with boundary conditions
@@ -120,6 +141,7 @@ setMethod("diffuseR", "Substance", function(object){
 #'
 #' @description The generic function \code{diffusePDE} implements the diffusion by the solving diffusion equation.
 #' @export
+#' @rdname diffusePDE
 #'
 #' @param object An object of class Substance.
 #' @param init_mat A matrix with values to be used by the diffusion.
@@ -135,6 +157,8 @@ setMethod("diffuseR", "Substance", function(object){
 #' diffusePDE(sub, arena@geometry, arena@tstep)
 #' }
 setGeneric("diffusePDE", function(object, init_mat, gridgeometry, lrw=NULL, tstep){standardGeneric("diffusePDE")})
+#' @export
+#' @rdname diffusePDE
 setMethod("diffusePDE", "Substance", function(object, init_mat, gridgeometry, lrw=NULL, tstep){
   #init_mat <- as.matrix(object@diffmat)
   if(is.null(lrw)){

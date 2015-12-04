@@ -40,7 +40,16 @@ setClass("Organism",
            kinetics="list",
            cellarea="numeric",
            cellweight="numeric",
-           speed="integer"
+           speed="numeric"
+         ),
+         prototype(
+           deathrate = 0.21,
+           growthlimit = 0.083,
+           growtype = "exponential",
+           kinetics = list(),
+           cellarea = 4.42,
+           cellweight = 1.172,
+           speed = 2       
          )
 )
 
@@ -48,9 +57,27 @@ setClass("Organism",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Organism <- function(model, typename=sybil::mod_desc(model), algo="fba", ex="EX_", ex_comp=NA, deathrate=0.21, growthlimit=0.083, cellweight=1.172, cellarea=4.42,
-                     growtype="exponential", lyse=F, feat=list(), csuffix="\\[c\\]", esuffix="\\[e\\]", kinetics=list(), 
-                     speed=2, ...){ #the constructor requires the model, after that it is not stored anymore
+#' Constructor of the S4 class \code{Organism}
+#' 
+#' The constructor to get a new object of class \code{Organism}
+#' @export
+#' @name Organism-constructor
+#' 
+#' @param model model
+#' @param algo A single character string giving the name of the algorithm to use. See \link[sybil]{SYBIL_SETTINGS}
+#' @param ex Identifier for exchange reactions
+#' @param ex_comp ex_comp
+#' @param csuffix csuffix
+#' @param esuffix esuffix
+#' @param feat A list containing conditional features for the object (contains at the momement only biomass components for lysis).
+#' @param typename A string defining the name (set to model name in default case)
+#' @param lyse A boolean variable indicating if the organism should lyse after death.
+#' @param ... Arguments of \code{\link{Organism-class}}
+#' @return Object of class Organism
+Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]", esuffix="\\[e\\]", lyse=F, feat=list(), 
+                     typename=NA, ...){
+  #the constructor requires the model, after that it is not stored anymore  
+  if(is.na(typename)) typename <- sybil::mod_desc(model)
   rxname = sybil::react_id(model)
   lpobject <- sybil::sysBiolAlg(model, algorithm=algo)
   fbasol <- sybil::optimizeProb(lpobject)
@@ -84,9 +111,7 @@ Organism <- function(model, typename=sybil::mod_desc(model), algo="fba", ex="EX_
     feat[["biomass"]] <- biomets
   }
   new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
-      fbasol=fbasol, lyse=lyse, feat=feat, deathrate=deathrate,
-      growthlimit=growthlimit, growtype=growtype, kinetics=list(), cellarea=cellarea, 
-      cellweight=cellweight, speed=as.integer(speed), ...)
+      fbasol=fbasol, feat=feat, lyse=lyse, ...)
 }
 
 ########################################################################################################
@@ -128,6 +153,7 @@ setMethod("speed", "Organism", function(object){return(object@speed)})
 #'
 #' @description The generic function \code{constrain} changes the constraints of the model representation of an organism.
 #' @export
+#' @rdname constrain
 #'
 #' @param object An object of class Organisms.
 #' @param reacts A character vector giving the names of reactions which should be constrained.
@@ -146,6 +172,8 @@ setMethod("speed", "Organism", function(object){return(object@speed)})
 #' lobnds <- constrain(org,medium(org),lbnd(org)[medium(org)],1,1)
 #' }
 setGeneric("constrain", function(object, reacts, lb, dryweight, time, scale){standardGeneric("constrain")})
+#' @export
+#' @rdname constrain
 setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time, scale){
   lobnd <- object@lbnd*dryweight*time #costrain according to flux definition: mmol/(gDW*hr)
   #lobnd[reacts] <- ifelse(lb<=lobnd[reacts], ifelse(lobnd[reacts]==0, lb, lobnd[reacts]), lb) #check if lower bounds in biological relevant range
@@ -183,6 +211,7 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #'
 #' @description The generic function \code{optimizeLP} implements a linear programming based on the problem structure and refined constraints.
 #' @export
+#' @rdname optimizeLP
 #'
 #' @param object An object of class Organisms.
 #' @param lpob A linear programing object encoding the problem to solve.
@@ -198,7 +227,9 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' optimizeLP(org)
 #' }
 setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){standardGeneric("optimizeLP")})
-setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){ #this function has to be extended to contain also additional solvers
+#' @export
+#' @rdname optimizeLP
+setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){ 
   fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
   names(fbasl$fluxes) <- names(object@lbnd)
   eval.parent(substitute(object@fbasol <- fbasl))
@@ -208,6 +239,7 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
 #'
 #' @description The generic function \code{consume} implements the consumption and production of substances based on the flux of exchange reactions of organisms
 #' @export
+#' @rdname consume
 #'
 #' @param object An object of class Organisms.
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
@@ -219,6 +251,8 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
 #' @examples
 #' NULL
 setGeneric("consume", function(object, sublb, cutoff=1e-6, bacnum){standardGeneric("consume")})
+#' @export
+#' @rdname consume
 setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum){
   if(object@fbasol$obj>=cutoff && !is.na(object@fbasol$obj)){
     flux = object@fbasol$fluxes[object@medium]*bacnum #scale flux to whole population size
@@ -234,6 +268,7 @@ setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum){
 #'
 #' @description The generic function \code{getPhenotype} implements an identification of organism phenotypes.
 #' @export
+#' @rdname getPhenotype
 #'
 #' @param object An object of class Organisms.
 #' @param cutoff A number giving the cutoff value by which value of objective function is considered greater than 0.
@@ -248,6 +283,8 @@ setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum){
 #' getPhenotype(org)
 #' }
 setGeneric("getPhenotype", function(object, cutoff=1e-6){standardGeneric("getPhenotype")})
+#' @export
+#' @rdname getPhenotype
 setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6){
   exflux=object@fbasol$fluxes[object@medium]
   exflux=ifelse(abs(exflux)<cutoff,0,1)*exflux
@@ -260,6 +297,7 @@ setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6){
 #'
 #' @description The generic function \code{growLin} implements a growth model of organisms in their environment.
 #' @export
+#' @rdname growLin
 #'
 #' @param object An object of class Organisms.
 #' @param growth A number indicating the current biomass, which has to be updated. 
@@ -274,6 +312,8 @@ setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6){
 #' growLin(org,1)
 #' }
 setGeneric("growLin", function(object, growth){standardGeneric("growLin")})
+#' @export
+#' @rdname growLin
 setMethod("growLin", "Organism", function(object, growth){
   if(object@fbasol$obj > 0) grow_accum <- object@fbasol$obj + growth
   else grow_accum <- growth - object@deathrate
@@ -284,6 +324,7 @@ setMethod("growLin", "Organism", function(object, growth){
 #'
 #' @description The generic function \code{growExp} implements a growth model of organisms in their environment.
 #' @export
+#' @rdname growExp
 #'
 #' @param object An object of class Organisms.
 #' @param growth A number indicating the current biomass, which has to be updated. 
@@ -298,6 +339,8 @@ setMethod("growLin", "Organism", function(object, growth){
 #' growExp(org,1)
 #' }
 setGeneric("growExp", function(object, growth){standardGeneric("growExp")})
+#' @export
+#' @rdname growExp
 setMethod("growExp", "Organism", function(object, growth){
   if(object@fbasol$obj > 0) grow_accum <- (object@fbasol$obj * growth + growth)
   else grow_accum <- growth - object@deathrate
@@ -309,6 +352,7 @@ setMethod("growExp", "Organism", function(object, growth){
 #'
 #' @description The generic function \code{lysis} implements cell lysis by the stochiometric concentration of the biomass compounds of organisms to the concentration of substances in the environment
 #' @export
+#' @rdname lysis
 #'
 #' @param object An object of class Organisms.
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
@@ -319,6 +363,8 @@ setMethod("growExp", "Organism", function(object, growth){
 #' @examples
 #' NULL
 setGeneric("lysis", function(object, sublb, factor=object@growthlimit){standardGeneric("lysis")})
+#' @export
+#' @rdname lysis
 setMethod("lysis", "Organism", function(object, sublb, factor=object@growthlimit){
   stoch = object@feat[["biomass"]]
   lysate = round(abs(stoch)*factor, 6)
@@ -330,6 +376,7 @@ setMethod("lysis", "Organism", function(object, sublb, factor=object@growthlimit
 #'
 #' @description The generic function \code{emptyHood} gives a free space which is present in the Moore neighbourhood of an individual of interest.
 #' @export
+#' @rdname emptyHood
 #'
 #' @param object An object of class Organisms.
 #' @param x A number giving the x position of the individual of interest in its environment.
@@ -342,6 +389,8 @@ setMethod("lysis", "Organism", function(object, sublb, factor=object@growthlimit
 #' @examples
 #' NULL
 setGeneric("emptyHood", function(object, pos, n, m, x, y){standardGeneric("emptyHood")})
+#' @export
+#' @rdname emptyHood
 setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y){
   xp = c(x-1,x,x+1)
   yp = c(y-1,y,y+1)
@@ -362,6 +411,7 @@ setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y){
 #'
 #' @description The generic function \code{NemptyHood} gives a free space which is present in the Moore neighbourhood of an individual of interest.
 #' @export
+#' @rdname NemptyHood
 #'
 #' @param object An object of class Organisms.
 #' @param x A number giving the x position of the individual of interest in its environment.
@@ -374,6 +424,8 @@ setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y){
 #' @examples
 #' NULL
 setGeneric("NemptyHood", function(object, pos, n, m, x, y){standardGeneric("NemptyHood")})
+#' @export
+#' @rdname NemptyHood
 setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
   xp = c(x-1,x,x+1)
   yp = c(y-1,y,y+1)
@@ -396,6 +448,7 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
 #'
 #' @description The generic function \code{move} implements a random movement in the Moore neighbourhood of an individual.
 #' @export
+#' @rdname move
 #'
 #' @param object An object of class Organism.
 #' @param j The number of the iteration of interest.
@@ -415,6 +468,8 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
 #' move(bac,arena,1)
 #' }
 setGeneric("move", function(object, pos, n, m, j){standardGeneric("move")})
+#' @export
+#' @rdname move
 setMethod("move", "Organism", function(object, pos, n, m, j){
   if(object@speed == 1){
     freenb <- emptyHood(object, pos, n, m, pos[j,1], pos[j,2])
@@ -446,12 +501,19 @@ setMethod(show, signature(object="Organism"), function(object){
 #' Structure of the S4 class \code{Bac} inheriting from class \code{\link{Organism-class}} representing bacterial cells.
 #' @export Bac
 #' @exportClass Bac
+#' @rdname Bac
 #'
 #' @slot chem A character vector indicating name of substance which is the chemotaxis attractant. Empty character vector if no chemotaxis.
 setClass("Bac",
          contains="Organism",
          representation(
            chem="character" # name of substance which is the chemotaxis attractant
+         ),
+         prototype(
+           deathrate = 0.21,
+           growthlimit = 0.083,
+           cellarea = 4.42,
+           cellweight = 1.172
          )
 )
 
@@ -459,9 +521,17 @@ setClass("Bac",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-Bac <- function(model, chem='', deathrate=0.21, growthlimit=0.083, cellweight=1.172, cellarea=4.42, ...){
-  new("Bac", Organism(model=model, deathrate=deathrate, growthlimit=growthlimit, cellweight=cellweight, 
-                      cellarea=cellarea, ...), chem=chem)
+#' Constructor of the S4 class \code{\link{Bac-class}}
+#'
+#' @name Bac-Constructor
+#' @export
+#' 
+#' @return Object of class \code{\link{Bac-class}}
+#' @param model model
+#' @param ... Arguments of \code{\link{Organism-class}}
+#' @param chem A character vector indicating name of substance which is the chemotaxis attractant. Empty character vector if no chemotaxis.
+Bac <- function(model, chem='', ...){
+  new("Bac", Organism(model=model, ...), chem=chem)
 }
 
 ########################################################################################################
@@ -479,6 +549,7 @@ setMethod("chem", "Bac", function(object){return(object@chem)})
 #'
 #' @description The generic function \code{growth} implements different growth models for an object of class Bac.
 #' @export
+#' @rdname growth
 #'
 #' @param object An object of class Bac.
 #' @param population An object of class Arena.
@@ -497,6 +568,8 @@ setMethod("chem", "Bac", function(object){return(object@chem)})
 #' growth(bac,arena,1)
 #' }
 setGeneric("growth", function(object, population, j){standardGeneric("growth")})
+#' @export
+#' @rdname growth
 setMethod("growth", "Bac", function(object, population, j){
   neworgdat <- population@orgdat
   popvec <- neworgdat[j,]
@@ -534,6 +607,7 @@ setMethod("growth", "Bac", function(object, population, j){
 #'
 #' @description The generic function \code{chemotaxis} implements a bacterial movement in the Moore neighbourhood to the highest substrate concentration.
 #' @export
+#' @rdname chemotaxis
 #'
 #' @param object An object of class Bac.
 #' @param population An object of class Arena.
@@ -551,6 +625,8 @@ setMethod("growth", "Bac", function(object, population, j){
 #' chemotaxis(bac,arena,1)
 #' }
 setGeneric("chemotaxis", function(object, population, j){standardGeneric("chemotaxis")})
+#' @export
+#' @rdname chemotaxis
 setMethod("chemotaxis", "Bac", function(object, population, j){
   popvec <- population@orgdat[j,]
   attract <- population@media[[object@chem]]@diffmat
@@ -576,6 +652,7 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 #'
 #' @description The generic function \code{simBac} implements all neccessary functions for the individuals to update the complete environment. 
 #' @export
+#' @rdname simBac
 #'
 #' @param object An object of class Bac.
 #' @param arena An object of class Arena defining the environment.
@@ -588,6 +665,8 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 #' @examples
 #' NULL
 setGeneric("simBac", function(object, arena, j, sublb, bacnum){standardGeneric("simBac")})
+#' @export
+#' @rdname simBac
 setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
@@ -633,6 +712,7 @@ setMethod(show, signature(object="Bac"), function(object){
 #' Structure of the S4 class \code{Human} inheriting from class \code{\link{Organism-class}} representing human cells.
 #' @export Human
 #' @exportClass Human
+#' @rdname Human
 #'
 #' @slot objective A character vector representing the current reaction which should be used as an objective function for the flux balance analysis.
 setClass("Human",
@@ -646,6 +726,16 @@ setClass("Human",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
+#' Constructor of the S4 class \code{\link{Human-class}}
+#' 
+#' @name Human-constructor
+#' @export
+#' 
+#' @param model model
+#' @param objective A character vector representing the current reaction which should be used as an objective function for the flux balance analysis.
+#' @param speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
+#' @param ... Arguments of \code{\link{Organism-class}}
+#' @return Object of class \code{\link{Human-class}}
 Human <- function(model, objective=model@react_id[which(model@obj_coef==1)], speed=0, ...){
   model <- sybil::changeObjFunc(model, objective)
   new("Human", Organism(model=model, speed=speed, ...), objective=objective)
@@ -666,6 +756,7 @@ setMethod("objective", "Human", function(object){return(object@objective)})
 #'
 #' @description The generic function \code{changeFobj} changes the objective function, which is used for the linear programming in \code{optimizeLP}.
 #' @export
+#' @rdname changeFobj
 #'
 #' @param object An object of class Human.
 #' @param new_fobj A character vector giving the reaction name of the new objective function.
@@ -681,6 +772,8 @@ setMethod("objective", "Human", function(object){return(object@objective)})
 #' changeFobj(human,'EX_glc(e)',ecore)
 #' }
 setGeneric("changeFobj", function(object, new_fobj, model, alg="fba"){standardGeneric("changeFobj")})
+#' @export
+#' @rdname changeFobj
 setMethod("changeFobj", "Human", function(object, new_fobj, model, alg="fba"){
   eval.parent(substitute(object@objective <- new_fobj)) #(pseudo) call by reference implementation
   model <- sybil::changeObjFunc(model, new_fobj)
@@ -691,6 +784,7 @@ setMethod("changeFobj", "Human", function(object, new_fobj, model, alg="fba"){
 #'
 #' @description The generic function \code{cellgrowth} implements different growth models for an object of class Human.
 #' @export
+#' @rdname cellgrowth
 #'
 #' @param object An object of class Human.
 #' @param population An object of class Arena.
@@ -709,6 +803,8 @@ setMethod("changeFobj", "Human", function(object, new_fobj, model, alg="fba"){
 #' cellgrowth(human,arena,1)
 #' }
 setGeneric("cellgrowth", function(object, population, j){standardGeneric("cellgrowth")})
+#' @export
+#' @rdname cellgrowth
 setMethod("cellgrowth", "Human", function(object, population, j){
   neworgdat <- population@orgdat
   popvec <- neworgdat[j,]
@@ -744,6 +840,7 @@ setMethod("cellgrowth", "Human", function(object, population, j){
 #'
 #' @description The generic function \code{simHum} implements all neccessary functions for the individuals to update the complete environment. 
 #' @export
+#' @rdname simHum
 #'
 #' @param object An object of class Human.
 #' @param j The number of the iteration of interest.
@@ -756,6 +853,8 @@ setMethod("cellgrowth", "Human", function(object, population, j){
 #' @examples
 #' NULL
 setGeneric("simHum", function(object, arena, j, sublb, bacnum){standardGeneric("simHum")})
+#' @export
+#' @rdname simHum
 setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)

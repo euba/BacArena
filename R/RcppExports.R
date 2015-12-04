@@ -13,3 +13,7 @@ diffuseNaiveCpp <- function(y, donut) {
     invisible(.Call('BacArena_diffuseNaiveCpp', PACKAGE = 'BacArena', y, donut))
 }
 
+diffuseSteveCpp <- function(y, D, h, tstep) {
+    invisible(.Call('BacArena_diffuseSteveCpp', PACKAGE = 'BacArena', y, D, h, tstep))
+}
+
