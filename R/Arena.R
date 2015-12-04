@@ -104,7 +104,7 @@ setMethod("scale", "Arena", function(object){return(object@scale)})
 #' @title Add individuals to the environment
 #'
 #' @description The generic function \code{addOrg} adds individuals to the environment.
-#' @export
+#' @export addOrg
 #'
 #' @param object An object of class Arena.
 #' @param specI An object of class Organism.

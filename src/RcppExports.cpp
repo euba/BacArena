@@ -2,6 +2,7 @@
 // Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #include <RcppArmadillo.h>
+#include <RcppEigen.h>
 #include <Rcpp.h>
 
 using namespace Rcpp;
@@ -42,6 +43,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type y(ySEXP);
     Rcpp::traits::input_parameter< bool >::type donut(donutSEXP);
     diffuseNaiveCpp(y, donut);
+    return R_NilValue;
+END_RCPP
+}
+// diffuseSteveCpp
+void diffuseSteveCpp(Rcpp::NumericMatrix y, double D, double h, double tstep);
+RcppExport SEXP BacArena_diffuseSteveCpp(SEXP ySEXP, SEXP DSEXP, SEXP hSEXP, SEXP tstepSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type y(ySEXP);
+    Rcpp::traits::input_parameter< double >::type D(DSEXP);
+    Rcpp::traits::input_parameter< double >::type h(hSEXP);
+    Rcpp::traits::input_parameter< double >::type tstep(tstepSEXP);
+    diffuseSteveCpp(y, D, h, tstep);
     return R_NilValue;
 END_RCPP
 }
