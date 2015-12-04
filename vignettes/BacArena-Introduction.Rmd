@@ -129,7 +129,7 @@ arena = Arena(n=100, m=100, Lx=0.025, Ly=0.025)
 addOrg(arena,bac1,amount=1,x=25,y=50)
 addOrg(arena,bac2,amount=1,x=75,y=50)
 addSubs(arena,100)
-eval <- simEnv(arena,20)
+eval <- simEnv(arena,time=20)
 ```
 
 Here we put the both organism types we created next to each other (given by their x position) in the environment and then started the simulation for 20 time steps. Next we perform again all evaluation steps
