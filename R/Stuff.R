@@ -111,7 +111,7 @@ estimate_lrw <- function(grid_n, grid_m){
   return(lrw)
 }
 
-
+#' @importFrom utils data
 openArena <- function(){
   data(Ec_core, envir = environment())
   bac = Bac(model=Ec_core, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growtype="exponential",

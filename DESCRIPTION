@@ -1,5 +1,5 @@
 Package: BacArena
-Title: The Package BacArena is an Agent-Based Modeling Framework for Cellular Communities
+Title: Modeling Framework for Cellular Communities in their Environments
 Version: 1.0
 Authors@R: c( person("Eugen", "Bauer", , "eugen.bauer@uni.lu", role = c("aut")), 
               person("Johannes", "Zimmermann", , "j.zimmermann@iem.uni-kiel.de", role = c("aut", "cre")))
@@ -21,10 +21,13 @@ Depends:
     Matrix (>= 1.2)
 Imports: 
     methods,
+    utils,
+    stats,
+    graphics,
     Rcpp
 Suggests: 
     knitr,
-    cplexAPI,
+    glpkAPI,
     rmarkdown
 LinkingTo: Rcpp,
     RcppArmadillo,

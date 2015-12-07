@@ -5,9 +5,10 @@
 #' Structure of the S4 class "Organism"
 #' 
 #' Structure of the S4 class \code{Organism} representing the organisms present in the environment.
-#' @import sybil
 #' @export Organism
 #' @exportClass Organism
+#' @import sybil
+#' @importFrom stats na.omit
 #'
 #' @slot lbnd A numeric vector containing the lower bounds of the model structure.
 #' @slot ubnd A numeric vector containing the upper bounds of the model structure.

@@ -743,6 +743,9 @@ setMethod(show, "Arena", function(object){
 #' Structure of the S4 class \code{Eval} inheriting from class \code{\link{Arena-class}} for the analysis of simulations.
 #' @export Eval
 #' @exportClass Eval
+#' @importFrom  graphics barplot legend lines par points segments text
+#' @importFrom stats cor dist hclust na.omit prcomp rnorm
+#' @importFrom utils combn
 #'
 #' @slot medlist A list of compressed medium concentrations (only changes of concentrations are stored) per time step.
 #' @slot simlist A list of the organism features per time step.
