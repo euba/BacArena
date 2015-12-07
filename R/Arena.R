@@ -522,7 +522,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F){
       arena@phenotypes <- c(arena@phenotypes,pvec)
     }
   }
-  addEval(evaluation, arena)
+  if(class(object)!="Eval"){addEval(evaluation, arena)}
   sublb <- getSublb(arena)
   for(i in 1:time){
     cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
