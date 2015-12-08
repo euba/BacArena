@@ -166,12 +166,10 @@ setMethod("speed", "Organism", function(object){return(object@speed)})
 #' @details The constraints are calculated according to the flux definition as mmol/(gDW*hr) with the parameters \code{dryweight} and \code{time}.
 #' @seealso \code{\link{Organism-class}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' org <- Organism(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize an organism
-#' lobnds <- constrain(org,medium(org),lbnd(org)[medium(org)],1,1)
-#' }
+#' lobnds <- constrain(org,org@medium,org@lbnd[org@medium],1,1)
 setGeneric("constrain", function(object, reacts, lb, dryweight, time, scale){standardGeneric("constrain")})
 #' @export
 #' @rdname constrain
@@ -221,12 +219,10 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' @details The problem object \code{lpob} is modified according to the constraints and then solved with \code{optimizeProb}.
 #' @seealso \code{\link{Organism-class}}, \code{\link{optimizeProb}} and \code{\link{sysBiolAlg}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' org <- Organism(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' optimizeLP(org)
-#' }
 setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){standardGeneric("optimizeLP")})
 #' @export
 #' @rdname optimizeLP
@@ -278,8 +274,8 @@ setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum){
 #' @seealso \code{\link{Organism-class}}, \code{\link{checkPhen}} and \code{\link{minePheno}}
 #' @examples
 #' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' org <- Organism(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' getPhenotype(org)
 #' }
@@ -306,12 +302,10 @@ setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6){
 #' @details Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value.
 #' @seealso \code{\link{Organism-class}} and \code{\link{optimizeLP}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' org <- Organism(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' growLin(org,1)
-#' }
 setGeneric("growLin", function(object, growth){standardGeneric("growLin")})
 #' @export
 #' @rdname growLin
@@ -334,8 +328,8 @@ setMethod("growLin", "Organism", function(object, growth){
 #' @seealso \code{\link{Organism-class}} and \code{\link{optimizeLP}}
 #' @examples
 #' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' org <- Organism(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' org <- Organism(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' growExp(org,1)
 #' }
@@ -459,15 +453,13 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
 #' @details Organisms move in a random position the Moore neighbourhood, which is not occupied by other individuals. If there is no free space the individuals stays in the same position.
 #' @seealso \code{\link{Organism-class}}, \code{\link{emptyHood}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
-#' move(bac,arena,1)
-#' }
+#' move(bac,n=20,m=20,j=1,pos=arena@orgdat[,c('x','y')])
 setGeneric("move", function(object, pos, n, m, j){standardGeneric("move")})
 #' @export
 #' @rdname move
@@ -559,15 +551,13 @@ setMethod("chem", "Bac", function(object){return(object@chem)})
 #' @details Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value. Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value
 #' @seealso \code{\link{Bac-class}}, \code{\link{growLin}} and \code{\link{growExp}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' growth(bac,arena,1)
-#' }
 setGeneric("growth", function(object, population, j){standardGeneric("growth")})
 #' @export
 #' @rdname growth
@@ -616,15 +606,13 @@ setMethod("growth", "Bac", function(object, population, j){
 #' @details Bacteria move to a position in the Moore neighbourhood which has the highest concentration of the prefered substrate, which is not occupied by other individuals. The prefered substance is given by slot \code{chem} in the \code{Bac} object. If there is no free space the individuals stays in the same position. If the concentration in the Moore neighbourhood has the same concentration in every position, then random movement is implemented.
 #' @seealso \code{\link{Bac-class}} and \code{\link{emptyHood}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05, chem = "EX_o2(e)",
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' chemotaxis(bac,arena,1)
-#' }
 setGeneric("chemotaxis", function(object, population, j){standardGeneric("chemotaxis")})
 #' @export
 #' @rdname chemotaxis
@@ -766,12 +754,10 @@ setMethod("objective", "Human", function(object){return(object@objective)})
 #' @details To avoid the bias to just one particular objective function, the objective can be changed dynamically in this function. 
 #' @seealso \code{\link{Human-class}} and \code{\link{optimizeLP}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' human <- Human(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' human <- Human(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' changeFobj(human,'EX_glc(e)',ecore)
-#' }
+#' changeFobj(human,'EX_glc(e)',Ec_core)
 setGeneric("changeFobj", function(object, new_fobj, model, alg="fba"){standardGeneric("changeFobj")})
 #' @export
 #' @rdname changeFobj
@@ -794,15 +780,13 @@ setMethod("changeFobj", "Human", function(object, new_fobj, model, alg="fba"){
 #' @details Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value. Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value.
 #' @seealso \code{\link{Human-class}}, \code{\link{growLin}} and \code{\link{growExp}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' human <- Human(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' human <- Human(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,human,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' cellgrowth(human,arena,1)
-#' }
 setGeneric("cellgrowth", function(object, population, j){standardGeneric("cellgrowth")})
 #' @export
 #' @rdname cellgrowth

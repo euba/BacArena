@@ -131,13 +131,11 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #' @details The arguments \code{x} and \code{y} should be in the same length as the number of organisms added (given by the argument \code{amount}).
 #' @seealso \code{\link{Arena-class}} and \code{\link{Bac-class}} 
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
-#' }
 setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=NA, mean=0.489, sd=0.132){standardGeneric("addOrg")})
 #' @export
 #' @rdname addOrg
@@ -210,13 +208,12 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub} can be used to modify the concentrations of specific substances.} 
 #' @seealso \code{\link{Arena-class}} and \code{\link{changeSub}} 
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
-#' }
 setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=T){standardGeneric("addSubs")})
 #' @rdname addSubs
 #' @export
@@ -241,13 +238,13 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   }else{newmedia <- object@media}
   if(add){
     for(i in 1:length(mediac)){
-      newdmat = newmedia[[mediac[i]]]@diffmat + Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=T)
+      newdmat = newmedia[[mediac[i]]]@diffmat + Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
       newmedia[[mediac[i]]]@diffmat <- newdmat
       #newmedia[[mediac[i]]]@difspeed = difspeed[i]
     }
   }else{
     for(i in 1:length(mediac)){
-      newmedia[[mediac[i]]]@diffmat <- Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=T)
+      newmedia[[mediac[i]]]@diffmat <- Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
       newmedia[[mediac[i]]]@difspeed = difspeed[i]
     }
   }
@@ -267,15 +264,14 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
 #' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub}} can be used to modify the concentrations of specific substances.
 #' @seealso \code{\link{Arena-class}} and \code{\link{addSubs}} 
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena) #add all substances with no concentrations.
 #' changeSub(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) 
 #' #add substances glucose, oxygen and phosphate
-#' }
 setGeneric("changeSub", function(object, smax, mediac, unit="mmol/cell"){standardGeneric("changeSub")})
 #' @rdname changeSub
 #' @export
@@ -301,16 +297,15 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
 #' @param object An object of class Arena.
 #' @seealso \code{\link{Arena-class}} and \code{\link{addSubs}} 
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
-#' addSubs(arena) #add all substances with no concentrations.
+#' arena <- Arena(n=20,m=20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena, smax=40) #add all substances with no concentrations.
 #' changeSub(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) 
 #' #add substances glucose, oxygen and phosphate
 #' flushSubs(arena) #remove all created substance concentrations
-#' }
 setGeneric("flushSubs", function(object){standardGeneric("flushSubs")})
 #' @export
 #' @rdname flushSubs
@@ -330,24 +325,22 @@ setMethod("flushSubs", "Arena", function(object){
 #' @details This function can be used to add gradients of specific substances in the environment. The default conditions in \code{changeSubs} assumes an equal concentration in every grid cell of the environment. 
 #' @seealso \code{\link{Arena-class}} and \code{\link{changeSub}} 
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,30) #add all substances with no concentrations.
 #' gradient <- matrix(1:200,20,20)
 #' changeDiff(arena,gradient,c("EX_glc(e)","EX_o2(e)","EX_pi(e)"))
 #' # add substances glucose, oxygen and phosphate
-#' }
 setGeneric("changeDiff", function(object, newdiffmat, mediac){standardGeneric("changeDiff")})
 #' @export
 #' @rdname changeDiff
 setMethod("changeDiff", "Arena", function(object, newdiffmat, mediac){
   if(nrow(newdiffmat)==object@n && ncol(newdiffmat)==object@m){
     for(i in 1:length(mediac)){
-      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(newdiffmat, sparse=T)))
+      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(newdiffmat, sparse=TRUE)))
     }
   }else stop("Given matrix is not compatible in dimensions with the environment.")
 })
@@ -368,20 +361,18 @@ setMethod("changeDiff", "Arena", function(object, newdiffmat, mediac){
 #' @details This function can be used to add gradients of specific substances in the environment. 
 #' @seealso \code{\link{Arena-class}} and \code{\link{changeSub}} 
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,30) #add all substances with no concentrations.
 #' createGradient(arena,smax=50,mediac=c("EX_glc(e)","EX_o2(e)","EX_pi(e)"),
-#'              position='top',steep=0.5)
-#' }
-setGeneric("createGradient", function(object, mediac, position, smax, steep, add=F, unit='mmol/cell'){standardGeneric("createGradient")})
+#'              position='top',steep=0.5, add=FALSE)
+setGeneric("createGradient", function(object, mediac, position, smax, steep, add=FALSE, unit='mmol/cell'){standardGeneric("createGradient")})
 #' @export
 #' @rdname createGradient
-setMethod("createGradient", "Arena", function(object, mediac, position, smax, steep, add=F, unit='mmol/cell'){
+setMethod("createGradient", "Arena", function(object, mediac, position, smax, steep, add=FALSE, unit='mmol/cell'){
   if(steep<=0 || steep>=1){stop("Steepness must be in between 0 and 1.")}
   if(length(intersect(unit,c("mmol/cell","mM","mmol/cm2","mmol/arena")))==0){stop("Wrong unit for concentration.")}
   mediac = intersect(mediac,object@mediac)
@@ -399,9 +390,9 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
          stop("Positions must be top, bottom, right, or left."))
   for(i in 1:length(mediac)){
     if(add){
-      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(as.matrix(object@media[[mediac[i]]]@diffmat)+newdiffmat, sparse=T)))
+      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(as.matrix(object@media[[mediac[i]]]@diffmat)+newdiffmat, sparse=TRUE)))
     }else{
-      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(newdiffmat, sparse=T)))
+      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(newdiffmat, sparse=TRUE)))
     }
   }
 })
@@ -417,16 +408,14 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
 #' @details The argument \code{neworgdat} contains the same information as the \code{orgdat} slot of \code{\link{Arena-class}}. The \code{orgdat} slot of an \code{Arena} object can be used to create \code{neworgdat}.
 #' @seealso \code{\link{Arena-class}} and \code{\link{addOrg}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
-#' neworgdat <- orgdat(arena) #get the current orgdat
+#' neworgdat <- arena@orgdat #get the current orgdat
 #' neworgdat <- neworgdat[-1,] #remove the first individual
 #' changeOrg(arena,neworgdat)
-#' }
 setGeneric("changeOrg", function(object, neworgdat){standardGeneric("changeOrg")})
 #' @export
 #' @rdname changeOrg
@@ -447,13 +436,11 @@ setMethod("changeOrg", "Arena", function(object, neworgdat){
 #' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages. Uptake of substances are indicated by a negative and production of substances by a positive number.
 #' @seealso \code{\link{Arena-class}} and \code{\link{getPhenotype}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' checkPhen(arena,bac) #returns 1 as the index of the current phenotype in the list.
-#' }
 setGeneric("checkPhen", function(object, org, cutoff=1e-6){standardGeneric("checkPhen")})
 #' @export
 #' @rdname checkPhen
@@ -492,15 +479,13 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
 #' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
 #' @seealso \code{\link{Arena-class}} and \code{\link{Eval-class}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
-#' }
 setGeneric("simEnv", function(object, time, lrw=NULL, continue=F){standardGeneric("simEnv")})
 #' @export
 #' @rdname simEnv
@@ -561,7 +546,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F){
                  "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
                  "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
                  stop("Simulation function for Organism object not defined yet.")) 
-          arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=T)
+          arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
         }
         sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
       }
@@ -591,15 +576,13 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F){
 #' @return Returns the substrate concentration for every individual in the environment with substrates as well as x and y positions as columns and rows for each organism.
 #' @seealso \code{\link{Arena-class}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' sublb <- getSublb(arena)
-#' }
 setGeneric("getSublb", function(object){standardGeneric("getSublb")})
 #' @export
 #' @rdname getSublb
@@ -626,16 +609,14 @@ setMethod("getSublb", "Arena", function(object){
 #' @details The stirring is implemented as a random permutation of organism positions and the equalization of of all substrate concentrations.
 #' @seealso \code{\link{Arena-class}} and \code{\link{getSublb}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' sublb <- getSublb(arena)
 #' stirEnv(arena,sublb)
-#' }
 setGeneric("stirEnv", function(object, sublb){standardGeneric("stirEnv")})
 #' @export
 #' @rdname stirEnv
@@ -667,7 +648,7 @@ setMethod("stirEnv", "Arena", function(object, sublb){
   for(j in seq_along(object@media)){ #get information from sublb matrix to media list
     sval <- sum(sublb[,object@media[[j]]@name])/nrow(sublb)
     submat <- matrix(sval,object@n,object@m)
-    eval.parent(substitute(object@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=T)))
+    eval.parent(substitute(object@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)))
     sublb_tmp[,j] <- apply(object@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
   }
   sublb <- cbind(as.matrix(object@orgdat[,c(4,5)]),sublb_tmp)
@@ -685,15 +666,13 @@ setMethod("stirEnv", "Arena", function(object, sublb){
 #' @return Returns the presence/absence matrix of organisms on the grid based on the \code{orgdat} slot of the \code{Arena} class.
 #' @seealso \code{\link{Arena-class}} and \code{\link{getSublb}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' occmat <- dat2mat(arena)
 #' image(occmat)
-#' }
 setGeneric("dat2mat", function(object){standardGeneric("dat2mat")})
 #' @export
 #' @rdname dat2mat
@@ -811,16 +790,14 @@ setMethod("subchange", "Eval", function(object){return(object@subchange)})
 #' @details The function \code{addEval} can be used in iterations to manipulate an \code{Arena} object and store the results in an \code{Eval} object.
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' addEval(eval,arena)
-#' }
 setGeneric("addEval", function(object, arena, replace=F){standardGeneric("addEval")})
 #' @export
 #' @rdname addEval
@@ -869,23 +846,21 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
 #' @details The function \code{addEval} can be used to manipulate an \code{Arena} object from a simulation step to modify the subsequent simulation steps.
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' arena5 <- getArena(eval,5)
-#' }
 setGeneric("getArena", function(object, time=(length(object@medlist)-1)){standardGeneric("getArena")})
 #' @export
 #' @rdname getArena
 setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){ #index in R start at 1, but the first state is 0
   time = time+1 #index in R start at 1, but the first state is 0
   newmedia <- lapply(object@media, function(x, meds, n, m){
-    x@diffmat <- Matrix::Matrix(meds[[x@name]],nrow=n,ncol=m,sparse=T)
+    x@diffmat <- Matrix::Matrix(meds[[x@name]],nrow=n,ncol=m,sparse=TRUE)
     return(x)
   },meds=extractMed(object,time), n=object@n, m=object@m)
   occdat <- object@simlist[[time]]
@@ -907,16 +882,14 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
 #' @details Medium concentrations in slot \code{medlist} of an object of class \code{Eval} store only the changes of concentrations in the simulation process. The function \code{extractMed} reconstructs the original and uncompressed version of medium concentrations.
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' med5 <- extractMed(eval,5)
-#' }
 setGeneric("extractMed", function(object, time=length(object@medlist)){standardGeneric("extractMed")})
 #' @export
 #' @rdname extractMed
@@ -948,15 +921,15 @@ setMethod("extractMed", "Eval", function(object, time=length(object@medlist)){
 #' @details If \code{phencol} is \code{TRUE} then different phenotypes of the same organism are visualized by varying colors, otherwise different organism types are represented by varying colors. The parameter \code{retdata} can be used to access the data used for the returned plots to create own custom plots. 
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' evalArena(eval)
+#'\dontrun{
 #' ## if animation package is installed a movie of the simulation can be stored:
 #' library(animation)
 #' saveVideo({evalArena(eval)},video.name="Ecoli_sim.mp4")
@@ -1043,16 +1016,14 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
 #' @details The parameter \code{retdata} can be used to access the data used for the returned plots to create own custom plots. 
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' plotCurves(eval)
-#' }
 setGeneric("plotCurves", function(object, medplot=object@mediac, retdata=F, remove=F, legend=F){standardGeneric("plotCurves")})
 #' @export
 #' @rdname plotCurves
@@ -1117,16 +1088,14 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 #' @details The parameter \code{retdata} can be used to access the data used for the returned plots to create own custom plots. 
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' plotCurves2(eval)
-#' }
 setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"),
                                    num=10, phencol=F, dict=NULL){standardGeneric("plotCurves2")})
 #' @export
@@ -1215,16 +1184,14 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
 #' @param legendpos A character variable declaring the position of the legend
 #' @param num An integer defining the number of substrates to be plot
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' plotTotFlux(eval)
-#' }
 setGeneric("plotTotFlux", function(object, legendpos="topright", num=20){standardGeneric("plotTotFlux")})
 #' @export
 #' @rdname plotTotFlux
@@ -1259,16 +1226,14 @@ setMethod("plotTotFlux", "Eval", function(object, legendpos="topright", num=20){
 #' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages.
 #' @seealso \code{\link{Eval-class}} and \code{\link{getPhenotype}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' phenmat <- getPhenoMat(eval)
-#' }
 setGeneric("getPhenoMat", function(object, time="total", sparse=F){standardGeneric("getPhenoMat")})
 #' @export
 #' @rdname getPhenoMat
@@ -1313,16 +1278,14 @@ setMethod("getPhenoMat", "Eval", function(object, time="total", sparse=F){
 #' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages.
 #' @seealso \code{\link{Eval-class}} and \code{\link{getPhenoMat}}
 #' @examples
-#' \dontrun{
-#' ecore <- model #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' minePheno(eval)
-#' }
 setGeneric("minePheno", function(object, plot_type="pca", legend=F, time="total"){standardGeneric("minePheno")})
 #' @export
 #' @rdname minePheno
@@ -1375,17 +1338,14 @@ setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, time=
 #' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages.
 #' @seealso \code{\link{Eval-class}} and \code{\link{getPhenoMat}}
 #' @examples
-#' \dontrun{
-#' data(Ec_core)
-#' ecore <- Ec_core #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
-#' selPheno(eval,time=10,type='ecoli_core_model',reduce=T)
-#' }
+#' selPheno(eval,time=10,type='ecoli_core_model',reduce=TRUE)
 setGeneric("selPheno", function(object, time, type, reduce=F){standardGeneric("selPheno")})
 #' @export
 #' @rdname selPheno
@@ -1447,17 +1407,14 @@ setMethod(show, signature(object="Eval"), function(object){
 #' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages.
 #' @seealso \code{\link{Eval-class}}
 #' @examples
-#' \dontrun{
-#' data(Ec_core)
-#' ecore <- Ec_core #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' statPheno(eval, type_nr=1, phenotype_nr=2)
-#' }
 setGeneric("statPheno", function(object, type_nr=1, phenotype_nr, dict=NULL){standardGeneric("statPheno")})
 #' @export
 #' @rdname statPheno
@@ -1597,17 +1554,14 @@ setMethod("findCrossFeeding", "Eval", function(object, dict=NULL){
 #' @details Returns correlation matrix which can be used for statistical analysis
 #' @seealso \code{\link{Eval-class}}
 #' @examples
-#' \dontrun{
-#' data(Ec_core)
-#' ecore <- Ec_core #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' getCorrM(eval)
-#' }
 setGeneric("getCorrM", function(object, reactions=TRUE, bacs=TRUE, substrates=TRUE){standardGeneric("getCorrM")})
 #' @export
 #' @rdname getCorrM
@@ -1656,17 +1610,14 @@ setMethod("getCorrM", "Eval", function(object, reactions=TRUE, bacs=TRUE, substr
 #' @details Returns correlation matrix which can be used for statistical analysis
 #' @seealso \code{\link{Eval-class}} and \code{\link{getCorrM}}
 #' @examples
-#' \dontrun{
-#' data(Ec_core)
-#' ecore <- Ec_core #get Escherichia coli core metabolic model
-#' bac <- Bac(ecore,deathrate=0.05,
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(20,20) #initialize the environment
+#' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
-#' checkCorr(eval, tocheck="EX_o2")
-#' }
+#' checkCorr(eval, tocheck="o2")
 setGeneric("checkCorr", function(object, corr=NULL, tocheck=list()){standardGeneric("checkCorr")})
 #' @export
 #' @rdname checkCorr

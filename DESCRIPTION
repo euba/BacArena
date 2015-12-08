@@ -6,7 +6,7 @@ Authors@R: c( person("Eugen", "Bauer", , "eugen.bauer@uni.lu", role = c("aut")),
 Author: Eugen Bauer [aut],
     Johannes Zimmermann [aut, cre]
 Maintainer: Johannes Zimmermann <j.zimmermann@iem.uni-kiel.de>
-Description: BacArena can be used for simulation of organisms living in
+Description: Can be used for simulation of organisms living in
     communities. Each organism is represented individually and genome scale
     metabolic models determine the uptake and release of compounds. Biological
     processes such as movement, diffusion, chemotaxis and kinetics are available
