@@ -24,10 +24,23 @@ Features:
 
 ## Installation
 
-- To install the latest release:
+- Install the latest release:
   ```r
 install.packages("BacArena")
 ```
+
+- Install the development version:
+  ```r
+library(devtools)
+install_github("euba/bacarena")
+```
+
+## Quick start
+```r
+library("BacArena")
+openArena()
+```
+
 
 ## Documentation
 
