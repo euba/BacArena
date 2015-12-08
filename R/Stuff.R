@@ -137,3 +137,6 @@ openArena <- function(){
   return(sim)
 }
 
+reset_screen <- function(){
+  par(mfrow=c(1,1))
+}

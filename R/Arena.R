@@ -1539,6 +1539,56 @@ setMethod("findCrossFeeding", "Eval", function(object, dict=NULL){
 
 
 
+setGeneric("statSpec", function(object, type_nr=1, dict=NULL,
+                                legend_show=TRUE, legend_pos="center", legend_cex=0.75){standardGeneric("statSpec")})
+setMethod("statSpec", "Eval", function(object, type_nr=1, dict=NULL, 
+                                       legend_show=TRUE, legend_pos="center", legend_cex=0.75){
+  if(type_nr <= 0 | type_nr > length(object@specs)){
+    stop("Invalid type number, should be number indicating a species of arena@specs")
+  }
+  sname <- names(object@specs[type_nr])
+  pheno_nr <- table(names(object@phenotypes))[[sname]]
+  print(paste(sname, "with phenotypes:", pheno_nr))
+  
+  # zero-phenotyp is inactive!
+  phens <- rep(0, length(object@phenotypes)+1) # total number of occuring cells for each phenotyp
+  ptimes <- rep(0, length(object@phenotypes)+1) # number of times steps a phenotyp occured
+  availTimes <- rep(FALSE, length(object@simlist)) # true/false if cell is living for each timestep
+  occ <- lapply(seq(from=2, to=length(object@simlist)), function(t){
+    res <- table(object@simlist[[t]][which(object@simlist[[t]]$type==type_nr),]$phenotype)
+    #print(phens)
+    phens[as.numeric(names(res))+1]   <<- phens[as.numeric(names(res))+1] + res # -1 because of zero-phenotyp
+    ptimes[as.numeric(names(res))+1]  <<- ptimes[as.numeric(names(res))+1] + 1
+    if(length(res) > 0) availTimes[t] <<- TRUE
+    p <- unlist(lapply(seq(0,pheno_nr), function(i){ifelse(i %in% names(res),res[paste(i)], 0)}))
+    names(p) <- paste0("pheno", seq(0,pheno_nr))
+    p
+  })
+  
+  # species is available in the following time steps
+  availTimesteps <- which(availTimes==TRUE)
+  print(paste("alive between time steps:", min(availTimesteps), "-", max(availTimesteps)))
+  
+  len <- length(object@phenotypes)+1
+  if(len>length(colpal3)) cols <- colpal1[1:len] else cols <- colpal3[1:len]
+
+  # plot growth curve with all phenotypes
+  mat_phen  <- do.call(cbind, occ)
+  matplot(t(mat_phen), type='b', col=cols, pch=1, lty=1, lwd=5,
+          xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of organisms',
+          main='Growth curve')
+  legend(legend_pos, rownames(mat_phen), col=cols, cex=legend_cex, fill=cols)  
+  
+  # analyze phenotypes: plot total cell number vs. time steps of occurence
+  plot(ptimes, phens, bg=cols,type="p", pch = 23, log="y",
+       xlab="Number of occured time steps ", ylab="Total number of cells", main=paste(sname,"phenotypes: cells vs. occurrence"))
+  if(legend_show){
+    legend(legend_pos, pch = 23, pt.bg=cols, cex=legend_cex,
+           legend=seq(0, length(object@phenotypes)))
+  }
+})
+
+
 
 #' @title Function to compute and return correlation matrix
 #'
