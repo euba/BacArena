@@ -1,13 +1,60 @@
 library(devtools)
 library(knitr)
+library(roxygen2)
 
-build() #building R package archive
 
-setwd("~/BacArena")
+setwd("~/uni/bacarena")
 load_all()
 check()
 
+
+#
+# 1) Build documentary
+#
+setwd("~/uni/bacarena")
+#setwd("~/uni/test/testpkg/")
+devtools::document()
+#roxygen2::roxygenise() 
+check_doc()
+check()
+run_examples()
+
+
+#
+# 2) Vignettes
+#
 build_vignettes()
+
+
+setwd("~/uni")
+document("bacarena")
+check_doc("bacarena")
+
+
+#
+# 3) compiled code
+#
+devtools::use_rcpp()
+
+
+#
+# x) other stuff
+# 
+
+
+promptClass("Arena")
+promptMethods("Arena")
+showMethods("Arena")
+
+
+build() #building R package archive
+
+setwd("~/uni/bacarena")
+load_all()
+check()
+
+
+
 
 build_win()
 
@@ -31,11 +78,12 @@ compileAttributes() # recreates package skeleton
 
 
 
+
 roxygen2
 document()
 
 library(sybil)
-library(roxygen2)
+
 ls("package:devtools")
 
 makeNamespace()
