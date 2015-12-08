@@ -111,16 +111,29 @@ estimate_lrw <- function(grid_n, grid_m){
   return(lrw)
 }
 
+#' @title Start simulation
+#'
+#' @description The function \code{openArena} can be used to start a default simulation.
+#' @export
+#' @rdname openArena
 #' @importFrom utils data
+#'
+#' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
+#' @examples
+#' sim <- openArena()
+#' evalArena(sim, time=7, phencol = TRUE, 
+#'           plot_items=c("Population", "EX_o2(e)", "EX_for(e)",
+#'           "EX_glc(e)", "EX_for(e)"))
 openArena <- function(){
   data(Ec_core, envir = environment())
-  bac = Bac(model=Ec_core, deathrate=0.05, duplirate=0.5, growthlimit=0.05, growtype="exponential",
-            speed=1, type="ecore", lyse=F)
-  arena = Arena(n=30, m=30, stir=F)
-  addOrg(arena, bac, amount=10)
-  addSubs(arena, smax=20, difunc="cpp", difspeed=1)
-  
-  sim <- simEnv(arena, time=30)  
+  bac = Bac(model=Ec_core, growtype="exponential")
+  arena = Arena(n=50, m=50, stir=F, Lx=0.0125, Ly=0.0125)
+  addOrg(arena, bac, amount=50)
+  addSubs(arena, smax=0, difspeed=6.7e-6)
+  changeSub(arena, smax=0.05, unit="mM", 
+            mediac = c("EX_glc(e)", "EX_o2(e)", "EX_h2o(e)", "EX_pi(e)", "EX_nh4(e)", "EX_h(e)"))
+  sim <- simEnv(arena, time=10)  
+  plotCurves2(sim, legendpos="left")
   return(sim)
 }
 
