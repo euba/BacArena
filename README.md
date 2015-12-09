@@ -12,7 +12,8 @@ Features:
 - Each organism is represented individually
 - Simulation of >10 different species and thousands of organisms on your desktop computer
 - Diffusion of substances
-- Detection of different phenotypes
+- Screening of phenotypes
+- Detection of crossfeeding
 - Chemotaxis
 - Kinetics of reactions
 - Separation of simulation and evaluation
@@ -34,6 +35,10 @@ install.packages("BacArena")
 library(devtools)
 install_github("euba/bacarena")
 ```
+
+- Special hints for windows user
+  - Besides [R](https://cran.r-project.org/bin/windows/base/) you need to install [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
+
 
 ## Quick start
 ```r
