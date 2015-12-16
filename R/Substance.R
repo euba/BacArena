@@ -177,5 +177,5 @@ setMethod("diffusePDE", "Substance", function(object, init_mat, gridgeometry, lr
 
 setMethod(show, signature(object="Substance"), function(object){
   print(paste('Compound ',object@name,' of class Substance with a total concentration of ',
-              round(sum(object@diffmat)/length(c(object@diffmat)),4),' mmol per gridcell.',sep=''))
+              sum(object@diffmat)/length(c(object@diffmat)),' mmol per gridcell.',sep=''))
 })
