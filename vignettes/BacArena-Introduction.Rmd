@@ -56,10 +56,10 @@ addOrg(arena,bac,amount=1,x=50,y=50)
 With this command we added one individual of our bacterium in the middle of the environment (by its x and y position). Next we can add the substances to the environment
 
 ```{r}
-addSubs(arena, smax=0.05, difspeed=6.7e-6, unit='mM') 
+addSubs(arena, smax=0.05, unit='mM', difspeed=6.7e-6) 
 ```
 
-Now we added all possible substances to the environment arena with a concentration 40 mmol per gridcell. Finally, we can start the simulation with
+Now we added all possible substances to the environment arena with a concentration 0.05 mM per gridcell. Finally, we can start the simulation with
 
 ```{r}
 eval <- simEnv(arena,time=20)
