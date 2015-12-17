@@ -230,11 +230,19 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
   if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
   if(length(difspeed)!=length(mediac)){difspeed = rep(difspeed,length(mediac))}
-  newmedia <- list()
-  for(i in 1:length(mediac)){
-    newmedia[[mediac[i]]] <- Substance(object@n, object@m, 0, name=mediac[i], difunc=difunc, difspeed=difspeed[i], gridgeometry=object@gridgeometry)
+  if(length(object@media) == 0){
+    newmedia <- list()
+    for(i in 1:length(mediac)){
+      newmedia[[mediac[i]]] <- Substance(object@n, object@m, 0, name=mediac[i], difunc=difunc, difspeed=difspeed[i], gridgeometry=object@gridgeometry)
+    }
+  }else{newmedia <- object@media}
+  if(length(object@mediac) > length(newmedia)){
+    appendlist <- list()
+    for(i in setdiff(object@mediac, names(newmedia))){
+      appendlist[[i]] <- Substance(object@n, object@m, 0, name=i, difunc=difunc, difspeed=6.7e-6, gridgeometry=object@gridgeometry)
+    }
+    newmedia = c(newmedia,appendlist)
   }
-  if(length(object@media) != 0){newmedia[names(object@media)] <- object@media}
   if(add){
     for(i in 1:length(mediac)){
       newdmat = newmedia[[mediac[i]]]@diffmat + Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
