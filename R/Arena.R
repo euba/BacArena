@@ -552,7 +552,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F){
                  "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
                  "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
                  "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
-                 stop("Simulation function for Organism object not defined yet.")) 
+                 stop("Diffusion function not defined yet.")) 
           arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
         }
         sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
@@ -788,7 +788,6 @@ setMethod("subchange", "Eval", function(object){return(object@subchange)})
 #' @title Function for adding a simulation step
 #'
 #' @description The generic function \code{addEval} adds results of a simulation step to an \code{Eval} object.
-#' @export
 #' @rdname addEval
 #'
 #' @param object An object of class Eval.
@@ -816,7 +815,8 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
       sapply(names(subch), function(x, oldmed, newmed){
         subch[x] <<- subch[x]+sum(abs(oldmed[[x]]-as.vector(newmed[[x]]@diffmat)))
       },oldmed=extractMed(object), newmed=arena@media)
-      eval.parent(substitute(object@subchange <- object@subchange + subch))
+      subch[names(object@subchange)] <- object@subchange + subch[names(object@subchange)]
+      eval.parent(substitute(object@subchange <- subch))
     }
     if(sum(subch)!=0){
       eval.parent(substitute(object@medlist[[length(object@medlist)+1]] <- lapply(arena@media, function(x, subc){
@@ -838,6 +838,9 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
     })))
     eval.parent(substitute(object@simlist[[length(object@simlist)]] <- arena@orgdat))
     eval.parent(substitute(object@phenotypes <- arena@phenotypes))
+    eval.parent(substitute(object@specs <- arena@specs)) 
+    eval.parent(substitute(object@mediac <- arena@mediac))
+    eval.parent(substitute(object@media <- arena@media))
   }
 })
 
