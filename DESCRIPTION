@@ -20,15 +20,15 @@ Depends:
     deSolve (>= 1.12),
     Matrix (>= 1.2)
 Imports: 
-    glpkAPI,
+    igraph,
     methods,
     utils,
     stats,
     graphics,
     Rcpp
 Suggests: 
+    glpkAPI,
     sybilSBML,
-    igraph,
     knitr,
     rmarkdown
 LinkingTo: Rcpp,

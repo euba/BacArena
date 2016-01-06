@@ -120,13 +120,15 @@ estimate_lrw <- function(grid_n, grid_m){
 #'
 #' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
 #' @examples
+#' \donttest{ 
 #' sim <- openArena()
 #' evalArena(sim, time=7, phencol = TRUE, 
 #'           plot_items=c("Population", "EX_o2(e)", "EX_for(e)",
 #'           "EX_glc(e)", "EX_for(e)"))
+#'}
 openArena <- function(){
   data(Ec_core, envir = environment())
-  bac = Bac(model=Ec_core, growtype="exponential")
+  bac = Bac(model=Ec_core, type="E. coli")
   arena = Arena(n=50, m=50, stir=F, Lx=0.0125, Ly=0.0125)
   addOrg(arena, bac, amount=50)
   addSubs(arena, smax=0, difspeed=6.7e-6)

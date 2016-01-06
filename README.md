@@ -6,7 +6,7 @@ Existing genome-scale metabolic models can be used to simulate growth and intera
 In BacArena two well established methods are merged: a) Flux balance analysis to predict the activity of
 metabolic reactions and b) Agent based modelling in order to provide an environment.
 
-It has been  efficiently implemented in R language (with some C++ routines) and is freely available [CRAN](https://cran.r-project.org/web/packages/BacArena/index.html).
+It has been  efficiently implemented in R language (with some C++ routines) and is freely available [CRAN](https://cran.r-project.org/package=BacArena).
 
 Features:
 - Each organism is represented individually

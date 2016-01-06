@@ -1496,16 +1496,18 @@ setMethod("statPheno", "Eval", function(object, type_nr=1, phenotype_nr, dict=NU
 #' @description The generic function \code{findFeeding} 
 #' @export
 #' @rdname findFeeding
-#' @import igraph
+#' @importFrom igraph graph.empty add.edges delete.edges delete.vertices V E degree vcount layout_with_fr
+#' 
+#' @param object An object of class Eval.
 #' @param tcut Integer giving the minimal mutual occurence ot be considered (dismiss very seldom feedings)
 #' @param scut List of substance names which should be ignored
 #' @param legendpos A character variable declaring the position of the legend
 #' @param dict List defining new substance names. List entries are intepreted as old names and the list names as the new ones.
 #' @return Graph (igraph)
 #' 
+setGeneric("findFeeding", function(object, dict=NULL, tcut=5, scut=list(), legendpos="topleft"){standardGeneric("findFeeding")})
 #' @export
 #' @rdname findFeeding
-setGeneric("findFeeding", function(object, dict=NULL, tcut=5, scut=list(), legendpos="topleft"){standardGeneric("findFeeding")})
 setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list(), legendpos="topleft"){
 
   # possible problem inactive phenotype is not mentioned in object@phenotypes...
@@ -1554,8 +1556,8 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   # graph
   pindex <- rownames(mat_phen)# phenotype index
   cindex <- colnames(res) # substance color index
-  g <-graph.empty(n=length(pindex), directed=TRUE)
-  V(g)$name <- gsub("pheno","",pindex)
+  g <-igraph::graph.empty(n=length(pindex), directed=TRUE)
+  igraph::V(g)$name <- gsub("pheno","",pindex)
   
 
   # 3) Combinatorics: check for all pairs of phenotypes if they 
@@ -1580,7 +1582,7 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
               new_edge <- c(which(pindex==combi[,i][1]), which(pindex==combi[,i][2]))
             }else new_edge <- c(which(pindex==combi[,i][2]), which(pindex==combi[,i][1]))
             col <- colpal3[which(cindex == colnames(feeding)[x])]
-            g <<- add.edges(g, new_edge, color=col, weight=length(co_occ))
+            g <<- igraph::add.edges(g, new_edge, color=col, weight=length(co_occ))
           })
         }
         #cat("\npossible cross feeding at time steps\n")
@@ -1590,11 +1592,11 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
     }
   }
   
-  g <- delete.edges(g, which(E(g)$weight<tcut)) # delete seldom feedings
-  g <- delete.vertices(g, which(degree(g, mode="all") == 0)) # delete unconnected
+  g <- igraph::delete.edges(g, which(igraph::E(g)$weight<tcut)) # delete seldom feedings
+  g <- igraph::delete.vertices(g, which(igraph::degree(g, mode="all") == 0)) # delete unconnected
   
-  if(vcount(g) >= 2){
-    plot(g, layout=layout_with_fr, vertex.size=5,
+  if(igraph::vcount(g) >= 2){
+    plot(g, layout=igraph::layout_with_fr, vertex.size=5,
          edge.arrow.size=0.3, edge.width=E(g)$weight/10)
     legend(legendpos,legend=cindex, col=colpal3, pch=19, cex=0.7)
   }
