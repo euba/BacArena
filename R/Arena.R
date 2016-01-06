@@ -788,6 +788,7 @@ setMethod("subchange", "Eval", function(object){return(object@subchange)})
 #' @title Function for adding a simulation step
 #'
 #' @description The generic function \code{addEval} adds results of a simulation step to an \code{Eval} object.
+#' @export
 #' @rdname addEval
 #'
 #' @param object An object of class Eval.
@@ -1490,9 +1491,20 @@ setMethod("statPheno", "Eval", function(object, type_nr=1, phenotype_nr, dict=NU
 })
 
 
-# tcut Integer giving the minimal mutual occurence ot be considered (dismiss very seldom feedings)
-# scut List of substance names which should be ignored
-# return Graph (igraph)
+#' @title Function for investigation of feeding between phenotypes
+#'
+#' @description The generic function \code{findFeeding} 
+#' @export
+#' @rdname findFeeding
+#' @import igraph
+#' @param tcut Integer giving the minimal mutual occurence ot be considered (dismiss very seldom feedings)
+#' @param scut List of substance names which should be ignored
+#' @param legendpos A character variable declaring the position of the legend
+#' @param dict List defining new substance names. List entries are intepreted as old names and the list names as the new ones.
+#' @return Graph (igraph)
+#' 
+#' @export
+#' @rdname findFeeding
 setGeneric("findFeeding", function(object, dict=NULL, tcut=5, scut=list(), legendpos="topleft"){standardGeneric("findFeeding")})
 setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list(), legendpos="topleft"){
 
@@ -1521,7 +1533,7 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   # 2) Substances: get matrix of substrates that could consumed and produced by phenotypes in principle
   mediac <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
   if(length(dict) > 0) mediac <- unlist(lapply(mediac, function(x){dict[[x]]}))
-  phens <- object@phenotypes[which()]
+  phens <- object@phenotypes
   phenmat <- matrix(0, nrow=length(phens), ncol=length(object@mediac))
   colnames(phenmat) <- mediac
   counter = vector("numeric", length(object@specs))
@@ -1552,7 +1564,8 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   #combi <- combn(rownames(phenmat), 2)
   combi <- combn(rownames(mat_phen), 2)
   for(i in 1:ncol(combi)){
-    co_occ <- which(occ_phen[combi[,i][1],] & occ_phen[combi[,i][2],]==T)    #which(occ_phen["modelPOA_new_pheno13",] & occ_phen["modelPOA_new_pheno5",]==T)
+    if(length(grep("pheno0", combi[,i])) > 0) next # do not consider cuples with phenotype0 (i.d. metabolic inactive)
+    co_occ <- which(occ_phen[combi[,i][1],] & occ_phen[combi[,i][2],]==T)
     if( length(co_occ) > 0 ){
       ex_both     <- res[c(combi[,i][1], combi[,i][2]),]
       feeding_index <- which(colSums(ex_both)==0 & colSums(abs(ex_both))!=0)
@@ -1576,12 +1589,15 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
       }
     }
   }
+  
   g <- delete.edges(g, which(E(g)$weight<tcut)) # delete seldom feedings
   g <- delete.vertices(g, which(degree(g, mode="all") == 0)) # delete unconnected
   
-  plot(g, layout=layout_with_fr, vertex.size=5,
-       edge.arrow.size=0.3, edge.width=E(g)$weight/10)
-  legend(legendpos,legend=cindex, col=colpal3, pch=19, cex=0.7)
+  if(vcount(g) >= 2){
+    plot(g, layout=layout_with_fr, vertex.size=5,
+         edge.arrow.size=0.3, edge.width=E(g)$weight/10)
+    legend(legendpos,legend=cindex, col=colpal3, pch=19, cex=0.7)
+  }
   return(g)
 })
 
