@@ -7,7 +7,7 @@ library(RcppArmadillo)
 library(sybil)
 library(compiler)
 setwd("/Users/euba/GitRep/BacArena/")
-#setwd("uni/bacarena")
+#setwd("~/uni/bacarena")
 #setwd('P:/GitRep/BacArena')
 #setwd('P:/GitRep/BacArena')
 

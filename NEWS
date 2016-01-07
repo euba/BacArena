@@ -1,0 +1,20 @@
+BacArena v1.0.1 (Release date: 2016-01-06)
+=============
+
+Changes:
+* new method statSpec()
+* fixed bug in addSubs()
+* new method findFeeding()
+* fixed bug in addEval()
+* new method openArena()
+* corrected vignette
+
+* github reference: 
+
+
+BacArena v1.0 (Release date: 2015-12-08)
+=============
+
+initial cran release
+
+* github reference: https://github.com/euba/BacArena/tree/8bf7459530c4a8eda9040e8feb2fa416dea55ab2

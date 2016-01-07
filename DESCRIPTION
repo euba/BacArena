@@ -1,6 +1,6 @@
 Package: BacArena
 Title: Modeling Framework for Cellular Communities in their Environments
-Version: 1.1
+Version: 1.0.1
 Authors@R: c( person("Eugen", "Bauer", , "eugen.bauer@uni.lu", role = c("aut")), 
               person("Johannes", "Zimmermann", , "j.zimmermann@iem.uni-kiel.de", role = c("aut", "cre")))
 Author: Eugen Bauer [aut],
@@ -20,14 +20,16 @@ Depends:
     deSolve (>= 1.12),
     Matrix (>= 1.2)
 Imports: 
+    igraph,
     methods,
     utils,
     stats,
     graphics,
     Rcpp
 Suggests: 
-    knitr,
     glpkAPI,
+    sybilSBML,
+    knitr,
     rmarkdown
 LinkingTo: Rcpp,
     RcppArmadillo,

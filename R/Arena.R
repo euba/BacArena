@@ -788,6 +788,7 @@ setMethod("subchange", "Eval", function(object){return(object@subchange)})
 #' @title Function for adding a simulation step
 #'
 #' @description The generic function \code{addEval} adds results of a simulation step to an \code{Eval} object.
+#' @export
 #' @rdname addEval
 #'
 #' @param object An object of class Eval.
@@ -1490,10 +1491,23 @@ setMethod("statPheno", "Eval", function(object, type_nr=1, phenotype_nr, dict=NU
 })
 
 
-# tcut Integer giving the minimal mutual occurence ot be considered (dismiss very seldom feedings)
-# scut List of substance names which should be ignored
-# return Graph (igraph)
+#' @title Function for investigation of feeding between phenotypes
+#'
+#' @description The generic function \code{findFeeding} 
+#' @export
+#' @rdname findFeeding
+#' @importFrom igraph graph.empty add.edges delete.edges delete.vertices V E degree vcount layout_with_fr
+#' 
+#' @param object An object of class Eval.
+#' @param tcut Integer giving the minimal mutual occurence ot be considered (dismiss very seldom feedings)
+#' @param scut List of substance names which should be ignored
+#' @param legendpos A character variable declaring the position of the legend
+#' @param dict List defining new substance names. List entries are intepreted as old names and the list names as the new ones.
+#' @return Graph (igraph)
+#' 
 setGeneric("findFeeding", function(object, dict=NULL, tcut=5, scut=list(), legendpos="topleft"){standardGeneric("findFeeding")})
+#' @export
+#' @rdname findFeeding
 setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list(), legendpos="topleft"){
 
   # possible problem inactive phenotype is not mentioned in object@phenotypes...
@@ -1521,7 +1535,7 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   # 2) Substances: get matrix of substrates that could consumed and produced by phenotypes in principle
   mediac <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
   if(length(dict) > 0) mediac <- unlist(lapply(mediac, function(x){dict[[x]]}))
-  phens <- object@phenotypes[which()]
+  phens <- object@phenotypes
   phenmat <- matrix(0, nrow=length(phens), ncol=length(object@mediac))
   colnames(phenmat) <- mediac
   counter = vector("numeric", length(object@specs))
@@ -1542,8 +1556,8 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   # graph
   pindex <- rownames(mat_phen)# phenotype index
   cindex <- colnames(res) # substance color index
-  g <-graph.empty(n=length(pindex), directed=TRUE)
-  V(g)$name <- gsub("pheno","",pindex)
+  g <-igraph::graph.empty(n=length(pindex), directed=TRUE)
+  igraph::V(g)$name <- gsub("pheno","",pindex)
   
 
   # 3) Combinatorics: check for all pairs of phenotypes if they 
@@ -1552,7 +1566,8 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   #combi <- combn(rownames(phenmat), 2)
   combi <- combn(rownames(mat_phen), 2)
   for(i in 1:ncol(combi)){
-    co_occ <- which(occ_phen[combi[,i][1],] & occ_phen[combi[,i][2],]==T)    #which(occ_phen["modelPOA_new_pheno13",] & occ_phen["modelPOA_new_pheno5",]==T)
+    if(length(grep("pheno0", combi[,i])) > 0) next # do not consider cuples with phenotype0 (i.d. metabolic inactive)
+    co_occ <- which(occ_phen[combi[,i][1],] & occ_phen[combi[,i][2],]==T)
     if( length(co_occ) > 0 ){
       ex_both     <- res[c(combi[,i][1], combi[,i][2]),]
       feeding_index <- which(colSums(ex_both)==0 & colSums(abs(ex_both))!=0)
@@ -1567,7 +1582,7 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
               new_edge <- c(which(pindex==combi[,i][1]), which(pindex==combi[,i][2]))
             }else new_edge <- c(which(pindex==combi[,i][2]), which(pindex==combi[,i][1]))
             col <- colpal3[which(cindex == colnames(feeding)[x])]
-            g <<- add.edges(g, new_edge, color=col, weight=length(co_occ))
+            g <<- igraph::add.edges(g, new_edge, color=col, weight=length(co_occ))
           })
         }
         #cat("\npossible cross feeding at time steps\n")
@@ -1576,12 +1591,15 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
       }
     }
   }
-  g <- delete.edges(g, which(E(g)$weight<tcut)) # delete seldom feedings
-  g <- delete.vertices(g, which(degree(g, mode="all") == 0)) # delete unconnected
   
-  plot(g, layout=layout_with_fr, vertex.size=5,
-       edge.arrow.size=0.3, edge.width=E(g)$weight/10)
-  legend(legendpos,legend=cindex, col=colpal3, pch=19, cex=0.7)
+  g <- igraph::delete.edges(g, which(igraph::E(g)$weight<tcut)) # delete seldom feedings
+  g <- igraph::delete.vertices(g, which(igraph::degree(g, mode="all") == 0)) # delete unconnected
+  
+  if(igraph::vcount(g) >= 2){
+    plot(g, layout=igraph::layout_with_fr, vertex.size=5,
+         edge.arrow.size=0.3, edge.width=E(g)$weight/10)
+    legend(legendpos,legend=cindex, col=colpal3, pch=19, cex=0.7)
+  }
   return(g)
 })
 
