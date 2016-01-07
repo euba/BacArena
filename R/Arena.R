@@ -906,7 +906,7 @@ setGeneric("extractMed", function(object, time=length(object@medlist)){standardG
 setMethod("extractMed", "Eval", function(object, time=length(object@medlist)){
   medl <- object@medlist
   medlind <- medl[[time]]
-  for(i in 1:length(object@mediac)){
+  for(i in which(names(medlind) %in% object@mediac)){
     if(length(medl[[time]][[i]])==0){
       j <- time
       while(length(medl[[j]][[i]])==0){j <- j-1}
