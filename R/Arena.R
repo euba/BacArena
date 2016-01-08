@@ -1597,12 +1597,14 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   
   if(igraph::vcount(g) >= 2){
     plot(g, layout=igraph::layout_with_fr, vertex.size=5,
-         edge.arrow.size=0.3, edge.width=E(g)$weight/10)
+         edge.arrow.size=0.3, edge.width=igraph::E(g)$weight/10)
     legend(legendpos,legend=cindex, col=colpal3, pch=19, cex=0.7)
   }
-  return(g)
+  return(list(g=g, cindex=cindex))
 })
 
+
+                          
 
 
 
