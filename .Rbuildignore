@@ -5,3 +5,6 @@
 ^examples/.+$
 ^sim/.+$
 .*log
+.*RData
+.*avi
+.*mp4
