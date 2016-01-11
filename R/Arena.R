@@ -870,7 +870,8 @@ setGeneric("getArena", function(object, time=(length(object@medlist)-1)){standar
 #' @rdname getArena
 setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){ #index in R start at 1, but the first state is 0
   time = time+1 #index in R start at 1, but the first state is 0
-  newmedia <- lapply(object@media, function(x, meds, n, m){
+  
+  newmedia <- lapply(object@media[names(object@medlist[[time]])], function(x, meds, n, m){
     x@diffmat <- Matrix::Matrix(meds[[x@name]],nrow=n,ncol=m,sparse=TRUE)
     return(x)
   },meds=extractMed(object,time), n=object@n, m=object@m)
@@ -1262,12 +1263,14 @@ setMethod("getPhenoMat", "Eval", function(object, time="total", sparse=F){
     tphen = factor(paste(names(object@specs)[tdat$type],tdat$phenotype,sep="."))
     pinds = which(names(phens) %in% levels(tphen))
     if(length(pinds)!=0){phens = phens[pinds]}
+  }else{
+    time = length(object@medlist)
   }
-  phenmat <- matrix(0, nrow=length(phens), ncol=length(object@mediac))
-  colnames(phenmat) <- object@mediac
+  phenmat <- matrix(0, nrow=length(phens), ncol=length(names(object@medlist[[time]])))
+  colnames(phenmat) <- names(object@medlist[[time]])
   rownames(phenmat) <- names(phens)
   for(i in 1:nrow(phenmat)){
-    phenmat[i,] = as.numeric(unlist(strsplit(phens[i],split={})))
+    phenmat[i,1:length(as.numeric(unlist(strsplit(phens[i],split={}))))] = as.numeric(unlist(strsplit(phens[i],split={})))
   }
   if(sparse){
     phenmat <- phenmat[,which(colSums(abs(phenmat))!=0)]
