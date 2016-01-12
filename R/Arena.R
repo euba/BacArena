@@ -566,7 +566,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
       sublb <- stirEnv(arena, sublb)
     }
     addEval(evaluation, arena)
-    if(reduce && i<time){evaluation = redEval(evaluation, i-1)}
+    if(reduce && i<time){evaluation = redEval(evaluation, i)}
     if(nrow(arena@orgdat)==0 & !continue){
       print("All organisms died!")
       break
