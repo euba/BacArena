@@ -1508,10 +1508,10 @@ setMethod("statPheno", "Eval", function(object, type_nr=1, phenotype_nr, dict=NU
 #' @param dict List defining new substance names. List entries are intepreted as old names and the list names as the new ones.
 #' @return Graph (igraph)
 #' 
-setGeneric("findFeeding", function(object, dict=NULL, tcut=5, scut=list(), legendpos="topleft"){standardGeneric("findFeeding")})
+setGeneric("findFeeding", function(object, dict=NULL, tcut=5, scut=list(), org_dict=NULL, legendpos="topleft"){standardGeneric("findFeeding")})
 #' @export
 #' @rdname findFeeding
-setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list(), legendpos="topleft"){
+setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list(), org_dict=NULL, legendpos="topleft"){
 
   # possible problem inactive phenotype is not mentioned in object@phenotypes...
 
@@ -1522,7 +1522,10 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
     unlist(lapply(seq_along(object@specs), function(j){ # bac type
       occ <- table(x[which(x$type==j),]$phenotype)
       p <- unlist(lapply(seq(0,pheno_nr[[names(object@specs[j])]]), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
-      names(p) <- paste0(names(object@specs)[j], "_pheno", seq(0,pheno_nr[[names(object@specs[j])]]))
+      if(names(object@specs[j]) %in% org_dict){
+        org_name <- names(org_dict[which(org_dict==names(object@specs[j]))])
+    }else org_name <- names(object@specs)[j]
+      names(p) <- paste0(org_name, "_", seq(0,pheno_nr[[names(object@specs[j])]]))
       p
     }))})
   
@@ -1542,10 +1545,14 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   phenmat <- matrix(0, nrow=length(phens), ncol=length(object@mediac))
   colnames(phenmat) <- mediac
   counter = vector("numeric", length(object@specs))
-  names(counter) <- names(object@specs)
+  names(counter) <- lapply(names(object@specs), function(org_name){
+    if(org_name %in% org_dict){
+      org_name <- names(org_dict[which(org_dict==org_name)])
+    org_name
+  })
   new_names = unlist(lapply(names(phens), function(x){
     counter[x] <<- counter[x] + 1
-    paste0(x, "_pheno", counter[x])
+    paste0(x, "_", counter[x])
   }))
   rownames(phenmat) <- new_names
   for(i in 1:nrow(phenmat)){
@@ -1569,7 +1576,7 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   #combi <- combn(rownames(phenmat), 2)
   combi <- combn(rownames(mat_phen), 2)
   for(i in 1:ncol(combi)){
-    if(length(grep("pheno0", combi[,i])) > 0) next # do not consider cuples with phenotype0 (i.d. metabolic inactive)
+    if(length(grep("_0$", combi[,i])) > 0) next # do not consider cuples with phenotype0 (i.d. metabolic inactive)
     co_occ <- which(occ_phen[combi[,i][1],] & occ_phen[combi[,i][2],]==T)
     if( length(co_occ) > 0 ){
       ex_both     <- res[c(combi[,i][1], combi[,i][2]),]
