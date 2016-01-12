@@ -566,7 +566,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
       sublb <- stirEnv(arena, sublb)
     }
     addEval(evaluation, arena)
-    if(reduce){evaluation = redEval(evaluation, time-1)}
+    if(reduce && i<time){evaluation = redEval(evaluation, i-1)}
     if(nrow(arena@orgdat)==0 & !continue){
       print("All organisms died!")
       break
@@ -907,11 +907,9 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
 setGeneric("redEval", function(object, time="all"){standardGeneric("redEval")})
 #' @export
 #' @rdname redEval
-setMethod("redEval", "Eval", function(object, time="all"){ #index in R start at 1, but the first state is 0
-  if(time=="all"){
-    for(i in 1:length(object@medlist)){object@medlist[[i]] <- lapply(extractMed(object,i),sum)}
-  }else{
-    object@medlist[[time+1]] <- lapply(extractMed(object, time+1),sum)
+setMethod("redEval", "Eval", function(object, time=1:length(object@medlist)){ #index in R start at 1, but the first state is 0
+  for(i in time){
+    object@medlist[[i]] <- lapply(extractMed(object,i),sum)
   }
   return(object)
 })
