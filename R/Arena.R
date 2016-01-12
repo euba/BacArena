@@ -1548,9 +1548,13 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   names(counter) <- lapply(names(object@specs), function(org_name){
     if(org_name %in% org_dict){
       org_name <- names(org_dict[which(org_dict==org_name)])
+    }
     org_name
   })
   new_names = unlist(lapply(names(phens), function(x){
+    if(x %in% org_dict){
+      x = names(org_dict[which(org_dict==x)])
+    }
     counter[x] <<- counter[x] + 1
     paste0(x, "_", counter[x])
   }))
