@@ -699,7 +699,31 @@ setMethod("dat2mat", "Arena", function(object){
 })
 
 
+setGeneric("findInArena", function(object, pattern){standardGeneric("findInArena")})
+#' @export
+#' @rdname findInArena
+setMethod("findInArena", "Arena", function(object, pattern){
+  res_id <- grep(x=object@mediac, pattern=pattern, ignore.case = TRUE)
+  print(object@mediac[res_id])
   
+  res_name <- grep(x=names(object@mediac), pattern=pattern, ignore.case = TRUE)
+  print(object@mediac[res_name])
+
+  for(i in 1:length(arena@models)){
+    model = arena@models[[i]]
+    cat(paste0("\n\n", i, ". ", model@mod_desc, model@mod_name))
+    res_rea_id   <- grep(x=model@react_id,   pattern=pattern, ignore.case = TRUE)
+    print(paste(model@react_id[res_rea_id], model@react_name[res_rea_id]))
+    
+    res_rea_name <- grep(x=model@react_name, pattern=pattern, ignore.case = TRUE)
+    print(paste(model@react_id[res_rea_name], model@react_name[res_rea_name]))
+  }
+  
+})
+
+
+
+
 #show function for class Arena
 setMethod(show, "Arena", function(object){
   ecoli_cellarea = 4.42
