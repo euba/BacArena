@@ -37,3 +37,4 @@ LinkingTo: Rcpp,
 License: GPL-3
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
+LazyData: true
