@@ -26,6 +26,7 @@ globalVariables(c("diffuseNaiveCpp","diffuseSteveCpp"))
 #' @slot gridgeometry A list containing grid geometry parameter 
 #' @slot seed An integer refering to the random number seed used to be reproducible
 #' @slot scale A numeric defining the scale factor used for intern unit conversion.
+#' @slot models A list containing Objects of class sybil::modelorg which represent the genome scale metabolic models
 setClass("Arena",
          representation(
            orgdat="data.frame",
@@ -42,7 +43,8 @@ setClass("Arena",
            Lx="numeric",
            Ly="numeric",
            seed="numeric",
-           scale="numeric"
+           scale="numeric",
+           models="list"
         ),
         prototype(
           orgdat = data.frame(growth=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
@@ -53,7 +55,8 @@ setClass("Arena",
           tstep = 1,
           stir = F,
           mflux = list(),
-          seed=sample(1:10000,1)
+          seed=sample(1:10000,1),
+          models=list()
         )
 )
 
@@ -191,6 +194,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   newmediac <- c(object@mediac, specI@medium)
   eval.parent(substitute(object@mediac <- newmediac[!duplicated(newmediac)] ))
   eval.parent(substitute(object@mflux <- newmflux))
+  eval.parent(substitute(object@models <- c(object@models, specI@model)))
 })
 
 #' @title Add substances to the environment

@@ -25,6 +25,7 @@
 #' @slot speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
 #' @slot cellarea A numeric value indicating the surface that one organism occupies (unit: mu cm^2)
 #' @slot cellweight A numeric value giving the maximal dry weight of single organism (unit: fg)
+#' @slot model Object of class sybil::modelorg containging the genome sclae metabolic model
 setClass("Organism",
          representation(
            lbnd="numeric",
@@ -41,7 +42,8 @@ setClass("Organism",
            kinetics="list",
            cellarea="numeric",
            cellweight="numeric",
-           speed="numeric"
+           speed="numeric",
+           model="modelorg"
          ),
          prototype(
            deathrate = 0.21,
@@ -64,7 +66,7 @@ setClass("Organism",
 #' @export
 #' @name Organism-constructor
 #' 
-#' @param model model
+#' @param model Object of class sybil::modelorg containging the genome sclae metabolic model
 #' @param algo A single character string giving the name of the algorithm to use. See \link[sybil]{SYBIL_SETTINGS}
 #' @param ex Identifier for exchange reactions
 #' @param ex_comp ex_comp
@@ -77,7 +79,6 @@ setClass("Organism",
 #' @return Object of class Organism
 Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]", esuffix="\\[e\\]", lyse=F, feat=list(), 
                      typename=NA, ...){
-  #the constructor requires the model, after that it is not stored anymore  
   if(is.na(typename)) typename <- sybil::mod_desc(model)
   rxname = sybil::react_id(model)
   lpobject <- sybil::sysBiolAlg(model, algorithm=algo)
@@ -92,7 +93,7 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
     names(medc) <- model@met_name[sybil::findExchReact(model)@met_pos]
   }else{
     exf <- sybil::findExchReact(model)
-    medc <- exf@react_id[grep(ex, medc)]
+    medc <- exf@react_id[grep(ex, exf@react_id)]
     names(medc) <- model@met_name[exf@met_pos[grep(ex, exf@react_id)]]
   }
   if(!is.na(ex_comp)){
@@ -114,7 +115,7 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
     feat[["biomass"]] <- biomets
   }
   new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
-      fbasol=fbasol, feat=feat, lyse=lyse, ...)
+      fbasol=fbasol, feat=feat, lyse=lyse, model=model, ...)
 }
 
 ########################################################################################################
@@ -147,6 +148,8 @@ setGeneric("kinetics", function(object){standardGeneric("kinetics")})
 setMethod("kinetics", "Organism", function(object){return(object@kinetics)})
 setGeneric("speed", function(object){standardGeneric("speed")})
 setMethod("speed", "Organism", function(object){return(object@speed)})
+setGeneric("model", function(object){standardGeneric("model")})
+setMethod("model", "Organism", function(object){return(object@model)})
 
 ########################################################################################################
 ###################################### METHODS #########################################################
