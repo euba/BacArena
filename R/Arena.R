@@ -542,7 +542,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
       for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
         submat <- as.matrix(arena@media[[j]]@diffmat)
         if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
-          apply(sublb[,c('x','y',arena@media[[j]]@name)],1,function(x){submat[x[1],x[2]] <<- x[3]})
+          apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
         }
         #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
         homogenous = arena@n*arena@m != sum(submat==mean(submat))
@@ -656,7 +656,7 @@ setMethod("stirEnv", "Arena", function(object, sublb){
   sublb_tmp <- matrix(0,nrow=nrow(object@orgdat),ncol=(length(object@mediac)))
   sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
   for(j in seq_along(object@media)){ #get information from sublb matrix to media list
-    sval <- sum(sublb[,object@media[[j]]@name])/nrow(sublb)
+    sval <- sum(sublb[,object@media[[j]]@id])/nrow(sublb)
     submat <- matrix(sval,object@n,object@m)
     eval.parent(substitute(object@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)))
     sublb_tmp[,j] <- apply(object@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
