@@ -188,7 +188,8 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   eval.parent(substitute(object@orgdat <- neworgdat))
   eval.parent(substitute(object@specs <- newspecs))
   #eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
-  eval.parent(substitute(object@mediac <- union(object@mediac, specI@medium)))
+  newmediac <- c(object@mediac, specI@medium)
+  eval.parent(substitute(object@mediac <- newmediac[!duplicated(newmediac)] ))
   eval.parent(substitute(object@mflux <- newmflux))
 })
 
@@ -233,13 +234,13 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   if(length(object@media) == 0){
     newmedia <- list()
     for(i in 1:length(mediac)){
-      newmedia[[mediac[i]]] <- Substance(object@n, object@m, 0, name=mediac[i], difunc=difunc, difspeed=difspeed[i], gridgeometry=object@gridgeometry)
+      newmedia[[mediac[i]]] <- Substance(object@n, object@m, 0, id=unname(mediac[i]), name=names(mediac[i]), difunc=difunc, difspeed=difspeed[i], gridgeometry=object@gridgeometry)
     }
   }else{newmedia <- object@media}
   if(length(object@mediac) > length(newmedia)){
     appendlist <- list()
     for(i in setdiff(object@mediac, names(newmedia))){
-      appendlist[[i]] <- Substance(object@n, object@m, 0, name=i, difunc=difunc, difspeed=6.7e-6, gridgeometry=object@gridgeometry)
+      appendlist[[i]] <- Substance(object@n, object@m, 0, id=unname(i), name=names(i), difunc=difunc, difspeed=6.7e-6, gridgeometry=object@gridgeometry)
     }
     newmedia = c(newmedia,appendlist)
   }
@@ -288,7 +289,7 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
     if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
     if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
     for(i in 1:length(mediac)){
-      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax, name=mediac[i],
+      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax, id=unname(mediac[i]), name=names(mediac[i]),
                                                                   difunc=object@media[[mediac[i]]]@difunc,
                                                                   difspeed=object@media[[mediac[i]]]@difspeed, gridgeometry=object@gridgeometry)))
     }
@@ -691,6 +692,8 @@ setMethod("dat2mat", "Arena", function(object){
   return(newoccmat)
 })
 
+
+  
 #show function for class Arena
 setMethod(show, "Arena", function(object){
   ecoli_cellarea = 4.42
@@ -1765,5 +1768,6 @@ setMethod("checkCorr", "Eval", function(object, corr=NULL, tocheck=list()){
     barplot(names.arg=names(dat_interest), height=dat_interest, las=2, main=paste("Highest correlations of", feature))
   })
 })
+
 
 

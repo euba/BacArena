@@ -15,6 +15,7 @@
 #' @slot smax A number representing the start concentration of the substance for each grid cell in the environment. 
 #' @slot diffmat A sparse matrix containing all concentrations of the substance in the environment.
 #' @slot name A character vector representing the name of the substance.
+#' @slot id A character vector representing the identifier of the substance.
 #' @slot difunc A character vector ("pde","cpp" or "r") describing the function for diffusion.
 #' @slot difspeed A number indicating the diffusion speed (given by cm^2/s).
 #' @slot diffgeometry Diffusion coefficient defined on all grid cells (initially set by constructor).
@@ -25,6 +26,7 @@ setClass("Substance",
            smax = "numeric",
            diffmat = "Matrix",
            name = "character",
+           id = "character",
            difunc = "character",
            difspeed = "numeric",
            diffgeometry = "list",
