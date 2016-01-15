@@ -483,6 +483,7 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
 #' @param time A number giving the number of iterations to perform for the simulation
 #' @param lrw A numeric value needed by solver to estimate array size (by default lwr is estimated in the simEnv() by the function estimate_lrw())
 #' @param continue A boolean indicating whether the simulation should be continued or restarted.
+#' @param reduce A boolean indicating if the resulting \code{Eval} object should be reduced
 #' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
 #' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
 #' @seealso \code{\link{Arena-class}} and \code{\link{Eval-class}}
@@ -494,10 +495,10 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
-setGeneric("simEnv", function(object, time, lrw=NULL, continue=F){standardGeneric("simEnv")})
+setGeneric("simEnv", function(object, time, lrw=NULL, continue=F, reduce=F){standardGeneric("simEnv")})
 #' @export
 #' @rdname simEnv
-setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F){
+setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F){
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
@@ -566,7 +567,8 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F){
       sublb <- stirEnv(arena, sublb)
     }
     addEval(evaluation, arena)
-    if(nrow(arena@orgdat)==0 & !continue){
+    if(reduce && i<time){evaluation = redEval(evaluation)}
+    if(nrow(arena@orgdat)==0 && !continue){
       print("All organisms died!")
       break
     }
@@ -883,6 +885,36 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
   arena <- Arena(n=object@n, m=object@m, tstep=object@tstep, specs=object@specs, mediac=object@mediac,
                  phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, stir=object@stir)
   return(arena)
+})
+
+#' @title Function for reducing the size of an Eval object by collapsing the medium concentrations
+#'
+#' @description The generic function \code{redEval} reduces the object size of an \code{Eval} object.
+#' @export
+#' @rdname redEval
+#'
+#' @param object An object of class Eval.
+#' @param time A number giving the simulation step of interest.
+#' @return Returns an object of class \code{Arena} containing the organisms and substance conditions in simulation step \code{time}.
+#' @details The function \code{redEval} can be used to reduce the size of an \code{Eval} object from a simulation step.
+#' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
+#' @examples
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(n=20,m=20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' eval <- simEnv(arena,10)
+#' eval_reduce <- redEval(eval,5)
+setGeneric("redEval", function(object, time="all"){standardGeneric("redEval")})
+#' @export
+#' @rdname redEval
+setMethod("redEval", "Eval", function(object, time=1:length(object@medlist)){ #index in R start at 1, but the first state is 0
+  for(i in time){
+    object@medlist[[i]] <- lapply(extractMed(object,i),sum)
+  }
+  return(object)
 })
 
 #' @title Function for re-constructing a medium concentrations from simulations
