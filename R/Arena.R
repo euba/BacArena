@@ -289,7 +289,7 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
     if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
     if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
     for(i in 1:length(mediac)){
-      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax, id=unname(mediac[i]), name=names(mediac[i]),
+      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax, id=mediac[i], name=object@media[[mediac[i]]]@name,
                                                                   difunc=object@media[[mediac[i]]]@difunc,
                                                                   difspeed=object@media[[mediac[i]]]@difspeed, gridgeometry=object@gridgeometry)))
     }
