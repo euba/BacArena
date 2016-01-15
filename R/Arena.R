@@ -826,7 +826,7 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
     }
     if(sum(subch)!=0){
       eval.parent(substitute(object@medlist[[length(object@medlist)+1]] <- lapply(arena@media, function(x, subc){
-        if(subc[x@name]!=0){
+        if(subc[x@id]!=0){
           return(as.vector(x@diffmat))
         }else{return(vector())}
       }, subc=subch)))
