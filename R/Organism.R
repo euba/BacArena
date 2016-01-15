@@ -89,9 +89,11 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
   names(upbnd) = rxname
   if(is.na(ex)){
     medc <- sybil::react_id(sybil::findExchReact(model))
+    names(medc) <- model@met_name[sybil::findExchReact(model)@met_pos]
   }else{
-    medc <- sybil::react_id(sybil::findExchReact(model))
-    medc <- medc[grep(ex, medc)]
+    exf <- sybil::findExchReact(model)
+    medc <- exf@react_id[grep(ex, medc)]
+    names(medc) <- model@met_name[exf@met_pos[grep(ex, exf@react_id)]]
   }
   if(!is.na(ex_comp)){
     medc <- medc[grep(ex_comp, medc)]
