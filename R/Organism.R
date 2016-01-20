@@ -232,7 +232,8 @@ setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=
 #' @export
 #' @rdname optimizeLP
 setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){ 
-  fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
+  #fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
+  fbasl <- sybil::optimizeProb(object@model, react=1:length(lb), ub=ub, lb=lb, retOptSol=FALSE)
   names(fbasl$fluxes) <- names(object@lbnd)
   eval.parent(substitute(object@fbasol <- fbasl))
 })
@@ -688,6 +689,45 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum){
   arena@orgdat[,c('x','y')] <- pos
   return(arena)
 })
+
+setGeneric("simBac_par", function(object, arena, j, sublb, bacnum){standardGeneric("simBac_par")})
+setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum){
+  lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
+                     dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
+  
+  fbasl <- sybil::optimizeProb(object@model, react=1:length(lobnd), ub=object@ubnd, lb=lobnd, retOptSol=FALSE)
+  names(fbasl$fluxes) <- names(object@lbnd)
+  return(fbasl)
+})
+  
+setGeneric("simBac_par2", function(object, arena, j, sublb, bacnum, fbasl){standardGeneric("simBac_par2")})
+setMethod("simBac_par2", "Bac", function(object, arena, j, sublb, bacnum, fbasl){  
+  eval.parent(substitute(object@fbasol <- fbasl))
+  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum))) #scale consumption to the number of cells?
+  
+  dead <- growth(object, arena, j)
+  arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
+  
+  type <- object@type
+  arena@mflux[[type]] <- arena@mflux[[type]] + object@fbasol$fluxes # remember active fluxes
+  
+  if(dead && object@lyse){
+    eval.parent(substitute(sublb[j,] <- lysis(object, sublb[j,])))
+  }
+  pos <- arena@orgdat[,c('x','y')]
+  if(!dead && !arena@stir && object@speed != 0){
+    if(object@chem == ''){
+      pos <- move(object, pos, arena@n, arena@m, j)
+    }else{
+      chemotaxis(object, arena, j)
+    }
+  }
+  arena@orgdat[,c('x','y')] <- pos
+  return(arena)
+})
+
+
+
 
 #show function for class Bac
 

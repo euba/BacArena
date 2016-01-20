@@ -580,6 +580,114 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
   return(evaluation)
 })
 
+
+setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=F, reduce=F){standardGeneric("simEnv_par")})
+setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F){
+  switch(class(object),
+         "Arena"={arena <- object; evaluation <- Eval(arena)},
+         "Eval"={arena <- getArena(object); evaluation <- object},
+         stop("Please supply an object of class Arena."))
+  if(is.null(lrw)){lrw=estimate_lrw(arena@n,arena@m)}
+  for(i in names(arena@specs)){
+    phensel <- arena@phenotypes[which(names(arena@phenotypes)==i)]
+    if(length(phensel)==0){
+      test = getPhenotype(arena@specs[[i]], cutoff=1e-6)
+      pvec = rep(0,length(arena@mediac))
+      names(pvec) = arena@mediac
+      pvec[names(test)] = test
+      pvec <- paste(pvec,collapse='')
+      names(pvec) = i
+      arena@phenotypes <- c(arena@phenotypes,pvec)
+    }
+  }
+  if(class(object)!="Eval"){addEval(evaluation, arena)}
+  sublb <- getSublb(arena)
+  
+  
+  library("parallel")
+  #parallelCluster <- parallel::makeCluster(parallel::detectCores()-4, type="FORK")
+  print(parallelCluster)
+  
+  
+  for(i in 1:time){
+    cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
+    arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
+    if(nrow(arena@orgdat) > 0){ # if there are organisms left
+      sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
+  
+      #clusterExport(cl=parallelCluster, varlist=c("arena", "org", "simBac", "constrain", "consume", "checkPhen", "lysis", "chemotaxis", "move", "optimizeLP"))    
+      #for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
+      
+      parallelCluster <- parallel::makeCluster(parallel::detectCores()-4, type="FORK") 
+      par_solutions <- parallel::parLapply(parallelCluster, 1:nrow(arena@orgdat),function(j){
+        org <- arena@specs[[arena@orgdat[j,'type']]]
+        bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
+        #switch(class(org),
+        #       "Bac"= {arena = simBac(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
+        #       "Human"= {arena = simHum(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
+        #       stop("Simulation function for Organism object not defined yet."))
+        simBac_par(org, arena, j, sublb, bacnum)
+      })
+      parallel::stopCluster(parallelCluster)
+      
+      
+      # putting data tofgether & continue
+      lapply(1:nrow(arena@orgdat),function(j){
+        org <- arena@specs[[arena@orgdat[j,'type']]]
+        bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
+        
+        fbasl <- par_solutions[[j]]
+        arena <<- simBac_par2(org, arena, j, sublb, bacnum, fbasl)
+      })
+    
+      sublb[,arena@mediac] = sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
+      test <- is.na(arena@orgdat$growth)
+      if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
+      rm("test")
+    }
+    if(!arena@stir){
+      sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
+      sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
+      for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
+        submat <- as.matrix(arena@media[[j]]@diffmat)
+        if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
+          apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
+        }
+        #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
+        homogenous = arena@n*arena@m != sum(submat==mean(submat))
+        diffspeed  = arena@media[[j]]@difspeed!=0
+        diff2d     = arena@media[[j]]@pde=="Diff2d"
+        if( diffspeed && ( diff2d&&homogenous || !diff2d ) ){  
+          switch(arena@media[[j]]@difunc,
+                 "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
+                 "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
+                 "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
+                 "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
+                 stop("Diffusion function not defined yet.")) 
+          arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
+        }
+        sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+      }
+      sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
+      colnames(sublb) <- c('x','y',arena@mediac)
+      rm("sublb_tmp")
+      rm("submat")
+    }else{
+      sublb <- stirEnv(arena, sublb)
+    }
+    addEval(evaluation, arena)
+    if(reduce && i<time){evaluation = redEval(evaluation)}
+    if(nrow(arena@orgdat)==0 && !continue){
+      print("All organisms died!")
+      break
+    }
+  }
+  return(evaluation)
+})
+
+
+
+
 #' @title Function for calculated the substrate concentration for every organism
 #'
 #' @description The generic function \code{getSublb} calculates the substrate concentration for every individual in the environment based on their x and y position.
