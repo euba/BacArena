@@ -632,15 +632,16 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       
       
       # putting data tofgether & continue
-      lapply(1:nrow(arena@orgdat),function(j){
+      #lapply(1:nrow(arena@orgdat),function(j){
+      for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
         org <- arena@specs[[arena@orgdat[j,'type']]]
         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
         
         fbasl <- par_solutions[[j]]
-        arena <<- simBac_par2(org, arena, j, sublb, bacnum, fbasl)
-      })
+        arena <- simBac_par2(org, arena, j, sublb, bacnum, fbasl)
+      }
     
-      sublb[,arena@mediac] = sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
+      sublb[,arena@mediac] <- sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
       test <- is.na(arena@orgdat$growth)
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       rm("test")
