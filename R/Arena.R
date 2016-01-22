@@ -618,26 +618,42 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       #clusterExport(cl=parallelCluster, varlist=c("arena", "org", "simBac", "constrain", "consume", "checkPhen", "lysis", "chemotaxis", "move", "optimizeLP"))    
       #for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
       
+      
       parallelCluster <- parallel::makeCluster(parallel::detectCores()-4, type="FORK") 
-      par_solutions <- parallel::parLapply(parallelCluster, 1:nrow(arena@orgdat),function(j){
+      
+      par_sol_fba <- parallel::parLapply(parallelCluster, 1:nrow(arena@orgdat),function(j){
         org <- arena@specs[[arena@orgdat[j,'type']]]
         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
-        #switch(class(org),
-        #       "Bac"= {arena = simBac(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
-        #       "Human"= {arena = simHum(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
-        #       stop("Simulation function for Organism object not defined yet."))
-        simBac_par(org, arena, j, sublb, bacnum)
+        fbasl <- simBac_par(org, arena, j, sublb, bacnum)
+        fbasl
       })
+      
+      par_sol_sublb <- parallel::parSapply(parallelCluster, 1:nrow(arena@orgdat),function(j){
+        org <- arena@specs[[arena@orgdat[j,'type']]]
+        bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
+        #consume <- consume(org, sublb[j,], bacnum)
+        cutoff <- 1e-6
+        if(par_sol_fba[[j]]$obj>=cutoff && !is.na(par_sol_fba[[j]]$obj)){
+          flux = par_sol_fba[[j]]$fluxes[org@medium]*bacnum #scale flux to whole population size
+          flux = na.omit(ifelse(abs(flux)<=cutoff,NA,flux))
+          sublb[names(flux)] = round(sublb[names(flux)]+flux, 6)
+        }
+        #c("j"=j,consume)
+        sublb
+      })
+      
       parallel::stopCluster(parallelCluster)
+      
+      browser()
+      sublb <- par_solutions$consume
       
       
       # putting data tofgether & continue
-      #lapply(1:nrow(arena@orgdat),function(j){
       for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
         org <- arena@specs[[arena@orgdat[j,'type']]]
         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
         
-        fbasl <- par_solutions[[j]]
+        fbasl <- par_solutions[[j]]$fbasl
         arena <- simBac_par2(org, arena, j, sublb, bacnum, fbasl)
       }
     

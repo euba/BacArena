@@ -704,7 +704,7 @@ setGeneric("simBac_par2", function(object, arena, j, sublb, bacnum, fbasl){stand
 setMethod("simBac_par2", "Bac", function(object, arena, j, sublb, bacnum, fbasl){  
   eval.parent(substitute(object@fbasol <- fbasl))
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum))) #scale consumption to the number of cells?
-  
+
   dead <- growth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
   
