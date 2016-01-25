@@ -146,6 +146,11 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   if(amount+nrow(object@orgdat) > object@n*object@m){
     stop("More individuals than space on the grid")
   }
+  bacnum <- round(arena@scale/(specI@cellarea*10^(-8)))
+  if(bacnum<1){
+    stop("Physical arena size (Lx, Ly) too small. Maximal amount of cells in one grid cell would be zero.")
+  }
+  
   n <- object@n
   m <- object@m
   spectype <- specI@type
