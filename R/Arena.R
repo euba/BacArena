@@ -688,7 +688,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
         arena@orgdat[,c('x','y')] <<- pos
         
         # 3) duplicate
-        if(orgdat_j$growth > org@cellweight){
+        if(!is.na(orgdat_j$growth) & orgdat_j$growth > org@cellweight){
           freenb <- emptyHood(org, arena@orgdat[,c('x','y')],
                               arena@n, arena@m, orgdat_j$x, orgdat_j$y)
           if(length(freenb) != 0){
@@ -706,6 +706,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
         # 4) update orgdat and sublb
         arena@orgdat[j,] <<- orgdat_j
         sublb[j,] <<-  sublb_j
+        arena@mflux[[org@type]] <<- arena@mflux[[org@type]] + fbasol_j$fluxes # remember active fluxes
       })
       
       #browser()
