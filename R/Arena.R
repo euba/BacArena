@@ -477,6 +477,33 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
   return(pind)
 })
 
+setGeneric("checkPhen_par", function(object, org, cutoff=1e-6, fbasol){standardGeneric("checkPhen_par")})
+#' @export
+#' @rdname checkPhen_par
+setMethod("checkPhen_par", "Arena", function(object, org, cutoff=1e-6, fbasol){
+  pind <- 0
+  if(fbasol$obj>=cutoff){
+    test = getPhenotype_par(org, cutoff=1e-6, fbasol)
+    tspec = org@type
+    pvec = rep(0,length(object@mediac))
+    names(pvec) = object@mediac
+    pvec[names(test)] = test
+    pvec <- paste(pvec,collapse='')
+    phenc <- object@phenotypes
+    phensel <- phenc[which(names(phenc)==tspec)]
+    pind <- which(phensel==pvec)
+    if(length(pind)==0){
+      pind = length(phensel)+1
+      names(pvec) = tspec
+      return(list(pind, c(phenc,pvec)))
+    }else{
+      return(list(pind, NULL))
+    }
+  }
+})
+
+
+
 #' @title Main function for simulating all processes in the environment
 #'
 #' @description The generic function \code{simEnv} for a simple simulation of the environment.
@@ -606,8 +633,8 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
   
   library("parallel")
   #parallelCluster <- parallel::makeCluster(parallel::detectCores()-4, type="FORK")
-  print(parallelCluster)
-  
+  #print(parallelCluster)
+  parallelCluster <- parallel::makeCluster(parallel::detectCores()-1, type="FORK") 
   
   for(i in 1:time){
     cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
@@ -615,48 +642,69 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
       sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
   
-      #clusterExport(cl=parallelCluster, varlist=c("arena", "org", "simBac", "constrain", "consume", "checkPhen", "lysis", "chemotaxis", "move", "optimizeLP"))    
-      #for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
-      
-      
-      parallelCluster <- parallel::makeCluster(parallel::detectCores()-4, type="FORK") 
-      
-      par_sol_fba <- parallel::parLapply(parallelCluster, 1:nrow(arena@orgdat),function(j){
+      parallel_sim <- parallel::parLapply(parallelCluster, 1:nrow(arena@orgdat),function(j){
+      #parallel_sim <- lapply(1:nrow(arena@orgdat),function(j){
         org <- arena@specs[[arena@orgdat[j,'type']]]
         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
-        fbasl <- simBac_par(org, arena, j, sublb, bacnum)
-        fbasl
+        simbac <- simBac_par(org, arena, j, sublb, bacnum)
+        neworgdat <- simbac[[1]]
+        sublb <- simbac[[2]]
+        fbasol <- simbac[[3]]
+        list(neworgdat, sublb, fbasol)
       })
+
       
-      par_sol_sublb <- parallel::parSapply(parallelCluster, 1:nrow(arena@orgdat),function(j){
+      #
+      # Methods which cannot run in parallel
+      #
+      lapply(1:length(parallel_sim), function(j){
+        orgdat_j <- parallel_sim[[j]][[1]]
+        sublb_j  <- parallel_sim[[j]][[2]]
+        fbasol_j <- parallel_sim[[j]][[3]]
         org <- arena@specs[[arena@orgdat[j,'type']]]
-        bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
-        #consume <- consume(org, sublb[j,], bacnum)
-        cutoff <- 1e-6
-        if(par_sol_fba[[j]]$obj>=cutoff && !is.na(par_sol_fba[[j]]$obj)){
-          flux = par_sol_fba[[j]]$fluxes[org@medium]*bacnum #scale flux to whole population size
-          flux = na.omit(ifelse(abs(flux)<=cutoff,NA,flux))
-          sublb[names(flux)] = round(sublb[names(flux)]+flux, 6)
-        }
-        #c("j"=j,consume)
-        sublb
-      })
-      
-      parallel::stopCluster(parallelCluster)
-      
-      browser()
-      sublb <- par_solutions$consume
-      
-      
-      # putting data tofgether & continue
-      for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
-        org <- arena@specs[[arena@orgdat[j,'type']]]
-        bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
         
-        fbasl <- par_solutions[[j]]$fbasl
-        arena <- simBac_par2(org, arena, j, sublb, bacnum, fbasl)
-      }
-    
+        # 1) find phenotypes
+        checkphen <- checkPhen_par(arena, org, fbasol=fbasol_j) # could not be parallelized?!
+        orgdat_j["phenotype"] <- as.integer(checkphen[[1]])
+        if(length(checkphen[[2]])!= 0){
+          arena@phenotypes <<- checkphen[[2]]
+        }
+        
+        # 2) move
+        pos <- arena@orgdat[,c('x','y')]
+        if(!arena@stir && org@speed != 0){
+          if(org@chem == ''){
+            new_pos <- move(org, pos, arena@n, arena@m, j)[j,]
+          }else{
+            new_pos <- chemotaxis(org, arena, j)
+          }
+        }
+        orgdat_j[,c('x','y')] <- new_pos
+        arena@orgdat[,c('x','y')] <<- pos
+        
+        # 3) duplicate
+        if(orgdat_j$growth > org@cellweight){
+          freenb <- emptyHood(org, arena@orgdat[,c('x','y')],
+                              arena@n, arena@m, orgdat_j$x, orgdat_j$y)
+          if(length(freenb) != 0){
+            npos = freenb[sample(length(freenb),1)]
+            npos = as.numeric(unlist(strsplit(npos,'_')))
+            daughter <- orgdat_j
+            daughter$growth <- orgdat_j$growth/2
+            daughter$x <- npos[1]
+            daughter$y <- npos[2]
+            arena@orgdat[nrow(arena@orgdat)+1,] <<- daughter
+            orgdat_j$growth <- orgdat_j$growth/2
+          }
+        }
+        
+        # 4) update orgdat and sublb
+        arena@orgdat[j,] <<- orgdat_j
+        sublb[j,] <<-  sublb_j
+      })
+      
+      #browser()
+      
       sublb[,arena@mediac] <- sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
       test <- is.na(arena@orgdat$growth)
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
@@ -699,6 +747,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       break
     }
   }
+  parallel::stopCluster(parallelCluster)
   return(evaluation)
 })
 

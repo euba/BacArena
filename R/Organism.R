@@ -238,6 +238,15 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
   eval.parent(substitute(object@fbasol <- fbasl))
 })
 
+setGeneric("optimizeLP_par", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){standardGeneric("optimizeLP_par")})
+#' @export
+#' @rdname optimizeLP_par
+setMethod("optimizeLP_par", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){ 
+  fbasl <- sybil::optimizeProb(object@model, react=1:length(lb), ub=ub, lb=lb, retOptSol=FALSE)
+  names(fbasl$fluxes) <- names(object@lbnd)
+  return(fbasl)
+})
+
 #' @title Function to account for the consumption and production of substances
 #'
 #' @description The generic function \code{consume} implements the consumption and production of substances based on the flux of exchange reactions of organisms
@@ -265,6 +274,17 @@ setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum){
   return(sublb)
 })
 
+setGeneric("consume_par", function(object, sublb, cutoff=1e-6, bacnum, fbasol){standardGeneric("consume_par")})
+#' @export
+#' @rdname consume_par
+setMethod("consume_par", "Organism", function(object, sublb, cutoff=1e-6, bacnum, fbasol){
+  if(fbasol$obj>=cutoff && !is.na(fbasol$obj)){
+    flux = fbasol$fluxes[object@medium]*bacnum #scale flux to whole population size
+    flux = na.omit(ifelse(abs(flux)<=cutoff,NA,flux))
+    sublb[names(flux)] = round(sublb[names(flux)]+flux, 6)
+  }
+  return(sublb)
+})
 
 
 #' @title Function to extract the phenotype of an organism object
@@ -296,6 +316,18 @@ setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6){
   return(exflux[which(exflux!=0)])
 })
 
+setGeneric("getPhenotype_par", function(object, cutoff=1e-6, fbasol){standardGeneric("getPhenotype_par")})
+#' @export
+#' @rdname getPhenotype_par
+setMethod("getPhenotype_par", "Organism", function(object, cutoff=1e-6, fbasol){
+  exflux=fbasol$fluxes[object@medium]
+  exflux=ifelse(abs(exflux)<cutoff,0,1)*exflux
+  exflux=ifelse(exflux>0,1,exflux)
+  exflux=ifelse(exflux<0,2,exflux)
+  return(exflux[which(exflux!=0)])
+})
+
+
 #' @title Function for letting organisms grow linearly
 #'
 #' @description The generic function \code{growLin} implements a growth model of organisms in their environment.
@@ -320,6 +352,16 @@ setMethod("growLin", "Organism", function(object, growth){
   else grow_accum <- growth - object@deathrate
   return(grow_accum)
 })
+
+setGeneric("growLin_par", function(object, growth, fbasol){standardGeneric("growLin_par")})
+#' @export
+#' @rdname growLin_par
+setMethod("growLin_par", "Organism", function(object, growth, fbasol){
+  if(object@fbasol$obj > 0) grow_accum <- fbasol$obj + growth
+  else grow_accum <- growth - object@deathrate
+  return(grow_accum)
+})
+
 
 #' @title Function for letting organisms grow exponentially
 #'
@@ -348,6 +390,16 @@ setMethod("growExp", "Organism", function(object, growth){
   return(grow_accum)
   #return(object@fbasol$obj * growth + growth - object@deathrate)
 })
+
+setGeneric("growExp_par", function(object, growth, fbasol){standardGeneric("growExp_par")})
+#' @export
+#' @rdname growExp_par
+setMethod("growExp_par", "Organism", function(object, growth, fbasol){
+  if(fbasol$obj > 0) grow_accum <- (fbasol$obj * growth + growth)
+  else grow_accum <- growth - object@deathrate
+  return(grow_accum)
+})
+
 
 #' @title Lysis function of organismal cells by adding biomass_compounds to the medium
 #'
@@ -598,6 +650,26 @@ setMethod("growth", "Bac", function(object, population, j){
   return(dead)
 })
 
+setGeneric("growth_par", function(object, population, j, fbasol){standardGeneric("growth_par")})
+#' @export
+#' @rdname growth_par
+setMethod("growth_par", "Bac", function(object, population, j, fbasol){
+  neworgdat <- population@orgdat
+  popvec <- neworgdat[j,]
+  switch(object@growtype,
+         "linear"= {popvec$growth <- growLin_par(object, popvec$growth, fbasol)},
+         "exponential"= {popvec$growth <- growExp_par(object, popvec$growth, fbasol)},
+         stop("Growth type must be either linear or exponential"))
+  dead <- F
+  neworgdat[j,'growth'] <- popvec$growth
+  if(popvec$growth < object@growthlimit){
+    neworgdat[j,'growth'] <- NA
+    dead <- T
+  }
+  return(list(dead, neworgdat))
+})
+
+
 # chemotaxis still needs to be edited
 
 #' @title Function for chemotaxis of bacteria to their prefered substrate
@@ -637,8 +709,9 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
       abs <- abs[sample(1:length(abs),1)]
     }
     npos = as.numeric(unlist(strsplit(abs,'_')))
-    eval.parent(substitute(population@orgdat[j,]$x <- npos[1]))
-    eval.parent(substitute(population@orgdat[j,]$y <- npos[2]))
+    #eval.parent(substitute(population@orgdat[j,]$x <- npos[1]))
+    #eval.parent(substitute(population@orgdat[j,]$y <- npos[2]))
+    return(npos)
   }
 })
 
@@ -672,42 +745,6 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum){
   dead <- growth(object, arena, j)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
   
-    type <- object@type
-  arena@mflux[[type]] <- arena@mflux[[type]] + object@fbasol$fluxes # remember active fluxes
-
-  if(dead && object@lyse){
-    eval.parent(substitute(sublb[j,] <- lysis(object, sublb[j,])))
-  }
-  pos <- arena@orgdat[,c('x','y')]
-  if(!dead && !arena@stir && object@speed != 0){
-    if(object@chem == ''){
-      pos <- move(object, pos, arena@n, arena@m, j)
-    }else{
-      chemotaxis(object, arena, j)
-    }
-  }
-  arena@orgdat[,c('x','y')] <- pos
-  return(arena)
-})
-
-setGeneric("simBac_par", function(object, arena, j, sublb, bacnum){standardGeneric("simBac_par")})
-setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum){
-  lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
-                     dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
-  
-  fbasl <- sybil::optimizeProb(object@model, react=1:length(lobnd), ub=object@ubnd, lb=lobnd, retOptSol=FALSE)
-  names(fbasl$fluxes) <- names(object@lbnd)
-  return(fbasl)
-})
-  
-setGeneric("simBac_par2", function(object, arena, j, sublb, bacnum, fbasl){standardGeneric("simBac_par2")})
-setMethod("simBac_par2", "Bac", function(object, arena, j, sublb, bacnum, fbasl){  
-  eval.parent(substitute(object@fbasol <- fbasl))
-  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum))) #scale consumption to the number of cells?
-
-  dead <- growth(object, arena, j)
-  arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
-  
   type <- object@type
   arena@mflux[[type]] <- arena@mflux[[type]] + object@fbasol$fluxes # remember active fluxes
   
@@ -717,14 +754,87 @@ setMethod("simBac_par2", "Bac", function(object, arena, j, sublb, bacnum, fbasl)
   pos <- arena@orgdat[,c('x','y')]
   if(!dead && !arena@stir && object@speed != 0){
     if(object@chem == ''){
-      pos <- move(object, pos, arena@n, arena@m, j)
+      mov_pos <- move(object, pos, arena@n, arena@m, j)
+      arena@orgdat[,c('x','y')] <- mov_pos
     }else{
-      chemotaxis(object, arena, j)
+      chemo_pos <- chemotaxis(object, arena, j)
+      arena@orgdat[j,c('x','y')] <- chemo_pos
     }
   }
-  arena@orgdat[,c('x','y')] <- pos
+  
   return(arena)
 })
+
+setGeneric("simBac_par", function(object, arena, j, sublb, bacnum){standardGeneric("simBac_par")})
+#' @export
+#' @rdname simBac_par
+setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum){
+  lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
+                     dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
+  fbasol <- optimizeLP_par(object, lb=lobnd)
+  
+  sublb[j,] <- consume_par(object, sublb=sublb[j,], bacnum=bacnum, fbasol=fbasol) #scale consumption to the number of cells?
+  
+  growth <- growth_par(object, arena, j, fbasol)
+  dead <- growth[[1]]
+  neworgdat <- growth[[2]]
+  
+  #neworgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object)) # could not be parallelized?!
+
+  #type <- object@type
+  #arena@mflux[[type]] <- arena@mflux[[type]] + fbasol$fluxes # remember active fluxes
+  
+  if(dead && object@lyse){
+    sublb[j,] <- lysis(object, sublb[j,])
+  }
+  #pos <- arena@orgdat[,c('x','y')]
+  #if(!dead && !arena@stir && object@speed != 0){
+  #  if(object@chem == ''){
+  #    pos <- move(object, pos, arena@n, arena@m, j)
+  #  }else{
+  #    chemotaxis(object, arena, j)
+  #  }
+  #}
+  #arena@orgdat[,c('x','y')] <- pos
+  #return(arena)
+  return(list(neworgdat[j,], sublb[j,], fbasol))
+})
+
+# setGeneric("simBac_par", function(object, arena, j, sublb, bacnum){standardGeneric("simBac_par")})
+# setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum){
+#   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
+#                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
+#   
+#   fbasl <- sybil::optimizeProb(object@model, react=1:length(lobnd), ub=object@ubnd, lb=lobnd, retOptSol=FALSE)
+#   names(fbasl$fluxes) <- names(object@lbnd)
+#   return(fbasl)
+# })
+#   
+# setGeneric("simBac_par2", function(object, arena, j, sublb, bacnum, fbasl){standardGeneric("simBac_par2")})
+# setMethod("simBac_par2", "Bac", function(object, arena, j, sublb, bacnum, fbasl){  
+#   eval.parent(substitute(object@fbasol <- fbasl))
+#   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum))) #scale consumption to the number of cells?
+# 
+#   dead <- growth(object, arena, j)
+#   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
+#   
+#   type <- object@type
+#   arena@mflux[[type]] <- arena@mflux[[type]] + object@fbasol$fluxes # remember active fluxes
+#   
+#   if(dead && object@lyse){
+#     eval.parent(substitute(sublb[j,] <- lysis(object, sublb[j,])))
+#   }
+#   pos <- arena@orgdat[,c('x','y')]
+#   if(!dead && !arena@stir && object@speed != 0){
+#     if(object@chem == ''){
+#       pos <- move(object, pos, arena@n, arena@m, j)
+#     }else{
+#       chemotaxis(object, arena, j)
+#     }
+#   }
+#   arena@orgdat[,c('x','y')] <- pos
+#   return(arena)
+# })
 
 
 
