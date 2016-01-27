@@ -232,8 +232,8 @@ setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=
 #' @export
 #' @rdname optimizeLP
 setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){ 
-  #fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
-  fbasl <- sybil::optimizeProb(object@model, react=1:length(lb), ub=ub, lb=lb, retOptSol=FALSE)
+  fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
+  #fbasl <- sybil::optimizeProb(object@model, react=1:length(lb), ub=ub, lb=lb, retOptSol=FALSE)
   names(fbasl$fluxes) <- names(object@lbnd)
   eval.parent(substitute(object@fbasol <- fbasl))
 })
