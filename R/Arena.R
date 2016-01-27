@@ -1090,7 +1090,7 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
   },meds=extractMed(object,time), n=object@n, m=object@m)
   occdat <- object@simlist[[time]]
   
-  arena <- Arena(n=object@n, m=object@m, tstep=object@tstep, specs=object@specs, mediac=object@mediac,
+  arena <- Arena(n=object@n, m=object@m, tstep=object@tstep, specs=object@specs, mediac=object@mediac, mflux=object@mfluxlist[[time]],
                  phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, stir=object@stir)
   return(arena)
 })
