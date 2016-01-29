@@ -1860,6 +1860,59 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   return(list(g=g, cindex=cindex))
 })
 
+#' @title Function for investigation of feeding between phenotypes
+#'
+#' @description The generic function \code{findFeeding2} 
+#' @export
+#' @rdname findFeeding2
+#' @importFrom igraph V E graph.data.frame layout.circle
+#' 
+#' @param object An object of class Eval.
+#' @param time A numeric vector giving the simulation steps which should be plotted. 
+#' @param mets Character vector of substance names which should be considered
+#' @param rm_own A boolean flag indicating if interactions within same species should be plotted
+#' @return Graph (igraph)
+#' 
+setGeneric("findFeeding2", function(object, time, mets, rm_own=T){standardGeneric("findFeeding2")})
+#' @export
+#' @rdname findFeeding2
+setMethod("findFeeding2", "Eval", function(object, time, mets, rm_own=T){
+  time = time+1
+  pmat = as.matrix(getPhenoMat(object,time=time)[,mets])
+  colnames(pmat) = mets
+  flux = lapply(object@mfluxlist[[time]], function(x){return(x[mets])})
+  inter = data.frame(sp1=factor(levels=names(object@specs)),sp2=factor(levels=names(object@specs)),met=factor(levels=mets),
+                     producer=numeric(),consumer=numeric(),fluxsp1=numeric(),fluxsp2=numeric())
+  for(i in names(object@specs)){
+    for(j in names(object@specs)){
+      for(k in mets){
+        prod1 = length(which(pmat[grep(i,rownames(pmat)),k]==1))
+        cons1 = length(which(pmat[grep(i,rownames(pmat)),k]==2))
+        prod2 = length(which(pmat[grep(j,rownames(pmat)),k]==1))
+        cons2 = length(which(pmat[grep(j,rownames(pmat)),k]==2))
+        if(prod1 > 0){
+          if(cons1 > 0){inter[nrow(inter)+1,c("sp1","sp2","met","producer","consumer","fluxsp1","fluxsp2")] = c(i,i,k,prod1,cons1,flux[[i]][k],flux[[i]][k])}
+          if(cons2 > 0){inter[nrow(inter)+1,c("sp1","sp2","met","producer","consumer","fluxsp1","fluxsp2")] = c(i,j,k,prod1,cons2,flux[[i]][k],flux[[j]][k])}
+        }
+        if(prod2 > 0){
+          if(cons1 > 0){inter[nrow(inter)+1,c("sp1","sp2","met","producer","consumer","fluxsp1","fluxsp2")] = c(j,i,k,prod2,cons1,flux[[j]][k],flux[[i]][k])}
+          if(cons2 > 0){inter[nrow(inter)+1,c("sp1","sp2","met","producer","consumer","fluxsp1","fluxsp2")] = c(j,j,k,prod2,cons2,flux[[j]][k],flux[[j]][k])}
+        }
+      }
+    }
+  }
+  inter = inter[!duplicated(paste(inter[,1],inter[,2],inter[,3],sep="_")),]
+  test = which(paste(inter[,1],inter[,2],sep="_") %in% paste(names(object@specs),names(object@specs),sep="_"))
+  if(rm_own && length(test)!=0){inter = inter[-test,]}
+  vertexatt = data.frame(name = names(object@specs), color=1:length(object@specs), weight=as.vector(table(object@simlist[[time]]$type)))
+  g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE, vertices=vertexatt)
+  l <- igraph::layout.circle(g)
+  plot(g,vertex.size=vertexatt$weight/max(vertexatt$weight)*20,edge.color=rainbow(length(mets))[as.numeric(inter$met)],
+               edge.arrow.size=0.5,edge.width=2,layout=l)
+  legend("bottomright",legend=mets,col=rainbow(length(mets)), pch=19, cex=0.7)
+  return(g)
+})
+
 
                           
 
