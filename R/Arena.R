@@ -1871,12 +1871,14 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
 #' @param time A numeric vector giving the simulation steps which should be plotted. 
 #' @param mets Character vector of substance names which should be considered
 #' @param rm_own A boolean flag indicating if interactions within same species should be plotted
+#' @param ind_threshold A number indicating the threshold of individuals to be considered as producers/consumers
+#' @param collapse A boolean flag indicating if all phenotypes for every species should be collapsed to either producers or consumers
 #' @return Graph (igraph)
 #' 
-setGeneric("findFeeding2", function(object, time, mets, rm_own=T){standardGeneric("findFeeding2")})
+setGeneric("findFeeding2", function(object, time, mets, rm_own=T, ind_threshold=0, collapse=F){standardGeneric("findFeeding2")})
 #' @export
 #' @rdname findFeeding2
-setMethod("findFeeding2", "Eval", function(object, time, mets, rm_own=T){
+setMethod("findFeeding2", "Eval", function(object, time, mets, rm_own=T, ind_threshold=0, collapse=F){
   time = time+1
   pmat = as.matrix(getPhenoMat(object,time=time)[,mets])
   colnames(pmat) = mets
@@ -1904,12 +1906,39 @@ setMethod("findFeeding2", "Eval", function(object, time, mets, rm_own=T){
   inter = inter[!duplicated(paste(inter[,1],inter[,2],inter[,3],sep="_")),]
   test = which(paste(inter[,1],inter[,2],sep="_") %in% paste(names(object@specs),names(object@specs),sep="_"))
   if(rm_own && length(test)!=0){inter = inter[-test,]}
+  if(collapse){
+    for(i in unique(as.character(inter$mets))){
+      mind = which(inter$met==i)
+      interm = inter[mind,]
+      for(j in unique(c(as.character(interm$sp1),as.character(interm$sp2)))){
+        prod = which(interm$sp1 == j)
+        cons = which(interm$sp2 == j)
+        if(length(prod) !=0 && length(cons) != 0){
+          if(interm[prod[1],"producer"] > interm[cons[1],"consumer"]){
+            interm = interm[-cons,]
+          }else{
+            interm = interm[-prod,]
+          }
+        }
+        inter = rbind(inter,interm)
+      }
+      inter = inter[-mind,]
+    }
+  }
+  if(ind_threshold>1){
+    rmtr <- unique(c(which(as.numeric(inter$producer)<ind_threshold),which(as.numeric(inter$consumer)<ind_threshold)))
+  }else{
+    rmtr <- unique(c(which(as.numeric(inter$producer)<as.vector(table(object@simlist[[time]]$type))[as.numeric(inter$sp1)]*ind_threshold),
+                     which(as.numeric(inter$consumer)<as.vector(table(object@simlist[[time]]$type))[as.numeric(inter$sp2)]*ind_threshold)))
+  }
+  if(length(rmtr)==nrow(inter)){stop("No significant crossfeeding detected (try to relax ind_threshold).")}
+  if(length(rmtr)!=0){inter = inter[-rmtr,]}
   vertexatt = data.frame(name = names(object@specs), color=1:length(object@specs), weight=as.vector(table(object@simlist[[time]]$type)))
   g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE, vertices=vertexatt)
   l <- igraph::layout.circle(g)
-  plot(g,vertex.size=vertexatt$weight/max(vertexatt$weight)*20,edge.color=rainbow(length(mets))[as.numeric(inter$met)],
+  plot(g,vertex.size=vertexatt$weight/max(vertexatt$weight)*20,edge.color=rainbow(length(unique(levels(inter$met)[inter$met])))[as.numeric(as.factor(as.character(inter$met)))],
                edge.arrow.size=0.5,edge.width=2,layout=l)
-  legend("bottomright",legend=mets,col=rainbow(length(mets)), pch=19, cex=0.7)
+  legend("bottomright",legend=unique(levels(inter$met)[inter$met]),col=rainbow(length(unique(levels(inter$met)[inter$met]))), pch=19, cex=0.7)
   return(g)
 })
 
