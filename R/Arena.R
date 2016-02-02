@@ -1085,7 +1085,7 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
   time = time+1 #index in R start at 1, but the first state is 0
   
   newmedia <- lapply(object@media[names(object@medlist[[time]])], function(x, meds, n, m){
-    x@diffmat <- Matrix::Matrix(meds[[x@name]],nrow=n,ncol=m,sparse=TRUE)
+    x@diffmat <- Matrix::Matrix(meds[[x@id]],nrow=n,ncol=m,sparse=TRUE)
     return(x)
   },meds=extractMed(object,time), n=object@n, m=object@m)
   occdat <- object@simlist[[time]]
