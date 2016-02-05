@@ -1,14 +1,14 @@
 ##Loading the required packages## 
 library(ReacTran)
 library(sybil)
-#library(sybilSBML)
+library(sybilSBML)
 library(Rcpp)
 library(RcppArmadillo)
 library(sybil)
 library(compiler)
-setwd("/Users/euba/GitRep/BacArena/")
+#setwd("/Users/euba/GitRep/BacArena/")
 #setwd("~/uni/bacarena")
-#setwd('P:/GitRep/BacArena')
+setwd('P:/GitRep/BacArena')
 #setwd('P:/GitRep/BacArena')
 
 source(file="R/Arena.R")
@@ -19,15 +19,16 @@ source(file="R/Stuff.R")
 Rcpp::sourceCpp("src/diff.cpp")
 
 #library(sybilSBML)
-#model = readSBMLmod("P:/BACARENA/Comparison/MatNet/P_aeruginosa/modelPOA.xml")
+model = readSBMLmod("P:/BACARENA/Comparison/MatNet/P_aeruginosa/modelPOA.xml")
 #model = readSBMLmod("modelPOA.xml")
 #load("poa_model.RData")
-SYBIL_SETTINGS("SOLVER","sybilGUROBI") #setting solver to GUROBI
+library(cplexAPI)
+SYBIL_SETTINGS("SOLVER","cplexAPI") #setting solver to GUROBI
 #model = readSBMLmod("P:/BACARENA/Comparison/MatNet/P_aeruginosa/modelPOA.xml")
-#load('P:/GitRep/BacArena/poa_model.RData')
-load('/Users/euba/GitRep/BacArena/poa_model.RData')
+load('P:/GitRep/BacArena/model/poa_model_new.RData')
+#load('/Users/euba/GitRep/BacArena/poa_model.RData')
 
-medium = read.csv('/Users/euba/Minimal_medium.csv')
+medium = read.csv('P:/GitRep/BacArena/model/poa_minimal_medium.csv')
 modelP = changeBounds(model,model@react_id[grep("EX",model@react_id)],lb=-1000)
 #modelP = changeBounds(modelP,"EX_EC0027",lb=-10)
 #modelP@met_name[which(modelP@met_id=='EC0027[None]')]
@@ -47,7 +48,7 @@ modelP = changeBounds(model,model@react_id[grep("EX",model@react_id)],lb=-1000)
 # print(system.time(sim <- simEnv(arena, time=96)))
 
 simlist = list()
-for(i in 1:5){
+for(i in 1:1){
   print(i)
   bac = Bac(model=modelP, growtype="exponential", deathrate=0)
   setKinetics(bac, exchangeR="EX_EC0027", Km=0.01, vmax=7.56)
