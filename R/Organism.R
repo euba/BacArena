@@ -242,7 +242,15 @@ setGeneric("optimizeLP_par", function(object, lpob=object@lpobj, lb=object@lbnd,
 #' @export
 #' @rdname optimizeLP_par
 setMethod("optimizeLP_par", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){ 
-  fbasl <- sybil::optimizeProb(object@model, react=1:length(lb), ub=ub, lb=lb, retOptSol=FALSE)
+  #fbasl <- sybil::optimizeProb(object@model, react=1:length(lb), ub=ub, lb=lb, retOptSol=FALSE)
+  
+  #lpob <- sybil::sysBiolAlg(object@model, algorithm="fba")
+  #lpob <- lpobject
+  #tryCatch(
+    fbasl <- sybil::optimizeProb(lpobject, react=1:length(lb), ub=ub, lb=lb)#,
+    #fbasl <- sybil::optimizeProb(object@lpobj, react=1:length(object@lbnd), ub=object@ubnd, lb=object@lbnd)#,
+    #error = function(e) print(e)
+  #)
   names(fbasl$fluxes) <- names(object@lbnd)
   return(fbasl)
 })
@@ -765,14 +773,17 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum){
   return(arena)
 })
 
-setGeneric("simBac_par", function(object, arena, j, sublb, bacnum){standardGeneric("simBac_par")})
+setGeneric("simBac_par", function(object, arena, j, sublb, bacnum, lpobject){standardGeneric("simBac_par")})
 #' @export
 #' @rdname simBac_par
-setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum){
+setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum, lpobject){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
-  fbasol <- optimizeLP_par(object, lb=lobnd)
   
+  #fbasol <- optimizeLP_par(object, lb=lobnd)
+  fbasol <- sybil::optimizeProb(lpobject, react=1:length(lobnd), ub=object@ubnd, lb=lobnd)#,
+  names(fbasol$fluxes) <- names(object@lbnd)
+
   sublb[j,] <- consume_par(object, sublb=sublb[j,], bacnum=bacnum, fbasol=fbasol) #scale consumption to the number of cells?
   
   growth <- growth_par(object, arena, j, fbasol)

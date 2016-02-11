@@ -159,7 +159,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   newspecs[[spectype]] <- specI
   type <- which(names(newspecs)==spectype)
   newmflux <- object@mflux
-  
+
   # mflux
   newmflux[[spectype]] <- numeric(length(specI@lbnd))
   names(newmflux[[spectype]]) <- names(specI@lbnd)
@@ -636,78 +636,119 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
   sublb <- getSublb(arena)
   
   
-  library("parallel")
-  #parallelCluster <- parallel::makeCluster(parallel::detectCores()-4, type="FORK")
-  #print(parallelCluster)
   parallelCluster <- parallel::makeCluster(parallel::detectCores()-1, type="FORK") 
   
   for(i in 1:time){
+    arena@orgdat["nr"] <- seq_len(dim(arena@orgdat)[1]) # dummy numbering
     cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
       sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
   
-      parallel_sim <- parallel::parLapply(parallelCluster, 1:nrow(arena@orgdat),function(j){
-      #parallel_sim <- lapply(1:nrow(arena@orgdat),function(j){
-        org <- arena@specs[[arena@orgdat[j,'type']]]
-        bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
-        simbac <- simBac_par(org, arena, j, sublb, bacnum)
-        neworgdat <- simbac[[1]]
-        sublb <- simbac[[2]]
-        fbasol <- simbac[[3]]
-        list(neworgdat, sublb, fbasol)
+      # 1) split orgdat into a data.frames for each species 
+      split_orgdat <- split(arena@orgdat, as.factor(arena@orgdat$type))
+      # 2) iterate over all species (each has a entry in splited data.frame)
+      lapply(length(split_orgdat), function(spec_nr){
+        splited_species <- split_orgdat[[spec_nr]]
+        splited_size <- dim(splited_species)[1]
+        # 2.1) in case of big splited data frame go for parallel
+        if(splited_size >= 1){ # ATTENTION: magic number, to be defined according to benchmark! (treshold from which parallel is faster than seriell)
+          # 2.1.1) group task (each core gets one)
+          groups <- split(seq_len(splited_size), cut(seq_len(splited_size), parallel::detectCores()-1))
+          # 2.1.2) paralel loop
+          #sol <- parallel::parLapply(parallelCluster, groups, function(g){
+          parallel_sol <- parallel::parLapply(parallelCluster, groups, function(g){
+                                      # 2.1.2.1) critical step: create lpobject for each core 
+                                      #(otherwise pointer will corrupt in warm-started optimization)
+                                      model <- arena@specs[[spec_nr]]@model
+                                      lpobject <- sybil::sysBiolAlg(model, algorithm="fba", solver="glpkAPI")
+                                      # 2.1.2.2) 
+                                      #lapply(g, function(i) sybil::optimizeProb(lpobject))
+                                      lapply(g, function(i){
+                                          #sybil::optimizeProb(lpobject)
+                                          org <- arena@specs[[spec_nr]]
+                                          bacnum = round((arena@scale/(org@cellarea*10^(-8))))
+                                          j <- splited_species$nr[i]
+                                          simbac <- simBac_par(org, arena, j, sublb, bacnum, lpobject)
+                                          neworgdat <- simbac[[1]]
+                                          sublb <- simbac[[2]]
+                                          fbasol <- simbac[[3]]
+                                          list(neworgdat, sublb, fbasol)
+                                        })
+                                    })
+          parallel_sol <- unlist(parallel_sol, recursive=FALSE)
+          #
+          # Methods which cannot run in parallel
+          #
+          lapply(1:length(parallel_sol), function(j){
+            orgdat_j <- parallel_sol[[j]][[1]]
+            sublb_j  <- parallel_sol[[j]][[2]]
+            fbasol_j <- parallel_sol[[j]][[3]]
+            org <- arena@specs[[arena@orgdat[j,'type']]]
+            
+            # 1) find phenotypes
+            checkphen <- checkPhen_par(arena, org, fbasol=fbasol_j) # could not be parallelized?!
+            orgdat_j["phenotype"] <- as.integer(checkphen[[1]])
+            if(length(checkphen[[2]])!= 0){
+              arena@phenotypes <<- checkphen[[2]]
+            }
+            
+            # 2) move
+#             pos <- arena@orgdat[,c('x','y')]
+#             if(!arena@stir && org@speed != 0){
+#               if(org@chem == ''){
+#                 new_pos <- move(org, pos, arena@n, arena@m, j)[j,]
+#               }else{
+#                 new_pos <- chemotaxis(org, arena, j)
+#               }
+#             }
+#             orgdat_j[,c('x','y')] <- new_pos
+#             arena@orgdat[j,] <<- orgdat_j
+            
+            # 3) duplicate
+            if(!is.na(orgdat_j$growth) & orgdat_j$growth > org@cellweight){
+              freenb <- emptyHood(org, arena@orgdat[,c('x','y')],
+                                  arena@n, arena@m, orgdat_j$x, orgdat_j$y)
+              if(length(freenb) != 0){
+                npos = freenb[sample(length(freenb),1)]
+                npos = as.numeric(unlist(strsplit(npos,'_')))
+                daughter <- orgdat_j
+                daughter$growth <- orgdat_j$growth/2
+                daughter$x <- npos[1]
+                daughter$y <- npos[2]
+                arena@orgdat[nrow(arena@orgdat)+1,] <<- daughter
+                orgdat_j$growth <- orgdat_j$growth/2
+              }
+            }
+            
+            # 4) update orgdat and sublb
+            arena@orgdat[j,] <<- orgdat_j
+            sublb[j,] <<-  sublb_j
+            arena@mflux[[org@type]] <<- arena@mflux[[org@type]] + fbasol_j$fluxes # remember active fluxes
+          })
+        # 2.2) in case of small splited data frame do seriell work
+        }else{
+          
+        }
       })
+      
+      movementCpp(arena@orgdat, arena@n, arena@m)
 
       
-      #
-      # Methods which cannot run in parallel
-      #
-      lapply(1:length(parallel_sim), function(j){
-        orgdat_j <- parallel_sim[[j]][[1]]
-        sublb_j  <- parallel_sim[[j]][[2]]
-        fbasol_j <- parallel_sim[[j]][[3]]
-        org <- arena@specs[[arena@orgdat[j,'type']]]
-        
-        # 1) find phenotypes
-        checkphen <- checkPhen_par(arena, org, fbasol=fbasol_j) # could not be parallelized?!
-        orgdat_j["phenotype"] <- as.integer(checkphen[[1]])
-        if(length(checkphen[[2]])!= 0){
-          arena@phenotypes <<- checkphen[[2]]
-        }
-        
-        # 2) move
-        pos <- arena@orgdat[,c('x','y')]
-        if(!arena@stir && org@speed != 0){
-          if(org@chem == ''){
-            new_pos <- move(org, pos, arena@n, arena@m, j)[j,]
-          }else{
-            new_pos <- chemotaxis(org, arena, j)
-          }
-        }
-        orgdat_j[,c('x','y')] <- new_pos
-        arena@orgdat[,c('x','y')] <<- pos
-        
-        # 3) duplicate
-        if(!is.na(orgdat_j$growth) & orgdat_j$growth > org@cellweight){
-          freenb <- emptyHood(org, arena@orgdat[,c('x','y')],
-                              arena@n, arena@m, orgdat_j$x, orgdat_j$y)
-          if(length(freenb) != 0){
-            npos = freenb[sample(length(freenb),1)]
-            npos = as.numeric(unlist(strsplit(npos,'_')))
-            daughter <- orgdat_j
-            daughter$growth <- orgdat_j$growth/2
-            daughter$x <- npos[1]
-            daughter$y <- npos[2]
-            arena@orgdat[nrow(arena@orgdat)+1,] <<- daughter
-            orgdat_j$growth <- orgdat_j$growth/2
-          }
-        }
-        
-        # 4) update orgdat and sublb
-        arena@orgdat[j,] <<- orgdat_j
-        sublb[j,] <<-  sublb_j
-        arena@mflux[[org@type]] <<- arena@mflux[[org@type]] + fbasol_j$fluxes # remember active fluxes
-      })
+      
+      
+      
+#       parallel_sim <- parallel::parLapply(parallelCluster, 1:nrow(arena@orgdat),function(j){
+#       #parallel_sim <- lapply(1:nrow(arena@orgdat),function(j){
+#         org <- arena@specs[[arena@orgdat[j,'type']]]
+#         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
+#         simbac <- simBac_par(org, arena, j, sublb, bacnum)
+#         neworgdat <- simbac[[1]]
+#         sublb <- simbac[[2]]
+#         fbasol <- simbac[[3]]
+#         list(neworgdat, sublb, fbasol)
+#       })
+
       
       #browser()
       
@@ -716,36 +757,9 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       rm("test")
     }
-    if(!arena@stir){
-      sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
-      sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
-      for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
-        submat <- as.matrix(arena@media[[j]]@diffmat)
-        if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
-          apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
-        }
-        #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
-        homogenous = arena@n*arena@m != sum(submat==mean(submat))
-        diffspeed  = arena@media[[j]]@difspeed!=0
-        diff2d     = arena@media[[j]]@pde=="Diff2d"
-        if( diffspeed && ( diff2d&&homogenous || !diff2d ) ){  
-          switch(arena@media[[j]]@difunc,
-                 "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
-                 "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
-                 "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
-                 "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
-                 stop("Diffusion function not defined yet.")) 
-          arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
-        }
-        sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
-      }
-      sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
-      colnames(sublb) <- c('x','y',arena@mediac)
-      rm("sublb_tmp")
-      rm("submat")
-    }else{
-      sublb <- stirEnv(arena, sublb)
-    }
+    
+    arena <- diffuse(arena, sublb, lrw)
+
     addEval(evaluation, arena)
     if(reduce && i<time){evaluation = redEval(evaluation)}
     if(nrow(arena@orgdat)==0 && !continue){
@@ -755,6 +769,45 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
   }
   parallel::stopCluster(parallelCluster)
   return(evaluation)
+})
+
+setGeneric("diffuse", function(object, sublb, lrw){standardGeneric("diffuse")})
+#' @export
+#' @rdname diffuse
+setMethod("diffuse", "Arena", function(object, sublb, lrw){
+  arena <- object
+  
+  if(!arena@stir){
+    sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
+    sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
+    for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
+      submat <- as.matrix(arena@media[[j]]@diffmat)
+      if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
+        apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
+      }
+      #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
+      homogenous = arena@n*arena@m != sum(submat==mean(submat))
+      diffspeed  = arena@media[[j]]@difspeed!=0
+      diff2d     = arena@media[[j]]@pde=="Diff2d"
+      if( diffspeed && ( diff2d&&homogenous || !diff2d ) ){  
+        switch(arena@media[[j]]@difunc,
+               "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
+               "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
+               "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
+               "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
+               stop("Diffusion function not defined yet.")) 
+        arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
+      }
+      sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+    }
+    sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
+    colnames(sublb) <- c('x','y',arena@mediac)
+    #rm("sublb_tmp")
+    #rm("submat")
+  }else{
+    sublb <- stirEnv(arena, sublb)
+  }
+  return(arena)
 })
 
 
