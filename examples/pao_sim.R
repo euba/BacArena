@@ -19,7 +19,7 @@ source(file="R/Stuff.R")
 Rcpp::sourceCpp("src/diff.cpp")
 
 #library(sybilSBML)
-model = readSBMLmod("P:/BACARENA/Comparison/MatNet/P_aeruginosa/modelPOA.xml")
+#model = readSBMLmod("P:/BACARENA/Comparison/MatNet/P_aeruginosa/modelPOA.xml")
 #model = readSBMLmod("modelPOA.xml")
 #load("poa_model.RData")
 library(cplexAPI)
@@ -48,7 +48,7 @@ modelP = changeBounds(model,model@react_id[grep("EX",model@react_id)],lb=-1000)
 # print(system.time(sim <- simEnv(arena, time=96)))
 
 simlist = list()
-for(i in 1:1){
+for(i in 1:5){
   print(i)
   bac = Bac(model=modelP, growtype="exponential", deathrate=0)
   setKinetics(bac, exchangeR="EX_EC0027", Km=0.01, vmax=7.56)
