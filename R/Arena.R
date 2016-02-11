@@ -706,20 +706,20 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
 #             arena@orgdat[j,] <<- orgdat_j
             
             # 3) duplicate
-            if(!is.na(orgdat_j$growth) & orgdat_j$growth > org@cellweight){
-              freenb <- emptyHood(org, arena@orgdat[,c('x','y')],
-                                  arena@n, arena@m, orgdat_j$x, orgdat_j$y)
-              if(length(freenb) != 0){
-                npos = freenb[sample(length(freenb),1)]
-                npos = as.numeric(unlist(strsplit(npos,'_')))
-                daughter <- orgdat_j
-                daughter$growth <- orgdat_j$growth/2
-                daughter$x <- npos[1]
-                daughter$y <- npos[2]
-                arena@orgdat[nrow(arena@orgdat)+1,] <<- daughter
-                orgdat_j$growth <- orgdat_j$growth/2
-              }
-            }
+#             if(!is.na(orgdat_j$growth) & orgdat_j$growth > org@cellweight){
+#               freenb <- emptyHood(org, arena@orgdat[,c('x','y')],
+#                                   arena@n, arena@m, orgdat_j$x, orgdat_j$y)
+#               if(length(freenb) != 0){
+#                 npos = freenb[sample(length(freenb),1)]
+#                 npos = as.numeric(unlist(strsplit(npos,'_')))
+#                 daughter <- orgdat_j
+#                 daughter$growth <- orgdat_j$growth/2
+#                 daughter$x <- npos[1]
+#                 daughter$y <- npos[2]
+#                 arena@orgdat[nrow(arena@orgdat)+1,] <<- daughter
+#                 orgdat_j$growth <- orgdat_j$growth/2
+#               }
+#             }
             
             # 4) update orgdat and sublb
             arena@orgdat[j,] <<- orgdat_j
@@ -731,9 +731,10 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
           
         }
       })
+      arena@orgdat <- arena@orgdat[,-which(colnames(arena@orgdat)=="nr")] # remove dummy numbering
       
-      movementCpp(arena@orgdat, arena@n, arena@m)
-
+      movementCpp(arena@orgdat, arena@n, arena@m) # call by ref
+      arena@orgdat <- duplicateCpp(arena@orgdat, arena@n, arena@m, lapply(arena@specs, function(x){x@cellweight})) # call by val
       
       
       
