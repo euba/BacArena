@@ -1931,19 +1931,21 @@ setGeneric("findFeeding2", function(object, time, mets, rm_own=T, ind_threshold=
 #' @export
 #' @rdname findFeeding2
 setMethod("findFeeding2", "Eval", function(object, time, mets, rm_own=T, ind_threshold=0, collapse=F){
+  pmat = as.matrix(getPhenoMat(object,time=time)[,unique(c(mets,products))])
+  colnames(pmat) = unique(c(mets,products))
   time = time+1
-  pmat = as.matrix(getPhenoMat(object,time=time)[,mets])
-  colnames(pmat) = mets
   flux = lapply(object@mfluxlist[[time]], function(x){return(x[mets])})
   inter = data.frame(sp1=factor(levels=names(object@specs)),sp2=factor(levels=names(object@specs)),met=factor(levels=mets),
                      producer=numeric(),consumer=numeric(),fluxsp1=numeric(),fluxsp2=numeric())
   for(i in names(object@specs)){
     for(j in names(object@specs)){
       for(k in mets){
-        prod1 = length(which(pmat[grep(i,rownames(pmat)),k]==1))
-        cons1 = length(which(pmat[grep(i,rownames(pmat)),k]==2))
-        prod2 = length(which(pmat[grep(j,rownames(pmat)),k]==1))
-        cons2 = length(which(pmat[grep(j,rownames(pmat)),k]==2))
+        pabi = table(object@simlist[[time]][which(object@simlist[[time]]$type==which(names(object@specs)==i)),"phenotype"])
+        pabj = table(object@simlist[[time]][which(object@simlist[[time]]$type==which(names(object@specs)==j)),"phenotype"])
+        prod1 = sum(pabi[gsub(paste(i,".",sep=""),"",names(which(pmat[grep(i,rownames(pmat)),k]==1)))])
+        cons1 = sum(pabi[gsub(paste(i,".",sep=""),"",names(which(pmat[grep(i,rownames(pmat)),k]==2)))])
+        prod2 = sum(pabj[gsub(paste(j,".",sep=""),"",names(which(pmat[grep(j,rownames(pmat)),k]==1)))])
+        cons2 = sum(pabj[gsub(paste(j,".",sep=""),"",names(which(pmat[grep(j,rownames(pmat)),k]==2)))])
         if(prod1 > 0){
           if(cons1 > 0){inter[nrow(inter)+1,c("sp1","sp2","met","producer","consumer","fluxsp1","fluxsp2")] = c(i,i,k,prod1,cons1,flux[[i]][k],flux[[i]][k])}
           if(cons2 > 0){inter[nrow(inter)+1,c("sp1","sp2","met","producer","consumer","fluxsp1","fluxsp2")] = c(i,j,k,prod1,cons2,flux[[i]][k],flux[[j]][k])}
@@ -1959,39 +1961,40 @@ setMethod("findFeeding2", "Eval", function(object, time, mets, rm_own=T, ind_thr
   test = which(paste(inter[,1],inter[,2],sep="_") %in% paste(names(object@specs),names(object@specs),sep="_"))
   if(rm_own && length(test)!=0){inter = inter[-test,]}
   if(collapse){
-    for(i in unique(as.character(inter$mets))){
+    for(i in unique(as.character(inter$met))){
       mind = which(inter$met==i)
       interm = inter[mind,]
       for(j in unique(c(as.character(interm$sp1),as.character(interm$sp2)))){
         prod = which(interm$sp1 == j)
         cons = which(interm$sp2 == j)
         if(length(prod) !=0 && length(cons) != 0){
-          if(interm[prod[1],"producer"] > interm[cons[1],"consumer"]){
+          if(as.numeric(interm[prod[1],"fluxsp1"]) > 0){
             interm = interm[-cons,]
           }else{
             interm = interm[-prod,]
           }
         }
-        inter = rbind(inter,interm)
       }
+      inter = rbind(inter,interm)
       inter = inter[-mind,]
     }
+    rminter = unique(which(as.numeric(inter$fluxsp1)<=0),which(as.numeric(inter$fluxsp2)>0))
+    if(length(rminter)!=0){inter = inter[-rminter,]}
   }
-  if(ind_threshold>1){
-    rmtr <- unique(c(which(as.numeric(inter$producer)<ind_threshold),which(as.numeric(inter$consumer)<ind_threshold)))
-  }else{
-    rmtr <- unique(c(which(as.numeric(inter$producer)<as.vector(table(object@simlist[[time]]$type))[as.numeric(inter$sp1)]*ind_threshold),
-                     which(as.numeric(inter$consumer)<as.vector(table(object@simlist[[time]]$type))[as.numeric(inter$sp2)]*ind_threshold)))
-  }
-  if(length(rmtr)==nrow(inter)){stop("No significant crossfeeding detected (try to relax ind_threshold).")}
-  if(length(rmtr)!=0){inter = inter[-rmtr,]}
-  vertexatt = data.frame(name = names(object@specs), color=1:length(object@specs), weight=as.vector(table(object@simlist[[time]]$type)))
+  inter$rel_prod = as.numeric(inter$producer)/as.vector(table(object@simlist[[time]]$type))[as.numeric(inter$sp1)]
+  inter$rel_cons = as.numeric(inter$consumer)/as.vector(table(object@simlist[[time]]$type))[as.numeric(inter$sp2)]
+  if(ind_threshold<1){
+    rmtr <- unique(c(which(inter$rel_prod<ind_threshold),which(inter$rel_cons<ind_threshold)))
+    if(length(rmtr)==nrow(inter)){stop("No significant crossfeeding detected (try to relax ind_threshold).")}
+    if(length(rmtr)!=0){inter = inter[-rmtr,]}
+  }else{stop("ind_threshold needs to be between 0 and 1.")}
+  vertexatt = data.frame(name = names(object@specs),color=1:length(object@specs),weight=as.vector(table(object@simlist[[time]]$type)))
   g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE, vertices=vertexatt)
-  l <- igraph::layout.circle(g)
-  plot(g,vertex.size=vertexatt$weight/max(vertexatt$weight)*20,edge.color=rainbow(length(unique(levels(inter$met)[inter$met])))[as.numeric(as.factor(as.character(inter$met)))],
-               edge.arrow.size=0.5,edge.width=2,layout=l)
-  legend("bottomright",legend=unique(levels(inter$met)[inter$met]),col=rainbow(length(unique(levels(inter$met)[inter$met]))), pch=19, cex=0.7)
-  return(g)
+  l <- igraph::layout.kamada.kawai(g)
+  plot(g,vertex.size=vertexatt$weight/max(vertexatt$weight)*20,edge.color=rainbow(length(levels(inter$met)))[as.numeric(inter$met)],
+       edge.arrow.size=0.5,edge.width=(inter$rel_prod*inter$rel_cons)*5,vertex.color=vertexatt$color+1,layout=l)
+  legend("bottomright",legend=levels(inter$met),col=rainbow(length(levels(inter$met))), pch=19, cex=0.7)
+  return(list(inter,g))
 })
 
 
