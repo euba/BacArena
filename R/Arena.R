@@ -691,34 +691,6 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
               arena@phenotypes <<- checkphen[[2]]
             }
             
-            # 2) move
-#             pos <- arena@orgdat[,c('x','y')]
-#             if(!arena@stir && org@speed != 0){
-#               if(org@chem == ''){
-#                 new_pos <- move(org, pos, arena@n, arena@m, j)[j,]
-#               }else{
-#                 new_pos <- chemotaxis(org, arena, j)
-#               }
-#             }
-#             orgdat_j[,c('x','y')] <- new_pos
-#             arena@orgdat[j,] <<- orgdat_j
-            
-            # 3) duplicate
-#             if(!is.na(orgdat_j$growth) & orgdat_j$growth > org@cellweight){
-#               freenb <- emptyHood(org, arena@orgdat[,c('x','y')],
-#                                   arena@n, arena@m, orgdat_j$x, orgdat_j$y)
-#               if(length(freenb) != 0){
-#                 npos = freenb[sample(length(freenb),1)]
-#                 npos = as.numeric(unlist(strsplit(npos,'_')))
-#                 daughter <- orgdat_j
-#                 daughter$growth <- orgdat_j$growth/2
-#                 daughter$x <- npos[1]
-#                 daughter$y <- npos[2]
-#                 arena@orgdat[nrow(arena@orgdat)+1,] <<- daughter
-#                 orgdat_j$growth <- orgdat_j$growth/2
-#               }
-#             }
-            
             # 4) update orgdat and sublb
             arena@orgdat[j,] <<- orgdat_j
             sublb[j,] <<-  sublb_j
@@ -733,21 +705,6 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       movementCpp(arena@orgdat, arena@n, arena@m) # call by ref
       arena@orgdat <- duplicateCpp(arena@orgdat, arena@n, arena@m, lapply(arena@specs, function(x){x@cellweight})) # call by val
 
-      
-#       parallel_sim <- parallel::parLapply(parallelCluster, 1:nrow(arena@orgdat),function(j){
-#       #parallel_sim <- lapply(1:nrow(arena@orgdat),function(j){
-#         org <- arena@specs[[arena@orgdat[j,'type']]]
-#         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
-#         simbac <- simBac_par(org, arena, j, sublb, bacnum)
-#         neworgdat <- simbac[[1]]
-#         sublb <- simbac[[2]]
-#         fbasol <- simbac[[3]]
-#         list(neworgdat, sublb, fbasol)
-#       })
-
-      
-      #browser()
-      
       # delete dead organisms
       sublb[,arena@mediac] <- sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
       test <- is.na(arena@orgdat$growth)
