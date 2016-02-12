@@ -656,16 +656,14 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
           # 2.1.1) group task (each core gets one)
           groups <- split(seq_len(splited_size), cut(seq_len(splited_size), parallel::detectCores()-1))
           # 2.1.2) paralel loop
-          #sol <- parallel::parLapply(parallelCluster, groups, function(g){
+          #parallel_sol <- lapply(groups, function(g){
           parallel_sol <- parallel::parLapply(parallelCluster, groups, function(g){
                                       # 2.1.2.1) critical step: create lpobject for each core 
                                       #(otherwise pointer will corrupt in warm-started optimization)
                                       model <- arena@specs[[spec_nr]]@model
                                       lpobject <- sybil::sysBiolAlg(model, algorithm="fba", solver="glpkAPI")
                                       # 2.1.2.2) 
-                                      #lapply(g, function(i) sybil::optimizeProb(lpobject))
                                       lapply(g, function(i){
-                                          #sybil::optimizeProb(lpobject)
                                           org <- arena@specs[[spec_nr]]
                                           bacnum = round((arena@scale/(org@cellarea*10^(-8))))
                                           j <- splited_species$nr[i]
@@ -728,16 +726,13 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
           })
         # 2.2) in case of small splited data frame do seriell work
         }else{
-          
+          stop("to be done")
         }
       })
       arena@orgdat <- arena@orgdat[,-which(colnames(arena@orgdat)=="nr")] # remove dummy numbering
-      
       movementCpp(arena@orgdat, arena@n, arena@m) # call by ref
       arena@orgdat <- duplicateCpp(arena@orgdat, arena@n, arena@m, lapply(arena@specs, function(x){x@cellweight})) # call by val
-      
-      
-      
+
       
 #       parallel_sim <- parallel::parLapply(parallelCluster, 1:nrow(arena@orgdat),function(j){
 #       #parallel_sim <- lapply(1:nrow(arena@orgdat),function(j){
@@ -753,13 +748,16 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       
       #browser()
       
+      # delete dead organisms
       sublb[,arena@mediac] <- sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
       test <- is.na(arena@orgdat$growth)
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       rm("test")
     }
     
-    arena <- diffuse(arena, sublb, lrw)
+    diff_res <- diffuse(arena, sublb, lrw)
+    arena <- diff_res[[1]]
+    sublb <- diff_res[[2]]
 
     addEval(evaluation, arena)
     if(reduce && i<time){evaluation = redEval(evaluation)}
@@ -808,7 +806,7 @@ setMethod("diffuse", "Arena", function(object, sublb, lrw){
   }else{
     sublb <- stirEnv(arena, sublb)
   }
-  return(arena)
+  return(list(arena, sublb))
 })
 
 
