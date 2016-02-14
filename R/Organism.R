@@ -235,6 +235,7 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
   fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
   #fbasl <- sybil::optimizeProb(object@model, react=1:length(lb), ub=ub, lb=lb, retOptSol=FALSE)
   names(fbasl$fluxes) <- names(object@lbnd)
+  if(is.na(fbasl$obj)){fbasl$obj <- 0}
   eval.parent(substitute(object@fbasol <- fbasl))
 })
 
@@ -252,6 +253,7 @@ setMethod("optimizeLP_par", "Organism", function(object, lpob=object@lpobj, lb=o
     #error = function(e) print(e)
   #)
   names(fbasl$fluxes) <- names(object@lbnd)
+  if(is.na(fbasl$obj)){fbasl$obj <- 0}
   return(fbasl)
 })
 
@@ -274,7 +276,7 @@ setGeneric("consume", function(object, sublb, cutoff=1e-6, bacnum){standardGener
 #' @export
 #' @rdname consume
 setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum){
-  if(object@fbasol$obj>=cutoff && !is.na(object@fbasol$obj)){
+  if(object@fbasol$obj>=cutoff){
     flux = object@fbasol$fluxes[object@medium]*bacnum #scale flux to whole population size
     flux = na.omit(ifelse(abs(flux)<=cutoff,NA,flux))
     sublb[names(flux)] = round(sublb[names(flux)]+flux, 6)

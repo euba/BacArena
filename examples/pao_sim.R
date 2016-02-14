@@ -242,18 +242,27 @@ plot(pop[,c('x','y')],xlim=c(0,evalsim@n),ylim=c(0,evalsim@m),xlab='',ylab='',
 
 ##############################################################
 
+load('P:/BACARENA/RESULTS/POA/simlist_poa.RData')
+
 library(scales)
 library(ggplot2)
 library(reshape2)
 library(RColorBrewer)
 
-pop = matrix(0,nrow=length(simlist),ncol=length(simlist[[1]]@simlist))
-phenlist = lapply(c('dead',apply(getPhenoMat(simlist[[1]]),1,function(x){paste(x,collapse='')})),function(x){
-  return(matrix(0,nrow=length(simlist),ncol=length(simlist[[1]]@simlist)))
+lapply(simlist,function(x){
+  
 })
-names(phenlist) = c('dead',apply(getPhenoMat(simlist[[1]]),1,function(x){paste(x,collapse='')}))
-subs = lapply(which(simlist[[1]]@subchange!=0),function(x){
-  return(matrix(0,nrow=length(simlist),ncol=length(simlist[[1]]@simlist)))
+
+pmat = getPhenoMat((simlist[[1]]))
+
+
+pop = matrix(0,nrow=length(simlist),ncol=length(simlist[[3]]@simlist))
+phenlist = lapply(c('dead',apply(getPhenoMat(simlist[[3]]),1,function(x){paste(x,collapse='')})),function(x){
+  return(matrix(0,nrow=length(simlist),ncol=length(simlist[[3]]@simlist)))
+})
+names(phenlist) = c('dead',apply(getPhenoMat(simlist[[3]]),1,function(x){paste(x,collapse='')}))
+subs = lapply(which(simlist[[3]]@subchange!=0),function(x){
+  return(matrix(0,nrow=length(simlist),ncol=length(simlist[[3]]@simlist)))
 })
 for(i in 1:length(simlist)){
   dat = plotCurves(simlist[[i]],retdata=T) 
