@@ -501,10 +501,9 @@ setMethod("checkPhen_par", "Arena", function(object, org, cutoff=1e-6, fbasol){
       pind = length(phensel)+1
       names(pvec) = tspec
       return(list(pind, c(phenc,pvec)))
-    }else{
-      return(list(pind, NULL))
     }
   }
+  return(list(pind, NULL))
 })
 
 
@@ -648,7 +647,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       # 1) split orgdat into a data.frames for each species 
       split_orgdat <- split(arena@orgdat, as.factor(arena@orgdat$type))
       # 2) iterate over all species (each has a entry in splited data.frame)
-      lapply(length(split_orgdat), function(spec_nr){
+      lapply(seq_len(length(split_orgdat)), function(spec_nr){
         splited_species <- split_orgdat[[spec_nr]]
         splited_size <- dim(splited_species)[1]
         # 2.1) in case of big splited data frame go for parallel
@@ -678,23 +677,26 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
           #
           # Methods which cannot run in parallel
           #
-          lapply(1:length(parallel_sol), function(j){
-            orgdat_j <- parallel_sol[[j]][[1]]
-            sublb_j  <- parallel_sol[[j]][[2]]
-            fbasol_j <- parallel_sol[[j]][[3]]
-            org <- arena@specs[[arena@orgdat[j,'type']]]
-            
+          lapply(1:length(parallel_sol), function(i){
+            j <- splited_species$nr[i] # indexing in orgdat (not equal i due to parallel split)
+            orgdat_i <- parallel_sol[[i]][[1]]
+            sublb_i  <- parallel_sol[[i]][[2]]
+            fbasol_i <- parallel_sol[[i]][[3]]
+            org <- arena@specs[[orgdat_i[["type"]]]]
+
             # 1) find phenotypes
-            checkphen <- checkPhen_par(arena, org, fbasol=fbasol_j) # could not be parallelized?!
-            orgdat_j["phenotype"] <- as.integer(checkphen[[1]])
+            checkphen <- checkPhen_par(arena, org, fbasol=fbasol_i) # could not be parallelized?!
+            #browser()
+          
+            orgdat_i["phenotype"] <- as.integer(checkphen[[1]])
             if(length(checkphen[[2]])!= 0){
               arena@phenotypes <<- checkphen[[2]]
             }
             
             # 4) update orgdat and sublb
-            arena@orgdat[j,] <<- orgdat_j
-            sublb[j,] <<-  sublb_j
-            arena@mflux[[org@type]] <<- arena@mflux[[org@type]] + fbasol_j$fluxes # remember active fluxes
+            arena@orgdat[j,] <<- orgdat_i
+            sublb[j,] <<-  sublb_i
+            arena@mflux[[org@type]] <<- arena@mflux[[org@type]] + fbasol_i$fluxes # remember active fluxes
           })
         # 2.2) in case of small splited data frame do seriell work
         }else{
@@ -715,6 +717,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
     diff_res <- diffuse(arena, sublb, lrw)
     arena <- diff_res[[1]]
     sublb <- diff_res[[2]]
+    rm("diff_res")
 
     addEval(evaluation, arena)
     if(reduce && i<time){evaluation = redEval(evaluation)}
