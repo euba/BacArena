@@ -635,7 +635,10 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
   sublb <- getSublb(arena)
   
   
-  parallelCluster <- parallel::makeCluster(parallel::detectCores()-1, type="FORK") 
+  #parallelCluster <- parallel::makeCluster(parallel::detectCores()-1, type="FORK") 
+  cluster_size <- 4
+  #parallelCluster <- parallel::makeCluster(cluster_size, type="FORK") 
+
   
   for(i in 1:time){
     arena@orgdat["nr"] <- seq_len(dim(arena@orgdat)[1]) # dummy numbering
@@ -647,16 +650,17 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       # 1) split orgdat into a data.frames for each species 
       split_orgdat <- split(arena@orgdat, as.factor(arena@orgdat$type))
       # 2) iterate over all species (each has a entry in splited data.frame)
-      lapply(seq_len(length(split_orgdat)), function(spec_nr){
+      lapply(1:length(split_orgdat), function(spec_nr){
         splited_species <- split_orgdat[[spec_nr]]
         splited_size <- dim(splited_species)[1]
         # 2.1) in case of big splited data frame go for parallel
         if(splited_size >= 1){ # ATTENTION: magic number, to be defined according to benchmark! (treshold from which parallel is faster than seriell)
           # 2.1.1) group task (each core gets one)
-          groups <- split(seq_len(splited_size), cut(seq_len(splited_size), parallel::detectCores()-1))
+          groups <- split(seq_len(splited_size), cut(seq_len(splited_size), cluster_size))
           # 2.1.2) paralel loop
           #parallel_sol <- lapply(groups, function(g){
-          parallel_sol <- parallel::parLapply(parallelCluster, groups, function(g){
+          #parallel_sol <- parallel::parLapply(parallelCluster, groups, function(g){
+          parallel_sol <- parallel::mclapply(groups, function(g){
                                       # 2.1.2.1) critical step: create lpobject for each core 
                                       #(otherwise pointer will corrupt in warm-started optimization)
                                       model <- arena@specs[[spec_nr]]@model
@@ -672,7 +676,8 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
                                           fbasol <- simbac[[3]]
                                           list(neworgdat, sublb, fbasol)
                                         })
-                                    })
+                                    #})
+                                      }, mc.cores=cluster_size)
           parallel_sol <- unlist(parallel_sol, recursive=FALSE)
           #
           # Methods which cannot run in parallel
@@ -697,6 +702,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
             arena@orgdat[j,] <<- orgdat_i
             sublb[j,] <<-  sublb_i
             arena@mflux[[org@type]] <<- arena@mflux[[org@type]] + fbasol_i$fluxes # remember active fluxes
+            NULL
           })
         # 2.2) in case of small splited data frame do seriell work
         }else{
@@ -726,7 +732,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       break
     }
   }
-  parallel::stopCluster(parallelCluster)
+  #parallel::stopCluster(parallelCluster)
   return(evaluation)
 })
 
