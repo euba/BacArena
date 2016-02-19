@@ -612,8 +612,8 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
 })
 
 
-setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=F, reduce=F){standardGeneric("simEnv_par")})
-setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F){
+setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL){standardGeneric("simEnv_par")})
+setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL){
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
@@ -634,9 +634,11 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
   if(class(object)!="Eval"){addEval(evaluation, arena)}
   sublb <- getSublb(arena)
   
-  
+  if(length(cluster_size)==0){
+    cluster_size <- parallel::detectCores()-1
+  }
   #parallelCluster <- parallel::makeCluster(parallel::detectCores()-1, type="FORK") 
-  cluster_size <- 4
+  
   #parallelCluster <- parallel::makeCluster(cluster_size, type="FORK") 
 
   
