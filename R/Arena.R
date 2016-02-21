@@ -275,7 +275,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
 #' @rdname changeSub
 #'
 #' @param object An object of class Arena.
-#' @param smax A number indicating the maximum substance concentration per grid cell.
+#' @param smax A number or vector of numbers indicating the maximum substance concentration per grid cell.
 #' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
 #' @param unit A character used as chemical unit to set the amount of the substances to be added (valid values are: mmol/cell, mmol/cm2, mmol/arena, mM)
 #' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub}} can be used to modify the concentrations of specific substances.
@@ -293,12 +293,15 @@ setGeneric("changeSub", function(object, smax, mediac, unit="mmol/cell"){standar
 #' @rdname changeSub
 #' @export
 setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell"){
+  if(length(smax)>1 & length(smax) != length(mediac)){
+    stop("Number of substances does not match number of given concentrations")
+  }
   if(sum(mediac %in% names(object@media))==length(mediac)){
     if(unit=="mM"){smax <- (smax*0.01)*object@scale}  # conversion of mMol in mmol/grid_cell
     if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
     if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
     for(i in 1:length(mediac)){
-      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax, id=mediac[i], name=object@media[[mediac[i]]]@name,
+      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=ifelse(length(smax)==1, smax, smax[i]), id=mediac[i], name=object@media[[mediac[i]]]@name,
                                                                   difunc=object@media[[mediac[i]]]@difunc,
                                                                   difspeed=object@media[[mediac[i]]]@difspeed, gridgeometry=object@gridgeometry)))
     }
