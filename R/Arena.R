@@ -1396,9 +1396,8 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
   }else{ # CASE2: plot only substances given by subs
     subs_index <- which(object@mediac %in% subs | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% subs)
     mat_nice <- mat[subs_index,]
-    rownames(mat_nice) <- gsub("\\(e\\)","", gsub("EX_","",subs))
+    rownames(mat_nice) <- gsub("\\(e\\)","", gsub("EX_","",object@mediac[subs_index]))
   }
-  print(mat_nice)
   if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
   matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
           xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of substance in mmol',
