@@ -1372,27 +1372,33 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 #' eval <- simEnv(arena,10)
 #' plotCurves2(eval)
 setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"),
-                                   num=10, phencol=F, dict=NULL){standardGeneric("plotCurves2")})
+                                   num=10, phencol=F, dict=NULL, subs=list()){standardGeneric("plotCurves2")})
 #' @export
 #' @rdname plotCurves2
 setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), 
-                                          num=10, phencol=F, dict=NULL){
+                                          num=10, phencol=F, dict=NULL, subs=list()){
   if(num>length(object@mediac) || num<1) stop("Number of substances invalid")
   # first get the correct (ie. complete) medlist
   prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
   list <- lapply(prelist, function(x){lapply(x, sum)})
   mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
-  #remove substances that should be ignored
-  ignore_subs <- which(object@mediac %in% ignore | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% ignore)
-  if(length(ignore_subs) != 0){
-    mat <- mat[-ignore_subs,]
-    mediac <- object@mediac[-ignore_subs]
-  } else mediac <- object@mediac
   
-  rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
-  mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
-  mat_nice <- tail(mat[order(mat_var),], num)
-  
+  if(length(subs)==0){ # CASE1: plot most varying substances
+    #remove substances that should be ignored
+    ignore_subs <- which(object@mediac %in% ignore | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% ignore)
+    if(length(ignore_subs) != 0){
+      mat <- mat[-ignore_subs,]
+      mediac <- object@mediac[-ignore_subs]
+    } else mediac <- object@mediac
+    rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
+    mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
+    mat_nice <- tail(mat[order(mat_var),], num)
+  }else{ # CASE2: plot only substances given by subs
+    subs_index <- which(object@mediac %in% subs | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% subs)
+    mat_nice <- mat[subs_index,]
+    rownames(mat_nice) <- gsub("\\(e\\)","", gsub("EX_","",subs))
+  }
+  print(mat_nice)
   if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
   matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
           xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of substance in mmol',
