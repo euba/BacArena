@@ -249,12 +249,8 @@ library(ggplot2)
 library(reshape2)
 library(RColorBrewer)
 
-lapply(simlist,function(x){
-  
-})
-
-pmat = getPhenoMat((simlist[[1]]))
-
+modelP
+pmat = getPhenoMat(simlist[[3]])
 
 pop = matrix(0,nrow=length(simlist),ncol=length(simlist[[3]]@simlist))
 phenlist = lapply(c('dead',apply(getPhenoMat(simlist[[3]]),1,function(x){paste(x,collapse='')})),function(x){
@@ -329,7 +325,7 @@ ggplot(phendat, aes(x=time, y=mean, colour=Phenotypes, group=Phenotypes)) +
     axis.ticks = element_line(size=1,color='black'),
     plot.title = element_text(size=20)) #1200x400           # Position legend in bottom right
 
-evalsim = simlist[[1]]
+evalsim = simlist[[4]]
 phen = getPhenoMat(evalsim)[-1,]
 i = 48*2 #30,40,45,60,96
 pop = evalsim@simlist[[i+1]]
