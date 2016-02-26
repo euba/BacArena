@@ -275,7 +275,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
 #' @rdname changeSub
 #'
 #' @param object An object of class Arena.
-#' @param smax A number indicating the maximum substance concentration per grid cell.
+#' @param smax A number or vector of numbers indicating the maximum substance concentration per grid cell.
 #' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
 #' @param unit A character used as chemical unit to set the amount of the substances to be added (valid values are: mmol/cell, mmol/cm2, mmol/arena, mM)
 #' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub}} can be used to modify the concentrations of specific substances.
@@ -293,12 +293,15 @@ setGeneric("changeSub", function(object, smax, mediac, unit="mmol/cell"){standar
 #' @rdname changeSub
 #' @export
 setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell"){
+  if(length(smax)>1 & length(smax) != length(mediac)){
+    stop("Number of substances does not match number of given concentrations")
+  }
   if(sum(mediac %in% names(object@media))==length(mediac)){
     if(unit=="mM"){smax <- (smax*0.01)*object@scale}  # conversion of mMol in mmol/grid_cell
     if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
     if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
     for(i in 1:length(mediac)){
-      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax, id=mediac[i], name=object@media[[mediac[i]]]@name,
+      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=ifelse(length(smax)==1, smax, smax[i]), id=mediac[i], name=object@media[[mediac[i]]]@name,
                                                                   difunc=object@media[[mediac[i]]]@difunc,
                                                                   difspeed=object@media[[mediac[i]]]@difspeed, gridgeometry=object@gridgeometry)))
     }
@@ -612,8 +615,8 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
 })
 
 
-setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=F, reduce=F){standardGeneric("simEnv_par")})
-setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F){
+setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL){standardGeneric("simEnv_par")})
+setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL){
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
@@ -634,8 +637,13 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
   if(class(object)!="Eval"){addEval(evaluation, arena)}
   sublb <- getSublb(arena)
   
+  if(length(cluster_size)==0){
+    cluster_size <- parallel::detectCores()-1
+  }
+  #parallelCluster <- parallel::makeCluster(parallel::detectCores()-1, type="FORK") 
   
-  parallelCluster <- parallel::makeCluster(parallel::detectCores()-1, type="FORK") 
+  #parallelCluster <- parallel::makeCluster(cluster_size, type="FORK") 
+
   
   for(i in 1:time){
     arena@orgdat["nr"] <- seq_len(dim(arena@orgdat)[1]) # dummy numbering
@@ -647,16 +655,17 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       # 1) split orgdat into a data.frames for each species 
       split_orgdat <- split(arena@orgdat, as.factor(arena@orgdat$type))
       # 2) iterate over all species (each has a entry in splited data.frame)
-      lapply(seq_len(length(split_orgdat)), function(spec_nr){
+      lapply(1:length(split_orgdat), function(spec_nr){
         splited_species <- split_orgdat[[spec_nr]]
         splited_size <- dim(splited_species)[1]
         # 2.1) in case of big splited data frame go for parallel
         if(splited_size >= 1){ # ATTENTION: magic number, to be defined according to benchmark! (treshold from which parallel is faster than seriell)
           # 2.1.1) group task (each core gets one)
-          groups <- split(seq_len(splited_size), cut(seq_len(splited_size), parallel::detectCores()-1))
+          groups <- split(seq_len(splited_size), cut(seq_len(splited_size), cluster_size))
           # 2.1.2) paralel loop
           #parallel_sol <- lapply(groups, function(g){
-          parallel_sol <- parallel::parLapply(parallelCluster, groups, function(g){
+          #parallel_sol <- parallel::parLapply(parallelCluster, groups, function(g){
+          parallel_sol <- parallel::mclapply(groups, function(g){
                                       # 2.1.2.1) critical step: create lpobject for each core 
                                       #(otherwise pointer will corrupt in warm-started optimization)
                                       model <- arena@specs[[spec_nr]]@model
@@ -672,7 +681,8 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
                                           fbasol <- simbac[[3]]
                                           list(neworgdat, sublb, fbasol)
                                         })
-                                    })
+                                    #})
+                                      }, mc.cores=cluster_size)
           parallel_sol <- unlist(parallel_sol, recursive=FALSE)
           #
           # Methods which cannot run in parallel
@@ -697,6 +707,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
             arena@orgdat[j,] <<- orgdat_i
             sublb[j,] <<-  sublb_i
             arena@mflux[[org@type]] <<- arena@mflux[[org@type]] + fbasol_i$fluxes # remember active fluxes
+            NULL
           })
         # 2.2) in case of small splited data frame do seriell work
         }else{
@@ -726,7 +737,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       break
     }
   }
-  parallel::stopCluster(parallelCluster)
+  #parallel::stopCluster(parallelCluster)
   return(evaluation)
 })
 
@@ -1364,27 +1375,32 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 #' eval <- simEnv(arena,10)
 #' plotCurves2(eval)
 setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"),
-                                   num=10, phencol=F, dict=NULL){standardGeneric("plotCurves2")})
+                                   num=10, phencol=F, dict=NULL, subs=list()){standardGeneric("plotCurves2")})
 #' @export
 #' @rdname plotCurves2
 setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), 
-                                          num=10, phencol=F, dict=NULL){
+                                          num=10, phencol=F, dict=NULL, subs=list()){
   if(num>length(object@mediac) || num<1) stop("Number of substances invalid")
   # first get the correct (ie. complete) medlist
   prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
   list <- lapply(prelist, function(x){lapply(x, sum)})
   mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
-  #remove substances that should be ignored
-  ignore_subs <- which(object@mediac %in% ignore | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% ignore)
-  if(length(ignore_subs) != 0){
-    mat <- mat[-ignore_subs,]
-    mediac <- object@mediac[-ignore_subs]
-  } else mediac <- object@mediac
   
-  rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
-  mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
-  mat_nice <- tail(mat[order(mat_var),], num)
-  
+  if(length(subs)==0){ # CASE1: plot most varying substances
+    #remove substances that should be ignored
+    ignore_subs <- which(object@mediac %in% ignore | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% ignore)
+    if(length(ignore_subs) != 0){
+      mat <- mat[-ignore_subs,]
+      mediac <- object@mediac[-ignore_subs]
+    } else mediac <- object@mediac
+    rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
+    mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
+    mat_nice <- tail(mat[order(mat_var),], num)
+  }else{ # CASE2: plot only substances given by subs
+    subs_index <- which(object@mediac %in% subs | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% subs)
+    mat_nice <- mat[subs_index,]
+    rownames(mat_nice) <- gsub("\\(e\\)","", gsub("EX_","",object@mediac[subs_index]))
+  }
   if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
   matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
           xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of substance in mmol',
