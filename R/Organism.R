@@ -781,6 +781,10 @@ setGeneric("simBac_par", function(object, arena, j, sublb, bacnum, lpobject){sta
 setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum, lpobject){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
+  # lactose 895
+  # glucose 849
+  if(lobnd[849] < -1) lobnd[895] <- 0
+  
   
   #fbasol <- optimizeLP_par(object, lb=lobnd)
   fbasol <- sybil::optimizeProb(lpobject, react=1:length(lobnd), ub=object@ubnd, lb=lobnd)#,
