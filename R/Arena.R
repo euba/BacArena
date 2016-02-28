@@ -1907,8 +1907,8 @@ setGeneric("findFeeding2", function(object, time, mets, rm_own=T, ind_threshold=
 #' @export
 #' @rdname findFeeding2
 setMethod("findFeeding2", "Eval", function(object, time, mets, rm_own=T, ind_threshold=0, collapse=F){
-  pmat = as.matrix(getPhenoMat(object,time=time)[,unique(c(mets,products))])
-  colnames(pmat) = unique(c(mets,products))
+  pmat = as.matrix(getPhenoMat(object,time=time)[,mets])
+  colnames(pmat) = mets
   time = time+1
   flux = lapply(object@mfluxlist[[time]], function(x){return(x[mets])})
   inter = data.frame(sp1=factor(levels=names(object@specs)),sp2=factor(levels=names(object@specs)),met=factor(levels=mets),
