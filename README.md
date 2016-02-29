@@ -25,7 +25,7 @@ Features:
 
 ## Installation
 
-- Install the latest release:
+- Install the latest release: 
   ```r
 install.packages("BacArena")
 ```
@@ -36,7 +36,10 @@ library(devtools)
 install_github("euba/bacarena")
 ```
 
-- Special hints for windows user
+- Special hints for linux user:
+  - glpk header files needed, e.g. for debian install package: libglpk-dev
+
+- Special hints for windows user:
   - Besides [R](https://cran.r-project.org/bin/windows/base/) you need to install [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
 
 
