@@ -27,6 +27,7 @@ globalVariables(c("diffuseNaiveCpp","diffuseSteveCpp"))
 #' @slot seed An integer refering to the random number seed used to be reproducible
 #' @slot scale A numeric defining the scale factor used for intern unit conversion.
 #' @slot models A list containing Objects of class sybil::modelorg which represent the genome scale metabolic models
+#' @slot occupyM A matrix indicating grid cells that are obstacles
 setClass("Arena",
          representation(
            orgdat="data.frame",
@@ -44,7 +45,8 @@ setClass("Arena",
            Ly="numeric",
            seed="numeric",
            scale="numeric",
-           models="list"
+           models="list",
+           occupyM="matrix"
         ),
         prototype(
           orgdat = data.frame(growth=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
@@ -76,8 +78,9 @@ setClass("Arena",
 Arena <- function(Lx=0.05, Ly=0.05, n=100, m=100, ...){
   gridgeometry = list(grid2D=ReacTran::setup.grid.2D(ReacTran::setup.grid.1D(x.up = 0, L = Lx, N = n), 
                                                      ReacTran::setup.grid.1D(x.up = 0, L = Ly, N = m)))
-  scale=(Lx*Ly)/(n*m)
-  new("Arena", Lx=Lx, Ly=Ly, n=n, m=m, scale=scale, gridgeometry=gridgeometry, ...)
+  scale   <- (Lx*Ly)/(n*m)
+  occupyM <- matrix(0, nrow=n, ncol=m)
+  new("Arena", Lx=Lx, Ly=Ly, n=n, m=m, scale=scale, gridgeometry=gridgeometry, occupyM=occupyM, ...)
 }
 
 
@@ -143,7 +146,7 @@ setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=NA, 
 #' @export
 #' @rdname addOrg
 setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=NA, mean=0.489, sd=0.132){
-  if(amount+nrow(object@orgdat) > object@n*object@m){
+  if(amount+nrow(object@orgdat) > object@n*object@m-dim(which(arena@occupyM>0, arr.ind = TRUE))[1]){
     stop("More individuals than space on the grid")
   }
   bacnum <- round(arena@scale/(specI@cellarea*10^(-8)))
@@ -170,6 +173,8 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
     cmbs = expand.grid(1:n,1:m)
     rownames(cmbs) = paste(cmbs[,1],cmbs[,2],sep='_')
     taken <- paste(object@orgdat$x,object@orgdat$y,sep='_')
+    obstacles <- which(object@occupyM>0, arr.ind = TRUE) 
+    taken <- c(taken, paste(obstacles[,1], obstacles[,2],sep="_")) # extend taken to contain obstacle grid cells
     if(length(taken)!=0){
       cmbs <- cmbs[-which(rownames(cmbs) %in% taken),]
     }
@@ -715,8 +720,8 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
         }
       })
       arena@orgdat <- arena@orgdat[,-which(colnames(arena@orgdat)=="nr")] # remove dummy numbering
-      movementCpp(arena@orgdat, arena@n, arena@m) # call by ref
-      arena@orgdat <- duplicateCpp(arena@orgdat, arena@n, arena@m, lapply(arena@specs, function(x){x@cellweight})) # call by val
+      movementCpp(arena@orgdat, arena@n, arena@m, arena@occupyM) # call by ref
+      arena@orgdat <- duplicateCpp(arena@orgdat, arena@n, arena@m, lapply(arena@specs, function(x){x@cellweight}), arena@occupyM) # call by val
 
       # delete dead organisms
       sublb[,arena@mediac] <- sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell

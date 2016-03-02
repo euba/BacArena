@@ -518,6 +518,7 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
 #' @param n A number giving the horizontal size of the environment.
 #' @param m A number giving the vertical size of the environment.
 #' @param pos A dataframe with all occupied x and y positions 
+#' @param occupyM A matrix indicating grid cells that are obstacles
 #' @details Organisms move in a random position the Moore neighbourhood, which is not occupied by other individuals. If there is no free space the individuals stays in the same position.
 #' @seealso \code{\link{Organism-class}}, \code{\link{emptyHood}}
 #' @examples
@@ -528,10 +529,10 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' move(bac,n=20,m=20,j=1,pos=arena@orgdat[,c('x','y')])
-setGeneric("move", function(object, pos, n, m, j){standardGeneric("move")})
+setGeneric("move", function(object, pos, n, m, j, occupyM){standardGeneric("move")})
 #' @export
 #' @rdname move
-setMethod("move", "Organism", function(object, pos, n, m, j){
+setMethod("move", "Organism", function(object, pos, n, m, j, occupyM){
   if(object@speed == 1){
     freenb <- emptyHood(object, pos, n, m, pos[j,1], pos[j,2])
   }else{
@@ -540,7 +541,9 @@ setMethod("move", "Organism", function(object, pos, n, m, j){
   if(length(freenb) != 0){
     npos = freenb[sample(length(freenb),1)]
     npos = as.numeric(unlist(strsplit(npos,'_')))
-    pos[j,] = npos
+    if(occupyM[npos[1], npos[2]] == 0){ # check if there is no obstacle
+      pos[j,] = npos
+    }
   }
   return(pos)
 })
@@ -615,6 +618,7 @@ setMethod("chem", "Bac", function(object){return(object@chem)})
 #' @param object An object of class Bac.
 #' @param population An object of class Arena.
 #' @param j The number of the iteration of interest.
+#' @param occupyM A matrix indicating grid cells that are obstacles
 #' @return Boolean variable of the \code{j}th individual indicating if individual died.
 #' @details Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value. Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value
 #' @seealso \code{\link{Bac-class}}, \code{\link{growLin}} and \code{\link{growExp}}
@@ -626,10 +630,10 @@ setMethod("chem", "Bac", function(object){return(object@chem)})
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' growth(bac,arena,1)
-setGeneric("growth", function(object, population, j){standardGeneric("growth")})
+setGeneric("growth", function(object, population, j, occupyM){standardGeneric("growth")})
 #' @export
 #' @rdname growth
-setMethod("growth", "Bac", function(object, population, j){
+setMethod("growth", "Bac", function(object, population, j, occupyM){
   neworgdat <- population@orgdat
   popvec <- neworgdat[j,]
   switch(object@growtype,
@@ -644,12 +648,14 @@ setMethod("growth", "Bac", function(object, population, j){
     if(length(freenb) != 0){
       npos = freenb[sample(length(freenb),1)]
       npos = as.numeric(unlist(strsplit(npos,'_')))
-      daughter <- popvec
-      daughter$growth <- popvec$growth/2
-      daughter$x <- npos[1]
-      daughter$y <- npos[2]
-      neworgdat[nrow(neworgdat)+1,] <- daughter
-      neworgdat[j,'growth'] <- popvec$growth/2
+      if(occupyM[npos[1], npos[2]] == 0){ # check if there is no obstacle
+        daughter <- popvec
+        daughter$growth <- popvec$growth/2
+        daughter$x <- npos[1]
+        daughter$y <- npos[2]
+        neworgdat[nrow(neworgdat)+1,] <- daughter
+        neworgdat[j,'growth'] <- popvec$growth/2
+      }
     }
   }
   else if(popvec$growth < object@growthlimit){
@@ -752,7 +758,7 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum){
   
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum))) #scale consumption to the number of cells?
 
-  dead <- growth(object, arena, j)
+  dead <- growth(object, arena, j, arena@occupyM)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
   
   type <- object@type
@@ -764,7 +770,7 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum){
   pos <- arena@orgdat[,c('x','y')]
   if(!dead && !arena@stir && object@speed != 0){
     if(object@chem == ''){
-      mov_pos <- move(object, pos, arena@n, arena@m, j)
+      mov_pos <- move(object, pos, arena@n, arena@m, j, arena@occupyM)
       arena@orgdat[,c('x','y')] <- mov_pos
     }else{
       chemo_pos <- chemotaxis(object, arena, j)
@@ -781,10 +787,6 @@ setGeneric("simBac_par", function(object, arena, j, sublb, bacnum, lpobject){sta
 setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum, lpobject){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
-  # lactose 895
-  # glucose 849
-  if(lobnd[849] < -1) lobnd[895] <- 0
-  
   
   #fbasol <- optimizeLP_par(object, lb=lobnd)
   fbasol <- sybil::optimizeProb(lpobject, react=1:length(lobnd), ub=object@ubnd, lb=lobnd)#,
