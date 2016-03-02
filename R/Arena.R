@@ -302,7 +302,6 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
     stop("Number of substances does not match number of given concentrations")
   }
   if(length(setdiff(mediac, names(object@media))) == 0 ){
-    print("test")
     if(unit=="mM"){smax <- (smax*0.01)*object@scale}  # conversion of mMol in mmol/grid_cell
     if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
     if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
@@ -1400,7 +1399,8 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
       mediac <- object@mediac[-ignore_subs]
     } else mediac <- object@mediac
     rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
-    mat_var  <- rowSums((mat - rowMeans(mat))^2)/(dim(mat)[2] - 1)
+    mat_var  <- apply(mat, 1, var)
+    
     mat_nice <- tail(mat[order(mat_var),], num)
   }else{ # CASE2: plot only substances given by subs
     subs_index <- which(object@mediac %in% subs | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% subs)
