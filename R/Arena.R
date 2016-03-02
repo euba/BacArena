@@ -301,11 +301,12 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
   if(length(smax)>1 & length(smax) != length(mediac)){
     stop("Number of substances does not match number of given concentrations")
   }
-  if(sum(mediac %in% names(object@media))==length(mediac)){
+  if(length(setdiff(mediac, names(object@media))) == 0 ){
+    print("test")
     if(unit=="mM"){smax <- (smax*0.01)*object@scale}  # conversion of mMol in mmol/grid_cell
     if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
     if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
-    for(i in 1:length(mediac)){
+    for(i in which(mediac %in% object@mediac)){
       eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=ifelse(length(smax)==1, smax, smax[i]), id=mediac[i], name=object@media[[mediac[i]]]@name,
                                                                   difunc=object@media[[mediac[i]]]@difunc,
                                                                   difspeed=object@media[[mediac[i]]]@difspeed, gridgeometry=object@gridgeometry)))
