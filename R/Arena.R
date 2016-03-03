@@ -908,7 +908,14 @@ setMethod("dat2mat", "Arena", function(object){
   return(newoccmat)
 })
 
-
+#' @title Function for searching a keyword in arena organisms and media
+#'
+#' @description The generic function \code{findInArena} tries to find information (e.g. full names) about a specific keyword
+#' @export
+#' @rdname findInArena
+#'
+#' @param object An object of class Arena.
+#' @param pattern A pattern for searching
 setGeneric("findInArena", function(object, pattern){standardGeneric("findInArena")})
 #' @export
 #' @rdname findInArena
