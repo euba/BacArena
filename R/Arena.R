@@ -542,6 +542,7 @@ setGeneric("simEnv", function(object, time, lrw=NULL, continue=F, reduce=F){stan
 #' @export
 #' @rdname simEnv
 setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F){
+  if(length(object@media)==0) stop("No media present in Arena!")
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
@@ -622,6 +623,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
 
 setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL){standardGeneric("simEnv_par")})
 setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL){
+  if(length(object@media)==0) stop("No media present in Arena!")
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
