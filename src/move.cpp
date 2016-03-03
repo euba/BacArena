@@ -3,7 +3,7 @@ using namespace Rcpp;
 
 
 // [[Rcpp::export]]
-void movementCpp(DataFrame orgdat, int n, int m){
+void movementCpp(DataFrame orgdat, int n, int m, IntegerMatrix occupyM){
   //ordat data.frame will be changed! (pointer)
   IntegerVector x_vec = orgdat["x"];
   IntegerVector y_vec = orgdat["y"];
@@ -31,7 +31,7 @@ void movementCpp(DataFrame orgdat, int n, int m){
         int pos_x = i + old_x;
         int pos_y = j + old_y;
         if(pos_x > 0 && pos_y > 0 && pos_x <= n && pos_y <= m){
-          if(occ(pos_x-1, pos_y-1) == 0 && pos_x != old_x && pos_y != old_y){
+          if(occ(pos_x-1, pos_y-1) == 0 && (pos_x != old_x || pos_y != old_y)){
             std::pair <int,int> free_pos(pos_x,pos_y);
             list_free.push_back(free_pos);
           }
@@ -42,11 +42,13 @@ void movementCpp(DataFrame orgdat, int n, int m){
       int rnd_element = static_cast<int>(round(Rcpp::as<double>(Rcpp::runif(1, 0, list_free.size()-1))));
       int new_x = list_free[rnd_element].first;
       int new_y = list_free[rnd_element].second;
-      occ(old_x-1, old_y-1) = 0;
-      occ(new_x-1, new_y-1) = 1;
-      x_vec[sel] = new_x;
-      y_vec[sel] = new_y;
-      //std::cout<<old_x<<","<<old_y<<"-->"<<new_x<<","<<new_y<<"\n";
+      if(occupyM(new_x-1, new_y-1)==0){
+        occ(old_x-1, old_y-1) = 0;
+        occ(new_x-1, new_y-1) = 1;
+        x_vec[sel] = new_x;
+        y_vec[sel] = new_y;
+        //std::cout<<old_x<<","<<old_y<<"-->"<<new_x<<","<<new_y<<"\n";
+      }
     }
     z++;
   }
