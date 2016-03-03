@@ -490,6 +490,11 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
   return(pind)
 })
 
+#' @title Function for checking phenotypes in the environment
+#'
+#' @description The generic function \code{checkPhen_par} checks and adds the phenotypes of organisms in the environment.
+#' @export
+#' @rdname checkPhen_par
 setGeneric("checkPhen_par", function(object, org, cutoff=1e-6, fbasol){standardGeneric("checkPhen_par")})
 #' @export
 #' @rdname checkPhen_par
@@ -749,8 +754,6 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
 })
 
 setGeneric("diffuse", function(object, sublb, lrw){standardGeneric("diffuse")})
-#' @export
-#' @rdname diffuse
 setMethod("diffuse", "Arena", function(object, sublb, lrw){
   arena <- object
   
@@ -916,6 +919,12 @@ setMethod("dat2mat", "Arena", function(object){
 #'
 #' @param object An object of class Arena.
 #' @param pattern A pattern for searching
+#' @examples
+#' data(Ec_core)
+#' bac <- Bac(Ec_core)
+#' arena <- Arena(n=20,m=20)
+#' addOrg(arena,bac,amount=10)
+#' findInArena(arena, "acetate")
 setGeneric("findInArena", function(object, pattern){standardGeneric("findInArena")})
 #' @export
 #' @rdname findInArena

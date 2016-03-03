@@ -59,3 +59,31 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// duplicateCpp
+DataFrame duplicateCpp(DataFrame orgdat, int n, int m, List cellweight, IntegerMatrix occupyM);
+RcppExport SEXP BacArena_duplicateCpp(SEXP orgdatSEXP, SEXP nSEXP, SEXP mSEXP, SEXP cellweightSEXP, SEXP occupyMSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< DataFrame >::type orgdat(orgdatSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type m(mSEXP);
+    Rcpp::traits::input_parameter< List >::type cellweight(cellweightSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type occupyM(occupyMSEXP);
+    __result = Rcpp::wrap(duplicateCpp(orgdat, n, m, cellweight, occupyM));
+    return __result;
+END_RCPP
+}
+// movementCpp
+void movementCpp(DataFrame orgdat, int n, int m, IntegerMatrix occupyM);
+RcppExport SEXP BacArena_movementCpp(SEXP orgdatSEXP, SEXP nSEXP, SEXP mSEXP, SEXP occupyMSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< DataFrame >::type orgdat(orgdatSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type m(mSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type occupyM(occupyMSEXP);
+    movementCpp(orgdat, n, m, occupyM);
+    return R_NilValue;
+END_RCPP
+}

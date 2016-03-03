@@ -239,6 +239,13 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
   eval.parent(substitute(object@fbasol <- fbasl))
 })
 
+
+#' @title Function for computing the linear programming according to the model structure 
+#'
+#' @description The generic function \code{optimizeLP_par} implements a linear programming based on the problem structure and refined constraints.
+#' @export
+#' @rdname optimizeLP_par
+#' 
 setGeneric("optimizeLP_par", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){standardGeneric("optimizeLP_par")})
 #' @export
 #' @rdname optimizeLP_par
@@ -284,6 +291,12 @@ setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum){
   return(sublb)
 })
 
+
+#' @title Function to account for the consumption and production of substances
+#'
+#' @description The generic function \code{consume_par} implements the consumption and production of substances based on the flux of exchange reactions of organisms
+#' @export
+#' @rdname consume_par
 setGeneric("consume_par", function(object, sublb, cutoff=1e-6, bacnum, fbasol){standardGeneric("consume_par")})
 #' @export
 #' @rdname consume_par
@@ -326,6 +339,11 @@ setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6){
   return(exflux[which(exflux!=0)])
 })
 
+#' @title Function to extract the phenotype of an organism object
+#'
+#' @description The generic function \code{getPhenotype_par} implements an identification of organism phenotypes.
+#' @export
+#' @rdname getPhenotype_par
 setGeneric("getPhenotype_par", function(object, cutoff=1e-6, fbasol){standardGeneric("getPhenotype_par")})
 #' @export
 #' @rdname getPhenotype_par
@@ -362,6 +380,13 @@ setMethod("growLin", "Organism", function(object, growth){
   else grow_accum <- growth - object@deathrate
   return(grow_accum)
 })
+
+#' @title Function for letting organisms grow linearly
+#'
+#' @description The generic function \code{growLin_par} implements a growth model of organisms in their environment.
+#' @export
+#' @rdname growLin_par
+#'
 
 setGeneric("growLin_par", function(object, growth, fbasol){standardGeneric("growLin_par")})
 #' @export
@@ -400,6 +425,12 @@ setMethod("growExp", "Organism", function(object, growth){
   return(grow_accum)
   #return(object@fbasol$obj * growth + growth - object@deathrate)
 })
+
+#' @title Function for letting organisms grow exponentially
+#'
+#' @description The generic function \code{growExp_par} implements a growth model of organisms in their environment.
+#' @export
+#' @rdname growExp_par
 
 setGeneric("growExp_par", function(object, growth, fbasol){standardGeneric("growExp_par")})
 #' @export
@@ -666,6 +697,12 @@ setMethod("growth", "Bac", function(object, population, j, occupyM){
   return(dead)
 })
 
+
+#' @title Function implementing a growth model of a bacterium
+#'
+#' @description The generic function \code{growth_par} implements different growth models for an object of class Bac.
+#' @export
+#' @rdname growth_par
 setGeneric("growth_par", function(object, population, j, fbasol){standardGeneric("growth_par")})
 #' @export
 #' @rdname growth_par
@@ -781,6 +818,12 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum){
   return(arena)
 })
 
+#' @title Function for one simulation iteration for objects of Bac class
+#'
+#' @description The generic function \code{simBac_par} implements all neccessary functions for the individuals to update the complete environment. 
+#' @export
+#' @rdname simBac_par
+#'
 setGeneric("simBac_par", function(object, arena, j, sublb, bacnum, lpobject){standardGeneric("simBac_par")})
 #' @export
 #' @rdname simBac_par
