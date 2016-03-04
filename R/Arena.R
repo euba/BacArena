@@ -675,15 +675,16 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
           # 2.1.1) group task (each core gets one)
           groups <- split(seq_len(splited_size), cut(seq_len(splited_size), cluster_size))
           # 2.1.2) paralel loop
-          #parallel_sol <- lapply(groups, function(g){
+          names(groups) <- NULL
+          parallel_sol <- lapply(groups, function(g){
           #parallel_sol <- parallel::parLapply(parallelCluster, groups, function(g){
-          parallel_sol <- parallel::mclapply(groups, function(g){
+          #parallel_sol <- parallel::mclapply(groups, function(g){
                                       # 2.1.2.1) critical step: create lpobject for each core 
                                       #(otherwise pointer will corrupt in warm-started optimization)
                                       model <- arena@specs[[spec_nr]]@model
                                       lpobject <- sybil::sysBiolAlg(model, algorithm="fba", solver="glpkAPI")
                                       # 2.1.2.2) 
-                                      lapply(g, function(i){
+                                      test <- lapply(g, function(i){
                                           org <- arena@specs[[spec_nr]]
                                           bacnum = round((arena@scale/(org@cellarea*10^(-8))))
                                           j <- splited_species$nr[i]
@@ -691,36 +692,54 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
                                           neworgdat <- simbac[[1]]
                                           sublb <- simbac[[2]]
                                           fbasol <- simbac[[3]]
-                                          list(neworgdat, sublb, fbasol)
+                                          list("neworgdat"=neworgdat, "sublb"=sublb, "fbasol"=fbasol)
                                         })
-                                    #})
-                                      }, mc.cores=cluster_size)
-          parallel_sol <- unlist(parallel_sol, recursive=FALSE)
+                                      #browser()
+                                      list("neworgdat"=sapply(test, with, neworgdat), "sublb"=sapply(test, with, sublb), "fbasol_flux"=sapply(test, with, fbasol$fluxes))
+                                    })
+                                    #  }, mc.cores=cluster_size)
+          
+          tmpnames <- colnames(arena@orgdat)
+          orgdat2 <- data.frame(matrix(unlist(sapply(parallel_sol, with, neworgdat)), ncol=dim(arena@orgdat)[2], byrow=TRUE))
+          colnames(orgdat2) <- tmpnames
+          arena@orgdat <<- orgdat2
+
+          tmpnames <- colnames(sublb)
+          sublb2 <- data.frame(matrix(unlist(sapply(parallel_sol, with, sublb)), ncol=dim(sublb)[2], byrow=TRUE))
+          colnames(sublb2) <- tmpnames
+          sublb <<- sublb2
+          
+          fba_fluxes <- sapply(parallel_sol, with, fbasol_flux)
+          arena@mflux[[names(arena@specs)[[spec_nr]]]] <<- arena@mflux[[names(arena@specs)[[spec_nr]]]] + colSums(matrix(unlist(fba_fluxes), ncol=length(arena@mflux[[names(arena@specs)[[spec_nr]]]]), byrow = TRUE)) # remember active fluxes
+          
+          # TODO: add phenotyp detection cpp
+          
           #
           # Methods which cannot run in parallel
           #
-          lapply(1:length(parallel_sol), function(i){
-            j <- splited_species$nr[i] # indexing in orgdat (not equal i due to parallel split)
-            orgdat_i <- parallel_sol[[i]][[1]]
-            sublb_i  <- parallel_sol[[i]][[2]]
-            fbasol_i <- parallel_sol[[i]][[3]]
-            org <- arena@specs[[orgdat_i[["type"]]]]
-
-            # 1) find phenotypes
-            checkphen <- checkPhen_par(arena, org, fbasol=fbasol_i) # could not be parallelized?!
-            #browser()
           
-            orgdat_i["phenotype"] <- as.integer(checkphen[[1]])
-            if(length(checkphen[[2]])!= 0){
-              arena@phenotypes <<- checkphen[[2]]
-            }
-            
-            # 4) update orgdat and sublb
-            arena@orgdat[j,] <<- orgdat_i
-            sublb[j,] <<-  sublb_i
-            arena@mflux[[org@type]] <<- arena@mflux[[org@type]] + fbasol_i$fluxes # remember active fluxes
-            NULL
-          })
+#           lapply(1:length(parallel_sol), function(i){
+#             j <- splited_species$nr[i] # indexing in orgdat (not equal i due to parallel split)
+#             orgdat_i <- parallel_sol[[i]][[1]]
+#             sublb_i  <- parallel_sol[[i]][[2]]
+#             fbasol_i <- parallel_sol[[i]][[3]]
+#             org <- arena@specs[[orgdat_i[["type"]]]]
+# 
+#             # 1) find phenotypes
+#             checkphen <- checkPhen_par(arena, org, fbasol=fbasol_i) # could not be parallelized?!
+#             #browser()
+#           
+#             orgdat_i["phenotype"] <- as.integer(checkphen[[1]])
+#             if(length(checkphen[[2]])!= 0){
+#               arena@phenotypes <<- checkphen[[2]]
+#             }
+#             
+#             # 4) update orgdat and sublb
+#             arena@orgdat[j,] <<- orgdat_i
+#             sublb[j,] <<-  sublb_i
+#             arena@mflux[[org@type]] <<- arena@mflux[[org@type]] + fbasol_i$fluxes # remember active fluxes
+#             NULL
+#           })
         # 2.2) in case of small splited data frame do seriell work
         }else{
           stop("to be done")
