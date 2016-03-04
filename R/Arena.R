@@ -661,9 +661,11 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
     arena@orgdat["nr"] <- seq_len(dim(arena@orgdat)[1]) # dummy numbering
     cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
+    if(i==2) browser()
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
       sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
   
+      
       # 1) split orgdat into a data.frames for each species 
       split_orgdat <- split(arena@orgdat, as.factor(arena@orgdat$type))
       # 2) iterate over all species (each has a entry in splited data.frame)
@@ -755,11 +757,10 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       rm("test")
     }
-    
-    diff_res <- diffuse(arena, sublb, lrw)
-    arena <- diff_res[[1]]
-    sublb <- diff_res[[2]]
-    rm("diff_res")
+    #diff_res <- diffuse(arena, sublb, lrw)
+    #arena <- diff_res[[1]]
+    #sublb <- diff_res[[2]]
+    #rm("diff_res")
 
     addEval(evaluation, arena)
     if(reduce && i<time){evaluation = redEval(evaluation)}
@@ -779,7 +780,9 @@ setMethod("diffuse", "Arena", function(object, sublb, lrw){
   if(!arena@stir){
     sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
     sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
-    for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
+    
+    parallel_diff <- lapply(seq_along(arena@media), function(j){
+    #for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
       submat <- as.matrix(arena@media[[j]]@diffmat)
       if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
         apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
@@ -795,16 +798,28 @@ setMethod("diffuse", "Arena", function(object, sublb, lrw){
                "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
                "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
                stop("Diffusion function not defined yet.")) 
-        arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
+        #arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
       }
-      sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+      #sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+      sublb_tmp <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+      diffmat_tmp <- Matrix::Matrix(submat, sparse=TRUE)
+      list("sublb"=sublb_tmp, "diffmat"=diffmat_tmp)
+    })
+    
+    sublb2 <- sapply(parallel_diff, with, sublb)
+    sublb2 <- cbind(sublb[,1:2], sublb2)
+    names(sublb2) <- names(sublb)
+    
+    for(j in seq_along(arena@media)){
+      arena@media[[j]]@diffmat <- parallel_diff[[j]]$diffmat
     }
-    sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
-    colnames(sublb) <- c('x','y',arena@mediac)
+    
+    #sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
+    #colnames(sublb) <- c('x','y',arena@mediac)
     #rm("sublb_tmp")
     #rm("submat")
   }else{
-    sublb <- stirEnv(arena, sublb)
+    sublb <- stirEnv(arena, sublb2)
   }
   return(list(arena, sublb))
 })
