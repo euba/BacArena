@@ -653,9 +653,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
     cluster_size <- parallel::detectCores()
   }
   #parallelCluster <- parallel::makeCluster(parallel::detectCores()-1, type="FORK") 
-  
   #parallelCluster <- parallel::makeCluster(cluster_size, type="FORK") 
-
   
   for(i in 1:time){
     arena@orgdat["nr"] <- seq_len(dim(arena@orgdat)[1]) # dummy numbering
@@ -753,22 +751,6 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       
       sublb[,arena@mediac] <- sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
       
-      
-      # update arena@media (sublb values)
-#       apply(sublb, 1, function(entry){
-#         x <- entry[1]
-#         y <- entry[2]
-#         sapply(seq_along(entry[-c(1,2)]),function(med_nr){
-#           med_id <- colnames(sublb)[[med_nr+2]]
-#           arena@media[[med_id]]@diffmat[x,y] <<- entry[[med_nr+2]]
-#           NULL
-#         })
-#         NULL
-#       })
-      # alternative cpp code, armadillo sp_mat matrix, currently lame
-      #new_media <- updateMedia(arena@orgdat, sublb, lapply(arena@media, function(x){x@diffmat}))
-      #lapply(seq_along(arena@media), function(index){arena@media[[index]]@diffmat <<- new_media[[index]]})
-
       # delete dead organisms
       test <- is.na(arena@orgdat$growth)
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
@@ -790,21 +772,9 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
 setGeneric("diffuse", function(object, lrw, cluster_size, sublb){standardGeneric("diffuse")})
 setMethod("diffuse", "Arena", function(object, lrw, cluster_size, sublb){
   arena <- object
-  
-  #sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
-  #sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
-  
   parallel_diff <- parallel::mclapply(seq_along(arena@media), function(j){
   #parallel_diff <- lapply(seq_along(arena@media), function(j){
-    #for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
     submat <- as.matrix(arena@media[[j]]@diffmat)
-    #print(dim(arena@orgdat))
-    #print(dim(sublb))
-    #browser()
-    #if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
-      #apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
-      
-    #}
     updateSubmat(submat, sublb[,c(1:2,j+2)])
     #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
     homogenous = arena@n*arena@m != sum(submat==mean(submat))
@@ -817,30 +787,14 @@ setMethod("diffuse", "Arena", function(object, lrw, cluster_size, sublb){
              "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
              "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
              stop("Diffusion function not defined yet.")) 
-      #arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
     }
-    #sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
-    sublb_tmp <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
     diffmat_tmp <- Matrix::Matrix(submat, sparse=TRUE)
-    #list("sublb"=sublb_tmp, "diffmat"=diffmat_tmp)
     list("diffmat"=diffmat_tmp)
   #})
   }, mc.cores=cluster_size)
-  
-  #sublb2 <- sapply(parallel_diff, with, sublb)
-  #if(dim(sublb)[1] != dim(sublb2)[1]) browser()
-  #sublb2 <- cbind(sublb[,1:2], sublb2)
-  #colnames(sublb2) <- colnames(sublb)
-  #sublb2 <- as.matrix(sublb2) # convert back to matrix
-  
   for(j in seq_along(arena@media)){
     arena@media[[j]]@diffmat <- parallel_diff[[j]]$diffmat
   }
-  
-  #sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
-  #colnames(sublb) <- c('x','y',arena@mediac)
-  #rm("sublb_tmp")
-  #rm("submat")
   return(arena)
 })
 
