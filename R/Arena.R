@@ -800,9 +800,12 @@ setMethod("diffuse", "Arena", function(object, lrw, cluster_size, sublb){
     submat <- as.matrix(arena@media[[j]]@diffmat)
     #print(dim(arena@orgdat))
     #print(dim(sublb))
-    if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
-      apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
-    }
+    #browser()
+    #if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
+      #apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
+      
+    #}
+    updateSubmat(submat, sublb[,c(1:2,j+2)])
     #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
     homogenous = arena@n*arena@m != sum(submat==mean(submat))
     diffspeed  = arena@media[[j]]@difspeed!=0

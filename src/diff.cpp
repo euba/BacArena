@@ -1,6 +1,3 @@
-#include <RcppArmadillo.h>
-// [[Rcpp::depends(RcppArmadillo)]]
-
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -136,21 +133,14 @@ void diffuseSteveCpp(Rcpp::NumericMatrix y, double D, double h, double tstep){
 
 
 // [[Rcpp::export]]
-List updateMedia(DataFrame orgdat, NumericMatrix sublb, List media){
-  IntegerVector x_vec = orgdat["x"];
-  IntegerVector y_vec = orgdat["y"];
-  
-  int nrow = sublb.nrow();
-  int ncol = sublb.ncol();
-  List ret;
-  for(int j=2; j<ncol; j++){ // first two entries in sublb are x,y coordinates
-    arma::sp_mat diffmat = media[j-2]; // get diffmat for current substance
-    for(int i=0; i<nrow; i++){
-      int x = sublb(i, 0);
-      int y = sublb(i, 1);
-      diffmat(x,y) = sublb(i, j);
-    }
-    ret.push_back(diffmat);
+void updateSubmat(NumericMatrix submat, NumericMatrix sublb_red){
+  //std::cout<<sublb_red<<"\n";
+  int nrow = sublb_red.nrow();
+  for(int i=0; i<nrow; i++){
+    int x = sublb_red(i, 0);
+    int y = sublb_red(i, 1);
+    //std::cout<<x<<","<<y<<"\n";
+    double new_sub_val = sublb_red(i, 2);
+    submat(x,y) = new_sub_val;
   }
-  return(ret);
 }
