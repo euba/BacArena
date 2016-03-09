@@ -650,7 +650,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
   sublb <- getSublb(arena)
   
   if(length(cluster_size)==0){
-    cluster_size <- parallel::detectCores()-1
+    cluster_size <- parallel::detectCores()
   }
   #parallelCluster <- parallel::makeCluster(parallel::detectCores()-1, type="FORK") 
   
@@ -661,8 +661,8 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
     arena@orgdat["nr"] <- seq_len(dim(arena@orgdat)[1]) # dummy numbering
     cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
-    if(i==2) browser()
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
+      sublb <- getSublb(arena)
       sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
   
       
@@ -678,9 +678,9 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
           groups <- split(seq_len(splited_size), cut(seq_len(splited_size), cluster_size))
           # 2.1.2) paralel loop
           names(groups) <- NULL
-          parallel_sol <- lapply(groups, function(g){
+          #parallel_sol <- lapply(groups, function(g){
           #parallel_sol <- parallel::parLapply(parallelCluster, groups, function(g){
-          #parallel_sol <- parallel::mclapply(groups, function(g){
+          parallel_sol <- parallel::mclapply(groups, function(g){
                                       # 2.1.2.1) critical step: create lpobject for each core 
                                       #(otherwise pointer will corrupt in warm-started optimization)
                                       model <- arena@specs[[spec_nr]]@model
@@ -698,8 +698,8 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
                                         })
                                       #browser()
                                       list("neworgdat"=sapply(test, with, neworgdat), "sublb"=sapply(test, with, sublb), "fbasol_flux"=sapply(test, with, fbasol$fluxes))
-                                    })
-                                    #  }, mc.cores=cluster_size)
+          #})
+          }, mc.cores=cluster_size)
           
           tmpnames <- colnames(arena@orgdat)
           orgdat2 <- data.frame(matrix(unlist(sapply(parallel_sol, with, neworgdat)), ncol=dim(arena@orgdat)[2], byrow=TRUE))
@@ -707,7 +707,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
           arena@orgdat <<- orgdat2
 
           tmpnames <- colnames(sublb)
-          sublb2 <- data.frame(matrix(unlist(sapply(parallel_sol, with, sublb)), ncol=dim(sublb)[2], byrow=TRUE))
+          sublb2 <- matrix(unlist(sapply(parallel_sol, with, sublb)), ncol=dim(sublb)[2], byrow=TRUE)
           colnames(sublb2) <- tmpnames
           sublb <<- sublb2
           
@@ -750,17 +750,31 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       arena@orgdat <- arena@orgdat[,-which(colnames(arena@orgdat)=="nr")] # remove dummy numbering
       movementCpp(arena@orgdat, arena@n, arena@m, arena@occupyM) # call by ref
       arena@orgdat <- duplicateCpp(arena@orgdat, arena@n, arena@m, lapply(arena@specs, function(x){x@cellweight}), arena@occupyM) # call by val
+      
+      sublb[,arena@mediac] <- sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
+      
+      
+      # update arena@media (sublb values)
+#       apply(sublb, 1, function(entry){
+#         x <- entry[1]
+#         y <- entry[2]
+#         sapply(seq_along(entry[-c(1,2)]),function(med_nr){
+#           med_id <- colnames(sublb)[[med_nr+2]]
+#           arena@media[[med_id]]@diffmat[x,y] <<- entry[[med_nr+2]]
+#           NULL
+#         })
+#         NULL
+#       })
+      # alternative cpp code, armadillo sp_mat matrix, currently lame
+      #new_media <- updateMedia(arena@orgdat, sublb, lapply(arena@media, function(x){x@diffmat}))
+      #lapply(seq_along(arena@media), function(index){arena@media[[index]]@diffmat <<- new_media[[index]]})
 
       # delete dead organisms
-      sublb[,arena@mediac] <- sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
       test <- is.na(arena@orgdat$growth)
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       rm("test")
     }
-    #diff_res <- diffuse(arena, sublb, lrw)
-    #arena <- diff_res[[1]]
-    #sublb <- diff_res[[2]]
-    #rm("diff_res")
+    arena <- diffuse(arena, lrw, cluster_size, sublb)
 
     addEval(evaluation, arena)
     if(reduce && i<time){evaluation = redEval(evaluation)}
@@ -773,55 +787,58 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
   return(evaluation)
 })
 
-setGeneric("diffuse", function(object, sublb, lrw){standardGeneric("diffuse")})
-setMethod("diffuse", "Arena", function(object, sublb, lrw){
+setGeneric("diffuse", function(object, lrw, cluster_size, sublb){standardGeneric("diffuse")})
+setMethod("diffuse", "Arena", function(object, lrw, cluster_size, sublb){
   arena <- object
   
-  if(!arena@stir){
-    sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
-    sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
-    
-    parallel_diff <- lapply(seq_along(arena@media), function(j){
+  #sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
+  #sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
+  
+  parallel_diff <- parallel::mclapply(seq_along(arena@media), function(j){
+  #parallel_diff <- lapply(seq_along(arena@media), function(j){
     #for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
-      submat <- as.matrix(arena@media[[j]]@diffmat)
-      if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
-        apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
-      }
-      #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
-      homogenous = arena@n*arena@m != sum(submat==mean(submat))
-      diffspeed  = arena@media[[j]]@difspeed!=0
-      diff2d     = arena@media[[j]]@pde=="Diff2d"
-      if( diffspeed && ( diff2d&&homogenous || !diff2d ) ){  
-        switch(arena@media[[j]]@difunc,
-               "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
-               "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
-               "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
-               "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
-               stop("Diffusion function not defined yet.")) 
-        #arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
-      }
-      #sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
-      sublb_tmp <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
-      diffmat_tmp <- Matrix::Matrix(submat, sparse=TRUE)
-      list("sublb"=sublb_tmp, "diffmat"=diffmat_tmp)
-    })
-    
-    sublb2 <- sapply(parallel_diff, with, sublb)
-    sublb2 <- cbind(sublb[,1:2], sublb2)
-    names(sublb2) <- names(sublb)
-    
-    for(j in seq_along(arena@media)){
-      arena@media[[j]]@diffmat <- parallel_diff[[j]]$diffmat
+    submat <- as.matrix(arena@media[[j]]@diffmat)
+    #print(dim(arena@orgdat))
+    #print(dim(sublb))
+    if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
+      apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
     }
-    
-    #sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
-    #colnames(sublb) <- c('x','y',arena@mediac)
-    #rm("sublb_tmp")
-    #rm("submat")
-  }else{
-    sublb <- stirEnv(arena, sublb2)
+    #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
+    homogenous = arena@n*arena@m != sum(submat==mean(submat))
+    diffspeed  = arena@media[[j]]@difspeed!=0
+    diff2d     = arena@media[[j]]@pde=="Diff2d"
+    if( diffspeed && ( diff2d&&homogenous || !diff2d ) ){  
+      switch(arena@media[[j]]@difunc,
+             "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
+             "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
+             "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
+             "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
+             stop("Diffusion function not defined yet.")) 
+      #arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
+    }
+    #sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+    sublb_tmp <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+    diffmat_tmp <- Matrix::Matrix(submat, sparse=TRUE)
+    #list("sublb"=sublb_tmp, "diffmat"=diffmat_tmp)
+    list("diffmat"=diffmat_tmp)
+  #})
+  }, mc.cores=cluster_size)
+  
+  #sublb2 <- sapply(parallel_diff, with, sublb)
+  #if(dim(sublb)[1] != dim(sublb2)[1]) browser()
+  #sublb2 <- cbind(sublb[,1:2], sublb2)
+  #colnames(sublb2) <- colnames(sublb)
+  #sublb2 <- as.matrix(sublb2) # convert back to matrix
+  
+  for(j in seq_along(arena@media)){
+    arena@media[[j]]@diffmat <- parallel_diff[[j]]$diffmat
   }
-  return(list(arena, sublb))
+  
+  #sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
+  #colnames(sublb) <- c('x','y',arena@mediac)
+  #rm("sublb_tmp")
+  #rm("submat")
+  return(arena)
 })
 
 
@@ -1452,8 +1469,13 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
     } else mediac <- object@mediac
     rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
     mat_var  <- apply(mat, 1, var)
-    
-    mat_nice <- tail(mat[order(mat_var),], num)
+    num_var <- length(which(mat_var>0))
+    if(num_var>0){
+      mat_nice <- tail(mat[order(mat_var),], ifelse(num_var>num, num, num_var))
+    }else{
+      print("All substances have variance of zero.")
+      mat_nice <- tail(mat[order(mat_var),], num)
+    }
   }else{ # CASE2: plot only substances given by subs
     subs_index <- which(object@mediac %in% subs | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% subs)
     mat_nice <- mat[subs_index,]
