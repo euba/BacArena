@@ -775,7 +775,11 @@ setMethod("diffuse", "Arena", function(object, lrw, cluster_size, sublb){
   parallel_diff <- parallel::mclapply(seq_along(arena@media), function(j){
   #parallel_diff <- lapply(seq_along(arena@media), function(j){
     submat <- as.matrix(arena@media[[j]]@diffmat)
-    updateSubmat(submat, sublb[,c(1:2,j+2)])
+    if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
+      apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
+    }
+    # updateSubmat lead to errors in parallel..
+    #submat <- updateSubmat(as.matrix(arena@media[[j]]@diffmat), sublb[,c(1:2,j+2)])
     #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
     homogenous = arena@n*arena@m != sum(submat==mean(submat))
     diffspeed  = arena@media[[j]]@difspeed!=0
@@ -789,11 +793,11 @@ setMethod("diffuse", "Arena", function(object, lrw, cluster_size, sublb){
              stop("Diffusion function not defined yet.")) 
     }
     diffmat_tmp <- Matrix::Matrix(submat, sparse=TRUE)
-    list("diffmat"=diffmat_tmp)
+    diffmat_tmp
   #})
   }, mc.cores=cluster_size)
   for(j in seq_along(arena@media)){
-    arena@media[[j]]@diffmat <- parallel_diff[[j]]$diffmat
+    arena@media[[j]]@diffmat <- parallel_diff[[j]]
   }
   return(arena)
 })
