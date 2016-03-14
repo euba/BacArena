@@ -352,7 +352,8 @@ setMethod("getPhenotype_par", "Organism", function(object, cutoff=1e-6, fbasol){
   exflux=ifelse(abs(exflux)<cutoff,0,1)*exflux
   exflux=ifelse(exflux>0,1,exflux)
   exflux=ifelse(exflux<0,2,exflux)
-  return(exflux[which(exflux!=0)])
+  #return(exflux[which(exflux!=0)])
+  return(exflux)
 })
 
 

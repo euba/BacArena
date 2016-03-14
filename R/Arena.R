@@ -513,10 +513,23 @@ setMethod("checkPhen_par", "Arena", function(object, org, cutoff=1e-6, fbasol){
     if(length(pind)==0){
       pind = length(phensel)+1
       names(pvec) = tspec
-      return(list(pind, c(phenc,pvec)))
+      #return(list(pind, c(phenc,pvec)))
+      return(list(pvec, TRUE))
     }
   }
-  return(list(pind, NULL))
+  return(list(pind, FALSE))
+})
+
+setGeneric("addPhen", function(object, org, pvec){standardGeneric("addPhen")})
+#' @export
+#' @rdname addPhen
+setMethod("addPhen", "Arena", function(object, org, pvec){
+  tspec = org@type
+  phenc <- object@phenotypes
+  phensel <- phenc[which(names(phenc)==tspec)]
+  pind = length(phensel)+1
+  names(pvec) = tspec
+  return(list(c(phenc,pvec), pind))
 })
 
 
@@ -687,15 +700,18 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
                                       test <- lapply(g, function(i){
                                           org <- arena@specs[[spec_nr]]
                                           bacnum = round((arena@scale/(org@cellarea*10^(-8))))
-                                          j <- splited_species$nr[i]
+                                          j <- splited_species$nr[i] # unique id in orgdat (necessary due to split in parallel mode)
                                           simbac <- simBac_par(org, arena, j, sublb, bacnum, lpobject)
                                           neworgdat <- simbac[[1]]
                                           sublb <- simbac[[2]]
                                           fbasol <- simbac[[3]]
-                                          list("neworgdat"=neworgdat, "sublb"=sublb, "fbasol"=fbasol)
+                                          phen_res <- checkPhen_par(arena, org, fbasol=fbasol)
+                                          neworgdat$phenotype <- phen_res[[1]]
+                                          todo_pheno <- NULL
+                                          if(phen_res[[2]]==TRUE) todo_pheno <- j # unique new phenotype id cannot be determined in parallel
+                                          list("neworgdat"=neworgdat, "sublb"=sublb, "fbasol"=fbasol, "todo_pheno"=todo_pheno)
                                         })
-                                      #browser()
-                                      list("neworgdat"=sapply(test, with, neworgdat), "sublb"=sapply(test, with, sublb), "fbasol_flux"=sapply(test, with, fbasol$fluxes))
+                                      list("neworgdat"=sapply(test, with, neworgdat), "sublb"=sapply(test, with, sublb), "fbasol_flux"=sapply(test, with, fbasol$fluxes), "todo_pheno"=sapply(test, with, todo_pheno))
           #})
           }, mc.cores=cluster_size)
           
@@ -711,6 +727,24 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
           
           fba_fluxes <- sapply(parallel_sol, with, fbasol_flux)
           arena@mflux[[names(arena@specs)[[spec_nr]]]] <<- arena@mflux[[names(arena@specs)[[spec_nr]]]] + colSums(matrix(unlist(fba_fluxes), ncol=length(arena@mflux[[names(arena@specs)[[spec_nr]]]]), byrow = TRUE)) # remember active fluxes
+          
+          todo_pheno <- sapply(parallel_sol, with, todo_pheno)
+          #todo_pheno <- todo_pheno[!sapply(unlist(todo_pheno, recursive=TRUE), is.null)]
+          todo_pheno <- unlist(todo_pheno)
+          if(length(todo_pheno) > 0){ # handle new phenotypes
+            
+            unique_todo_pheno <- unique(arena@orgdat$phenotype[todo_pheno])
+            lapply(unique_todo_pheno, function(pvec){
+              res_addPhen <- addPhen(arena, org=arena@specs[[spec_nr]], pvec)
+              arena@phenotypes <<- res_addPhen[[1]]
+              #arena@orgdat$phenotype[arena@orgdat$phenotype==pvec] <<- res_addPhen[[2]]
+              levels(arena@orgdat$phenotype)[match(pvec,levels(arena@orgdat$phenotype))] <<- res_addPhen[[2]]
+            })
+          }
+          #phenos <- matrix(unlist(sapply(parallel_sol, with, pheno)), ncol=dim(arena@orgdat)[1], byrow=TRUE)
+          
+          #checkPhenCpp
+          
           
           # TODO: add phenotyp detection cpp
           
