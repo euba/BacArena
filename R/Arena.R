@@ -974,26 +974,25 @@ setMethod("findInArena", "Arena", function(object, pattern){
 
 #show function for class Arena
 setMethod(show, "Arena", function(object){
-  ecoli_cellarea = 4.42
-  ecoli_cellweight = 1172
-  print(paste('Arena of size ',object@n,'x',object@m,' with ',nrow(object@orgdat),
-              ' organisms of ',length(object@specs),' species.',sep=''))
-  print(paste("flux unit:","mmol/(h*g_dw)"))
+  #
+  # 1) goup substances according to concentrations
+  all_conc<-lapply(object@media, function(m){
+    sum(m@diffmat)/length(c(m@diffmat))
+  })
+  group_conc <- split(all_conc, factor(sort(unlist(all_conc))))
+  lapply(seq_along(group_conc), function(i){
+    print(paste("substances with", names(group_conc)[i], "mmol per gridcell:"))
+    print(names(group_conc[[i]]))
+    cat("\n")
+  })
+  #
+  # 2) general arena info
+  print(paste("area of one grid cell [cm^2]:", (object@Lx*object@Ly)/(object@n*object@m)))  
   print(paste("arena grid cells:",object@n,"x",object@m))
   print(paste("arena grid size [cm]:",object@Lx,"x",object@Ly))
-  print(paste("area of one grid cell [cm^2]:", (object@Lx*object@Ly)/(object@n*object@m)))
-  print(paste("maximal amount of E. coli cells in one grid cell:", round((object@Lx*object@Ly)/(object@n*object@m)/(ecoli_cellarea*10^(-8)),2) ))
-  dwpgc <- (object@Lx*object@Ly)/(object@n*object@m)/(ecoli_cellarea*10^(-8))*ecoli_cellweight
-  print(paste("maximal amount of E.coli dry weight in one grid cell [fg]:", round(dwpgc,1)))
-  scaleF <- 15-3*floor(log10(dwpgc)/3)
-  print(paste(3*floor(log10(dwpgc)/3)))
-  scaleN <- c("Milli", "Mikro", "Nano", "Piko", "Femto", "Atto", "Zepto", "Yokto")
-  print(paste("scale factor [10^-x]:", scaleF, scaleN[scaleF/3]))
-  conc  <- 20 #mM
-  apspgc <- conc * object@Lx * object@Ly / 1000 / (object@n * object@m)
-  print(paste("concentration [mM]:", conc, "thus amount of substance per grid cell [mmol]:", apspgc ))
-  print(paste("scaled: amount of substance per grid cell [", scaleN[scaleF/3+1], "mol]:", apspgc*10^(3*floor(log10(dwpgc)/3+3))))
-  print(paste("scaled: maximal amount of E.coli dry weight in one grid cell [", scaleN[scaleF/3],"gram]:", dwpgc/10^(3*floor(log10(dwpgc)/3))))
+  print(paste("flux unit:","mmol/(h*g_dw)"))
+  print(paste('Arena of size ',object@n,'x',object@m,' with ',nrow(object@orgdat),
+              ' organisms of ',length(object@specs),' species.',sep=''))
 })
 
 
