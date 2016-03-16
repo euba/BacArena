@@ -673,6 +673,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
     cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
+      #if(nrow(arena@orgdat) >= arena@n*arena@m) browser()
       sublb <- getSublb(arena)
       sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
   
@@ -706,18 +707,20 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
                                           sublb <- simbac[[2]]
                                           fbasol <- simbac[[3]]
                                           phen_res <- checkPhen_par(arena, org, fbasol=fbasol)
-                                          neworgdat$phenotype <- phen_res[[1]]
-                                          todo_pheno <- NULL
-                                          if(phen_res[[2]]==TRUE) todo_pheno <- j # unique new phenotype id cannot be determined in parallel
-                                          list("neworgdat"=neworgdat, "sublb"=sublb, "fbasol"=fbasol, "todo_pheno"=todo_pheno)
+                                          #neworgdat$phenotype <- phen_res[[1]]
+                                          todo_pheno_nr <- NULL
+                                          if(phen_res[[2]]==TRUE) todo_pheno_nr <- j # unique new phenotype id cannot be determined in parallel
+                                          todo_pheno <- phen_res[[1]]
+                                          list("neworgdat"=neworgdat, "sublb"=sublb, "fbasol"=fbasol, "todo_pheno"=todo_pheno, "todo_pheno_nr"=todo_pheno_nr)
                                         })
-                                      list("neworgdat"=sapply(test, with, neworgdat), "sublb"=sapply(test, with, sublb), "fbasol_flux"=sapply(test, with, fbasol$fluxes), "todo_pheno"=sapply(test, with, todo_pheno))
+                                      list("neworgdat"=sapply(test, with, neworgdat), "sublb"=sapply(test, with, sublb), "fbasol_flux"=sapply(test, with, fbasol$fluxes), "todo_pheno"=sapply(test, with, todo_pheno), "todo_pheno_nr"=sapply(test, with, todo_pheno_nr))
           #})
           }, mc.cores=cluster_size)
           
           tmpnames <- colnames(arena@orgdat)
           orgdat2 <- data.frame(matrix(unlist(sapply(parallel_sol, with, neworgdat)), ncol=dim(arena@orgdat)[2], byrow=TRUE))
           colnames(orgdat2) <- tmpnames
+          if(all(apply(orgdat2, 1, is.numeric)) != TRUE) browser()
           arena@orgdat <<- orgdat2
 
           tmpnames <- colnames(sublb)
@@ -729,51 +732,18 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
           arena@mflux[[names(arena@specs)[[spec_nr]]]] <<- arena@mflux[[names(arena@specs)[[spec_nr]]]] + colSums(matrix(unlist(fba_fluxes), ncol=length(arena@mflux[[names(arena@specs)[[spec_nr]]]]), byrow = TRUE)) # remember active fluxes
           
           todo_pheno <- sapply(parallel_sol, with, todo_pheno)
-          #todo_pheno <- todo_pheno[!sapply(unlist(todo_pheno, recursive=TRUE), is.null)]
-          todo_pheno <- unlist(todo_pheno)
-          if(length(todo_pheno) > 0){ # handle new phenotypes
-            
-            unique_todo_pheno <- unique(arena@orgdat$phenotype[todo_pheno])
+          todo_pheno <- unname(unlist(todo_pheno))
+          todo_pheno_nr <- sapply(parallel_sol, with, todo_pheno_nr)
+          todo_pheno_nr <- unlist(todo_pheno_nr)
+          if(all(is.na(arena@orgdat$phenotype))) arena@orgdat$phenotype <<- todo_pheno # init case
+          if(length(todo_pheno_nr) > 0){ # handle new phenotypes
+            unique_todo_pheno <- unique(todo_pheno[todo_pheno_nr])
             lapply(unique_todo_pheno, function(pvec){
               res_addPhen <- addPhen(arena, org=arena@specs[[spec_nr]], pvec)
               arena@phenotypes <<- res_addPhen[[1]]
-              #arena@orgdat$phenotype[arena@orgdat$phenotype==pvec] <<- res_addPhen[[2]]
-              levels(arena@orgdat$phenotype)[match(pvec,levels(arena@orgdat$phenotype))] <<- res_addPhen[[2]]
+              arena@orgdat$phenotype[which(todo_pheno == pvec)] <<- res_addPhen[[2]]
             })
           }
-          #phenos <- matrix(unlist(sapply(parallel_sol, with, pheno)), ncol=dim(arena@orgdat)[1], byrow=TRUE)
-          
-          #checkPhenCpp
-          
-          
-          # TODO: add phenotyp detection cpp
-          
-          #
-          # Methods which cannot run in parallel
-          #
-          
-#           lapply(1:length(parallel_sol), function(i){
-#             j <- splited_species$nr[i] # indexing in orgdat (not equal i due to parallel split)
-#             orgdat_i <- parallel_sol[[i]][[1]]
-#             sublb_i  <- parallel_sol[[i]][[2]]
-#             fbasol_i <- parallel_sol[[i]][[3]]
-#             org <- arena@specs[[orgdat_i[["type"]]]]
-# 
-#             # 1) find phenotypes
-#             checkphen <- checkPhen_par(arena, org, fbasol=fbasol_i) # could not be parallelized?!
-#             #browser()
-#           
-#             orgdat_i["phenotype"] <- as.integer(checkphen[[1]])
-#             if(length(checkphen[[2]])!= 0){
-#               arena@phenotypes <<- checkphen[[2]]
-#             }
-#             
-#             # 4) update orgdat and sublb
-#             arena@orgdat[j,] <<- orgdat_i
-#             sublb[j,] <<-  sublb_i
-#             arena@mflux[[org@type]] <<- arena@mflux[[org@type]] + fbasol_i$fluxes # remember active fluxes
-#             NULL
-#           })
         # 2.2) in case of small splited data frame do seriell work
         }else{
           stop("to be done")
@@ -863,7 +833,13 @@ setMethod("getSublb", "Arena", function(object){
   sublb <- matrix(0,nrow=nrow(object@orgdat),ncol=(length(object@mediac)))
   for(j in seq_along(object@media)){
     submat <- as.matrix(object@media[[j]]@diffmat)
-    sublb[,j] <- apply(object@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+    sublb[,j] <- apply(object@orgdat, 1, function(x,sub){
+      tryCatch({return(sub[as.numeric(x[4]),as.numeric(x[5])])
+      }, error=function(cond){
+        print(cond)
+        browser()}
+      )
+    },sub=submat)
   }
   sublb <- cbind(as.matrix(object@orgdat[,c(4,5)]),sublb)
   colnames(sublb) <- c('x','y',object@mediac)
