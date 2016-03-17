@@ -236,41 +236,39 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   if(length(smax) != length(mediac) && length(smax) != 1){
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
-  if(sum(mediac %in% object@mediac) != length(mediac)){stop("Substance does not exist in medium.")}
+  if(sum(mediac %in% object@mediac) != length(mediac)){stop("Substance does not exist in exchange reactions")}
   if(length(intersect(unit,c("mmol/cell","mM","mmol/arena","mmol/cm2")))==0){stop("Wrong unit for concentration.")}
   if(length(smax) == 1){
-    smax = rep(smax,length(mediac))
+    smax = rep(as.numeric(smax),length(mediac))
   }
+  if(length(names(mediac))==0){
+    names(mediac) <- names(object@mediac[which(object@mediac %in% mediac)]) # add substance names 
+  }
+  # 1) consider units
   if(unit=="mM"){smax <- (smax*0.01)*object@scale}  # conversion of mMol in mmol/grid_cell
   if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
   if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
   if(length(difspeed)!=length(mediac)){difspeed = rep(difspeed,length(mediac))}
-  if(length(object@media) == 0){
-    newmedia <- list()
-    for(i in 1:length(mediac)){
+  # 2) create substances
+  newmedia <- list()
+  for(i in 1:length(mediac)){
+    if(!(mediac[[i]] %in% names(object@media))){
       newmedia[[mediac[i]]] <- Substance(object@n, object@m, 0, id=unname(mediac[i]), name=names(mediac[i]), difunc=difunc, difspeed=difspeed[i], gridgeometry=object@gridgeometry)
+    }else{
+      newmedia[[mediac[i]]] <- object@media[[which(names(object@media)==mediac[[i]])]]
     }
-  }else{newmedia <- object@media}
-  if(length(object@mediac) > length(newmedia)){
-    appendlist <- list()
-    for(i in setdiff(object@mediac, names(newmedia))){
-      appendlist[[i]] <- Substance(object@n, object@m, 0, id=unname(i), name=names(i), difunc=difunc, difspeed=6.7e-6, gridgeometry=object@gridgeometry)
-    }
-    newmedia = c(newmedia,appendlist)
-  }
-  if(add){
-    for(i in 1:length(mediac)){
-      newdmat = newmedia[[mediac[i]]]@diffmat + Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
+    if(add){
+      newdmat <- newmedia[[mediac[i]]]@diffmat + Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
       newmedia[[mediac[i]]]@diffmat <- newdmat
-      #newmedia[[mediac[i]]]@difspeed = difspeed[i]
-    }
-  }else{
-    for(i in 1:length(mediac)){
+    }else{
       newmedia[[mediac[i]]]@diffmat <- Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
       newmedia[[mediac[i]]]@difspeed = difspeed[i]
     }
   }
-  eval.parent(substitute(object@media <- newmedia))
+  #3) add to arena
+  hit <- which(names(object@media) %in% mediac)
+  if(length(hit)!= 0) eval.parent(substitute(object@media <- c(object@media[-hit], newmedia)))
+     else eval.parent(substitute(object@media <- c(object@media, newmedia)))
 })
 
 #' @title Change substances in the environment
