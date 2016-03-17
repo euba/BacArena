@@ -977,7 +977,7 @@ setMethod(show, "Arena", function(object){
   all_conc<-lapply(object@media, function(m){
     sum(m@diffmat)/length(c(m@diffmat))
   })
-  group_conc <- split(all_conc, factor(sort(unlist(all_conc))))
+  group_conc <- split(all_conc, factor(unlist(unname(all_conc))))
   lapply(seq_along(group_conc), function(i){
     print(paste("substances with", names(group_conc)[i], "mmol per gridcell:"))
     print(names(group_conc[[i]]))
