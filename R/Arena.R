@@ -979,9 +979,11 @@ setMethod(show, "Arena", function(object){
   })
   group_conc <- split(all_conc, factor(unlist(unname(all_conc))))
   lapply(seq_along(group_conc), function(i){
-    print(paste("substances with", names(group_conc)[i], "mmol per gridcell:"))
-    print(names(group_conc[[i]]))
-    cat("\n")
+    if(as.numeric(names(group_conc[i])) != 0){ # ignore substances with zero value
+      print(paste("substances with", names(group_conc)[i], "mmol per gridcell:"))
+      print(names(group_conc[[i]]))
+      cat("\n")
+    }
   })
   #
   # 2) general arena info
