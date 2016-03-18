@@ -75,10 +75,11 @@ setClass("Organism",
 #' @param feat A list containing conditional features for the object (contains at the momement only biomass components for lysis).
 #' @param typename A string defining the name (set to model name in default case)
 #' @param lyse A boolean variable indicating if the organism should lyse after death.
+#' @param setExInf Enable if all lower bounds of exchange reaction which are set to zero (i.e. no uptake possible!) should be set to -infitity
 #' @param ... Arguments of \code{\link{Organism-class}}
 #' @return Object of class Organism
 Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]", esuffix="\\[e\\]", lyse=F, feat=list(), 
-                     typename=NA, ...){
+                     typename=NA, setExInf=FALSE, ...){
   if(is.na(typename)) typename <- sybil::mod_desc(model)
   rxname = sybil::react_id(model)
   lpobject <- sybil::sysBiolAlg(model, algorithm=algo)
@@ -113,6 +114,10 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
     biomets <- biomets[which(names(biomets) %in% names(extrans))]
     names(biomets) <- extrans[names(biomets)]
     feat[["biomass"]] <- biomets
+  }
+  # if setExInf is true then set lower bound of all exchange reactions which have zero values to -INF
+  if(setExInf){
+    lobnd[which(names(lobnd) %in% medc & lobnd==0)] <- -1000 
   }
   new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
       fbasol=fbasol, feat=feat, lyse=lyse, model=model, ...)
