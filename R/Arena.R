@@ -75,7 +75,7 @@ setClass("Arena",
 #' @param Lx A number giving the horizontal grid size in cm.
 #' @param Ly A number giving the vertical grid size in cm.
 #' @param ... Arguments of \code{\link{Arena-class}}
-Arena <- function(Lx=0.05, Ly=0.05, n=100, m=100, ...){
+Arena <- function(Lx=0.025, Ly=0.025, n=100, m=100, ...){
   gridgeometry = list(grid2D=ReacTran::setup.grid.2D(ReacTran::setup.grid.1D(x.up = 0, L = Lx, N = n), 
                                                      ReacTran::setup.grid.1D(x.up = 0, L = Ly, N = m)))
   scale   <- (Lx*Ly)/(n*m)
