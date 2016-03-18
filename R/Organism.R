@@ -905,6 +905,16 @@ setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum, lpobjec
 #show function for class Bac
 
 setMethod(show, signature(object="Bac"), function(object){
+  # print status of exchange reactions
+  ex_lb <- object@lbnd[which(names(object@lbnd) %in% object@medium)]
+  group_ex_lb <- split(ex_lb, factor(unlist(unname(ex_lb))))
+  lapply(seq_along(group_ex_lb), function(i){
+    if(as.numeric(names(group_ex_lb)[i])==0) print("Exchange reaction with _NO_ uptake set:")
+    else print(paste("Exchange reaction with uptake set of", names(group_ex_lb)[i]))
+    print(names(group_ex_lb[[i]]))
+    cat("\n")
+  })
+  
   print(paste('Bacterium ',object@type,' of class Bac.',sep=''))
 })
 
