@@ -1397,6 +1397,56 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
   }
 })
 
+#' @title Function to get varying substances
+#'
+#' @description The generic function \code{getVarSubs} returns ordered list of substances that showed variance during simulation
+#' @export
+#' @rdname getVarSubs
+setGeneric("getVarSubs", function(object, only_products=TRUE, only_substrates=TRUE, digits=10){standardGeneric("getVarSubs")})
+#' @export
+#' @rdname getVarSubs
+setMethod("getVarSubs", "Eval", function(object, only_products=FALSE, only_substrates=FALSE, digits=10){
+  prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
+  list <- lapply(prelist, function(x){lapply(x, sum)})
+  # attention round due to numeric accuracy
+  mat <- round(matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist)), digits=digits)
+  #mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
+  mediac <- object@mediac
+  rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
+  mat_var  <- apply(mat, 1, var)
+  if(!(only_products | only_substrates)) {
+    return(sort(mat_var[which(mat_var>0)], decreasing=TRUE))
+  }
+  #mat <- mat[which(mat_var>0),]
+  rowMin <- apply(mat, 1, min)
+  rowMax <- apply(mat, 1, max)
+  mat_substrates <- mat_var[which(mat[,1] == rowMax & mat_var > 0)]
+  mat_products   <- mat_var[which(mat[,1] == rowMin & mat_var > 0)]
+  if( only_products) return(sort(mat_products, decreasing=TRUE))
+  if( only_substrates ) return(sort(mat_substrates, decreasing=TRUE))
+  return()
+})
+
+
+#' @title Function to get timeline of a substance
+#'
+#' @description The generic function \code{getSubHist} returns list with amount of substance for each timestep
+#' @export
+#' @rdname getSubHist
+setGeneric("getSubHist", function(object, sub){standardGeneric("getSubHist")})
+#' @export
+#' @rdname getSubHist
+setMethod("getSubHist", "Eval", function(object, sub){
+  if(!(sub %in% names(sim@media))){
+    stop(paste(sub, "does not exist in medium"))
+  }
+  timeline <- unlist(lapply(object@medlist, function(m){sum(m[[sub]])}))
+  names(timeline) <- seq_along(object@medlist)
+  return(timeline)
+})
+
+
+
 #' @title Function for plotting the overall change as curves with maximally distinct colors
 #'
 #' @description The generic function \code{plotCurves2} plots the growth curves and concentration changes of the most changing substances from simulation steps in an \code{Eval} object using maximally distinct colors.
