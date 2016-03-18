@@ -236,7 +236,10 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   if(length(smax) != length(mediac) && length(smax) != 1){
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
-  if(sum(mediac %in% object@mediac) != length(mediac)){stop("Substance does not exist in exchange reactions")}
+  if(sum(mediac %in% object@mediac) != length(mediac)){
+    print(setdiff(mediac, object@mediac))
+    stop("Substance does not exist in exchange reactions")
+  }
   if(length(intersect(unit,c("mmol/cell","mM","mmol/arena","mmol/cm2")))==0){stop("Wrong unit for concentration.")}
   if(length(smax) == 1){
     smax = rep(as.numeric(smax),length(mediac))
