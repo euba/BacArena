@@ -302,12 +302,15 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
   if(length(smax)>1 & length(smax) != length(mediac)){
     stop("Number of substances does not match number of given concentrations")
   }
+  if(length(smax) == 1){
+    smax = rep(as.numeric(smax),length(mediac))
+  }
   if(length(setdiff(mediac, names(object@media))) == 0 ){
     if(unit=="mM"){smax <- (smax*0.01)*object@scale}  # conversion of mMol in mmol/grid_cell
     if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
     if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
     for(i in which(mediac %in% object@mediac)){
-      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=ifelse(length(smax)==1, smax, smax[i]), id=mediac[i], name=object@media[[mediac[i]]]@name,
+      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax[i], id=mediac[i], name=object@media[[mediac[i]]]@name,
                                                                   difunc=object@media[[mediac[i]]]@difunc,
                                                                   difspeed=object@media[[mediac[i]]]@difspeed, gridgeometry=object@gridgeometry)))
     }
@@ -978,7 +981,7 @@ setMethod(show, "Arena", function(object){
   #
   # 1) goup substances according to concentrations
   all_conc<-lapply(object@media, function(m){
-    sum(m@diffmat)/length(c(m@diffmat))
+    sum(m@diffmat)/length(m@diffmat)
   })
   group_conc <- split(all_conc, factor(unlist(unname(all_conc))))
   lapply(seq_along(group_conc), function(i){
@@ -1437,6 +1440,7 @@ setGeneric("getSubHist", function(object, sub){standardGeneric("getSubHist")})
 #' @export
 #' @rdname getSubHist
 setMethod("getSubHist", "Eval", function(object, sub){
+  if(!(sub %in% names(sim@media))) sub <- paste0("EX_", sub, "(e)")
   if(!(sub %in% names(sim@media))){
     stop(paste(sub, "does not exist in medium"))
   }
