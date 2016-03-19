@@ -586,6 +586,9 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
   sublb <- getSublb(arena)
   for(i in 1:time){
     cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
+    org_stat <- table(arena@orgdat$type)
+    names(org_stat) <- names(arena@specs)[as.numeric(names(org_stat))]
+    print(org_stat)
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
       sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
@@ -675,6 +678,9 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
   for(i in 1:time){
     arena@orgdat["nr"] <- seq_len(dim(arena@orgdat)[1]) # dummy numbering
     cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
+    org_stat <- table(arena@orgdat$type)
+    names(org_stat) <- names(arena@specs)[as.numeric(names(org_stat))]
+    print(org_stat)
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
       #if(nrow(arena@orgdat) >= arena@n*arena@m) browser()
