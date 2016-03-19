@@ -694,8 +694,7 @@ setMethod("growth", "Bac", function(object, population, j, occupyM){
         neworgdat[j,'growth'] <- popvec$growth/2
       }
     }
-  }
-  else if(popvec$growth < object@growthlimit){
+  }else if(popvec$growth < object@growthlimit){
     neworgdat[j,'growth'] <- NA
     dead <- T
   }
@@ -1045,8 +1044,7 @@ setMethod("cellgrowth", "Human", function(object, population, j){
       neworgdat[nrow(neworgdat)+1,] <- daughter
       neworgdat[j,'growth'] <- popvec$growth/2
     }
-  }
-  else if(popvec$growth < object@growthlimit){
+  }else if(popvec$growth < object@growthlimit){
     neworgdat[j,'growth'] <- NA
     dead <- T
   }
