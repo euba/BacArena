@@ -382,8 +382,9 @@ setGeneric("growLin", function(object, growth){standardGeneric("growLin")})
 #' @export
 #' @rdname growLin
 setMethod("growLin", "Organism", function(object, growth){
-  if(object@fbasol$obj > 0) grow_accum <- object@fbasol$obj + growth
-  else grow_accum <- growth - object@deathrate
+  if(object@fbasol$obj > 0) {
+    grow_accum <- object@fbasol$obj + growth
+  } else grow_accum <- growth - object@deathrate
   return(grow_accum)
 })
 
@@ -398,8 +399,9 @@ setGeneric("growLin_par", function(object, growth, fbasol){standardGeneric("grow
 #' @export
 #' @rdname growLin_par
 setMethod("growLin_par", "Organism", function(object, growth, fbasol){
-  if(object@fbasol$obj > 0) grow_accum <- fbasol$obj + growth
-  else grow_accum <- growth - object@deathrate
+  if(object@fbasol$obj > 0){
+    grow_accum <- fbasol$obj + growth
+  } else grow_accum <- growth - object@deathrate
   return(grow_accum)
 })
 
@@ -426,8 +428,9 @@ setGeneric("growExp", function(object, growth){standardGeneric("growExp")})
 #' @export
 #' @rdname growExp
 setMethod("growExp", "Organism", function(object, growth){
-  if(object@fbasol$obj > 0) grow_accum <- (object@fbasol$obj * growth + growth)
-  else grow_accum <- growth - object@deathrate
+  if(object@fbasol$obj > 0){
+    grow_accum <- (object@fbasol$obj * growth + growth)
+  } else grow_accum <- growth - object@deathrate
   return(grow_accum)
   #return(object@fbasol$obj * growth + growth - object@deathrate)
 })
@@ -442,8 +445,9 @@ setGeneric("growExp_par", function(object, growth, fbasol){standardGeneric("grow
 #' @export
 #' @rdname growExp_par
 setMethod("growExp_par", "Organism", function(object, growth, fbasol){
-  if(fbasol$obj > 0) grow_accum <- (fbasol$obj * growth + growth)
-  else grow_accum <- growth - object@deathrate
+  if(fbasol$obj > 0){
+    grow_accum <- (fbasol$obj * growth + growth)
+  } else grow_accum <- growth - object@deathrate
   return(grow_accum)
 })
 
@@ -913,8 +917,9 @@ setMethod(show, signature(object="Bac"), function(object){
   ex_lb <- object@lbnd[which(names(object@lbnd) %in% object@medium)]
   group_ex_lb <- split(ex_lb, factor(unlist(unname(ex_lb))))
   lapply(seq_along(group_ex_lb), function(i){
-    if(as.numeric(names(group_ex_lb)[i])==0) print("Exchange reaction with _NO_ uptake set:")
-    else print(paste("Exchange reaction with uptake set of", names(group_ex_lb)[i]))
+    if(as.numeric(names(group_ex_lb)[i])==0){
+      print("Exchange reaction with _NO_ uptake set:")
+    } else print(paste("Exchange reaction with uptake set of", names(group_ex_lb)[i]))
     print(names(group_ex_lb[[i]]))
     cat("\n")
   })
