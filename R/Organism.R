@@ -240,7 +240,8 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
   fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
   #fbasl <- sybil::optimizeProb(object@model, react=1:length(lb), ub=ub, lb=lb, retOptSol=FALSE)
   names(fbasl$fluxes) <- names(object@lbnd)
-  if(is.na(fbasl$obj)){fbasl$obj <- 0}
+  if(!fbasl$stat == 5) {fbasl$obj <- 0} # glpk status code: 1-undef 2-feasible, 3-infeasible, 4-no_feasible, 5-opt, 6-unbounded
+  if(fbasl$obj<0) browser()
   eval.parent(substitute(object@fbasol <- fbasl))
 })
 
