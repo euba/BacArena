@@ -585,7 +585,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
   if(class(object)!="Eval"){addEval(evaluation, arena)}
   sublb <- getSublb(arena)
   for(i in 1:time){
-    cat("iter:", i, "Organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "fg \n")
+    cat("\niteration:", i, "\t Organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "fg \n")
     org_stat <- table(arena@orgdat$type)
     names(org_stat) <- names(arena@specs)[as.numeric(names(org_stat))]
     print(org_stat)
@@ -624,8 +624,8 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
                  "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
                  "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
                  stop("Diffusion function not defined yet.")) 
-          arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
         }
+        arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
         sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
       }
       sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
