@@ -261,10 +261,10 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
       newmedia[[mediac[i]]] <- object@media[[which(names(object@media)==mediac[[i]])]]
     }
     if(add){
-      newdmat <- newmedia[[mediac[i]]]@diffmat + Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
+      newdmat <- newmedia[[mediac[i]]]@diffmat + Matrix::Matrix(10^12*smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
       newmedia[[mediac[i]]]@diffmat <- newdmat
     }else{
-      newmedia[[mediac[i]]]@diffmat <- Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
+      newmedia[[mediac[i]]]@diffmat <- Matrix::Matrix(10^12*smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
       newmedia[[mediac[i]]]@difspeed = difspeed[i]
     }
   }
@@ -310,7 +310,7 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
     if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
     if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
     for(i in which(mediac %in% object@mediac)){
-      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax[i], id=mediac[i], name=object@media[[mediac[i]]]@name,
+      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=10^12*smax[i], id=mediac[i], name=object@media[[mediac[i]]]@name,
                                                                   difunc=object@media[[mediac[i]]]@difunc,
                                                                   difspeed=object@media[[mediac[i]]]@difspeed, gridgeometry=object@gridgeometry)))
     }
@@ -591,7 +591,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
     print(org_stat)
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
-      sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
+      #sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
       for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
         org <- arena@specs[[arena@orgdat[j,'type']]]
         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
@@ -600,7 +600,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
                "Human"= {arena = simHum(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
                stop("Simulation function for Organism object not defined yet."))
       }
-      sublb[,arena@mediac] = sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
+      #sublb[,arena@mediac] = sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
       test <- is.na(arena@orgdat$growth)
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       rm("test")
@@ -685,7 +685,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
       #if(nrow(arena@orgdat) >= arena@n*arena@m) browser()
       sublb <- getSublb(arena)
-      sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
+      #sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
   
       
       # 1) split orgdat into a data.frames for each species 
@@ -763,7 +763,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       movementCpp(arena@orgdat, arena@n, arena@m, arena@occupyM) # call by ref
       arena@orgdat <- duplicateCpp(arena@orgdat, arena@n, arena@m, lapply(arena@specs, function(x){x@cellweight}), arena@occupyM) # call by val
       
-      sublb[,arena@mediac] <- sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
+      #sublb[,arena@mediac] <- sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
       
       # delete dead organisms
       test <- is.na(arena@orgdat$growth)
@@ -1482,11 +1482,11 @@ setMethod("getSubHist", "Eval", function(object, sub){
 #' eval <- simEnv(arena,10)
 #' plotCurves2(eval)
 setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"),
-                                   num=10, phencol=F, dict=NULL, subs=list()){standardGeneric("plotCurves2")})
+                                   num=10, phencol=FALSE, biomcol=FALSE, dict=NULL, subs=list()){standardGeneric("plotCurves2")})
 #' @export
 #' @rdname plotCurves2
 setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), 
-                                          num=10, phencol=F, dict=NULL, subs=list()){
+                                          num=10, phencol=FALSE, biomcol=FALSE, dict=NULL, subs=list()){
   if(num>length(object@mediac) || num<1) stop("Number of substances invalid")
   # first get the correct (ie. complete) medlist
   prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
@@ -1551,16 +1551,11 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
         p
       }))})
     mat_phen  <- do.call(cbind, list)
-    #mat_with_phen <- rbind(mat_bac, mat_phen, mat_biom)
-    mat_with_phen <- rbind(mat_bac, mat_phen)
+    if(biomcol) mat_with_phen <- rbind(mat_bac, mat_phen, mat_biom) else mat_with_phen <- rbind(mat_bac, mat_phen)
   } else{
-    #mat_with_phen <- rbind(mat_bac, mat_biom)
-    mat_with_phen <- mat_bac
+    if(biomcol) mat_with_phen <- rbind(mat_bac, mat_biom) else mat_with_phen <- mat_bac
   }
 
-  
-  
-  
   len <- dim(mat_with_phen)[1]
   if(len>length(colpal3)) cols <- colpal1[1:len] else cols <- colpal3[1:len]
   matplot(t(mat_with_phen), type='b', col=cols, pch=1, lty=1, lwd=5,
