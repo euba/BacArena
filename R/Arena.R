@@ -585,7 +585,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
   if(class(object)!="Eval"){addEval(evaluation, arena)}
   sublb <- getSublb(arena)
   for(i in 1:time){
-    cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
+    cat("iter:", i, "Organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "fg \n")
     org_stat <- table(arena@orgdat$type)
     names(org_stat) <- names(arena@specs)[as.numeric(names(org_stat))]
     print(org_stat)
