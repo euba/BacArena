@@ -186,13 +186,15 @@ setMethod("model", "Organism", function(object){return(object@model)})
 #' org <- Organism(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize an organism
 #' lobnds <- constrain(org,org@medium,org@lbnd[org@medium],1,1)
-setGeneric("constrain", function(object, reacts, lb, dryweight, time, scale){standardGeneric("constrain")})
+setGeneric("constrain", function(object, reacts, lb, dryweight, time, scale, j){standardGeneric("constrain")})
 #' @export
 #' @rdname constrain
-setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time, scale){
-  lobnd <- object@lbnd*(dryweight/object@cellweight_mean)*time #costrain according to flux definition: mmol/(gDW*hr)
+setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time, scale, j){
+  lobnd <- object@lbnd
+  lobnd[reacts] <- object@lbnd[reacts]*(dryweight/object@cellweight_mean)*time #costrain according to flux definition: mmol/(gDW*hr)
   #lobnd[reacts] <- ifelse(lb<=lobnd[reacts], ifelse(lobnd[reacts]==0, lb, lobnd[reacts]), lb) #check if lower bounds in biological relevant range
   lobnd[reacts] <- ifelse(lb<=lobnd[reacts], lobnd[reacts], lb) #check if lower bounds in biological relevant range
+  #if(j==1) browser()
   if(length(object@kinetics) != 0){
     lobnd[names(object@kinetics)] <- unlist(lapply(names(object@kinetics), function(name){
       Km  <- (object@kinetics[[name]][["Km"]]*0.01*scale)*10^12 #scale mM to fmol/gridcell
@@ -239,10 +241,10 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' org <- Organism(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' optimizeLP(org)
-setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6){standardGeneric("optimizeLP")})
+setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j){standardGeneric("optimizeLP")})
 #' @export
 #' @rdname optimizeLP
-setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6){ 
+setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j){ 
   fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
   #fbasl <- sybil::optimizeProb(object@model, react=1:length(lb), ub=ub, lb=lb, retOptSol=FALSE)
   names(fbasl$fluxes) <- names(object@lbnd)
@@ -806,8 +808,8 @@ setGeneric("simBac", function(object, arena, j, sublb, bacnum){standardGeneric("
 #' @rdname simBac
 setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
-                     dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
-  optimizeLP(object, lb=lobnd)
+                     dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale, j)
+  optimizeLP(object, lb=lobnd, j=j)
   
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum))) #scale consumption to the number of cells?
 
