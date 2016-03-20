@@ -190,7 +190,7 @@ setGeneric("constrain", function(object, reacts, lb, dryweight, time, scale){sta
 #' @export
 #' @rdname constrain
 setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time, scale){
-  lobnd <- object@lbnd*dryweight*time #costrain according to flux definition: mmol/(gDW*hr)
+  lobnd <- object@lbnd*(dryweight/object@cellweight_mean)*time #costrain according to flux definition: mmol/(gDW*hr)
   #lobnd[reacts] <- ifelse(lb<=lobnd[reacts], ifelse(lobnd[reacts]==0, lb, lobnd[reacts]), lb) #check if lower bounds in biological relevant range
   lobnd[reacts] <- ifelse(lb<=lobnd[reacts], lobnd[reacts], lb) #check if lower bounds in biological relevant range
   if(length(object@kinetics) != 0){
