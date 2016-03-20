@@ -583,7 +583,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
   if(class(object)!="Eval"){addEval(evaluation, arena)}
   sublb <- getSublb(arena)
   for(i in 1:time){
-    cat("\niteration:", i, "\t Organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "fg \n")
+    cat("\niteration:", i, "\t Organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "pg \n")
     org_stat <- table(arena@orgdat$type)
     names(org_stat) <- names(arena@specs)[as.numeric(names(org_stat))]
     print(org_stat)
@@ -1514,7 +1514,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
   }
   if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
   matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
-          xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of substance in mmol',
+          xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of substance in fmol',
           main='Strongly changing substances')
   if(length(dict) > 0){
     new_names = unlist(lapply(rownames(mat_nice), function(x){dict[[x]]}))
@@ -1883,12 +1883,13 @@ setMethod("statPheno", "Eval", function(object, type_nr=1, phenotype_nr, dict=NU
 #' @param scut List of substance names which should be ignored
 #' @param legendpos A character variable declaring the position of the legend
 #' @param dict List defining new substance names. List entries are intepreted as old names and the list names as the new ones.
+#' @param lwd Line thickness scale in graph
 #' @return Graph (igraph)
 #' 
-setGeneric("findFeeding", function(object, dict=NULL, tcut=5, scut=list(), org_dict=NULL, legendpos="topleft"){standardGeneric("findFeeding")})
+setGeneric("findFeeding", function(object, dict=NULL, tcut=5, scut=list(), org_dict=NULL, legendpos="topleft", lwd=1){standardGeneric("findFeeding")})
 #' @export
 #' @rdname findFeeding
-setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list(), org_dict=NULL, legendpos="topleft"){
+setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list(), org_dict=NULL, legendpos="topleft", lwd=1){
 
   # possible problem inactive phenotype is not mentioned in object@phenotypes...
 
@@ -1970,10 +1971,10 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
           feeding <- ex_both[,feeding_index]
           lapply(seq(dim(feeding)[2]), function(x){
             if(feeding[1,x] == -1){
-              new_edge <- c(which(pindex==combi[,i][1]), which(pindex==combi[,i][2]))
-            }else new_edge <- c(which(pindex==combi[,i][2]), which(pindex==combi[,i][1]))
+              new_edge <- c(which(pindex==combi[,i][2]), which(pindex==combi[,i][1]))
+            }else new_edge <- c(which(pindex==combi[,i][1]), which(pindex==combi[,i][2]))
             col <- colpal3[which(cindex == colnames(feeding)[x])]
-            g <<- igraph::add.edges(g, new_edge, color=col, weight=length(co_occ))
+            g <<- igraph::add.edges(g, new_edge, color=col, weight=length(co_occ)*lwd)
           })
         }
         #cat("\npossible cross feeding at time steps\n")
