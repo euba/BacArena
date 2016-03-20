@@ -239,14 +239,14 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' org <- Organism(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' optimizeLP(org)
-setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){standardGeneric("optimizeLP")})
+setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6){standardGeneric("optimizeLP")})
 #' @export
 #' @rdname optimizeLP
-setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){ 
+setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6){ 
   fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
   #fbasl <- sybil::optimizeProb(object@model, react=1:length(lb), ub=ub, lb=lb, retOptSol=FALSE)
   names(fbasl$fluxes) <- names(object@lbnd)
-  if(!fbasl$stat == 5) {fbasl$obj <- 0} # glpk status code: 1-undef 2-feasible, 3-infeasible, 4-no_feasible, 5-opt, 6-unbounded
+  if(!fbasl$stat == 5 | fbasl$obj<cutoff) {fbasl$obj <- 0} # glpk status code: 1-undef 2-feasible, 3-infeasible, 4-no_feasible, 5-opt, 6-unbounded
   if(fbasl$obj<0) browser()
   eval.parent(substitute(object@fbasol <- fbasl))
 })
@@ -258,10 +258,10 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
 #' @export
 #' @rdname optimizeLP_par
 #' 
-setGeneric("optimizeLP_par", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){standardGeneric("optimizeLP_par")})
+setGeneric("optimizeLP_par", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6){standardGeneric("optimizeLP_par")})
 #' @export
 #' @rdname optimizeLP_par
-setMethod("optimizeLP_par", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd){ 
+setMethod("optimizeLP_par", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6){ 
   #fbasl <- sybil::optimizeProb(object@model, react=1:length(lb), ub=ub, lb=lb, retOptSol=FALSE)
   
   #lpob <- sybil::sysBiolAlg(object@model, algorithm="fba")
@@ -272,7 +272,7 @@ setMethod("optimizeLP_par", "Organism", function(object, lpob=object@lpobj, lb=o
     #error = function(e) print(e)
   #)
   names(fbasl$fluxes) <- names(object@lbnd)
-  if(!fbasl$stat == 5) {fbasl$obj <- 0} # glpk status code: 1-undef 2-feasible, 3-infeasible, 4-no_feasible, 5-opt, 6-unbounded
+  if(!fbasl$stat == 5 | fbasl$obj<cutoff) {fbasl$obj <- 0} # glpk status code: 1-undef 2-feasible, 3-infeasible, 4-no_feasible, 5-opt, 6-unbounded
   return(fbasl)
 })
 
