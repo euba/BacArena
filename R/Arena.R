@@ -132,8 +132,6 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #' @param x A numeric vector giving the x positions of individuals on the grid.
 #' @param y A numeric vector giving the y positions of individuals on the grid.
 #' @param growth A numeric vector giving the starting biomass of the individuals.
-#' @param mean A numeric giving the mean of starting biomass (used for normal distribution) if growth is not defined
-#' @param sd A numeric giving the standard derivation of starting biomass (used for normal distribution) if growth is not defined
 #' @details The arguments \code{x} and \code{y} should be in the same length as the number of organisms added (given by the argument \code{amount}).
 #' @seealso \code{\link{Arena-class}} and \code{\link{Bac-class}} 
 #' @examples
@@ -142,10 +140,10 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
-setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=NA, mean=0.489, sd=0.132){standardGeneric("addOrg")})
+setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=NA){standardGeneric("addOrg")})
 #' @export
 #' @rdname addOrg
-setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=NA, mean=0.489, sd=0.132){
+setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=NA){
   if(amount+nrow(object@orgdat) > object@n*object@m-dim(which(arena@occupyM>0, arr.ind = TRUE))[1]){
     stop("More individuals than space on the grid")
   }
@@ -184,7 +182,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
     neworgdat[(lastind+1):(amount+lastind),'x']=xp
     neworgdat[(lastind+1):(amount+lastind),'y']=yp
     if(is.numeric(growth)) neworgdat[(lastind+1):(amount+lastind),'growth'] = rep(growth, amount)
-    else neworgdat[(lastind+1):(amount+lastind),'growth'] = abs(rnorm(amount, mean=mean, sd=sd))
+    else neworgdat[(lastind+1):(amount+lastind),'growth'] = abs(rnorm(amount, mean=specI@cellweight_mean, sd=specI@cellweight_sd))
     neworgdat[(lastind+1):(amount+lastind),'type']=rep(type, amount)
     neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(NA, amount)
   }else{

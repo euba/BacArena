@@ -25,6 +25,8 @@
 #' @slot speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
 #' @slot cellarea A numeric value indicating the surface that one organism occupies (unit: mu cm^2)
 #' @slot cellweight A numeric value giving the maximal dry weight of single organism (unit: fg)
+#' @param cellweight_mean A numeric giving the mean of starting biomass 
+#' @param cellweight_sd A numeric giving the standard derivation of starting biomass 
 #' @slot model Object of class sybil::modelorg containging the genome sclae metabolic model
 setClass("Organism",
          representation(
@@ -42,6 +44,8 @@ setClass("Organism",
            kinetics="list",
            cellarea="numeric",
            cellweight="numeric",
+           cellweight_mean = "numeric",
+           cellweight_sd = "numeric",
            speed="numeric",
            model="modelorg"
          ),
@@ -52,6 +56,8 @@ setClass("Organism",
            kinetics = list(),
            cellarea = 4.42,
            cellweight = 1.172,
+           cellweight_mean = 0.489,
+           cellweight_sd = 0.132,
            speed = 2       
          )
 )
