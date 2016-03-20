@@ -1266,10 +1266,10 @@ setMethod("extractMed", "Eval", function(object, time=length(object@medlist)){
 #' library(animation)
 #' saveVideo({evalArena(eval)},video.name="Ecoli_sim.mp4")
 #' }
-setGeneric("evalArena", function(object, plot_items='Population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){standardGeneric("evalArena")})
+setGeneric("evalArena", function(object, plot_items='Population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1), show_legend=TRUE, legend_pos="left"){standardGeneric("evalArena")})
 #' @export
 #' @rdname evalArena
-setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1)){ #index in R start at 1, but the first state is 0
+setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol=F, retdata=F, time=(seq_along(object@simlist)-1), show_legend=TRUE, legend_pos="left"){ #index in R start at 1, but the first state is 0
   time = time+1
   #old.par <- par(no.readonly = TRUE)
   if(retdata){
@@ -1319,6 +1319,11 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
       if(phencol){
         plot(object@simlist[[i]][,c('x','y')],xlim=c(0,object@n),ylim=c(0,object@m),xlab='',ylab='',
              pch=object@simlist[[i]]$type-1,axes=FALSE,cex=1,main=paste('Population', ": #", i), col=object@simlist[[i]]$phenotype+1)
+        if(show_legend){
+          df_legend <- unique(object@simlist[[i]][,c("type", "phenotype")])
+          df_legend <- df_legend[order(df_legend$phenotype),]
+          legend(legend_pos, legend=paste(df_legend$type, df_legend$phenotype), col=df_legend$phenotype+1, pch=df_legend$type-1)
+        }
       }else{
         plot(object@simlist[[i]][,c('x','y')],xlim=c(0,object@n),ylim=c(0,object@m),xlab='',ylab='',
              pch=object@simlist[[i]]$type-1,axes=FALSE,cex=1,main=paste('Population', ": #", i), col=object@simlist[[i]]$type)
