@@ -606,16 +606,20 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
     if(!arena@stir){
       sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
       sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
-      for(j in seq_along(arena@media)){ #get information from sublb matrix to media list
+      
+      testdiff = t(sublb[,-c(1,2)]) == unlist(lapply(arena@media,function(x,n,m){return(mean(x@diffmat))})) #check which mets in sublb have been changed by the microbes
+      changed_mets = which(apply(testdiff,1,sum)/nrow(sublb) < 1) #find the metabolites which are changed by at least one microbe
+      
+      for(j in changed_mets){#seq_along(arena@media)){ #get information from sublb matrix to media list
         submat <- as.matrix(arena@media[[j]]@diffmat)
         if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
           apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
         }
         #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
-        homogenous = arena@n*arena@m != sum(submat==mean(submat))
+        #homogenous = arena@n*arena@m != sum(submat==mean(submat))
         diffspeed  = arena@media[[j]]@difspeed!=0
         diff2d     = arena@media[[j]]@pde=="Diff2d"
-        if( diffspeed && ( diff2d&&homogenous || !diff2d ) ){  
+        if(diffspeed && diff2d){#( diff2d&&homogenous || !diff2d ) ){ 
           switch(arena@media[[j]]@difunc,
                  "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
                  "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
@@ -1426,7 +1430,7 @@ setMethod("getVarSubs", "Eval", function(object, only_products=FALSE, only_subst
   mediac <- object@mediac
   rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
   mat_var  <- apply(mat, 1, var)
-  if(!(only_products | only_substrates)) {
+  if(!(only_products || only_substrates)) {
     return(sort(mat_var[which(mat_var>0)], decreasing=TRUE))
   }
   #mat <- mat[which(mat_var>0),]
@@ -1498,7 +1502,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
   
   if(length(subs)==0){ # CASE1: plot most varying substances
     #remove substances that should be ignored
-    ignore_subs <- which(object@mediac %in% ignore | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% ignore)
+    ignore_subs <- which(object@mediac %in% ignore || gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% ignore)
     if(length(ignore_subs) != 0){
       mat <- mat[-ignore_subs,]
       mediac <- object@mediac[-ignore_subs]
@@ -1513,7 +1517,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
       mat_nice <- tail(mat[order(mat_var),], num)
     }
   }else{ # CASE2: plot only substances given by subs
-    subs_index <- which(object@mediac %in% subs | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% subs)
+    subs_index <- which(object@mediac %in% subs || gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% subs)
     mat_nice <- mat[subs_index,]
     rownames(mat_nice) <- gsub("\\(e\\)","", gsub("EX_","",object@mediac[subs_index]))
   }
@@ -2094,7 +2098,7 @@ setGeneric("statSpec", function(object, type_nr=1, dict=NULL,
                                 legend_show=TRUE, legend_pos="center", legend_cex=0.75){standardGeneric("statSpec")})
 setMethod("statSpec", "Eval", function(object, type_nr=1, dict=NULL, 
                                        legend_show=TRUE, legend_pos="center", legend_cex=0.75){
-  if(type_nr <= 0 | type_nr > length(object@specs)){
+  if(type_nr <= 0 || type_nr > length(object@specs)){
     stop("Invalid type number, should be number indicating a species of arena@specs")
   }
   sname <- names(object@specs[type_nr])
