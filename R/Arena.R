@@ -612,14 +612,14 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
       
       for(j in seq_along(arena@media)){
         submat <- as.matrix(arena@media[[j]]@diffmat)
-        if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
-          apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
-        }
         #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
         homogenous = !(j %in% changed_mets)
         diffspeed  = arena@media[[j]]@difspeed!=0
         diff2d     = arena@media[[j]]@pde=="Diff2d"
         if( diffspeed && ( diff2d&&!homogenous || !diff2d ) ){
+          if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
+            apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
+          }
           switch(arena@media[[j]]@difunc,
                  "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
                  "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
