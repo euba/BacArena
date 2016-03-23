@@ -263,15 +263,7 @@ setGeneric("optimizeLP_par", function(object, lpob=object@lpobj, lb=object@lbnd,
 #' @export
 #' @rdname optimizeLP_par
 setMethod("optimizeLP_par", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6){ 
-  #fbasl <- sybil::optimizeProb(object@model, react=1:length(lb), ub=ub, lb=lb, retOptSol=FALSE)
-  
-  #lpob <- sybil::sysBiolAlg(object@model, algorithm="fba")
-  #lpob <- lpobject
-  #tryCatch(
-    fbasl <- sybil::optimizeProb(lpobject, react=1:length(lb), ub=ub, lb=lb)#,
-    #fbasl <- sybil::optimizeProb(object@lpobj, react=1:length(object@lbnd), ub=object@ubnd, lb=object@lbnd)#,
-    #error = function(e) print(e)
-  #)
+  fbasl <- sybil::optimizeProb(lpobject, react=1:length(lb), ub=ub, lb=lb)#,
   names(fbasl$fluxes) <- names(object@lbnd)
   if(!fbasl$stat == 5 | fbasl$obj<cutoff) {fbasl$obj <- 0} # glpk status code: 1-undef 2-feasible, 3-infeasible, 4-no_feasible, 5-opt, 6-unbounded
   return(fbasl)
@@ -292,14 +284,13 @@ setMethod("optimizeLP_par", "Organism", function(object, lpob=object@lpobj, lb=o
 #' @seealso \code{\link{Organism-class}}
 #' @examples
 #' NULL
-setGeneric("consume", function(object, sublb, cutoff=1e-6, bacnum){standardGeneric("consume")})
+setGeneric("consume", function(object, sublb, bacnum){standardGeneric("consume")})
 #' @export
 #' @rdname consume
-setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum){
-  if(object@fbasol$obj>=cutoff){
+setMethod("consume", "Organism", function(object, sublb, bacnum){
+  if(object@fbasol$obj>0){
     flux = object@fbasol$fluxes[object@medium]*bacnum #scale flux to whole population size
-    flux = na.omit(ifelse(abs(flux)<=cutoff,NA,flux))
-    sublb[names(flux)] = round(sublb[names(flux)]+flux, 6)
+    sublb[names(flux)] = round(sublb[names(flux)]+flux, 6) # round?
   }
   return(sublb)
 })
