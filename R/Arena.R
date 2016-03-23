@@ -610,16 +610,16 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
       testdiff = t(sublb[,-c(1,2)]) == unlist(lapply(arena@media,function(x,n,m){return(mean(x@diffmat))})) #check which mets in sublb have been changed by the microbes
       changed_mets = which(apply(testdiff,1,sum)/nrow(sublb) < 1) #find the metabolites which are changed by at least one microbe
       
-      for(j in changed_mets){#seq_along(arena@media)){ #get information from sublb matrix to media list
+      for(j in seq_along(arena@media)){
         submat <- as.matrix(arena@media[[j]]@diffmat)
         if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
           apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
         }
         #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
-        #homogenous = arena@n*arena@m != sum(submat==mean(submat))
+        homogenous = !(j %in% changed_mets)
         diffspeed  = arena@media[[j]]@difspeed!=0
         diff2d     = arena@media[[j]]@pde=="Diff2d"
-        if(diffspeed && diff2d){#( diff2d&&homogenous || !diff2d ) ){ 
+        if( diffspeed && ( diff2d&&!homogenous || !diff2d ) ){
           switch(arena@media[[j]]@difunc,
                  "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
                  "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
