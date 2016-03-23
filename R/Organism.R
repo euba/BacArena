@@ -250,6 +250,10 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
   names(fbasl$fluxes) <- names(object@lbnd)
   if(!fbasl$stat == 5 | fbasl$obj<cutoff) {fbasl$obj <- 0} # glpk status code: 1-undef 2-feasible, 3-infeasible, 4-no_feasible, 5-opt, 6-unbounded
   if(fbasl$obj<0) browser()
+  if(j==1){
+    print(paste("track cell growth:", round(fbasl$obj,5)))
+    #if(fbasl$obj==0) browser()
+  }
   eval.parent(substitute(object@fbasol <- fbasl))
 })
 
