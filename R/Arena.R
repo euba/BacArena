@@ -250,26 +250,20 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
   if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
   if(length(difspeed)!=length(mediac)){difspeed = rep(difspeed,length(mediac))}
-  # 2) create substances
-  newmedia <- list()
+  # 2) create and add substances
   for(i in 1:length(mediac)){
-    if(!(mediac[[i]] %in% names(object@media))){
-      newmedia[[mediac[i]]] <- Substance(object@n, object@m, 0, id=unname(mediac[i]), name=names(mediac[i]), difunc=difunc, difspeed=difspeed[i], gridgeometry=object@gridgeometry)
-    }else{
-      newmedia[[mediac[i]]] <- object@media[[which(names(object@media)==mediac[[i]])]]
-    }
-    if(add){
-      newdmat <- newmedia[[mediac[i]]]@diffmat + Matrix::Matrix(10^12*smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
-      newmedia[[mediac[i]]]@diffmat <- newdmat
-    }else{
-      newmedia[[mediac[i]]]@diffmat <- Matrix::Matrix(10^12*smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
-      newmedia[[mediac[i]]]@difspeed = difspeed[i]
+    existing <- mediac[[i]] %in% names(object@media)
+    if( !existing ){ # if it's a new substance
+      newmedia=list()
+      newmedia[[unname(mediac[i])]] <- Substance(object@n, object@m, smax=10^12*smax[i], id=unname(mediac[i]), name=names(mediac[i]), difunc=difunc, difspeed=difspeed[i], gridgeometry=object@gridgeometry)
+      eval.parent(substitute(object@media <- c(object@media, newmedia)))
+    }else{ # if it's an already existing substance
+      newmedia <- object@media[[mediac[[i]]]]
+      if(add) newsmax <- newmedia@smax + 10^12*smax[i] else newsmax <- 10^12*smax[i]
+      newmedia@diffmat <- Matrix::Matrix(newsmax, nrow=object@n, ncol=object@m, sparse=TRUE)
+      eval.parent(substitute(object@media[[mediac[[i]]]] <- newmedia))
     }
   }
-  #3) add to arena
-  hit <- which(names(object@media) %in% mediac)
-  if(length(hit)!= 0) eval.parent(substitute(object@media <- c(object@media[-hit], newmedia)))
-     else eval.parent(substitute(object@media <- c(object@media, newmedia)))
 })
 
 #' @title Change substances in the environment
@@ -583,7 +577,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
   if(class(object)!="Eval"){addEval(evaluation, arena)}
   sublb <- getSublb(arena)
   for(i in 1:time){
-    cat("\niteration:", i, "\t Organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "pg \n")
+    cat("\niteration:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "pg \n")
     org_stat <- table(arena@orgdat$type)
     names(org_stat) <- names(arena@specs)[as.numeric(names(org_stat))]
     print(org_stat)
