@@ -196,11 +196,22 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   if(sum(duplicated(paste(neworgdat$x,neworgdat$y,sep="_")))!=0){
     stop("You have multiple individuals in the same position! Make sure that your x an y positions are unique")
   }
+  #add initial medium (without concentration) for each organism
+  newmet = c(specI@medium,object@mediac)
+  newmet = newmet[!duplicated(newmet)]
+  newmet = newmet[setdiff(names(specI@medium),names(object@mediac))]
+  if(length(newmet) != 0){
+    newmedia = list()
+    for(i in 1:length(newmet)){
+      newmedia[[unname(newmet[i])]] <- Substance(object@n, object@m, smax=0, id=unname(newmet[i]), name=names(newmet[i]), gridgeometry=object@gridgeometry)
+    }
+  }
+  eval.parent(substitute(object@media <- c(object@media,newmedia)))
   eval.parent(substitute(object@orgdat <- neworgdat))
   eval.parent(substitute(object@specs <- newspecs))
   #eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
   newmediac <- c(object@mediac, specI@medium)
-  eval.parent(substitute(object@mediac <- newmediac[!duplicated(newmediac)] ))
+  eval.parent(substitute(object@mediac <- newmediac[!duplicated(newmediac)]))
   eval.parent(substitute(object@mflux <- newmflux))
   eval.parent(substitute(object@models <- c(object@models, specI@model)))
 })
@@ -238,6 +249,9 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
     print(setdiff(mediac, object@mediac))
     stop("Substance does not exist in exchange reactions")
   }
+  if(length(object@media)==0){
+    stop("Organisms need to be defined first to determine what substances can be exchanged.")
+  }
   if(length(intersect(unit,c("mmol/cell","mM","mmol/arena","mmol/cm2")))==0){stop("Wrong unit for concentration.")}
   if(length(smax) == 1){
     smax = rep(as.numeric(smax),length(mediac))
@@ -250,19 +264,17 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
   if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
   if(length(difspeed)!=length(mediac)){difspeed = rep(difspeed,length(mediac))}
-  # 2) create and add substances
+  # 2) create and add substances assuming that organisms are already added
   for(i in 1:length(mediac)){
-    existing <- mediac[[i]] %in% names(object@media)
-    if( !existing ){ # if it's a new substance
-      newmedia=list()
-      newmedia[[unname(mediac[i])]] <- Substance(object@n, object@m, smax=10^12*smax[i], id=unname(mediac[i]), name=names(mediac[i]), difunc=difunc, difspeed=difspeed[i], gridgeometry=object@gridgeometry)
-      eval.parent(substitute(object@media <- c(object@media, newmedia)))
-    }else{ # if it's an already existing substance
-      newmedia <- object@media[[mediac[[i]]]]
-      if(add) newsmax <- newmedia@smax + 10^12*smax[i] else newsmax <- 10^12*smax[i]
-      newmedia@diffmat <- Matrix::Matrix(newsmax, nrow=object@n, ncol=object@m, sparse=TRUE)
-      eval.parent(substitute(object@media[[mediac[[i]]]] <- newmedia))
+    newmedia <- object@media[[mediac[i]]]
+    newmedia@difspeed = difspeed[i]
+    newmedia@difunc = difunc
+    if(add){
+      newmedia@diffmat = newmedia@diffmat + Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
+    }else{
+      newmedia@diffmat = Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
     }
+    eval.parent(substitute(object@media[[mediac[[i]]]] <- newmedia))
   }
 })
 
