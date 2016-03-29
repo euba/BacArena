@@ -265,17 +265,17 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
   if(length(difspeed)!=length(mediac)){difspeed = rep(difspeed,length(mediac))}
   # 2) create and add substances assuming that organisms are already added
+  newmedia <- object@media
   for(i in 1:length(mediac)){
-    newmedia <- object@media[[mediac[i]]]
-    newmedia@difspeed = difspeed[i]
-    newmedia@difunc = difunc
+    newmedia[[mediac[i]]]@difspeed = difspeed[i]
+    newmedia[[mediac[i]]]@difunc = difunc
     if(add){
-      newmedia@diffmat = newmedia@diffmat + Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
+      newmedia[[mediac[i]]]@diffmat = newmedia[[mediac[i]]]@diffmat + Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
     }else{
-      newmedia@diffmat = Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
+      newmedia[[mediac[i]]]@diffmat = Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
     }
-    eval.parent(substitute(object@media[[mediac[[i]]]] <- newmedia))
   }
+  eval.parent(substitute(object@media <- newmedia))
 })
 
 #' @title Change substances in the environment
