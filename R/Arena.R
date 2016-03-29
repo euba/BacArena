@@ -259,19 +259,16 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   if(length(difspeed) != length(mediac)){difspeed = rep(difspeed,length(mediac))}
   
   # 1) consider units
-  if(unit=="mM"){smax <- (smax*0.01)*object@scale}  # conversion of mMol in mmol/grid_cell
-  if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
-  if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
+  if(unit=="mM"){        smax <- 10^12 * smax* 0.01 * object@scale}  # conversion of mMol in fmol/grid_cell
+  if(unit=="mmol/cm2"){  smax <- 10^12 * smax * object@scale}  # conversion of mmol/arena in fmol/grid_cell
+  if(unit=="mmol/arena"){smax <- 10^12 * smax / (object@n*object@m)}  # conversion of mmol/arena in fmol/grid_cell
   
   # 2) create and add substances assuming that organisms are already added
   newmedia <- object@media
   for(i in 1:length(mediac)){
-    newmedia[[mediac[i]]]@difspeed = difspeed[i]
-    newmedia[[mediac[i]]]@difunc = difunc
+    newmedia[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=names(mediac[i]), gridgeometry=object@gridgeometry, difunc=difunc, difspeed = difspeed[i])
     if(add){
-      newmedia[[mediac[i]]]@diffmat = newmedia[[mediac[i]]]@diffmat + Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
-    }else{
-      newmedia[[mediac[i]]]@diffmat = Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
+      newmedia[[mediac[i]]]@diffmat <- newmedia[[mediac[i]]]@diffmat + object@media[[mediac[i]]]@diffmat
     }
   }
   eval.parent(substitute(object@media <- newmedia))
@@ -1025,7 +1022,7 @@ setMethod(show, "Arena", function(object){
   group_conc <- split(all_conc, factor(unlist(unname(all_conc))))
   lapply(seq_along(group_conc), function(i){
     if(as.numeric(names(group_conc[i])) != 0){ # ignore substances with zero value
-      print(paste("substances with", names(group_conc)[i], "mmol per gridcell:"))
+      print(paste("substances with", names(group_conc)[i], "fmol per gridcell:"))
       print(names(group_conc[[i]]))
       cat("\n")
     }
@@ -1036,7 +1033,7 @@ setMethod(show, "Arena", function(object){
   print(paste("arena grid cells:",object@n,"x",object@m))
   print(paste("arena grid size [cm]:",object@Lx,"x",object@Ly))
   print(paste("flux unit:","mmol/(h*g_dw)"))
-  print(paste("1mM in arena correspons to mmol/grid_cell:", 1/100 * (object@Lx*object@Ly)/(object@n*object@m) ))
+  print(paste("1 mM in arena correspons to mmol/grid_cell:", 1/100 * (object@Lx*object@Ly)/(object@n*object@m) ))
   #print(paste("1mM in arena correspons to mmol/grid_cell:", 1/1000 * (object@Lx*object@Ly*sqrt(object@Lx*object@Ly))/(object@n*object@m) ))
   print(paste('Arena of size ',object@n,'x',object@m,' with ',nrow(object@orgdat),
               ' organisms of ',length(object@specs),' species.',sep=''))
