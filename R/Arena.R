@@ -189,7 +189,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
     neworgdat[(lastind+1):(amount+lastind),'x']=x
     neworgdat[(lastind+1):(amount+lastind),'y']=y
     if(is.numeric(growth)) neworgdat[(lastind+1):(amount+lastind),'growth'] = rep(growth, amount)
-    else neworgdat[(lastind+1):(amount+lastind),'growth'] = abs(rnorm(amount, mean=mean, sd=sd))
+    else neworgdat[(lastind+1):(amount+lastind),'growth'] = abs(rnorm(amount, mean=specI@cellweight_mean, sd=specI@cellweight_sd))
     neworgdat[(lastind+1):(amount+lastind),'type']=rep(type, amount)
     neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(NA, amount)
   }
@@ -303,6 +303,7 @@ setGeneric("changeSub", function(object, smax, mediac, unit="mmol/cell"){standar
 #' @rdname changeSub
 #' @export
 setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell"){
+  warning("DEPRECATED: Please use addSubs()")
   if(length(smax)>1 & length(smax) != length(mediac)){
     stop("Number of substances does not match number of given concentrations")
   }
