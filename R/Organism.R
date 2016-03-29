@@ -246,9 +246,15 @@ setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=
 #' @rdname optimizeLP
 setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j){ 
   fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
-  #fbasl <- sybil::optimizeProb(object@model, react=1:length(lb), ub=ub, lb=lb, retOptSol=FALSE)
   names(fbasl$fluxes) <- names(object@lbnd)
-  if(!fbasl$stat == 5 | fbasl$obj<cutoff) {fbasl$obj <- 0} # glpk status code: 1-undef 2-feasible, 3-infeasible, 4-no_feasible, 5-opt, 6-unbounded
+  switch(lpob@problem@solver,
+         glpkAPI = {solve_ok <- fbasl$stat==5},
+         cplexAPI = {solve_ok <- fbasl$stat==1},
+         clpAPI = {solve_ok <- fbasl$stat==0},
+         lpSolveAPI = {solve_ok <- fbasl$stat==0},
+         sybilGUROBI = {solve_ok <- fbasl$stat==2},
+         stop("Solver not suported!"))
+  if(!solve_ok | fbasl$obj<cutoff){fbasl$obj <- 0}
   eval.parent(substitute(object@fbasol <- fbasl))
 })
 
