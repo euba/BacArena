@@ -247,7 +247,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   }
   if(sum(mediac %in% object@mediac) != length(mediac)){
     print(setdiff(mediac, object@mediac))
-    stop("Substance does not exist in exchange reactions")
+    stop("Substance does not exist in exchange reactions. Did you add organisms yet?")
   }
   if(length(object@media)==0){
     stop("Organisms need to be defined first to determine what substances can be exchanged.")
@@ -265,13 +265,9 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   
   # 2) create and add substances assuming that organisms are already added
   for(i in 1:length(mediac)){
-    newmedia <- object@media[[mediac[i]]]
-    newmedia@difspeed = difspeed[i]
-    newmedia@difunc = difunc
+    newmedia <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=names(mediac[i]), gridgeometry=object@gridgeometry, difunc=difunc, difspeed = difspeed[i])
     if(add){
-      newmedia@diffmat = newmedia@diffmat + Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
-    }else{
-      newmedia@diffmat = Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
+      newmedia@diffmat = object@media[[mediac[[i]]]]@diffmat + Matrix::Matrix(smax[i], nrow=object@n, ncol=object@m, sparse=TRUE)
     }
     eval.parent(substitute(object@media[[mediac[[i]]]] <- newmedia))
   }
