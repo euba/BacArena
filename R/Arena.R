@@ -322,6 +322,31 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
   }else stop("Substance does not exist in medium.")
 })
 
+
+#' @title Add minimal medium of an organism to arena.
+#'
+#' @description The generic function \code{addMinMed} uses the lower bounds defined in an organism's model file to compose minimal medium.
+#' @export
+#' @rdname addMinMed
+#'
+#' @param object An object of class Arena.
+#' @param org An object of class Organism
+setGeneric("addMinMed", function(object, org){standardGeneric("addMinMed")})
+#' @rdname addMinMed
+#' @export
+setMethod("addMinMed", "Arena", function(object, org){
+  ex <- findExchReact(org@model)
+  min_id  <- ex@react_id[which(ex@lowbnd < 0)]
+  min_val <- -1 * ex@lowbnd[which(ex@lowbnd < 0)]
+  for(id in min_id){
+    newmedia <- object@media[[id]]
+    newmedia@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@n, ncol=object@m, sparse=TRUE)
+    eval.parent(substitute(object@media[[id]] <- newmedia))
+  }
+})
+
+
+
 #' @title Remove all substances in the environment
 #'
 #' @description The generic function \code{flushSubs} removes specific substances in the environment.
