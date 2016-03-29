@@ -247,23 +247,22 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   }
   if(sum(mediac %in% object@mediac) != length(mediac)){
     print(setdiff(mediac, object@mediac))
-    stop("Substance does not exist in exchange reactions")
+    stop("Substance does not exist in exchange reactions. Did you add organisms yet?")
   }
   if(length(object@media)==0){
     stop("Organisms need to be defined first to determine what substances can be exchanged.")
   }
   if(length(intersect(unit,c("mmol/cell","mM","mmol/arena","mmol/cm2")))==0){stop("Wrong unit for concentration.")}
-  if(length(smax) == 1){
-    smax = rep(as.numeric(smax),length(mediac))
-  }
-  if(length(names(mediac))==0){
-    names(mediac) <- names(object@mediac[which(object@mediac %in% mediac)]) # add substance names 
-  }
+  
+  if(length(smax) != length(mediac))    {smax = rep(as.numeric(smax),length(mediac))}
+  if(length(names(mediac)) == 0)        {names(mediac) <- names(object@mediac[which(object@mediac %in% mediac)])} # add substance names 
+  if(length(difspeed) != length(mediac)){difspeed = rep(difspeed,length(mediac))}
+  
   # 1) consider units
   if(unit=="mM"){smax <- (smax*0.01)*object@scale}  # conversion of mMol in mmol/grid_cell
   if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
   if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
-  if(length(difspeed)!=length(mediac)){difspeed = rep(difspeed,length(mediac))}
+  
   # 2) create and add substances assuming that organisms are already added
   newmedia <- object@media
   for(i in 1:length(mediac)){
@@ -321,6 +320,31 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
     }
   }else stop("Substance does not exist in medium.")
 })
+
+
+#' @title Add minimal medium of an organism to arena.
+#'
+#' @description The generic function \code{addMinMed} uses the lower bounds defined in an organism's model file to compose minimal medium.
+#' @export
+#' @rdname addMinMed
+#'
+#' @param object An object of class Arena.
+#' @param org An object of class Organism
+setGeneric("addMinMed", function(object, org){standardGeneric("addMinMed")})
+#' @rdname addMinMed
+#' @export
+setMethod("addMinMed", "Arena", function(object, org){
+  ex <- findExchReact(org@model)
+  min_id  <- ex@react_id[which(ex@lowbnd < 0)]
+  min_val <- -1 * ex@lowbnd[which(ex@lowbnd < 0)]
+  for(id in min_id){
+    newmedia <- object@media[[id]]
+    newmedia@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@n, ncol=object@m, sparse=TRUE)
+    eval.parent(substitute(object@media[[id]] <- newmedia))
+  }
+})
+
+
 
 #' @title Remove all substances in the environment
 #'
