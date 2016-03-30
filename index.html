@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="BacArena : agent based modelling">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>BacArena</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/euba/BacArena">View on GitHub</a>
+
+          <h1 id="project_title">BacArena</h1>
+          <h2 id="project_tagline">agent based modelling</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/euba/BacArena/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/euba/BacArena/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="bacarena" class="anchor" href="#bacarena" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>BacArena</h1>
+
+<p>BacArena is an agent based modeling framework for cellular communities.</p>
+
+<p>Existing genome-scale metabolic models can be used to simulate growth and interactions in time and space.
+In BacArena two well established methods are merged: a) Flux balance analysis to predict the activity of
+metabolic reactions and b) Agent based modelling in order to provide an environment.</p>
+
+<p>It has been  efficiently implemented in R language (with some C++ routines) and is freely available <a href="https://cran.r-project.org/package=BacArena">CRAN</a>.</p>
+
+<p>Features:</p>
+
+<ul>
+<li>Each organism is represented individually</li>
+<li>Simulation of &gt;10 different species and thousands of organisms on your desktop computer</li>
+<li>Diffusion of substances</li>
+<li>Screening of phenotypes</li>
+<li>Detection of crossfeeding</li>
+<li>Chemotaxis</li>
+<li>Kinetics of reactions</li>
+<li>Separation of simulation and evaluation</li>
+<li>Rich evaluation methods (data mining)</li>
+<li>Reproducible simulations</li>
+<li>Object oriented implementation</li>
+<li>Easily expandable due to rule based approach</li>
+</ul>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
+
+<ul>
+<li>
+<p>Install the latest release: </p>
+
+<div class="highlight highlight-source-r"><pre>install.packages(<span class="pl-s"><span class="pl-pds">"</span>BacArena<span class="pl-pds">"</span></span>)</pre></div>
+</li>
+<li>
+<p>Install the development version:</p>
+
+<div class="highlight highlight-source-r"><pre>library(<span class="pl-smi">devtools</span>)
+install_github(<span class="pl-s"><span class="pl-pds">"</span>euba/bacarena<span class="pl-pds">"</span></span>)</pre></div>
+</li>
+<li>
+<p>Special hints for linux user:</p>
+
+<ul>
+<li>glpk header files needed, e.g. for debian install package: libglpk-dev</li>
+</ul>
+</li>
+<li>
+<p>Special hints for windows user:</p>
+
+<ul>
+<li>Besides <a href="https://cran.r-project.org/bin/windows/base/">R</a> you need to install <a href="https://cran.r-project.org/bin/windows/Rtools/">Rtools</a>
+</li>
+</ul>
+</li>
+</ul>
+
+<h2>
+<a id="quick-start" class="anchor" href="#quick-start" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Quick start</h2>
+
+<div class="highlight highlight-source-r"><pre>library(<span class="pl-s"><span class="pl-pds">"</span>BacArena<span class="pl-pds">"</span></span>)
+openArena()</pre></div>
+
+<h2>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Documentation</h2>
+
+<p>A tutorial is available: <a href="https://github.com/euba/BacArena/raw/master/vignettes/BacArena-Introduction.pdf">Introduction</a> </p>
+
+<h2>
+<a id="issues" class="anchor" href="#issues" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Issues</h2>
+
+<p>Please report bugs, disorders or features you would like to see: <a href="https://github.com/euba/BacArena/issues">Issues</a></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">BacArena maintained by <a href="https://github.com/euba">euba</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
