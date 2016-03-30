@@ -635,7 +635,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
     names(org_stat) <- names(arena@specs)[as.numeric(names(org_stat))]
     print(org_stat)
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
-    if(nrow(arena@orgdat) > 0){ # if there are organisms left
+      if(nrow(arena@orgdat) > 0){ # if there are organisms left
       #sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
       for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
         org <- arena@specs[[arena@orgdat[j,'type']]]
@@ -656,7 +656,6 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
       
       testdiff = t(sublb[,-c(1,2)]) == unlist(lapply(arena@media,function(x,n,m){return(mean(x@diffmat))})) #check which mets in sublb have been changed by the microbes
       changed_mets = which(apply(testdiff,1,sum)/nrow(sublb) < 1) #find the metabolites which are changed by at least one microbe
-      
       for(j in seq_along(arena@media)){
         submat <- as.matrix(arena@media[[j]]@diffmat)
         #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
@@ -672,10 +671,11 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
                  "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
                  "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
                  "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
-                 stop("Diffusion function not defined yet.")) 
+                 stop("Diffusion function not defined yet."))
         }
         arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
-        sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+        #sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
+        sublb_tmp[,j] <- submat[cbind(arena@orgdat$x,arena@orgdat$y)]
       }
       sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
       colnames(sublb) <- c('x','y',arena@mediac)
