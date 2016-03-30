@@ -206,14 +206,22 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
       newmedia[[unname(newmet[i])]] <- Substance(object@n, object@m, smax=0, id=unname(newmet[i]), name=names(newmet[i]), gridgeometry=object@gridgeometry)
     }
   }
-  eval.parent(substitute(object@media <- c(object@media,newmedia)))
-  eval.parent(substitute(object@orgdat <- neworgdat))
-  eval.parent(substitute(object@specs <- newspecs))
-  #eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
-  newmediac <- c(object@mediac, specI@medium)
-  eval.parent(substitute(object@mediac <- newmediac[!duplicated(newmediac)]))
-  eval.parent(substitute(object@mflux <- newmflux))
-  eval.parent(substitute(object@models <- c(object@models, specI@model)))
+  object@media <- c(object@media,newmedia)
+  object@orgdat <- neworgdat
+  object@specs <- newspecs
+  object@mediac, specI@medium
+  object@mediac <- newmediac[!duplicated(newmediac)]
+  object@mflux <- newmflux
+  object@models <- c(object@models, specI@model)
+  return(object)
+  # eval.parent(substitute(object@media <- c(object@media,newmedia)))
+  # eval.parent(substitute(object@orgdat <- neworgdat))
+  # eval.parent(substitute(object@specs <- newspecs))
+  # #eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
+  # newmediac <- c(object@mediac, specI@medium)
+  # eval.parent(substitute(object@mediac <- newmediac[!duplicated(newmediac)]))
+  # eval.parent(substitute(object@mflux <- newmflux))
+  # eval.parent(substitute(object@models <- c(object@models, specI@model)))
 })
 
 #' @title Add substances to the environment
