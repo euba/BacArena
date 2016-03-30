@@ -238,10 +238,10 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
-setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, ret=FALSE){standardGeneric("addSubs")})
+setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=TRUE){standardGeneric("addSubs")})
 #' @rdname addSubs
 #' @export
-setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, ret=FALSE){
+setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=TRUE){
   if(length(smax) != length(mediac) && length(smax) != 1){
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
@@ -268,13 +268,14 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   # 2) create and add substances assuming that organisms are already added
   newmedia <- object@media
   for(i in 1:length(mediac)){
-    newmedia[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=names(mediac[i]), gridgeometry=object@gridgeometry, difunc=difunc, difspeed = difspeed[i])
+    old_diffmat <- object@media[[mediac[i]]]@diffmat
+    object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=names(mediac[i]), gridgeometry=object@gridgeometry, difunc=difunc, difspeed = difspeed[i])
     if(add){
-      newmedia[[mediac[i]]]@diffmat <- newmedia[[mediac[i]]]@diffmat + object@media[[mediac[i]]]@diffmat
+      object@media[[mediac[i]]]@diffmat <- object@media[[mediac[i]]]@diffmat + old_diffmat
     }
   }
-  # 3) return changed object or change it directly (attention call by val!)
-  if(ret) return(newmedia) else eval.parent(substitute(object@media <- newmedia))
+  # 3) return changed arena object
+  return(object)
 })
 
 #' @title Change substances in the environment
@@ -338,27 +339,25 @@ setMethod("addMinMed", "Arena", function(object, org){
   min_id  <- ex@react_id[which(ex@lowbnd < 0)]
   min_val <- -1 * ex@lowbnd[which(ex@lowbnd < 0)]
   for(id in min_id){
-    newmedia <- object@media[[id]]
-    newmedia@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@n, ncol=object@m, sparse=TRUE)
-    eval.parent(substitute(object@media[[id]]<-newmedia))
-  }
+    object@media[[id]]@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@n, ncol=object@m, sparse=TRUE)}
+  return(object)
 })
 
 
-#' @title Add minimal medium of an organism to arena.
+#' @title Remove substances
 #'
-#' @description The generic function \code{rmSubs} uses the lower bounds defined in an organism's model file to compose minimal medium.
+#' @description The generic function \code{rmSubs} removes all amounts of substances available in the arena for given compounds.
 #' @export
 #' @rdname rmSubs
 #'
 #' @param object An object of class Arena.
-#' @param org An object of class Organism
+#' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
 setGeneric("rmSubs", function(object, mediac){standardGeneric("rmSubs")})
 #' @rdname rmSubs
 #' @export
 setMethod("rmSubs", "Arena", function(object, mediac){
-  newmedia <- addSubs(object, smax=0, mediac=mediac, add=FALSE, ret=TRUE)
-  eval.parent(substitute(object@media <- newmedia))
+  object <- addSubs(object, smax=0, mediac=mediac, add=FALSE)
+  return(object)
 })
 
 
@@ -384,7 +383,8 @@ setGeneric("flushSubs", function(object){standardGeneric("flushSubs")})
 #' @export
 #' @rdname flushSubs
 setMethod("flushSubs", "Arena", function(object){
-  eval.parent(substitute(object@media <- list()))
+  object@media <- list()
+  return(object)
 })
 
 #' @title Change substance concentration patterns in the environment

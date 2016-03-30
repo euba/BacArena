@@ -129,11 +129,11 @@ estimate_lrw <- function(grid_n, grid_m){
 openArena <- function(){
   data(Ec_core, envir = environment())
   bac = Bac(model=Ec_core, type="E. coli")
-  arena = Arena(n=50, m=50, stir=F, Lx=0.0125, Ly=0.0125)
-  addOrg(arena, bac, amount=50)
-  addSubs(arena, smax=0.05, unit="mM", difspeed=6.7e-6,
+  arena <- Arena(n=50, m=50, stir=F, Lx=0.0125, Ly=0.0125)
+  arena <- addOrg(arena, bac, amount=50)
+  arena <- addSubs(arena, smax=0.05, unit="mM", difspeed=6.7e-6,
             mediac = c("EX_glc(e)", "EX_o2(e)", "EX_h2o(e)", "EX_pi(e)", "EX_nh4(e)", "EX_h(e)"))
-  sim <- simEnv(arena, time=10)  
+  sim <- simEnv(arena, time=5)  
   plotCurves2(sim, legendpos="left")
   return(sim)
 }
