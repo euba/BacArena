@@ -238,10 +238,10 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
-setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=T){standardGeneric("addSubs")})
+setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, ret=FALSE){standardGeneric("addSubs")})
 #' @rdname addSubs
 #' @export
-setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=T){
+setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, ret=FALSE){
   if(length(smax) != length(mediac) && length(smax) != 1){
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
@@ -273,7 +273,8 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
       newmedia[[mediac[i]]]@diffmat <- newmedia[[mediac[i]]]@diffmat + object@media[[mediac[i]]]@diffmat
     }
   }
-  eval.parent(substitute(object@media <- newmedia))
+  # 3) return changed object or change it directly (attention call by val!)
+  if(ret) return(newmedia) else eval.parent(substitute(object@media <- newmedia))
 })
 
 #' @title Change substances in the environment
@@ -339,10 +340,26 @@ setMethod("addMinMed", "Arena", function(object, org){
   for(id in min_id){
     newmedia <- object@media[[id]]
     newmedia@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@n, ncol=object@m, sparse=TRUE)
-    eval.parent(substitute(object@media[[id]] <- newmedia))
+    eval.parent(substitute(object@media[[id]]<-newmedia))
   }
 })
 
+
+#' @title Add minimal medium of an organism to arena.
+#'
+#' @description The generic function \code{rmSubs} uses the lower bounds defined in an organism's model file to compose minimal medium.
+#' @export
+#' @rdname rmSubs
+#'
+#' @param object An object of class Arena.
+#' @param org An object of class Organism
+setGeneric("rmSubs", function(object, mediac){standardGeneric("rmSubs")})
+#' @rdname rmSubs
+#' @export
+setMethod("rmSubs", "Arena", function(object, mediac){
+  newmedia <- addSubs(object, smax=0, mediac=mediac, add=FALSE, ret=TRUE)
+  eval.parent(substitute(object@media <- newmedia))
+})
 
 
 #' @title Remove all substances in the environment
