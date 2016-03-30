@@ -252,16 +252,18 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   if(length(object@media)==0){
     stop("Organisms need to be defined first to determine what substances can be exchanged.")
   }
-  if(length(intersect(unit,c("mmol/cell","mM","mmol/arena","mmol/cm2")))==0){stop("Wrong unit for concentration.")}
   
   if(length(smax) != length(mediac))    {smax = rep(as.numeric(smax),length(mediac))}
   if(length(names(mediac)) == 0)        {names(mediac) <- names(object@mediac[which(object@mediac %in% mediac)])} # add substance names 
   if(length(difspeed) != length(mediac)){difspeed = rep(difspeed,length(mediac))}
   
   # 1) consider units
-  if(unit=="mM"){        smax <- 10^12 * smax* 0.01 * object@scale}  # conversion of mMol in fmol/grid_cell
-  if(unit=="mmol/cm2"){  smax <- 10^12 * smax * object@scale}  # conversion of mmol/arena in fmol/grid_cell
-  if(unit=="mmol/arena"){smax <- 10^12 * smax / (object@n*object@m)}  # conversion of mmol/arena in fmol/grid_cell
+  switch(unit,
+         'mM'={smax <- 10^12 * smax* 0.01 * object@scale}, # conversion of mMol in fmol/grid_cell
+         'mmol/cm2'={smax <- 10^12 * smax * object@scale}, # conversion of mmol/arena in fmol/grid_cell
+         'mmol/arena'={smax <- 10^12 * smax / (object@n*object@m)}, # conversion of mmol/arena in fmol/grid_cell
+         'mmol/cell'={smax <- 10^12 * smax}, # conversion of mmol/cell in fmol/cell
+         stop("Wrong unit for concentration."))
   
   # 2) create and add substances assuming that organisms are already added
   newmedia <- object@media
