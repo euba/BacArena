@@ -207,6 +207,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
     }
   }
   object@media <- c(object@media,newmedia)
+  object@media <- object@media[unique(names(object@media))]
   object@orgdat <- neworgdat
   object@specs <- newspecs
   newmediac <- c(object@mediac, specI@medium)
