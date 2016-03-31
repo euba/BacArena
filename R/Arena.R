@@ -519,6 +519,7 @@ setMethod("changeOrg", "Arena", function(object, neworgdat){
 #' @param object An object of class Arena.
 #' @param org An object of class Organism.
 #' @param cutoff A number giving the cutoff for values of the objective function and fluxes of exchange reactions.
+#' @param fbasol Problem object according to the constraints and then solved with \code{optimizeProb}.
 #' @return Returns a number indicating the number of the phenotype in the phenotype list.
 #' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages. Uptake of substances are indicated by a negative and production of substances by a positive number.
 #' @seealso \code{\link{Arena-class}} and \code{\link{getPhenotype}}
@@ -528,13 +529,13 @@ setMethod("changeOrg", "Arena", function(object, neworgdat){
 #'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' checkPhen(arena,bac) #returns 1 as the index of the current phenotype in the list.
-setGeneric("checkPhen", function(object, org, cutoff=1e-6){standardGeneric("checkPhen")})
+setGeneric("checkPhen", function(object, org, cutoff=1e-6, fbasol){standardGeneric("checkPhen")})
 #' @export
 #' @rdname checkPhen
-setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6){
+setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6, fbasol){
   pind <- 0
-  if(org@fbasol$obj>=cutoff){
-    test = getPhenotype(org, cutoff=1e-6)
+  if(fbasol$obj>=cutoff){
+    test = getPhenotype(org, cutoff=1e-6, fbasol)
     tspec = org@type
     pvec = rep(0,length(object@mediac))
     names(pvec) = object@mediac
@@ -631,7 +632,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
   for(i in names(arena@specs)){
     phensel <- arena@phenotypes[which(names(arena@phenotypes)==i)]
     if(length(phensel)==0){
-      test = getPhenotype(arena@specs[[i]], cutoff=1e-6)
+      test = getPhenotype(arena@specs[[i]], cutoff=1e-6, fbasol=arena@specs[[i]]@fbasol)
       pvec = rep(0,length(arena@mediac))
       names(pvec) = arena@mediac
       pvec[names(test)] = test
@@ -719,7 +720,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
   for(i in names(arena@specs)){
     phensel <- arena@phenotypes[which(names(arena@phenotypes)==i)]
     if(length(phensel)==0){
-      test = getPhenotype(arena@specs[[i]], cutoff=1e-6)
+      test = getPhenotype(arena@specs[[i]], cutoff=1e-6, fbasol=arena@specs[[i]]@fbasol)
       pvec = rep(0,length(arena@mediac))
       names(pvec) = arena@mediac
       pvec[names(test)] = test

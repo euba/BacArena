@@ -234,13 +234,14 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' @param lpob A linear programing object encoding the problem to solve.
 #' @param lb A numeric vector giving the constraint values of lower bounds.
 #' @param ub A numeric vector giving the constraint values of upper bounds.
-#' @details The problem object \code{lpob} is modified according to the constraints and then solved with \code{optimizeProb}.
+#' @param cutoff value used to define numeric accuracy while interpreting optimization results
+#' @return Modified problem object according to the constraints and then solved with \code{optimizeProb}.
 #' @seealso \code{\link{Organism-class}}, \code{\link{optimizeProb}} and \code{\link{sysBiolAlg}}
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' org <- Organism(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
-#' optimizeLP(org)
+#' org@fbasol <- optimizeLP(org)
 setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j){standardGeneric("optimizeLP")})
 #' @export
 #' @rdname optimizeLP
@@ -255,25 +256,9 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
          sybilGUROBI = {solve_ok <- fbasl$stat==2},
          stop("Solver not suported!"))
   if(!solve_ok | fbasl$obj<cutoff){fbasl$obj <- 0}
-  eval.parent(substitute(object@fbasol <- fbasl))
-})
-
-
-#' @title Function for computing the linear programming according to the model structure 
-#'
-#' @description The generic function \code{optimizeLP_par} implements a linear programming based on the problem structure and refined constraints.
-#' @export
-#' @rdname optimizeLP_par
-#' 
-setGeneric("optimizeLP_par", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6){standardGeneric("optimizeLP_par")})
-#' @export
-#' @rdname optimizeLP_par
-setMethod("optimizeLP_par", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6){ 
-  fbasl <- sybil::optimizeProb(lpobject, react=1:length(lb), ub=ub, lb=lb)#,
-  names(fbasl$fluxes) <- names(object@lbnd)
-  if(!fbasl$stat == 5 | fbasl$obj<cutoff) {fbasl$obj <- 0} # glpk status code: 1-undef 2-feasible, 3-infeasible, 4-no_feasible, 5-opt, 6-unbounded
   return(fbasl)
 })
+
 
 #' @title Function to account for the consumption and production of substances
 #'
@@ -284,37 +269,22 @@ setMethod("optimizeLP_par", "Organism", function(object, lpob=object@lpobj, lb=o
 #' @param object An object of class Organisms.
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
 #' @param cutoff A number giving the cutoff value by which value of objective function is considered greater than 0.
-#' @param bacnum integer indicating the number of bacteria individuals per gridcell
+#' @param bacnum Integer indicating the number of bacteria individuals per gridcell
+#' @param cutoff Value used to define numeric accuracy while interpreting optimization results
+#' @param fbasol Problem object according to the constraints and then solved with \code{optimizeProb}.
 #' @return Returns the updated vector containing the substance concentrations in the current position of the individual of interest.
 #' @details The consumption is implemented by adding the flux of the exchange reactions to the current substance concentrations.
 #' @seealso \code{\link{Organism-class}}
 #' @examples
 #' NULL
-setGeneric("consume", function(object, sublb, bacnum){standardGeneric("consume")})
+setGeneric("consume", function(object, sublb, cutoff=1e-6, bacnum, fbasol){standardGeneric("consume")})
 #' @export
 #' @rdname consume
-setMethod("consume", "Organism", function(object, sublb, bacnum){
-  if(object@fbasol$obj>0){
-    flux = object@fbasol$fluxes[object@medium]*bacnum #scale flux to whole population size
-    sublb[names(flux)] = round(sublb[names(flux)]+flux, 6) # round?
-  }
-  return(sublb)
-})
-
-
-#' @title Function to account for the consumption and production of substances
-#'
-#' @description The generic function \code{consume_par} implements the consumption and production of substances based on the flux of exchange reactions of organisms
-#' @export
-#' @rdname consume_par
-setGeneric("consume_par", function(object, sublb, cutoff=1e-6, bacnum, fbasol){standardGeneric("consume_par")})
-#' @export
-#' @rdname consume_par
-setMethod("consume_par", "Organism", function(object, sublb, cutoff=1e-6, bacnum, fbasol){
+setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum, fbasol){
   if(fbasol$obj>=cutoff && !is.na(fbasol$obj)){
     flux = fbasol$fluxes[object@medium]*bacnum #scale flux to whole population size
-    flux = na.omit(ifelse(abs(flux)<=cutoff,NA,flux))
-    sublb[names(flux)] = round(sublb[names(flux)]+flux, 6)
+    #flux = na.omit(ifelse(abs(flux)<=cutoff,NA,flux)) ?
+    sublb[names(flux)] = round(sublb[names(flux)]+flux, round(-log10(1e-6))) # use cutoff also in this case
   }
   return(sublb)
 })
@@ -328,6 +298,7 @@ setMethod("consume_par", "Organism", function(object, sublb, cutoff=1e-6, bacnum
 #'
 #' @param object An object of class Organisms.
 #' @param cutoff A number giving the cutoff value by which value of objective function is considered greater than 0.
+#' @param fbasol Problem object according to the constraints and then solved with \code{optimizeProb}.
 #' @return Returns the phenotype of the organisms where the uptake of substances is indicated by a negative and production of substances by a positive number
 #' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages. Uptake of substances is indicated by a negative and production of substances by a positive number.
 #' @seealso \code{\link{Organism-class}}, \code{\link{checkPhen}} and \code{\link{minePheno}}
@@ -338,33 +309,17 @@ setMethod("consume_par", "Organism", function(object, sublb, cutoff=1e-6, bacnum
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' getPhenotype(org)
 #' }
-setGeneric("getPhenotype", function(object, cutoff=1e-6){standardGeneric("getPhenotype")})
+setGeneric("getPhenotype", function(object, cutoff=1e-6, fbasol, par=FALSE){standardGeneric("getPhenotype")})
 #' @export
 #' @rdname getPhenotype
-setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6){
-  exflux=object@fbasol$fluxes[object@medium]
-  exflux=ifelse(abs(exflux)<cutoff,0,1)*exflux
-  exflux=ifelse(exflux>0,1,exflux)
-  exflux=ifelse(exflux<0,2,exflux)
-  return(exflux[which(exflux!=0)])
-})
-
-#' @title Function to extract the phenotype of an organism object
-#'
-#' @description The generic function \code{getPhenotype_par} implements an identification of organism phenotypes.
-#' @export
-#' @rdname getPhenotype_par
-setGeneric("getPhenotype_par", function(object, cutoff=1e-6, fbasol){standardGeneric("getPhenotype_par")})
-#' @export
-#' @rdname getPhenotype_par
-setMethod("getPhenotype_par", "Organism", function(object, cutoff=1e-6, fbasol){
+setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6, fbasol, par=FALSE){
   exflux=fbasol$fluxes[object@medium]
   exflux=ifelse(abs(exflux)<cutoff,0,1)*exflux
   exflux=ifelse(exflux>0,1,exflux)
   exflux=ifelse(exflux<0,2,exflux)
-  #return(exflux[which(exflux!=0)])
-  return(exflux)
+  if(!par) return(exflux[which(exflux!=0)]) else return(exflux)
 })
+
 
 
 #' @title Function for letting organisms grow linearly
@@ -375,6 +330,7 @@ setMethod("getPhenotype_par", "Organism", function(object, cutoff=1e-6, fbasol){
 #'
 #' @param object An object of class Organisms.
 #' @param growth A number indicating the current biomass, which has to be updated. 
+#' @param fbasol Problem object according to the constraints and then solved with \code{optimizeProb}.
 #' @return Returns the updated biomass of the organisms of interest.
 #' @details Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value.
 #' @seealso \code{\link{Organism-class}} and \code{\link{optimizeLP}}
@@ -383,32 +339,16 @@ setMethod("getPhenotype_par", "Organism", function(object, cutoff=1e-6, fbasol){
 #' org <- Organism(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' growLin(org,1)
-setGeneric("growLin", function(object, growth){standardGeneric("growLin")})
+setGeneric("growLin", function(object, growth, fbasol){standardGeneric("growLin")})
 #' @export
 #' @rdname growLin
-setMethod("growLin", "Organism", function(object, growth){
-  if(object@fbasol$obj > 0) {
-    grow_accum <- object@fbasol$obj + growth
-  } else grow_accum <- growth - object@deathrate
-  return(grow_accum)
-})
-
-#' @title Function for letting organisms grow linearly
-#'
-#' @description The generic function \code{growLin_par} implements a growth model of organisms in their environment.
-#' @export
-#' @rdname growLin_par
-#'
-
-setGeneric("growLin_par", function(object, growth, fbasol){standardGeneric("growLin_par")})
-#' @export
-#' @rdname growLin_par
-setMethod("growLin_par", "Organism", function(object, growth, fbasol){
-  if(object@fbasol$obj > 0){
+setMethod("growLin", "Organism", function(object, growth, fbasol){
+  if(fbasol$obj > 0){
     grow_accum <- fbasol$obj + growth
   } else grow_accum <- growth - object@deathrate
   return(grow_accum)
 })
+
 
 
 #' @title Function for letting organisms grow exponentially
@@ -419,6 +359,7 @@ setMethod("growLin_par", "Organism", function(object, growth, fbasol){
 #'
 #' @param object An object of class Organisms.
 #' @param growth A number indicating the current biomass, which has to be updated. 
+#' @param fbasol Problem object according to the constraints and then solved with \code{optimizeProb}.
 #' @return Returns the updated biomass of the organisms of interest.
 #' @details Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value
 #' @seealso \code{\link{Organism-class}} and \code{\link{optimizeLP}}
@@ -429,32 +370,16 @@ setMethod("growLin_par", "Organism", function(object, growth, fbasol){
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' growExp(org,1)
 #' }
-setGeneric("growExp", function(object, growth){standardGeneric("growExp")})
+setGeneric("growExp", function(object, growth, fbasol){standardGeneric("growExp")})
 #' @export
 #' @rdname growExp
-setMethod("growExp", "Organism", function(object, growth){
-  if(object@fbasol$obj > 0){
-    grow_accum <- (object@fbasol$obj * growth + growth)
-  } else grow_accum <- growth - object@deathrate*growth
-  return(grow_accum)
-  #return(object@fbasol$obj * growth + growth - object@deathrate)
-})
-
-#' @title Function for letting organisms grow exponentially
-#'
-#' @description The generic function \code{growExp_par} implements a growth model of organisms in their environment.
-#' @export
-#' @rdname growExp_par
-
-setGeneric("growExp_par", function(object, growth, fbasol){standardGeneric("growExp_par")})
-#' @export
-#' @rdname growExp_par
-setMethod("growExp_par", "Organism", function(object, growth, fbasol){
+setMethod("growExp", "Organism", function(object, growth, fbasol){
   if(fbasol$obj > 0){
     grow_accum <- (fbasol$obj * growth + growth)
-  } else grow_accum <- growth - object@deathrate
+  } else grow_accum <- growth - object@deathrate*growth
   return(grow_accum)
 })
+
 
 
 #' @title Lysis function of organismal cells by adding biomass_compounds to the medium
@@ -676,15 +601,15 @@ setMethod("chem", "Bac", function(object){return(object@chem)})
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' growth(bac,arena,1)
-setGeneric("growth", function(object, population, j, occupyM){standardGeneric("growth")})
+setGeneric("growth", function(object, population, j, occupyM, fbasol){standardGeneric("growth")})
 #' @export
 #' @rdname growth
-setMethod("growth", "Bac", function(object, population, j, occupyM){
+setMethod("growth", "Bac", function(object, population, j, occupyM, fbasol){
   neworgdat <- population@orgdat
   popvec <- neworgdat[j,]
   switch(object@growtype,
-         "linear"= {popvec$growth <- growLin(object, popvec$growth)},
-         "exponential"= {popvec$growth <- growExp(object, popvec$growth)},
+         "linear"= {popvec$growth <- growLin(object, popvec$growth, fbasol)},
+         "exponential"= {popvec$growth <- growExp(object, popvec$growth, fbasol)},
          stop("Growth type must be either linear or exponential"))
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
@@ -805,15 +730,15 @@ setGeneric("simBac", function(object, arena, j, sublb, bacnum){standardGeneric("
 setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale, j)
-  optimizeLP(object, lb=lobnd, j=j)
+  fbasol <- optimizeLP(object, lb=lobnd, j=j)
   
-  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum))) #scale consumption to the number of cells?
+  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol))) #scale consumption to the number of cells?
 
-  dead <- growth(object, arena, j, arena@occupyM)
-  arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
+  dead <- growth(object, arena, j, arena@occupyM, fbasol=fbasol)
+  arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, org=object, fbasol=fbasol))
   
   type <- object@type
-  arena@mflux[[type]] <- arena@mflux[[type]] + object@fbasol$fluxes # remember active fluxes
+  arena@mflux[[type]] <- arena@mflux[[type]] + fbasol$fluxes # remember active fluxes
   
   if(dead && object@lyse){
     eval.parent(substitute(sublb[j,] <- lysis(object, sublb[j,])))
@@ -828,7 +753,6 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum){
       arena@orgdat[j,c('x','y')] <- chemo_pos
     }
   }
-  
   return(arena)
 })
 
@@ -845,9 +769,7 @@ setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum, lpobjec
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
   
-  #fbasol <- optimizeLP_par(object, lb=lobnd)
-  fbasol <- sybil::optimizeProb(lpobject, react=1:length(lobnd), ub=object@ubnd, lb=lobnd)#,
-  names(fbasol$fluxes) <- names(object@lbnd)
+  fbasol <- optimizeLP(object, lb=lobnd, j=j)
 
   sublb[j,] <- consume_par(object, sublb=sublb[j,], bacnum=bacnum, fbasol=fbasol) #scale consumption to the number of cells?
   
