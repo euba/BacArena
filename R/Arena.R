@@ -647,6 +647,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
     org_stat <- table(arena@orgdat$type)
     names(org_stat) <- names(arena@specs)[as.numeric(names(org_stat))]
     print(org_stat)
+    print(system.time({
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
       if(nrow(arena@orgdat) > 0){ # if there are organisms left
       #sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
@@ -662,13 +663,16 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
       test <- is.na(arena@orgdat$growth)
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       rm("test")
-    }
+      }
+    }))
+    print(system.time({
     if(!arena@stir){
       sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
       sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
       
       testdiff = t(sublb[,-c(1,2)]) == unlist(lapply(arena@media,function(x,n,m){return(mean(x@diffmat))})) #check which mets in sublb have been changed by the microbes
       changed_mets = which(apply(testdiff,1,sum)/nrow(sublb) < 1) #find the metabolites which are changed by at least one microbe
+      print(system.time({
       for(j in seq_along(arena@media)){
         submat <- as.matrix(arena@media[[j]]@diffmat)
         #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
@@ -677,7 +681,8 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
         diff2d     = arena@media[[j]]@pde=="Diff2d"
         if( diffspeed && ( diff2d&&!homogenous || !diff2d ) ){
           if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
-            apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
+            submat[cbind(sublb$x,sublb$y)] <- sublb[,arena@media[[j]]@id]
+            #apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
           }
           switch(arena@media[[j]]@difunc,
                  "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
@@ -690,6 +695,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
         #sublb_tmp[,j] <- apply(arena@orgdat, 1, function(x,sub){return(sub[x[4],x[5]])},sub=submat)
         sublb_tmp[,j] <- submat[cbind(arena@orgdat$x,arena@orgdat$y)]
       }
+      }))
       sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
       colnames(sublb) <- c('x','y',arena@mediac)
       rm("sublb_tmp")
@@ -697,6 +703,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
     }else{
       sublb <- stirEnv(arena, sublb)
     }
+    }))
     addEval(evaluation, arena)
     if(reduce && i<time){evaluation = redEval(evaluation)}
     if(nrow(arena@orgdat)==0 && !continue){
