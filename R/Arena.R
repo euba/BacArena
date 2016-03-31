@@ -477,11 +477,12 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
          stop("Positions must be top, bottom, right, or left."))
   for(i in 1:length(mediac)){
     if(add){
-      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(as.matrix(object@media[[mediac[i]]]@diffmat)+newdiffmat, sparse=TRUE)))
+      object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(as.matrix(object@media[[mediac[i]]]@diffmat)+newdiffmat, sparse=TRUE)
     }else{
-      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(newdiffmat, sparse=TRUE)))
+      object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(newdiffmat, sparse=TRUE)
     }
   }
+  return(object)
 })
 
 #' @title Change organisms in the environment
@@ -663,10 +664,10 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
       test <- is.na(arena@orgdat$growth)
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       rm("test")
-    }
+      }
     if(!arena@stir){
       sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
-      sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
+      #sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
       
       testdiff = t(sublb[,-c(1,2)]) == unlist(lapply(arena@media,function(x,n,m){return(mean(x@diffmat))})) #check which mets in sublb have been changed by the microbes
       changed_mets = which(apply(testdiff,1,sum)/nrow(sublb) < 1) #find the metabolites which are changed by at least one microbe
@@ -678,7 +679,9 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
         diff2d     = arena@media[[j]]@pde=="Diff2d"
         if( diffspeed && ( diff2d&&!homogenous || !diff2d ) ){
           if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
-            apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
+            #submat[cbind(sublb$x,sublb$y)] <- sublb[,arena@media[[j]]@id]
+            submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id]
+            #apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
           }
           switch(arena@media[[j]]@difunc,
                  "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
