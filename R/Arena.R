@@ -319,11 +319,14 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
     smax = rep(as.numeric(smax),length(mediac))
   }
   if(length(setdiff(mediac, names(object@media))) == 0 ){
-    if(unit=="mM"){smax <- (smax*0.01)*object@scale}  # conversion of mMol in mmol/grid_cell
-    if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
-    if(unit=="mmol/arena"){smax <- smax/(object@n*object@m)}  # conversion of mmol/arena in mmol/grid_cell
+    switch(unit,
+           'mM'={smax <- 10^12 * smax* 0.01 * object@scale}, # conversion of mMol in fmol/grid_cell
+           'mmol/cm2'={smax <- 10^12 * smax * object@scale}, # conversion of mmol/arena in fmol/grid_cell
+           'mmol/arena'={smax <- 10^12 * smax / (object@n*object@m)}, # conversion of mmol/arena in fmol/grid_cell
+           'mmol/cell'={smax <- 10^12 * smax}, # conversion of mmol/cell in fmol/cell
+           stop("Wrong unit for concentration."))
     for(i in which(mediac %in% object@mediac)){
-      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=10^12*smax[i], id=mediac[i], name=object@media[[mediac[i]]]@name,
+      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax[i], id=mediac[i], name=object@media[[mediac[i]]]@name,
                                                                   difunc=object@media[[mediac[i]]]@difunc,
                                                                   difspeed=object@media[[mediac[i]]]@difspeed, gridgeometry=object@gridgeometry)))
     }
@@ -456,11 +459,13 @@ setGeneric("createGradient", function(object, mediac, position, smax, steep, add
 #' @rdname createGradient
 setMethod("createGradient", "Arena", function(object, mediac, position, smax, steep, add=FALSE, unit='mmol/cell'){
   if(steep<=0 || steep>=1){stop("Steepness must be in between 0 and 1.")}
-  if(length(intersect(unit,c("mmol/cell","mM","mmol/cm2","mmol/arena")))==0){stop("Wrong unit for concentration.")}
   mediac = intersect(mediac,object@mediac)
-  if(unit=="mM"){smax <- (smax*0.01)*object@scale}  # conversion of mMol in mmol/grid_cell
-  if(unit=="mmol/cm2"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
-  if(unit=="mmol/arena"){smax <- smax*object@scale}  # conversion of mmol/arena in mmol/grid_cell
+  switch(unit,
+         'mM'={smax <- 10^12 * smax* 0.01 * object@scale}, # conversion of mMol in fmol/grid_cell
+         'mmol/cm2'={smax <- 10^12 * smax * object@scale}, # conversion of mmol/arena in fmol/grid_cell
+         'mmol/arena'={smax <- 10^12 * smax / (object@n*object@m)}, # conversion of mmol/arena in fmol/grid_cell
+         'mmol/cell'={smax <- 10^12 * smax}, # conversion of mmol/cell in fmol/cell
+         stop("Wrong unit for concentration."))
   newdiffmat <- matrix(0,nrow=object@n,ncol=object@m)
   gradn = floor(object@n*steep)
   gradm = floor(object@m*steep)
