@@ -209,7 +209,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   object@media <- c(object@media,newmedia)
   object@orgdat <- neworgdat
   object@specs <- newspecs
-  object@mediac, specI@medium
+  newmediac <- c(object@mediac, specI@medium)
   object@mediac <- newmediac[!duplicated(newmediac)]
   object@mflux <- newmflux
   object@models <- c(object@models, specI@model)
