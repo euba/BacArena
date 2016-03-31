@@ -477,11 +477,12 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
          stop("Positions must be top, bottom, right, or left."))
   for(i in 1:length(mediac)){
     if(add){
-      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(as.matrix(object@media[[mediac[i]]]@diffmat)+newdiffmat, sparse=TRUE)))
+      object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(as.matrix(object@media[[mediac[i]]]@diffmat)+newdiffmat, sparse=TRUE)
     }else{
-      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(newdiffmat, sparse=TRUE)))
+      object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(newdiffmat, sparse=TRUE)
     }
   }
+  return(object)
 })
 
 #' @title Change organisms in the environment
