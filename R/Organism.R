@@ -650,8 +650,8 @@ setMethod("growth_par", "Bac", function(object, population, j, fbasol){
   neworgdat <- population@orgdat
   popvec <- neworgdat[j,]
   switch(object@growtype,
-         "linear"= {popvec$growth <- growLin_par(object, popvec$growth, fbasol)},
-         "exponential"= {popvec$growth <- growExp_par(object, popvec$growth, fbasol)},
+         "linear"= {popvec$growth <- growLin(object, popvec$growth, fbasol)},
+         "exponential"= {popvec$growth <- growExp(object, popvec$growth, fbasol)},
          stop("Growth type must be either linear or exponential"))
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
@@ -772,7 +772,7 @@ setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum, lpobjec
   
   fbasol <- optimizeLP(object, lb=lobnd, j=j)
 
-  sublb[j,] <- consume_par(object, sublb=sublb[j,], bacnum=bacnum, fbasol=fbasol) #scale consumption to the number of cells?
+  sublb[j,] <- consume(object, sublb=sublb[j,], bacnum=bacnum, fbasol=fbasol) #scale consumption to the number of cells?
   
   growth <- growth_par(object, arena, j, fbasol)
   dead <- growth[[1]]

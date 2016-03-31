@@ -565,7 +565,7 @@ setGeneric("checkPhen_par", function(object, org, cutoff=1e-6, fbasol){standardG
 setMethod("checkPhen_par", "Arena", function(object, org, cutoff=1e-6, fbasol){
   pind <- 0
   if(fbasol$obj>=cutoff){
-    test = getPhenotype_par(org, cutoff=1e-6, fbasol)
+    test = getPhenotype(org, cutoff=1e-6, fbasol)
     tspec = org@type
     pvec = rep(0,length(object@mediac))
     names(pvec) = object@mediac
