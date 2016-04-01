@@ -11,7 +11,11 @@ source(file="R/Stuff.R")
 source(file="R/Substance.R")
 source(file="R/Organism.R")
 Rcpp::sourceCpp("src/diff.cpp")
-SYBIL_SETTINGS("SOLVER","cplexAPI")
+##SYBIL_SETTINGS("SOLVER","cplexAPI")
+SYBIL_SETTINGS("SOLVER","sybilGUROBI")
+
+data("Ec_core")
+optimizeProb(Ec_core)
 
 #
 # Simulation
@@ -25,11 +29,14 @@ arena = Arena(n=200, m=200, stir=F, seed=8904, Lx=0.05, Ly=0.05, tstep=0.2)
 #addOrg(arena, bac, amount=11, x=c((arena@n/2-5):(arena@n/2+5)), y=c((arena@m/2-5):(arena@m/2+5)))
 arena = addOrg(arena, bac, amount=1, x=arena@n/2, y=arena@m/2,growth = 0.9)
 #addOrg(arena, bac, amount=arena@n, x=1:arena@n, y=arena@m/2)
-arena = addSubs(arena, smax=0.05, difspeed=6.7e-6, unit='mM') #0.02412#0.072
+arena = addSubs(arena, smax=0.05, difspeed=6.7e-6, unit='mM', difunc="naive") #0.02412#0.072
 #addSubs(arena, smax=10, mediac=c("EX_o2(e)","EX_h(e)","EX_co2(e)","EX_o2(e)","EX_pi(e)"), difunc="pde", difspeed=rep(0.072,5))
 #createGradient(arena,smax=20,mediac="EX_o2(e)",position='left',steep=0.5)
 #createGradient(arena,smax=20,mediac=arena@mediac,position='left',steep=0.5)
 sim <- simEnv(arena, time=10, lrw=26937744)
+
+plotCurves(sim,retdata=T)
+evalArena(sim,plot_items="EX_o2(e)")
 
 SYBIL_SETTINGS("TOLERANCE",1E-6) #set tolerance of FBA value higher
 SYBIL_SETTINGS("MAXIMUM",1) #set tolerance of FBA value higher
