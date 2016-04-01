@@ -1,16 +1,17 @@
-setwd("~/uni/bacarena")
-setwd('/Users/euba/GitRep/BacArena')
+library(sybil)
+library(sybilSBML)
 library(Rcpp)
 library(RcppArmadillo)
 library(sybil)
+library(compiler)
 library(ReacTran)
+setwd('P:/GitRep/BacArena')
 source(file="R/Arena.R")
+source(file="R/Stuff.R")
 source(file="R/Substance.R")
 source(file="R/Organism.R")
-source(file="R/Stuff.R")
 Rcpp::sourceCpp("src/diff.cpp")
-
-SYBIL_SETTINGS("SOLVER","sybilGUROBI") #setting solver to GUROBI
+SYBIL_SETTINGS("SOLVER","cplexAPI")
 
 #
 # Simulation
@@ -22,9 +23,9 @@ bac = Bac(model=Ec_core, growtype="exponential", cellarea=4.42, lyse=F)
 setKinetics(bac, exchangeR="EX_glc(e)", Km=0.01, vmax=7.56)
 arena = Arena(n=200, m=200, stir=F, seed=8904, Lx=0.05, Ly=0.05, tstep=0.2)
 #addOrg(arena, bac, amount=11, x=c((arena@n/2-5):(arena@n/2+5)), y=c((arena@m/2-5):(arena@m/2+5)))
-addOrg(arena, bac, amount=1, x=arena@n/2, y=arena@m/2,growth = 0.9)
+arena = addOrg(arena, bac, amount=1, x=arena@n/2, y=arena@m/2,growth = 0.9)
 #addOrg(arena, bac, amount=arena@n, x=1:arena@n, y=arena@m/2)
-addSubs(arena, smax=0.05, difspeed=6.7e-6, unit='mM') #0.02412#0.072
+arena = addSubs(arena, smax=0.05, difspeed=6.7e-6, unit='mM') #0.02412#0.072
 #addSubs(arena, smax=10, mediac=c("EX_o2(e)","EX_h(e)","EX_co2(e)","EX_o2(e)","EX_pi(e)"), difunc="pde", difspeed=rep(0.072,5))
 #createGradient(arena,smax=20,mediac="EX_o2(e)",position='left',steep=0.5)
 #createGradient(arena,smax=20,mediac=arena@mediac,position='left',steep=0.5)
