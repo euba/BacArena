@@ -327,9 +327,10 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
            'mmol/cell'={smax <- 10^12 * smax}, # conversion of mmol/cell in fmol/cell
            stop("Wrong unit for concentration."))
     for(i in which(mediac %in% object@mediac)){
-      eval.parent(substitute(object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax[i], id=mediac[i], name=object@media[[mediac[i]]]@name,
+      object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax[i], id=mediac[i], name=object@media[[mediac[i]]]@name,
                                                                   difunc=object@media[[mediac[i]]]@difunc,
-                                                                  difspeed=object@media[[mediac[i]]]@difspeed, gridgeometry=object@gridgeometry)))
+                                                                  difspeed=object@media[[mediac[i]]]@difspeed, gridgeometry=object@gridgeometry)
+      return(object)
     }
   }else stop("Substance does not exist in medium.")
 })
@@ -426,7 +427,8 @@ setGeneric("changeDiff", function(object, newdiffmat, mediac){standardGeneric("c
 setMethod("changeDiff", "Arena", function(object, newdiffmat, mediac){
   if(nrow(newdiffmat)==object@n && ncol(newdiffmat)==object@m){
     for(i in 1:length(mediac)){
-      eval.parent(substitute(object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(newdiffmat, sparse=TRUE)))
+      object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(newdiffmat, sparse=TRUE)
+      return(object)
     }
   }else stop("Given matrix is not compatible in dimensions with the environment.")
 })
@@ -509,7 +511,8 @@ setGeneric("changeOrg", function(object, neworgdat){standardGeneric("changeOrg")
 #' @export
 #' @rdname changeOrg
 setMethod("changeOrg", "Arena", function(object, neworgdat){
-  eval.parent(substitute(object@orgdat <- neworgdat))
+  object@orgdat <- neworgdat
+  return(object)
 })
 
 #' @title Function for checking phenotypes in the environment
