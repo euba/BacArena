@@ -668,17 +668,18 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
     if(!arena@stir){
       sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
       #sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
-      
-      testdiff = t(sublb[,-c(1,2)]) == unlist(lapply(arena@media,function(x,n,m){return(mean(x@diffmat))})) #check which mets in sublb have been changed by the microbes
-      changed_mets = which(apply(testdiff,1,sum)/nrow(sublb) < 1) #find the metabolites which are changed by at least one microbe
+      if(dim(sublb)[1] > 0){ # if there are organisms
+        testdiff <- t(sublb[,-c(1,2)]) == unlist(lapply(arena@media,function(x,n,m){return(mean(x@diffmat))})) #check which mets in sublb have been changed by the microbes
+        changed_mets <- which(apply(testdiff,1,sum)/nrow(sublb) < 1) #find the metabolites which are changed by at least one microbe
+      } else changed_mets <- list()
       for(j in seq_along(arena@media)){
         submat <- as.matrix(arena@media[[j]]@diffmat)
         #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
-        homogenous = !(j %in% changed_mets)
+        if(length(changed_mets)>0) homogenous = !(j %in% changed_mets) else homogenous = FALSE
         diffspeed  = arena@media[[j]]@difspeed!=0
         diff2d     = arena@media[[j]]@pde=="Diff2d"
         if( diffspeed && ( diff2d&&!homogenous || !diff2d ) ){
-          if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
+          if(dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
             #submat[cbind(sublb$x,sublb$y)] <- sublb[,arena@media[[j]]@id]
             submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id]
             #apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
