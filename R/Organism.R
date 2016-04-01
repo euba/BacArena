@@ -901,15 +901,15 @@ setMethod("changeFobj", "Human", function(object, new_fobj, model, alg="fba"){
 #' addOrg(arena,human,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' cellgrowth(human,arena,1)
-setGeneric("cellgrowth", function(object, population, j){standardGeneric("cellgrowth")})
+setGeneric("cellgrowth", function(object, population, j, occupyM, fbasol){standardGeneric("cellgrowth")})
 #' @export
 #' @rdname cellgrowth
-setMethod("cellgrowth", "Human", function(object, population, j){
+setMethod("cellgrowth", "Human", function(object, population, j, occupyM, fbasol){
   neworgdat <- population@orgdat
   popvec <- neworgdat[j,]
   switch(object@growtype,
-         "linear"= {popvec$growth <- growLin(object, popvec$growth)},
-         "exponential"= {popvec$growth <- growExp(object, popvec$growth)},
+         "linear"= {popvec$growth <- growLin(object, popvec$growth, fbasol)},
+         "exponential"= {popvec$growth <- growExp(object, popvec$growth, fbasol)},
          stop("Growth type must be either linear or exponential"))
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
@@ -919,12 +919,14 @@ setMethod("cellgrowth", "Human", function(object, population, j){
     if(length(freenb) != 0){
       npos = freenb[sample(length(freenb),1)]
       npos = as.numeric(unlist(strsplit(npos,'_')))
-      daughter <- popvec
-      daughter$growth <- popvec$growth/2
-      daughter$x <- npos[1]
-      daughter$y <- npos[2]
-      neworgdat[nrow(neworgdat)+1,] <- daughter
-      neworgdat[j,'growth'] <- popvec$growth/2
+      if(occupyM[npos[1], npos[2]] == 0){ # check if there is no obstacle
+        daughter <- popvec
+        daughter$growth <- popvec$growth/2
+        daughter$x <- npos[1]
+        daughter$y <- npos[2]
+        neworgdat[nrow(neworgdat)+1,] <- daughter
+        neworgdat[j,'growth'] <- popvec$growth/2
+      }
     }
   }else if(popvec$growth < object@growthlimit){
     neworgdat[j,'growth'] <- NA
@@ -956,10 +958,11 @@ setGeneric("simHum", function(object, arena, j, sublb, bacnum){standardGeneric("
 setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
-  optimizeLP(object, lb=lobnd)
-  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum))) #rescale from population size
-  dead <- cellgrowth(object, arena, j)
-  arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object))
+  fbasol <- optimizeLP(object, lb=lobnd, j=j)
+  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol))) #rescale from population size
+  
+  dead <- cellgrowth(object, arena, j, arena@occupyM, fbasol=fbasol)
+  arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object, fbasol=fbasol))
   if(dead && object@lyse){
     eval.parent(substitute(sublb[j,] <- lysis(object, names(arena@media), sublb[j,])))
   }

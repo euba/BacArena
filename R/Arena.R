@@ -207,6 +207,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
     }
   }
   object@media <- c(object@media,newmedia)
+  object@media <- object@media[unique(names(object@media))]
   object@orgdat <- neworgdat
   object@specs <- newspecs
   newmediac <- c(object@mediac, specI@medium)
@@ -645,6 +646,9 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
   if(class(object)!="Eval"){addEval(evaluation, arena)}
   sublb <- getSublb(arena)
   for(i in 1:time){
+    new_ind = sample(1:nrow(arena@orgdat),nrow(arena@orgdat)) #shuffle through all bacteria to increase randomness
+    arena@orgdat = arena@orgdat[new_ind,]
+    sublb = sublb[new_ind,] #apply shuffeling also to sublb to ensure same index as orgdat
     cat("\niteration:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "pg \n")
     org_stat <- table(arena@orgdat$type)
     names(org_stat) <- names(arena@specs)[as.numeric(names(org_stat))]
