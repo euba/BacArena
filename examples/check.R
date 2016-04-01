@@ -1,5 +1,18 @@
 # script to check basic functionality of bacarena
+library(sybil)
+library(Rcpp)
+library(RcppArmadillo)
+library(sybil)
+library(compiler)
+library(ReacTran)
+setwd('P:/GitRep/BacArena')
+source(file="R/Arena.R")
+source(file="R/Stuff.R")
+source(file="R/Substance.R")
+source(file="R/Organism.R")
+Rcpp::sourceCpp("src/diff.cpp")
 
+SYBIL_SETTINGS("SOLVER","cplexAPI") #setting solver to GUROBI
 
 
 #
