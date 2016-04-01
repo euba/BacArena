@@ -560,6 +560,13 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6, fbasol){
 #' @description The generic function \code{checkPhen_par} checks and adds the phenotypes of organisms in the environment.
 #' @export
 #' @rdname checkPhen_par
+#' 
+#' @param object An object of class Arena.
+#' @param org An object of class Organism.
+#' @param cutoff A number giving the cutoff for values of the objective function and fluxes of exchange reactions.
+#' @param fbasol Problem object according to the constraints and then solved with \code{optimizeProb}.
+#' 
+#' @rdname checkPhen_par
 setGeneric("checkPhen_par", function(object, org, cutoff=1e-6, fbasol){standardGeneric("checkPhen_par")})
 #' @export
 #' @rdname checkPhen_par
@@ -585,9 +592,9 @@ setMethod("checkPhen_par", "Arena", function(object, org, cutoff=1e-6, fbasol){
   return(list(pind, FALSE))
 })
 
+
+# parallel helper funtion
 setGeneric("addPhen", function(object, org, pvec){standardGeneric("addPhen")})
-#' @export
-#' @rdname addPhen
 setMethod("addPhen", "Arena", function(object, org, pvec){
   tspec = org@type
   phenc <- object@phenotypes
@@ -1324,6 +1331,8 @@ setMethod("extractMed", "Eval", function(object, time=length(object@medlist)){
 #' @param phencol A boolean variable indicating if the phenotypes of the organisms in the environment should be integrated as different colors in the population plot.
 #' @param retdata A boolean variable indicating if the data used to generate the plots should be returned.
 #' @param time A numeric vector giving the simulation steps which should be plotted.
+#' @param show_legend A boolean variable indicating if a legend shuld be shown.
+#' @param legend_pos Position of the legend.
 #' @return Returns several plots of the chosen plot items. Optional the data to generate the original plots can be returned.
 #' @details If \code{phencol} is \code{TRUE} then different phenotypes of the same organism are visualized by varying colors, otherwise different organism types are represented by varying colors. The parameter \code{retdata} can be used to access the data used for the returned plots to create own custom plots. 
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
@@ -1489,14 +1498,19 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 #' @description The generic function \code{getVarSubs} returns ordered list of substances that showed variance during simulation
 #' @export
 #' @rdname getVarSubs
-setGeneric("getVarSubs", function(object, only_products=TRUE, only_substrates=TRUE, digits=10){standardGeneric("getVarSubs")})
+#' 
+#' @param object An object of class Eval.
+#' @param only_products A boolean indicating if only products should be shown
+#' @param only_substrates A boolean indicating if only substrates should be shown
+#' @param cutoff Value used to define numeric accuracy while interpreting optimization results
+setGeneric("getVarSubs", function(object, only_products=TRUE, only_substrates=TRUE, cutoff=1e-6){standardGeneric("getVarSubs")})
 #' @export
 #' @rdname getVarSubs
-setMethod("getVarSubs", "Eval", function(object, only_products=FALSE, only_substrates=FALSE, digits=10){
+setMethod("getVarSubs", "Eval", function(object, only_products=FALSE, only_substrates=FALSE, cutoff=1e-6){
   prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
   list <- lapply(prelist, function(x){lapply(x, sum)})
   # attention round due to numeric accuracy
-  mat <- round(matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist)), digits=digits)
+  mat <- round(matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist)), round(-log10(cutoff)))
   #mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
   mediac <- object@mediac
   rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
@@ -1520,6 +1534,9 @@ setMethod("getVarSubs", "Eval", function(object, only_products=FALSE, only_subst
 #' @description The generic function \code{getSubHist} returns list with amount of substance for each timestep
 #' @export
 #' @rdname getSubHist
+#' 
+#' @param object An object of class Eval.
+#' @param sub Name of a substance.
 setGeneric("getSubHist", function(object, sub){standardGeneric("getSubHist")})
 #' @export
 #' @rdname getSubHist
@@ -1547,6 +1564,8 @@ setMethod("getSubHist", "Eval", function(object, sub){
 #' @param num An integer defining the number of substrates to be plot
 #' @param phencol Boolean variable indicating whether phenotypes should be higlighted
 #' @param dict List defining new substance names. List entries are intepreted as old names and the list names as the new ones.
+#' @param biomcol A boolean indicating if biomass should be included in gowth curve
+#' @param subs List of substance names. If empty, substances with highest variance will be used.
 #' @return Returns two graphs in one plot: the growth curves and the curves of concentration changes
 #' @details The parameter \code{retdata} can be used to access the data used for the returned plots to create own custom plots. 
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
@@ -1964,6 +1983,7 @@ setMethod("statPheno", "Eval", function(object, type_nr=1, phenotype_nr, dict=NU
 #' @param legendpos A character variable declaring the position of the legend
 #' @param dict List defining new substance names. List entries are intepreted as old names and the list names as the new ones.
 #' @param lwd Line thickness scale in graph
+#' @param org_dict A named list/vector with names that should replace (eg. unreadable) IDs
 #' @return Graph (igraph)
 #' 
 setGeneric("findFeeding", function(object, dict=NULL, tcut=5, scut=list(), org_dict=NULL, legendpos="topleft", lwd=1){standardGeneric("findFeeding")})

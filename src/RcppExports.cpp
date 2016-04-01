@@ -59,6 +59,18 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// updateSubmat
+NumericMatrix updateSubmat(NumericMatrix submat, NumericMatrix sublb_red);
+RcppExport SEXP BacArena_updateSubmat(SEXP submatSEXP, SEXP sublb_redSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericMatrix >::type submat(submatSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type sublb_red(sublb_redSEXP);
+    __result = Rcpp::wrap(updateSubmat(submat, sublb_red));
+    return __result;
+END_RCPP
+}
 // duplicateCpp
 DataFrame duplicateCpp(DataFrame orgdat, int n, int m, List cellweight, IntegerMatrix occupyM);
 RcppExport SEXP BacArena_duplicateCpp(SEXP orgdatSEXP, SEXP nSEXP, SEXP mSEXP, SEXP cellweightSEXP, SEXP occupyMSEXP) {
