@@ -178,6 +178,7 @@ setMethod("model", "Organism", function(object){return(object@model)})
 #' @param dryweight A number giving the current dryweight of the organism.
 #' @param time A number giving the time intervals for each simulation step.
 #' @param scale A numeric defining the scaling (units for linear programming has to be in certain range)
+#' @param j debuging index to track cell
 #' @return Returns the lower bounds, which carry the constraints and names of relevant reactions.
 #' @details The constraints are calculated according to the flux definition as mmol/(gDW*hr) with the parameters \code{dryweight} and \code{time}.
 #' @seealso \code{\link{Organism-class}}
@@ -236,6 +237,7 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' @param lb A numeric vector giving the constraint values of lower bounds.
 #' @param ub A numeric vector giving the constraint values of upper bounds.
 #' @param cutoff value used to define numeric accuracy while interpreting optimization results
+#' @param j debuging index to track cell
 #' @return Modified problem object according to the constraints and then solved with \code{optimizeProb}.
 #' @seealso \code{\link{Organism-class}}, \code{\link{optimizeProb}} and \code{\link{sysBiolAlg}}
 #' @examples
@@ -271,7 +273,6 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
 #' @param cutoff A number giving the cutoff value by which value of objective function is considered greater than 0.
 #' @param bacnum Integer indicating the number of bacteria individuals per gridcell
-#' @param cutoff Value used to define numeric accuracy while interpreting optimization results
 #' @param fbasol Problem object according to the constraints and then solved with \code{optimizeProb}.
 #' @return Returns the updated vector containing the substance concentrations in the current position of the individual of interest.
 #' @details The consumption is implemented by adding the flux of the exchange reactions to the current substance concentrations.
@@ -285,7 +286,7 @@ setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum, fb
   if(fbasol$obj>=cutoff && !is.na(fbasol$obj)){
     flux = fbasol$fluxes[object@medium]*bacnum #scale flux to whole population size
     #flux = na.omit(ifelse(abs(flux)<=cutoff,NA,flux)) ?
-    sublb[names(flux)] = round(sublb[names(flux)]+flux, round(-log10(1e-6))) # use cutoff also in this case
+    sublb[names(flux)] = round(sublb[names(flux)]+flux, round(-log10(cutoff))) # use cutoff also in this case
   }
   return(sublb)
 })
@@ -300,6 +301,7 @@ setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum, fb
 #' @param object An object of class Organisms.
 #' @param cutoff A number giving the cutoff value by which value of objective function is considered greater than 0.
 #' @param fbasol Problem object according to the constraints and then solved with \code{optimizeProb}.
+#' @param par A boolean indicating if running in parallel mode.
 #' @return Returns the phenotype of the organisms where the uptake of substances is indicated by a negative and production of substances by a positive number
 #' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages. Uptake of substances is indicated by a negative and production of substances by a positive number.
 #' @seealso \code{\link{Organism-class}}, \code{\link{checkPhen}} and \code{\link{minePheno}}
@@ -589,8 +591,9 @@ setMethod("chem", "Bac", function(object){return(object@chem)})
 #'
 #' @param object An object of class Bac.
 #' @param population An object of class Arena.
-#' @param j The number of the iteration of interest.
+#' @param j The index of the organism of interest in orgdat.
 #' @param occupyM A matrix indicating grid cells that are obstacles
+#' @param fbasol Problem object according to the constraints and then solved with \code{optimizeProb}.
 #' @return Boolean variable of the \code{j}th individual indicating if individual died.
 #' @details Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value. Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value
 #' @seealso \code{\link{Bac-class}}, \code{\link{growLin}} and \code{\link{growExp}}
@@ -643,6 +646,12 @@ setMethod("growth", "Bac", function(object, population, j, occupyM, fbasol){
 #' @description The generic function \code{growth_par} implements different growth models for an object of class Bac.
 #' @export
 #' @rdname growth_par
+#' 
+#' @param object An object of class Bac.
+#' @param population An object of class Arena.
+#' @param j The index of the organism of interest in orgdat.
+#' @param fbasol Problem object according to the constraints and then solved with \code{optimizeProb}.
+#' @return A list 
 setGeneric("growth_par", function(object, population, j, fbasol){standardGeneric("growth_par")})
 #' @export
 #' @rdname growth_par
@@ -717,7 +726,7 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 #'
 #' @param object An object of class Bac.
 #' @param arena An object of class Arena defining the environment.
-#' @param j The number of the iteration of interest.
+#' @param j The index of the organism of interest in orgdat.
 #' @param bacnum integer indicating the number of bacteria individuals per gridcell
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
 #' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.
@@ -762,6 +771,14 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum){
 #' @description The generic function \code{simBac_par} implements all neccessary functions for the individuals to update the complete environment. 
 #' @export
 #' @rdname simBac_par
+#'
+#' @param object An object of class Bac.
+#' @param arena An object of class Arena defining the environment.
+#' @param j The index of the organism of interest in orgdat.
+#' @param bacnum integer indicating the number of bacteria individuals per gridcell
+#' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
+#' @param lpobject linar programming object (copy of organism@lpobj) that have to be a deep copy in parallel due to pointer use in sybil.
+#' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.
 #'
 setGeneric("simBac_par", function(object, arena, j, sublb, bacnum, lpobject){standardGeneric("simBac_par")})
 #' @export
@@ -890,6 +907,8 @@ setMethod("changeFobj", "Human", function(object, new_fobj, model, alg="fba"){
 #' @param object An object of class Human.
 #' @param population An object of class Arena.
 #' @param j The number of the iteration of interest.
+#' @param occupyM A matrix indicating grid cells that are obstacles
+#' @param fbasol Problem object according to the constraints and then solved with \code{optimizeProb}.
 #' @return Boolean variable of the \code{j}th individual indicating if individual died.
 #' @details Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value. Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value.
 #' @seealso \code{\link{Human-class}}, \code{\link{growLin}} and \code{\link{growExp}}
