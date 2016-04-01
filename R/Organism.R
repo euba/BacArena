@@ -258,6 +258,8 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
          lpSolveAPI = {solve_ok <- fbasl$stat==0},
          sybilGUROBI = {solve_ok <- fbasl$stat==2},
          stop("Solver not suported!"))
+  #if(is.na(fbasl$obj)){fbasl$obj <- 0}
+  #if(is.na(fbasl$obj)){browser()}
   if(!solve_ok | fbasl$obj<cutoff){fbasl$obj <- 0}
   return(fbasl)
 })
@@ -979,7 +981,6 @@ setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum){
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
   fbasol <- optimizeLP(object, lb=lobnd, j=j)
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol))) #rescale from population size
-  
   dead <- cellgrowth(object, arena, j, arena@occupyM, fbasol=fbasol)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object, fbasol=fbasol))
   if(dead && object@lyse){
