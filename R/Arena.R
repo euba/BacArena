@@ -1416,7 +1416,9 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
       }else{
         plot(object@simlist[[i]][,c('x','y')],xlim=c(0,object@n),ylim=c(0,object@m),xlab='',ylab='',
              pch=object@simlist[[i]]$type-1,axes=FALSE,cex=1,main=paste('Population', ": #", i), col=object@simlist[[i]]$type)
-
+        if(show_legend){
+          legend(legend_pos, legend=names(object@specs), col=c(1:length(names(object@specs))), pch=c(1:length(names(object@specs)))-1)
+        }
       }
     }
   }
