@@ -729,7 +729,33 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
 })
 
 
+
+#' @title Main function for simulating in parallel all processes in the environment
+#'
+#' @description The generic function \code{simEnv_par} for a simple in parallel all simulation of the environment.
+#' @export
+#' @rdname simEnv_par
+#'
+#' @param object An object of class Arena or Eval.
+#' @param time A number giving the number of iterations to perform for the simulation
+#' @param lrw A numeric value needed by solver to estimate array size (by default lwr is estimated in the simEnv() by the function estimate_lrw())
+#' @param continue A boolean indicating whether the simulation should be continued or restarted.
+#' @param reduce A boolean indicating if the resulting \code{Eval} object should be reduced
+#' @param cluster_size Number of cpu cores to be used.
+#' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
+#' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
+#' @seealso \code{\link{Arena-class}} and \code{\link{Eval-class}}
+#' @examples
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
+#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(n=20,m=20) #initialize the environment
+#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' addSubs(arena,40) #add all possible substances
+#' eval <- simEnv(arena,10)
 setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL){standardGeneric("simEnv_par")})
+#' @export
+#' @rdname simEnv_par
 setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL){
   if(length(object@media)==0) stop("No media present in Arena!")
   switch(class(object),
@@ -823,9 +849,8 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
           
           fba_fluxes <- sapply(parallel_sol, with, fbasol_flux)
           arena@mflux[[names(arena@specs)[[spec_nr]]]] <<- arena@mflux[[names(arena@specs)[[spec_nr]]]] + colSums(matrix(unlist(fba_fluxes), ncol=length(arena@mflux[[names(arena@specs)[[spec_nr]]]]), byrow = TRUE)) # remember active fluxes
-          
           todo_pheno <- sapply(parallel_sol, with, todo_pheno)
-          todo_pheno <- unname(unlist(todo_pheno))
+          todo_pheno <- as.numeric(unname(unlist(todo_pheno)))
           todo_pheno_nr <- sapply(parallel_sol, with, todo_pheno_nr)
           todo_pheno_nr <- unlist(todo_pheno_nr)
           if(all(is.na(arena@orgdat$phenotype))) arena@orgdat$phenotype <<- todo_pheno # init case
@@ -869,19 +894,22 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
 setGeneric("diffuse", function(object, lrw, cluster_size, sublb){standardGeneric("diffuse")})
 setMethod("diffuse", "Arena", function(object, lrw, cluster_size, sublb){
   arena <- object
+  if(dim(sublb)[1] > 0){ # if there are organisms
+    testdiff <- t(sublb[,-c(1,2)]) == unlist(lapply(arena@media,function(x,n,m){return(mean(x@diffmat))})) #check which mets in sublb have been changed by the microbes
+    changed_mets <- which(apply(testdiff,1,sum)/nrow(sublb) < 1) #find the metabolites which are changed by at least one microbe
+  } else changed_mets <- list()
   parallel_diff <- parallel::mclapply(seq_along(arena@media), function(j){
   #parallel_diff <- lapply(seq_along(arena@media), function(j){
     submat <- as.matrix(arena@media[[j]]@diffmat)
-    if(nrow(sublb) != sum(sublb[,j+2]==mean(submat))){
-      apply(sublb[,c('x','y',arena@media[[j]]@id)],1,function(x){submat[x[1],x[2]] <<- x[3]})
-    }
     # updateSubmat lead to errors in parallel..
     #submat <- updateSubmat(as.matrix(arena@media[[j]]@diffmat), sublb[,c(1:2,j+2)])
     #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
-    homogenous = arena@n*arena@m != sum(submat==mean(submat))
+    if(length(changed_mets)>0) homogenous = !(j %in% changed_mets) else homogenous = FALSE
     diffspeed  = arena@media[[j]]@difspeed!=0
     diff2d     = arena@media[[j]]@pde=="Diff2d"
-    if( diffspeed && ( diff2d&&homogenous || !diff2d ) ){  
+    if( diffspeed && ( diff2d&&!homogenous || !diff2d ) ){
+      if(dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
+        submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id]}
       switch(arena@media[[j]]@difunc,
              "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
              "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
@@ -890,7 +918,6 @@ setMethod("diffuse", "Arena", function(object, lrw, cluster_size, sublb){
              stop("Diffusion function not defined yet.")) 
     }
     diffmat_tmp <- Matrix::Matrix(submat, sparse=TRUE)
-    diffmat_tmp
   #})
   }, mc.cores=cluster_size)
   for(j in seq_along(arena@media)){
