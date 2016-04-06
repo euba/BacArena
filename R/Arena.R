@@ -28,6 +28,7 @@ globalVariables(c("diffuseNaiveCpp","diffuseSteveCpp"))
 #' @slot scale A numeric defining the scale factor used for intern unit conversion.
 #' @slot models A list containing Objects of class sybil::modelorg which represent the genome scale metabolic models
 #' @slot occupyM A matrix indicating grid cells that are obstacles
+#' @slot sublb A data matrix containing positions with amounts of substance for all organism
 setClass("Arena",
          representation(
            orgdat="data.frame",
@@ -46,7 +47,8 @@ setClass("Arena",
            seed="numeric",
            scale="numeric",
            models="list",
-           occupyM="matrix"
+           occupyM="matrix",
+           sublb="matrix"
         ),
         prototype(
           orgdat = data.frame(growth=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
@@ -58,7 +60,8 @@ setClass("Arena",
           stir = F,
           mflux = list(),
           seed=sample(1:10000,1),
-          models=list()
+          models=list(),
+          sublb=matrix()
         )
 )
 
@@ -656,13 +659,13 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
     }
   }
   if(class(object)!="Eval"){addEval(evaluation, arena)}
-  #sublb <- getSublb(arena)
+  arena@sublb <- getSublb(arena)
   if(diff_par) cl_size <- parallel::detectCores()
   diff_t=0
   for(i in 1:time){
+    init_t <- proc.time()[3]
     if(nrow(arena@orgdat) > 1){
-      sublb <- getSublb(arena)
-      init_t <- proc.time()[3]
+      sublb <- arena@sublb
       new_ind = sample(1:nrow(arena@orgdat),nrow(arena@orgdat)) #shuffle through all bacteria to increase randomness
       arena@orgdat = arena@orgdat[new_ind,]
       sublb = sublb[new_ind,] #apply shuffeling also to sublb to ensure same index as orgdat
@@ -744,8 +747,9 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
       }else submat <- arena@media[[j]]@diffmat
       sublb_tmp[,j] <- submat[cbind(arena@orgdat$x,arena@orgdat$y)]
     }#})[3]
-    #diff_post_t <- system.time(sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp))[3]
-    #colnames(sublb) <- c('x','y',arena@mediac)
+    sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
+    colnames(sublb) <- c('x','y',arena@mediac)
+    arena@sublb <- sublb
     
     #diff_t <- proc.time()[3] - diff_init_t
     #print(paste("diffusion time total", round(diff_t,3), "pre", round(diff_pre_t,3), "loop", round(diff_loop_t,3), "pde", round(diff_pde_t,3), "sublb", round(diff_sublb_t,3), "post", round(diff_post_t,3) ))
@@ -804,15 +808,15 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
     }
   }
   if(class(object)!="Eval"){addEval(evaluation, arena)}
-  sublb <- getSublb(arena)
+  arena@sublb <- getSublb(arena)
   
   if(length(cluster_size)==0){
     cluster_size <- parallel::detectCores()
   }
 
-  #par_t=0; par_t2=0; movdup_t=0; diff_t=0
-  diff_t=0
   for(i in 1:time){
+    diff_t=0; par_t=0; par_post_t=0
+    
     init_t <- proc.time()[3]
     arena@orgdat["nr"] <- seq_len(dim(arena@orgdat)[1]) # dummy numbering
     cat("\nparallel iteration:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "pg \n")
@@ -822,9 +826,10 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
       #if(nrow(arena@orgdat) >= arena@n*arena@m) browser()
-      sublb <- getSublb(arena)
+      test_init_t <- proc.time()[3]
+      sublb <- arena@sublb
       #sublb[,arena@mediac] = sublb[,arena@mediac]*(10^12) #convert to fmol per gridcell
-  
+      test_t <- proc.time()[3] - test_init_t
       
       # 1) split orgdat into a data.frames for each species 
       split_orgdat <- split(arena@orgdat, as.factor(arena@orgdat$type))
@@ -840,8 +845,8 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
           names(groups) <- NULL
           #parallel_sol <- lapply(groups, function(g){
           #parallel_sol <- parallel::parLapply(parallelCluster, groups, function(g){
-          #par_t <<- system.time(parallel_sol <- parallel::mclapply(groups, function(g){
-          parallel_sol <- parallel::mclapply(groups, function(g){
+          par_t <<- par_t + system.time(parallel_sol <- parallel::mclapply(groups, function(g){
+          #parallel_sol <- parallel::mclapply(groups, function(g){
                                       # 2.1.2.1) critical step: create lpobject for each core 
                                       #(otherwise pointer will corrupt in warm-started optimization)
                                       model <- arena@specs[[spec_nr]]@model
@@ -864,8 +869,9 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
                                         })
                                       list("neworgdat"=sapply(test, with, neworgdat), "sublb"=sapply(test, with, sublb), "fbasol_flux"=sapply(test, with, fbasol$fluxes), "todo_pheno"=sapply(test, with, todo_pheno), "todo_pheno_nr"=sapply(test, with, todo_pheno_nr))
           #})
-          }, mc.cores=cluster_size)#)[3]
+          }, mc.cores=cluster_size))[3]
           
+          par_post_init_t <- proc.time()[3]
           tmpnames <- colnames(arena@orgdat)
           orgdat2 <- data.frame(matrix(unlist(sapply(parallel_sol, with, neworgdat)), ncol=dim(arena@orgdat)[2], byrow=TRUE))
           colnames(orgdat2) <- tmpnames
@@ -892,6 +898,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
               arena@orgdat$phenotype[which(todo_pheno == pvec)] <<- res_addPhen[[2]]
             })
           }
+          par_post_t <<- par_post_t + (proc.time()[3] - par_post_init_t)
         # 2.2) in case of small splited data frame do seriell work
         }else{
           stop("to be done")
@@ -906,7 +913,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       # delete dead organisms
       test <- is.na(arena@orgdat$growth)
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
-      rm("test")
+      #rm("test")
     }
     
     if(diffusion) diff_t <- system.time(arena <- diffuse_par(arena, lrw, cluster_size, sublb) )[3]
@@ -918,9 +925,9 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       break
     }
     step_t <- proc.time()[3] - init_t
-    cat("\ttime total: ", round(step_t,3), "\tdiffusion: ", round(diff_t,3), " (", 100*round(diff_t/step_t,3),"%)\n" )
-    #print(paste("iteration rel time total", round(step_t,3), "par_fba", round(par_t/step_t,3), "movement/duppli", round(movdup_t/step_t,3), "diffusion", round(diff_t/step_t,3)))
-    #print(paste("abs time par_fba:", round(par_t,3), "movement/duppli", round(movdup_t,3), "diffusion", round(diff_t,3)))
+    #cat("\ttime total: ", round(step_t,3), "\tdiffusion: ", round(diff_t,3), " (", 100*round(diff_t/step_t,3),"%)\n" )
+    cat("\ttime total: ", round(step_t,3), "\tdiffusion: ", round(diff_t,3), " (", 100*round(diff_t/step_t,3),"%)", "\tpar_fba: ", round(par_t,3), " (", 100*round(par_t/step_t,3),"%)", "\tpar_fba_post: ", round(par_post_t,3), " (", 100*round(par_post_t/step_t,3),"%)\n")
+    cat("\ttest:", round(test_t,3), " (", 100*round(test_t/step_t,3),"%)")
   }
   #parallel::stopCluster(parallelCluster)
   return(evaluation)
@@ -930,6 +937,7 @@ setGeneric("diffuse_par", function(object, lrw, cluster_size, sublb){standardGen
 setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
   diff_init_t <- proc.time()[3]
   arena <- object
+  sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
   #diff_pre_t <- system.time({ if(dim(sublb)[1] > 0){
   if(dim(sublb)[1] > 0){ # if there are organisms
       testdiff <- t(sublb[,-c(1,2)]) == unlist(lapply(arena@media,function(x,n,m){return(mean(x@diffmat))})) #check which mets in sublb have been changed by the microbes
@@ -938,7 +946,7 @@ setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
   #diff_pde_t=0; diff_sublb_t=0
   #diff_loop_t <- system.time(parallel_diff <- parallel::mclapply(seq_along(arena@media), function(j){
   parallel_diff <- parallel::mclapply(seq_along(arena@media), function(j){
-  #diff_loop_t <- system.time(parallel_diff <- lapply(seq_along(arena@media), function(j){
+  #parallel_diff <- lapply(seq_along(arena@media), function(j){
   #diff_loop_t <- system.time(parallel_diff <-  foreach(j=seq_along(arena@media)) %dopar% {
     #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
     if(length(changed_mets)>0) homogenous = !(j %in% changed_mets) else homogenous = FALSE
@@ -958,14 +966,23 @@ setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
              "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
              stop("Diffusion function not defined yet."))#)[3]
       diffmat_tmp <- Matrix::Matrix(submat, sparse=TRUE)
-    }else diffmat_tmp <- arena@media[[j]]@diffmat
-    diffmat_tmp
-  #}))[3]
+    }else{
+      diffmat_tmp <- arena@media[[j]]@diffmat
+      submat <- as.matrix(arena@media[[j]]@diffmat)
+    }
+    sublb_tmp  <- submat[cbind(arena@orgdat$x,arena@orgdat$y)]
+    list("diffmat"=diffmat_tmp, "sublb"=sublb_tmp)
+  #})#)[3]
   }, mc.cores=cluster_size)#)[3]
+  
   #diff_post_t <- system.time({ for(j in seq_along(arena@media)){
   for(j in seq_along(arena@media)){
-      arena@media[[j]]@diffmat <- parallel_diff[[j]]
+      arena@media[[j]]@diffmat <- parallel_diff[[j]][[1]]
+      sublb_tmp[,j] <- parallel_diff[[j]][[2]]
   }#})[3]
+  sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
+  colnames(sublb) <- c('x','y',arena@mediac)
+  arena@sublb <- sublb
   #diff_t <- proc.time()[3] - diff_init_t
   #print(paste("diffusion time total", round(diff_t,3), "pre", round(diff_pre_t,3), "loop", round(diff_loop_t,3), "pde", round(diff_pde_t,3), "sublb", round(diff_sublb_t,3), "post", round(diff_post_t,3) ))
   return(arena)
