@@ -166,7 +166,7 @@ setMethod("diffusePDE", "Substance", function(object, init_mat, gridgeometry, lr
   #init_mat <- as.matrix(object@diffmat)
   if(is.null(lrw)){
     lrw=estimate_lrw(gridgeometry$grid2D$x.N, gridgeometry$grid2D$y.N)}
-  solution <- deSolve::ode.2D(y = init_mat, func = get(object@pde), times=1:(1+tstep), parms = c(gridgeometry=gridgeometry, diffgeometry=object@diffgeometry, boundS=object@boundS),
+  solution <- deSolve::ode.2D(y = init_mat, func = get(object@pde), times=c(1,1+tstep), parms = c(gridgeometry=gridgeometry, diffgeometry=object@diffgeometry, boundS=object@boundS),
                      dimens = c(gridgeometry$grid2D$x.N, gridgeometry$grid2D$y.N), method="lsodes", lrw=lrw)#160000
   diff_mat <- matrix(data=solution[2,][-1], ncol=ncol(init_mat), nrow=nrow(init_mat))
   return(diff_mat)
