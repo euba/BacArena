@@ -32,7 +32,7 @@ colpal3 = c(
 )
 
 # Diffusion pde solver function
-Diff2d <- function (t, y, parms)  {
+Diff2d <- function (t, y, parms){
   # geometry values are in parms
   with (as.list(parms), {
     CONC  <- matrix(nrow = gridgeometry.grid2D$x.N, ncol = gridgeometry.grid2D$y.N, data = y)

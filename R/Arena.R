@@ -657,6 +657,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
   sublb <- getSublb(arena)
   for(i in 1:time){
     if(nrow(arena@orgdat) > 1){
+      init_t <- proc.time()[3]
       new_ind = sample(1:nrow(arena@orgdat),nrow(arena@orgdat)) #shuffle through all bacteria to increase randomness
       arena@orgdat = arena@orgdat[new_ind,]
       sublb = sublb[new_ind,] #apply shuffeling also to sublb to ensure same index as orgdat
@@ -681,13 +682,14 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       rm("test")
       }
-    if(!arena@stir){
+    diff_t <- system.time(if(!arena@stir){
       sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
       #sublb <- as.data.frame(sublb) #convert to data.frame for faster processing in apply
       if(dim(sublb)[1] > 0){ # if there are organisms
         testdiff <- t(sublb[,-c(1,2)]) == unlist(lapply(arena@media,function(x,n,m){return(mean(x@diffmat))})) #check which mets in sublb have been changed by the microbes
         changed_mets <- which(apply(testdiff,1,sum)/nrow(sublb) < 1) #find the metabolites which are changed by at least one microbe
       } else changed_mets <- list()
+      diff_pde_t=0
       for(j in seq_along(arena@media)){
         #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
         if(length(changed_mets)>0) homogenous = !(j %in% changed_mets) else homogenous = FALSE
@@ -698,12 +700,12 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
           if(dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
             submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id]
           }
-          switch(arena@media[[j]]@difunc,
+          diff_pde_t <- diff_pde_t + system.time(switch(arena@media[[j]]@difunc,
                  "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
                  "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
                  "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
                  "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
-                 stop("Diffusion function not defined yet."))
+                 stop("Diffusion function not defined yet.")))[3]
           arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
         }else submat <- arena@media[[j]]@diffmat
         sublb_tmp[,j] <- submat[cbind(arena@orgdat$x,arena@orgdat$y)]
@@ -714,13 +716,16 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
       rm("submat")
     }else{
       sublb <- stirEnv(arena, sublb)
-    }
+    })[3]
     addEval(evaluation, arena)
     if(reduce && i<time){evaluation = redEval(evaluation)}
     if(nrow(arena@orgdat)==0 && !continue){
       print("All organisms died!")
       break
     }
+    step_t <- proc.time()[3] - init_t
+    #print(paste("rel time par_fba:", round(par_t/step_t,3), "par_fba2", round(par2_t/step_t,3), "movement/duppli", round(movdup_t/step_t,3), "diffusion", round(diff_t/step_t,3)))
+    print(paste("abs time diffusion", round(diff_t,3), "pde", round(diff_pde_t,3)))
   }
   return(evaluation)
 })
@@ -907,8 +912,9 @@ setMethod("diffuse", "Arena", function(object, lrw, cluster_size, sublb){
       changed_mets <- which(apply(testdiff,1,sum)/nrow(sublb) < 1) #find the metabolites which are changed by at least one microbe
     } else changed_mets <- list()})[3]
   diff_pde_t=0; diff_sublb_t=0
-  #diff_par_t <- system.time(parallel_diff <- parallel::mclapply(seq_along(arena@media), function(j){
-  diff_par_t <- system.time(parallel_diff <- lapply(seq_along(arena@media), function(j){
+  diff_par_t <- system.time(parallel_diff <- parallel::mclapply(seq_along(arena@media), function(j){
+  #diff_par_t <- system.time(parallel_diff <- lapply(seq_along(arena@media), function(j){
+  #diff_par_t <- system.time(parallel_diff <-  foreach(j=seq_along(arena@media)) %dopar% {
     #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
     if(length(changed_mets)>0) homogenous = !(j %in% changed_mets) else homogenous = FALSE
     diffspeed  = arena@media[[j]]@difspeed!=0
@@ -916,8 +922,9 @@ setMethod("diffuse", "Arena", function(object, lrw, cluster_size, sublb){
     if( diffspeed && ( diff2d&&!homogenous || !diff2d ) ){
       submat <- as.matrix(arena@media[[j]]@diffmat)
       if(dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
-        diff_sublb_t <<- diff_sublb_t + system.time(submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id])[3]}
-      diff_pde_t <<- diff_pde_t + system.time(switch(arena@media[[j]]@difunc,
+        diff_sublb_t <- diff_sublb_t + system.time(submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id])[3]}
+      #browser()
+      diff_pde_t <- diff_pde_t + system.time(switch(arena@media[[j]]@difunc,
              "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
              "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
              "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
@@ -926,8 +933,8 @@ setMethod("diffuse", "Arena", function(object, lrw, cluster_size, sublb){
       diffmat_tmp <- Matrix::Matrix(submat, sparse=TRUE)
     }else diffmat_tmp <- arena@media[[j]]@diffmat
     diffmat_tmp
-  }))[3]
-  #}, mc.cores=cluster_size))[3]
+  #}))[3]
+  }, mc.cores=cluster_size))[3]
   diff_post_t <- system.time({
     for(j in seq_along(arena@media)){
       arena@media[[j]]@diffmat <- parallel_diff[[j]]
