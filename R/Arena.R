@@ -631,10 +631,10 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
-setGeneric("simEnv", function(object, time, lrw=NULL, continue=F, reduce=F){standardGeneric("simEnv")})
+setGeneric("simEnv", function(object, time, lrw=NULL, continue=F, reduce=F, diffusion=TRUE){standardGeneric("simEnv")})
 #' @export
 #' @rdname simEnv
-setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F){
+setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F, diffusion=TRUE){
   if(length(object@media)==0) stop("No media present in Arena!")
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
@@ -655,6 +655,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
   }
   if(class(object)!="Eval"){addEval(evaluation, arena)}
   sublb <- getSublb(arena)
+  diff_t=0
   for(i in 1:time){
     if(nrow(arena@orgdat) > 1){
       init_t <- proc.time()[3]
@@ -681,9 +682,10 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
       rm("test")
       }
     
-    diff_t <- system.time(diff_res <- diffuse(arena, lrw=lrw, sublb=sublb))[3]
-    arena <- diff_res[[1]]
-    sublb <- diff_res[[2]]
+    if(diffusion){
+      diff_t <- system.time(diff_res <- diffuse(arena, lrw=lrw, sublb=sublb) )[3]
+      arena <- diff_res[[1]]
+      sublb <- diff_res[[2]]}
     
     addEval(evaluation, arena)
     if(reduce && i<time){evaluation = redEval(evaluation)}
@@ -692,7 +694,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
       break
     }
     step_t <- proc.time()[3] - init_t
-    print(paste0("iteration time total: ", round(step_t,3), "    diffusion: ", round(diff_t,3), " (", round(diff_t/step_t,3),"%)" ))
+    cat("\ttime total: ", round(step_t,3), "\tdiffusion: ", round(diff_t,3), " (", round(diff_t/step_t,3),"%)\n" )
   }
   return(evaluation)
 })
@@ -769,10 +771,10 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
-setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL){standardGeneric("simEnv_par")})
+setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL, diffusion=TRUE){standardGeneric("simEnv_par")})
 #' @export
 #' @rdname simEnv_par
-setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL){
+setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL, diffusion=TRUE){
   if(length(object@media)==0) stop("No media present in Arena!")
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
@@ -799,10 +801,11 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
   }
 
   #par_t=0; par_t2=0; movdup_t=0; diff_t=0
+  diff_t=0
   for(i in 1:time){
     init_t <- proc.time()[3]
     arena@orgdat["nr"] <- seq_len(dim(arena@orgdat)[1]) # dummy numbering
-    cat("iter:", i, "Organisms:",nrow(arena@orgdat),"\n")
+    cat("\nparallel iteration:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "pg \n")
     org_stat <- table(arena@orgdat$type)
     names(org_stat) <- names(arena@specs)[as.numeric(names(org_stat))]
     print(org_stat)
@@ -890,14 +893,13 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       arena@orgdat <- duplicateCpp(arena@orgdat, arena@n, arena@m, lapply(arena@specs, function(x){x@cellweight}), arena@occupyM) # call by val
       #})[3]
       
-      #sublb[,arena@mediac] <- sublb[,arena@mediac]/(10^12) #convert again to mmol per gridcell
-      
       # delete dead organisms
       test <- is.na(arena@orgdat$growth)
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       rm("test")
     }
-    diff_t <- system.time(arena <- diffuse_par(arena, lrw, cluster_size, sublb))[3]
+    
+    if(diffusion) diff_t <- system.time(arena <- diffuse_par(arena, lrw, cluster_size, sublb) )[3]
 
     addEval(evaluation, arena)
     if(reduce && i<time){evaluation = redEval(evaluation)}
@@ -906,7 +908,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       break
     }
     step_t <- proc.time()[3] - init_t
-    print(paste0("iteration time total: ", round(step_t,3), "    diffusion: ", round(diff_t,3), " (", round(diff_t/step_t,3),"%)" ))
+    cat("\ttime total: ", round(step_t,3), "\tdiffusion: ", round(diff_t,3), " (", round(diff_t/step_t,3),"%)\n" )
     #print(paste("iteration rel time total", round(step_t,3), "par_fba", round(par_t/step_t,3), "movement/duppli", round(movdup_t/step_t,3), "diffusion", round(diff_t/step_t,3)))
     #print(paste("abs time par_fba:", round(par_t,3), "movement/duppli", round(movdup_t,3), "diffusion", round(diff_t,3)))
   }
