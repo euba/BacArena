@@ -886,7 +886,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       rm("test")
     }
-    diff_t <- system.time(arena <- diffuse(arena, lrw, cluster_size, sublb))[3]
+    diff_t <- system.time(arena <- diffuse_par(arena, lrw, cluster_size, sublb))[3]
 
     addEval(evaluation, arena)
     if(reduce && i<time){evaluation = redEval(evaluation)}
@@ -902,8 +902,8 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
   return(evaluation)
 })
 
-setGeneric("diffuse", function(object, lrw, cluster_size, sublb){standardGeneric("diffuse")})
-setMethod("diffuse", "Arena", function(object, lrw, cluster_size, sublb){
+setGeneric("diffuse_par", function(object, lrw, cluster_size, sublb){standardGeneric("diffuse_par")})
+setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
   diff_init_t <- proc.time()[3]
   arena <- object
   diff_pre_t <- system.time({
@@ -922,9 +922,9 @@ setMethod("diffuse", "Arena", function(object, lrw, cluster_size, sublb){
     if( diffspeed && ( diff2d&&!homogenous || !diff2d ) ){
       submat <- as.matrix(arena@media[[j]]@diffmat)
       if(dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
-        diff_sublb_t <- diff_sublb_t + system.time(submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id])[3]}
+        diff_sublb_t <<- diff_sublb_t + system.time(submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id])[3]}
       #browser()
-      diff_pde_t <- diff_pde_t + system.time(switch(arena@media[[j]]@difunc,
+      diff_pde_t <<- diff_pde_t + system.time(switch(arena@media[[j]]@difunc,
              "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
              "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
              "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
