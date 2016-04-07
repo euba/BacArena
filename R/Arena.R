@@ -275,6 +275,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
          'mmol/cm2'={smax <- 10^12 * smax * object@scale}, # conversion of mmol/arena in fmol/grid_cell
          'mmol/arena'={smax <- 10^12 * smax / (object@n*object@m)}, # conversion of mmol/arena in fmol/grid_cell
          'mmol/cell'={smax <- 10^12 * smax}, # conversion of mmol/cell in fmol/cell
+         'fmol/cell'={smax <- smax}, # already in fmol/cell
          stop("Wrong unit for concentration."))
   
   # 2) create and add substances assuming that organisms are already added
@@ -1662,6 +1663,8 @@ setMethod("getSubHist", "Eval", function(object, sub){
 #' @param dict List defining new substance names. List entries are intepreted as old names and the list names as the new ones.
 #' @param biomcol A boolean indicating if biomass should be included in gowth curve
 #' @param subs List of substance names. If empty, substances with highest variance will be used.
+#' @param growthCurve True if growth curve should be shown (default TRUE)
+#' @param subCurve True if substance curve should be shown (default TRUE)
 #' @return Returns two graphs in one plot: the growth curves and the curves of concentration changes
 #' @details The parameter \code{retdata} can be used to access the data used for the returned plots to create own custom plots. 
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
@@ -1675,86 +1678,93 @@ setMethod("getSubHist", "Eval", function(object, sub){
 #' eval <- simEnv(arena,10)
 #' plotCurves2(eval)
 setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"),
-                                   num=10, phencol=FALSE, biomcol=FALSE, dict=NULL, subs=list()){standardGeneric("plotCurves2")})
+                                   num=10, phencol=FALSE, biomcol=FALSE, dict=NULL, subs=list(), growthCurve=TRUE, subCurve=TRUE){standardGeneric("plotCurves2")})
 #' @export
 #' @rdname plotCurves2
 setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"), 
-                                          num=10, phencol=FALSE, biomcol=FALSE, dict=NULL, subs=list()){
+                                          num=10, phencol=FALSE, biomcol=FALSE, dict=NULL, subs=list(), growthCurve=TRUE, subCurve=TRUE){
   if(num>length(object@mediac) || num<1) stop("Number of substances invalid")
-  # first get the correct (ie. complete) medlist
-  prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
-  list <- lapply(prelist, function(x){lapply(x, sum)})
-  mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
   
-  if(length(subs)==0){ # CASE1: plot most varying substances
-    #remove substances that should be ignored
-    ignore_subs <- which(object@mediac %in% ignore || gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% ignore)
-    if(length(ignore_subs) != 0){
-      mat <- mat[-ignore_subs,]
-      mediac <- object@mediac[-ignore_subs]
-    } else mediac <- object@mediac
-    rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
-    mat_var  <- apply(mat, 1, var)
-    num_var <- length(which(mat_var>0))
-    if(num_var>0){
-      mat_nice <- tail(mat[order(mat_var),], ifelse(num_var>num, num, num_var))
-    }else{
-      print("All substances have variance of zero.")
-      mat_nice <- tail(mat[order(mat_var),], num)
+  # 1) print substance curve
+  if(subCurve){
+    # first get the correct (ie. complete) medlist
+    prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
+    list <- lapply(prelist, function(x){lapply(x, sum)})
+    mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
+    
+    if(length(subs)==0){ # CASE1: plot most varying substances
+      #remove substances that should be ignored
+      ignore_subs <- which(object@mediac %in% ignore || gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% ignore)
+      if(length(ignore_subs) != 0){
+        mat <- mat[-ignore_subs,]
+        mediac <- object@mediac[-ignore_subs]
+      } else mediac <- object@mediac
+      rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
+      mat_var  <- apply(mat, 1, var)
+      num_var <- length(which(mat_var>0))
+      if(num_var>0){
+        mat_nice <- tail(mat[order(mat_var),], ifelse(num_var>num, num, num_var))
+      }else{
+        print("All substances have variance of zero.")
+        mat_nice <- tail(mat[order(mat_var),], num)
+      }
+    }else{ # CASE2: plot only substances given by subs
+      subs_index <- which(object@mediac %in% subs | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% subs)
+      mat_nice <- mat[subs_index,]
+      rownames(mat_nice) <- gsub("\\(e\\)","", gsub("EX_","",object@mediac[subs_index]))
     }
-  }else{ # CASE2: plot only substances given by subs
-    subs_index <- which(object@mediac %in% subs || gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% subs)
-    mat_nice <- mat[subs_index,]
-    rownames(mat_nice) <- gsub("\\(e\\)","", gsub("EX_","",object@mediac[subs_index]))
+    if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
+    matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
+            xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of substance in fmol',
+            main='Strongly changing substances')
+    if(length(dict) > 0){
+      new_names = unlist(lapply(rownames(mat_nice), function(x){dict[[x]]}))
+      legend(legendpos, new_names, col=cols, cex=0.7, fill=cols)
+    } else legend(legendpos, rownames(mat_nice), col=cols, cex=0.7, fill=cols)
   }
-  if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
-  matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
-          xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of substance in fmol',
-          main='Strongly changing substances')
-  if(length(dict) > 0){
-    new_names = unlist(lapply(rownames(mat_nice), function(x){dict[[x]]}))
-    legend(legendpos, new_names, col=cols, cex=0.7, fill=cols)
-  } else legend(legendpos, rownames(mat_nice), col=cols, cex=0.7, fill=cols)
   
-  # get bacs
-  list <- lapply(object@simlist, function(x){
-    occ <- table(x$type)
-    unlist(lapply(seq_along(object@specs), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
-  })
-  mat_bac  <- do.call(cbind, list)
-  rownames(mat_bac) <- names(object@specs)
+  # 2) Plotting growth curve
+  if(growthCurve){
+    # get bacs
+    list <- lapply(object@simlist, function(x){
+      occ <- table(x$type)
+      unlist(lapply(seq_along(object@specs), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
+    })
+    mat_bac  <- do.call(cbind, list)
+    rownames(mat_bac) <- names(object@specs)
+    
+    
+    # biomass
+    list <- lapply(object@simlist, function(x){
+      sum(x$growth)
+    })
+    mat_biom  <- do.call(cbind, list)
+    rownames(mat_biom) <- "biomass [fg]"
+    
+    # get pheno
+    if(phencol){
+      pheno_nr <- table(names(object@phenotypes))
+      list <- lapply(object@simlist, function(x){ # time step
+        unlist(lapply(seq_along(object@specs), function(j){ # bac type
+          occ <- table(x[which(x$type==j),]$phenotype)
+          #p <- unlist(lapply(seq_along(object@phenotypes[[j]]), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
+          p <- unlist(lapply(seq(0,pheno_nr[[names(object@specs[j])]]), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
+          names(p) <- paste0(names(object@specs)[j], "_pheno", seq(0,pheno_nr[[names(object@specs[j])]]))
+          p
+        }))})
+      mat_phen  <- do.call(cbind, list)
+      if(biomcol) mat_with_phen <- rbind(mat_bac, mat_phen, mat_biom) else mat_with_phen <- rbind(mat_bac, mat_phen)
+    } else{
+      if(biomcol) mat_with_phen <- rbind(mat_bac, mat_biom) else mat_with_phen <- mat_bac
+    }
   
-  
-  # biomass
-  list <- lapply(object@simlist, function(x){
-    sum(x$growth)
-  })
-  mat_biom  <- do.call(cbind, list)
-  rownames(mat_biom) <- "biomass [fg]"
-  
-  # get pheno
-  if(phencol){
-    pheno_nr <- table(names(object@phenotypes))
-    list <- lapply(object@simlist, function(x){ # time step
-      unlist(lapply(seq_along(object@specs), function(j){ # bac type
-        occ <- table(x[which(x$type==j),]$phenotype)
-        #p <- unlist(lapply(seq_along(object@phenotypes[[j]]), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
-        p <- unlist(lapply(seq(0,pheno_nr[[names(object@specs[j])]]), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
-        names(p) <- paste0(names(object@specs)[j], "_pheno", seq(0,pheno_nr[[names(object@specs[j])]]))
-        p
-      }))})
-    mat_phen  <- do.call(cbind, list)
-    if(biomcol) mat_with_phen <- rbind(mat_bac, mat_phen, mat_biom) else mat_with_phen <- rbind(mat_bac, mat_phen)
-  } else{
-    if(biomcol) mat_with_phen <- rbind(mat_bac, mat_biom) else mat_with_phen <- mat_bac
+    len <- dim(mat_with_phen)[1]
+    if(len>length(colpal3)) cols <- colpal1[1:len] else cols <- colpal3[1:len]
+    matplot(t(mat_with_phen), type='b', col=cols, pch=1, lty=1, lwd=5,
+            xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of organisms',
+            main='Growth curve')
+    legend(legendpos, rownames(mat_with_phen), col=cols, cex=0.7, fill=cols)
   }
-
-  len <- dim(mat_with_phen)[1]
-  if(len>length(colpal3)) cols <- colpal1[1:len] else cols <- colpal3[1:len]
-  matplot(t(mat_with_phen), type='b', col=cols, pch=1, lty=1, lwd=5,
-          xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of organisms',
-          main='Growth curve')
-  legend(legendpos, rownames(mat_with_phen), col=cols, cex=0.7, fill=cols)
 })
 
 
