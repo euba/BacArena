@@ -660,13 +660,14 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
     }
   }
   if(class(object)!="Eval"){addEval(evaluation, arena)}
+  browser()
   arena@sublb <- getSublb(arena)
   if(diff_par) cl_size <- parallel::detectCores()
   diff_t=0
   for(i in 1:time){
     init_t <- proc.time()[3]
+    sublb <- arena@sublb
     if(nrow(arena@orgdat) > 1){
-      sublb <- arena@sublb
       new_ind = sample(1:nrow(arena@orgdat),nrow(arena@orgdat)) #shuffle through all bacteria to increase randomness
       arena@orgdat = arena@orgdat[new_ind,]
       sublb = sublb[new_ind,] #apply shuffeling also to sublb to ensure same index as orgdat
