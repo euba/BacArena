@@ -660,7 +660,6 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
     }
   }
   if(class(object)!="Eval"){addEval(evaluation, arena)}
-  browser()
   arena@sublb <- getSublb(arena)
   if(diff_par) cl_size <- parallel::detectCores()
   diff_t=0
@@ -776,6 +775,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
 #' @param continue A boolean indicating whether the simulation should be continued or restarted.
 #' @param reduce A boolean indicating if the resulting \code{Eval} object should be reduced
 #' @param cluster_size Number of cpu cores to be used.
+#' @param diffusion True if diffusion should be done (default on).
 #' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
 #' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
 #' @seealso \code{\link{Arena-class}} and \code{\link{Eval-class}}

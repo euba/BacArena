@@ -199,7 +199,7 @@ setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time,
   if(length(object@kinetics) != 0){
     lobnd[names(object@kinetics)] <- unlist(lapply(names(object@kinetics), function(name){
       Km  <- (object@kinetics[[name]][["Km"]]*0.01*scale)*10^12 #scale mM to fmol/gridcell
-      vmax <- object@kinetics[[name]][["vmax"]]*10^12*(dryweight*10^(-12)) #scale to fmol/h
+      vmax <- object@kinetics[[name]][["vmax"]]*(dryweight/object@cellweight_mean)*time #scale to fmol/pgDW*hr
       s   <- -lb[name] # change sign to get concentrations
       lnew = -(vmax*s/(Km + s))*time
       if(abs(lnew)>s){if(-s>=lobnd[name]){lnew=-s}else{lnew=lobnd[name]}}
@@ -210,7 +210,20 @@ setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time,
 })
 
 
+#' @title Function to set Michaelis-Menten kinetics for uptake of a substance
+#'
+#' @description The generic function \code{setKinetics} provides kinetics for exchange reactions.
+#' @export
+#' @rdname setKinetics
+#'
+#' @param object An object of class Organisms.
+#' @param exchangeR Name of an exchange reaction
+#' @param Km Parameter Michaelis-Menten-Kinetics (in mM)
+#' @param vmax Parameter Michaelis-Menten-Kinetics (in mmol/(g*h))
+#'
 setGeneric("setKinetics", function(object, exchangeR, Km, vmax){standardGeneric("setKinetics")})
+#' @export
+#' @rdname setKinetics
 setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
   if( !(exchangeR %in% names(object@lbnd)) ){
     stop("Incorrect exchange reaction setup for kinetics")
