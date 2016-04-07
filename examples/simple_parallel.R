@@ -6,7 +6,7 @@ library(parallel)
 # create cluster with all available cores
 nr_cores <- detectCores()
 print(paste("cores available:", nr_cores))
-cl <- makeCluster(nr_cores, type="PSOCK")
+cl <- makeCluster(nr_cores, type="PSOCK") # PSOCK works with win/mac/lin
 
 # variables which will be used in cluster have to be exported
 bcoli <- readRDS(file = "data/bcoli_orth.RDS")
