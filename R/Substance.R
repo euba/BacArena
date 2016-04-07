@@ -58,7 +58,7 @@ setClass("Substance",
 #' @param gridgeometry A list containing grid geometry parameter 
 #' @param ... Arguments of \code{\link{Substance-class}}
 #' @return Object of class \code{Substance}
-Substance <- function(n, m, smax, gridgeometry, difspeed=1, ...){
+Substance <- function(n, m, smax, gridgeometry, difspeed=6.7e-6, ...){
   diffmat <- Matrix::Matrix(smax, nrow=n, ncol=m, sparse=TRUE)
   
   Dgrid <- ReacTran::setup.prop.2D(value = difspeed, grid = gridgeometry$grid2D)
