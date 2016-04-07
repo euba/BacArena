@@ -852,7 +852,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
                                       # 2.1.2.1) critical step: create lpobject for each core 
                                       #(otherwise pointer will corrupt in warm-started optimization)
                                       model <- arena@specs[[spec_nr]]@model
-                                      lpobject <- sybil::sysBiolAlg(model, algorithm="fba", solver="glpkAPI")
+                                      lpobject <- sybil::sysBiolAlg(model, algorithm="fba")
                                       # 2.1.2.2) 
                                       test <- lapply(g, function(i){
                                           org <- arena@specs[[spec_nr]]
