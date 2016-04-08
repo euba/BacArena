@@ -729,22 +729,23 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
     for(j in seq_along(arena@media)){
       #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
       if(length(changed_mets)>0) homogenous = !(j %in% changed_mets) else homogenous = FALSE
-      diffspeed  = arena@media[[j]]@difspeed!=0
+      diffspeed  = arena@media[[j]]@difspeed>0
       diff2d     = arena@media[[j]]@pde=="Diff2d"
-      if( diffspeed && ( diff2d&&!homogenous || !diff2d ) ){
+      if(diff2d&&!homogenous || !diff2d){
         submat <- as.matrix(arena@media[[j]]@diffmat)
         if(dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
-          #diff_sublb_t <- diff_sublb_t + system.time(submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id])[3]
-          submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id]#)[3]
+          submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id]
         }
         #diff_pde_t <- diff_pde_t + system.time(switch(arena@media[[j]]@difunc,
-        switch(arena@media[[j]]@difunc,
-                                                      "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
-                                                      "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
-                                                      "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
-                                                      "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
-                                                      stop("Diffusion function not defined yet."))#)[3]
-        arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
+        if(diffspeed){
+          switch(arena@media[[j]]@difunc,
+                 "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
+                 "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
+                 "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
+                 "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
+                 stop("Diffusion function not defined yet."))#)[3]
+        }
+          arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
       }else submat <- arena@media[[j]]@diffmat
       sublb_tmp[,j] <- submat[cbind(arena@orgdat$x,arena@orgdat$y)]
     }#})[3]
@@ -952,22 +953,24 @@ setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
   #diff_loop_t <- system.time(parallel_diff <-  foreach(j=seq_along(arena@media)) %dopar% {
     #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
     if(length(changed_mets)>0) homogenous = !(j %in% changed_mets) else homogenous = FALSE
-    diffspeed  = arena@media[[j]]@difspeed!=0
+    diffspeed  = arena@media[[j]]@difspeed>0
     diff2d     = arena@media[[j]]@pde=="Diff2d"
-    if( diffspeed && ( diff2d&&!homogenous || !diff2d ) ){
+    if(diff2d&&!homogenous || !diff2d){
       submat <- as.matrix(arena@media[[j]]@diffmat)
       if(dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
         #diff_sublb_t <<- diff_sublb_t + system.time(submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id])[3]}
         submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id]}
       #browser()
       #diff_pde_t <<- diff_pde_t + system.time(switch(arena@media[[j]]@difunc,
-      switch(arena@media[[j]]@difunc,
-             "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
-             "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
-             "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
-             "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
-             stop("Diffusion function not defined yet."))#)[3]
-      diffmat_tmp <- Matrix::Matrix(submat, sparse=TRUE)
+      if(diffspeed){
+        switch(arena@media[[j]]@difunc,
+               "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
+               "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
+               "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
+               "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
+               stop("Diffusion function not defined yet."))#)[3]
+      }
+        diffmat_tmp <- Matrix::Matrix(submat, sparse=TRUE)
     }else{
       diffmat_tmp <- arena@media[[j]]@diffmat
       submat <- as.matrix(arena@media[[j]]@diffmat)
