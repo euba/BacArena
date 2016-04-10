@@ -36,7 +36,7 @@ Diff2d <- function (t, y, parms){
   # geometry values are in parms
   with (as.list(parms), {
     CONC  <- matrix(nrow = gridgeometry.grid2D$x.N, ncol = gridgeometry.grid2D$y.N, data = y)
-    dCONC <- tran.2D(CONC, grid = gridgeometry.grid2D, D.grid = diffgeometry.Dgrid)$dC
+    dCONC <- ReacTran::tran.2D(CONC, grid = gridgeometry.grid2D, D.grid = diffgeometry.Dgrid)$dC
     return (list(dCONC))
   })
 }
