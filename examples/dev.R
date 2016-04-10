@@ -12,6 +12,11 @@ install_local(path="~/uni/bacarena")
 
 
 
+# 
+devtools::install_github("hadley/lineprof")
+library(lineprof)
+l <- lineprof(simEnv_par(arena, time=1))
+
 
 ## old
 
