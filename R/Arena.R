@@ -737,7 +737,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
           submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id]
         }
         #diff_pde_t <- diff_pde_t + system.time(switch(arena@media[[j]]@difunc,
-        if(diffspeed){
+        if(diffspeed || !diff2d){
           switch(arena@media[[j]]@difunc,
                  "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
                  "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
@@ -962,7 +962,7 @@ setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
         submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id]}
       #browser()
       #diff_pde_t <<- diff_pde_t + system.time(switch(arena@media[[j]]@difunc,
-      if(diffspeed){
+      if(diffspeed || !diff2d){
         switch(arena@media[[j]]@difunc,
                "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
                "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
