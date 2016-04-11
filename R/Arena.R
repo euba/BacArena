@@ -203,9 +203,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
     stop("You have multiple individuals in the same position! Make sure that your x an y positions are unique")
   }
   #add initial medium (without concentration) for each organism
-  newmet = c(specI@medium,object@mediac)
-  newmet = newmet[!duplicated(newmet)]
-  newmet = newmet[setdiff(names(specI@medium),names(object@mediac))]
+  newmet <- specI@medium[which(!specI@medium %in% object@mediac)]
   if(length(newmet) > 0){
     newmedia = list()
     for(i in 1:length(newmet)){
