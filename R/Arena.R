@@ -157,7 +157,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   if(bacnum<1){
     stop("Physical arena size (Lx, Ly) too small. Maximal amount of cells in one grid cell would be zero.")
   }
-  
+ 
   n <- object@n
   m <- object@m
   spectype <- specI@type
@@ -206,18 +206,18 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   newmet = c(specI@medium,object@mediac)
   newmet = newmet[!duplicated(newmet)]
   newmet = newmet[setdiff(names(specI@medium),names(object@mediac))]
-  if(length(newmet) != 0){
+  if(length(newmet) > 0){
     newmedia = list()
     for(i in 1:length(newmet)){
       newmedia[[unname(newmet[i])]] <- Substance(object@n, object@m, smax=0, id=unname(newmet[i]), name=names(newmet[i]), gridgeometry=object@gridgeometry)
     }
+    object@media <- c(object@media,newmedia)
+    object@media <- object@media[unique(names(object@media))]    
+    newmediac <- c(object@mediac, specI@medium)
+    object@mediac <- newmediac[!duplicated(newmediac)]
   }
-  object@media <- c(object@media,newmedia)
-  object@media <- object@media[unique(names(object@media))]
   object@orgdat <- neworgdat
   object@specs <- newspecs
-  newmediac <- c(object@mediac, specI@medium)
-  object@mediac <- newmediac[!duplicated(newmediac)]
   object@mflux <- newmflux
   object@models <- c(object@models, specI@model)
   return(object)
