@@ -721,7 +721,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
   if(!arena@stir){
     sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
     #diff_pre_t <- system.time({
-    if(!all(is.na(matrix())) & dim(sublb)[1] > 0){ # if there are organisms
+    if(!all(is.na(sublb)) & dim(sublb)[1] > 0){ # if there are organisms
       testdiff <- t(sublb[,-c(1,2)]) == unlist(lapply(arena@media,function(x,n,m){return(mean(x@diffmat))})) #check which mets in sublb have been changed by the microbes
       changed_mets <- which(apply(testdiff,1,sum)/nrow(sublb) < 1) #find the metabolites which are changed by at least one microbe
     } else changed_mets <- list()#})[3]
@@ -734,7 +734,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
       diff2d     = arena@media[[j]]@pde=="Diff2d"
       if(diff2d&&!homogenous || !diff2d){
         submat <- as.matrix(arena@media[[j]]@diffmat)
-        if(!all(is.na(matrix())) && dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
+        if(!all(is.na(sublb)) && dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
           submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id]
         }
         #diff_pde_t <- diff_pde_t + system.time(switch(arena@media[[j]]@difunc,
@@ -943,7 +943,7 @@ setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
   arena <- object
   sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
   #diff_pre_t <- system.time({ if(dim(sublb)[1] > 0){
-  if(!all(is.na(matrix())) && dim(sublb)[1] > 0){ # if there are organisms
+  if(!all(is.na(sublb)) && dim(sublb)[1] > 0){ # if there are organisms
       testdiff <- t(sublb[,-c(1,2)]) == unlist(lapply(arena@media,function(x,n,m){return(mean(x@diffmat))})) #check which mets in sublb have been changed by the microbes
       changed_mets <- which(apply(testdiff,1,sum)/nrow(sublb) < 1) #find the metabolites which are changed by at least one microbe
   } else changed_mets <- list()#})[3]
@@ -958,7 +958,7 @@ setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
     diff2d     = arena@media[[j]]@pde=="Diff2d"
     if(diff2d&&!homogenous || !diff2d){
       submat <- as.matrix(arena@media[[j]]@diffmat)
-      if(!all(is.na(matrix())) && dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
+      if(!all(is.na(sublb)) && dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
         #diff_sublb_t <<- diff_sublb_t + system.time(submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id])[3]}
         submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id]}
       #browser()
