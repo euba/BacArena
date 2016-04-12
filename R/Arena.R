@@ -627,6 +627,7 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' @param reduce A boolean indicating if the resulting \code{Eval} object should be reduced
 #' @param diffusion True if diffusion should be done (default on).
 #' @param diff_par True if diffusion should be run in parallel (default off).
+#' @param cl_size If diff_par is true then cl_size defines the number of cores to be used in parallelized diffusion.
 #' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
 #' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
 #' @seealso \code{\link{Arena-class}} and \code{\link{Eval-class}}
@@ -638,10 +639,10 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
-setGeneric("simEnv", function(object, time, lrw=NULL, continue=F, reduce=F, diffusion=TRUE, diff_par=FALSE){standardGeneric("simEnv")})
+setGeneric("simEnv", function(object, time, lrw=NULL, continue=F, reduce=F, diffusion=TRUE, diff_par=FALSE, cl_size=2){standardGeneric("simEnv")})
 #' @export
 #' @rdname simEnv
-setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F, diffusion=TRUE, diff_par=FALSE){
+setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F, diffusion=TRUE, diff_par=FALSE, cl_size=2){
   if(length(object@media)==0) stop("No media present in Arena!")
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
@@ -662,7 +663,6 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
   }
   if(class(object)!="Eval"){addEval(evaluation, arena)}
   arena@sublb <- getSublb(arena)
-  if(diff_par) cl_size <- parallel::detectCores()
   diff_t=0
   for(i in 1:time){
     init_t <- proc.time()[3]
@@ -714,7 +714,19 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
 })
 
 
+
+#' @title Function for diffusion
+#'
+#' @description The generic function \code{diffuse} computes the media distribution via diffusion
+#' @export
+#' @rdname diffuse
+#' 
+#' @param object An object of class Arena.
+#' @param lrw A numeric value needed by solver to estimate array size (by default lwr is estimated in the simEnv() by the function estimate_lrw())
+#' @param sublb A matrix with the substrate concentration for every individual in the environment based on their x and y position.
 setGeneric("diffuse", function(object, lrw, sublb){standardGeneric("diffuse")})
+#' @export
+#' @rdname diffuse
 setMethod("diffuse", "Arena", function(object, lrw, sublb){
   arena <- object
   diff_init_t <- proc.time()[3]
@@ -937,9 +949,24 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
   return(evaluation)
 })
 
+
+#' @title Function for parallelzied diffusion
+#'
+#' @description The generic function \code{diffuse_par} computes the media distribution via diffusion in parallel
+#' @export
+#' @rdname diffuse_par
+#' 
+#' @param object An object of class Arena.
+#' @param lrw A numeric value needed by solver to estimate array size (by default lwr is estimated in the simEnv() by the function estimate_lrw())
+#' @param cluster_size Amount of cores to be used
+#' @param sublb A matrix with the substrate concentration for every individual in the environment based on their x and y position.
 setGeneric("diffuse_par", function(object, lrw, cluster_size, sublb){standardGeneric("diffuse_par")})
+#' @export
+#' @rdname diffuse_par
 setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
   diff_init_t <- proc.time()[3]
+  cl <- parallel::makeCluster(cluster_size, type="PSOCK")
+  #parallel::clusterExport(cl, c(""))
   arena <- object
   sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
   #diff_pre_t <- system.time({ if(dim(sublb)[1] > 0){
@@ -949,7 +976,8 @@ setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
   } else changed_mets <- list()#})[3]
   #diff_pde_t=0; diff_sublb_t=0
   #diff_loop_t <- system.time(parallel_diff <- parallel::mclapply(seq_along(arena@media), function(j){
-  parallel_diff <- parallel::mclapply(seq_along(arena@media), function(j){
+  #parallel_diff <- parallel::mclapply(seq_along(arena@media), function(j){
+  parallel_diff  <- parallel::parLapply(cl, seq_along(arena@media), function(j){
   #parallel_diff <- lapply(seq_along(arena@media), function(j){
   #diff_loop_t <- system.time(parallel_diff <-  foreach(j=seq_along(arena@media)) %dopar% {
     #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
@@ -979,7 +1007,9 @@ setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
     sublb_tmp  <- submat[cbind(arena@orgdat$x,arena@orgdat$y)]
     list("diffmat"=diffmat_tmp, "sublb"=sublb_tmp)
   #})#)[3]
-  }, mc.cores=cluster_size)#)[3]
+  #}, mc.cores=cluster_size)#)[3]
+  })
+  parallel::stopCluster(cl)
   
   #diff_post_t <- system.time({ for(j in seq_along(arena@media)){
   for(j in seq_along(arena@media)){
