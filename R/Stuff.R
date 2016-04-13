@@ -141,3 +141,57 @@ openArena <- function(){
 reset_screen <- function(){
   par(mfrow=c(1,1))
 }
+
+
+plotSubCurve <-function(simlist, mediac=NULL){
+  if(sum(mediac %in% simlist[[1]]@mediac) != length(mediac)) stop("Substance does not exist in exchange reactions.")
+  
+  if(length(mediac)==0) mediac <- names(getVarSubs(simlist[[1]]))[1:5] # get 5 most varying substances (from first sim)
+  
+  all_df <- data.frame()
+  for(i in seq_along(simlist)){
+    object <- simlist[[i]]
+    prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
+    list <- lapply(prelist, function(x){lapply(x, sum)})
+    mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
+    rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
+    mat_nice <- mat[which(rownames(mat) %in% mediac),]
+    all_df <- rbind(all_df, melt(mat_nice))
+  }
+  
+  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
+  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth() + geom_point()
+  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth(level=0.999) # confidence level default: 0.95
+  
+  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth(method="loess", span=0.1, se=TRUE, aes(fill=Var1), alpha=0.3)
+  
+  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) +
+  #  stat_summary(geom="ribbon", fun.ymin="min", fun.ymax="max", aes(fill=Var1), alpha=0.3)
+  
+  usd <- function(y){mean(y) + sd(y)}
+  lsd <- function(y){mean(y) - sd(y)}
+  ggplot(all_df, aes(color=Var1, y=value, x=Var2)) +
+    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3)
+}
+
+
+plotGrowthCurve <-function(simlist){
+  all_df <- data.frame()
+  for(i in seq_along(simlist)){
+    object <- simlist[[i]]
+    list <- lapply(object@simlist, function(x){
+      occ <- table(x$type)
+      unlist(lapply(seq_along(object@specs), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
+    })
+    mat_bac  <- do.call(cbind, list)
+    rownames(mat_bac) <- names(object@specs)
+    all_df <- rbind(all_df, melt(mat_bac))
+  }
+  
+  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
+  
+  usd <- function(y){mean(y) + sd(y)}
+  lsd <- function(y){mean(y) - sd(y)}
+  ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + #stat_smooth(se = FALSE) + 
+    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3)
+}
