@@ -1,10 +1,57 @@
 load('/Users/euba/GitRep/pao_reps.RData')
 
+preps = simlist
+
 popsall = list()
 for(i in 1:length(preps[[1]]@specs)){
   popsall[[names(preps[[1]]@specs)[i]]] = matrix(0,nrow=length(preps),
                                                       ncol=length(preps[[1]]@simlist))
 }
+for(i in 1:length(preps)){
+  pdat = plotCurves(preps[[i]],retdata=T)$Population
+  for(j in 1:nrow(pdat)){
+    popsall[[rownames(pdat)[j]]][i,] = pdat[j,]
+  }
+}
+means <- lapply(popsall, function(x){
+  return(rbind(apply(x,2,mean),apply(x,2,sd)))
+})
+popdat = data.frame("means"=means[[1]][1,], "sd"=means[[1]][2,], "type"=rep(names(means)[1],ncol(means[[1]])),
+                    "time"=(0:(ncol(means[[1]])-1)))
+for(i in 2:length(means)){
+  app = data.frame("means"=means[[i]][1,], "sd"=means[[i]][2,], "type"=rep(names(means)[i],ncol(means[[i]])),
+                   "time"=(0:(ncol(means[[i]])-1)))
+  popdat = rbind(popdat,app)
+}
+ggplot(popdat, aes(x=time, y=means, col=type)) + 
+  geom_errorbar(aes(ymin=means-sd, ymax=means+sd, col=type), width=0.4,size=1.2) +
+  geom_line(size=1.2) +
+  geom_point(size=5, shape=20) + # 21 is filled circle
+  xlab("Time in h") +
+  ylab("Number of individuals") +
+  scale_color_manual(values=bcol) +
+  theme_bw(base_size = 30) +
+  theme(#legend.position='none',
+        legend.text=element_text(size=14),
+        legend.key=element_blank(),
+        legend.title = element_blank(),
+        axis.text.x = element_text(size=20),
+        axis.text.y = element_text(size=20),
+        axis.title.y = element_text(size=30,vjust=0.5),
+        #panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour='black',size=2),
+        axis.ticks = element_line(size=1,color='black'),
+        plot.title = element_text(size=20)) #15x5           # Position legend in bottom right
+
+
+
+
+
+
+
+
+
 for(i in 1:length(preps)){
   pdat = plotCurves(preps[[i]],retdata=T)$Population
   for(j in 1:nrow(pdat)){
