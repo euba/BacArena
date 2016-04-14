@@ -639,10 +639,10 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
-setGeneric("simEnv", function(object, time, lrw=NULL, continue=F, reduce=F, diffusion=TRUE, diff_par=FALSE, cl_size=2){standardGeneric("simEnv")})
+setGeneric("simEnv", function(object, time, lrw=NULL, continue=F, reduce=F, diffusion=TRUE, diff_par=FALSE, cl_size=2, mtf=F){standardGeneric("simEnv")})
 #' @export
 #' @rdname simEnv
-setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F, diffusion=TRUE, diff_par=FALSE, cl_size=2){
+setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F, diffusion=TRUE, diff_par=FALSE, cl_size=2, mtf=F){
   if(length(object@media)==0) stop("No media present in Arena!")
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
@@ -682,7 +682,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce
         org <- arena@specs[[arena@orgdat[j,'type']]]
         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
         switch(class(org),
-               "Bac"= {arena = simBac(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
+               "Bac"= {arena = simBac(org, arena, j, sublb, bacnum, mtf=mtf)}, #the sublb matrix will be modified within this function
                "Human"= {arena = simHum(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
                stop("Simulation function for Organism object not defined yet."))
       }
@@ -801,10 +801,10 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
-setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL, diffusion=TRUE){standardGeneric("simEnv_par")})
+setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL, diffusion=TRUE, mtf=F){standardGeneric("simEnv_par")})
 #' @export
 #' @rdname simEnv_par
-setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL, diffusion=TRUE){
+setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL, diffusion=TRUE, mtf=F){
   if(length(object@media)==0) stop("No media present in Arena!")
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
@@ -872,7 +872,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, re
                                           org <- arena@specs[[spec_nr]]
                                           bacnum = round((arena@scale/(org@cellarea*10^(-8))))
                                           j <- splited_species$nr[i] # unique id in orgdat (necessary due to split in parallel mode)
-                                          simbac <- simBac_par(org, arena, j, sublb, bacnum, lpobject)
+                                          simbac <- simBac_par(org, arena, j, sublb, bacnum, lpobject, mtf=mtf)
                                           neworgdat <- simbac[[1]]
                                           sublb <- simbac[[2]]
                                           fbasol <- simbac[[3]]
