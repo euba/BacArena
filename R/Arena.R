@@ -1207,9 +1207,10 @@ setMethod(show, "Arena", function(object){
   })
   #
   # 2) general arena info
-  print(paste("area of one grid cell [cm^2]:", (object@Lx*object@Ly)/(object@n*object@m)))  
   print(paste("arena grid cells:",object@n,"x",object@m))
   print(paste("arena grid size [cm]:",object@Lx,"x",object@Ly))
+  print(paste("dimension of one grid cell [cm]:",object@Lx/object@n,"x",object@Ly/object@m))
+  print(paste("area of one grid cell [cm^2]:", (object@Lx*object@Ly)/(object@n*object@m)))  
   print(paste("flux unit:","mmol/(h*g_dw)"))
   print(paste("1 mM in arena correspons to mmol/grid_cell:", 1/100 * (object@Lx*object@Ly)/(object@n*object@m) ))
   #print(paste("1mM in arena correspons to mmol/grid_cell:", 1/1000 * (object@Lx*object@Ly*sqrt(object@Lx*object@Ly))/(object@n*object@m) ))
@@ -2469,6 +2470,3 @@ setMethod("checkCorr", "Eval", function(object, corr=NULL, tocheck=list()){
     barplot(names.arg=names(dat_interest), height=dat_interest, las=2, main=paste("Highest correlations of", feature))
   })
 })
-
-
-
