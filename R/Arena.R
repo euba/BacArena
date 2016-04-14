@@ -1674,8 +1674,8 @@ setGeneric("getSubHist", function(object, sub){standardGeneric("getSubHist")})
 #' @export
 #' @rdname getSubHist
 setMethod("getSubHist", "Eval", function(object, sub){
-  if(!(sub %in% names(sim@media))) sub <- paste0("EX_", sub, "(e)")
-  if(!(sub %in% names(sim@media))){
+  if(!(sub %in% names(object@media))) sub <- paste0("EX_", sub, "(e)")
+  if(!(sub %in% names(object@media))){
     stop(paste(sub, "does not exist in medium"))
   }
   timeline <- unlist(lapply(object@medlist, function(m){sum(m[[sub]])}))
