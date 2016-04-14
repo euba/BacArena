@@ -1178,7 +1178,7 @@ setMethod("findInArena", "Arena", function(object, pattern, search_rea=TRUE, sea
     print(object@mediac[res_name])
   }
   
-  if(search_rea){
+  if(search_rea & length(arena@models)>0){
     for(i in 1:length(arena@models)){
       model = arena@models[[i]]
       cat(paste0("\n\n", i, ". ", model@mod_desc, model@mod_name))
@@ -1734,7 +1734,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
     
     if(length(subs)==0){ # CASE1: plot most varying substances
       #remove substances that should be ignored
-      ignore_subs <- which(object@mediac %in% ignore || gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% ignore)
+      ignore_subs <- which(object@mediac %in% ignore | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% ignore)
       if(length(ignore_subs) != 0){
         mat <- mat[-ignore_subs,]
         mediac <- object@mediac[-ignore_subs]
