@@ -274,7 +274,13 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
   #if(is.na(fbasl$obj)){fbasl$obj <- 0}
   #if(is.na(fbasl$obj)){browser()}
   if(!solve_ok | fbasl$obj<cutoff){fbasl$obj <- 0}
-  if(mtf && fbasl$obj!=0){fbasl <- optimizeProb(object@model, algorithm="mtf", wtobj=fbasl$obj, ub=ub, lb=lb, retOptSol=F)}
+  if(mtf && fbasl$obj!=0){
+    obj = fbasl$obj
+    mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub)
+    fbasl <- sybil::optimizeProb(mod, algorithm="mtf", wtobj=fbasl$obj, retOptSol=F)
+    fbasl$obj = obj
+    #fbasl <- optimizeProb(object@model, algorithm="mtf", wtobj=fbasl$obj, react=1:length(lb), ub=ub, lb=lb, retOptSol=F)
+  }
   return(fbasl)
 })
 
