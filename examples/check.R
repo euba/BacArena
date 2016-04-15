@@ -24,16 +24,20 @@ openArena()
 #
 # 2a) Diffusion test
 #
-n=100; m=100; D=2; tsteps=8; L=10; init=1
+n=100; m=100; D=1; tsteps=8; L=10; init=1
 arena <- Arena(n=n, m=m, Lx=L, Ly=L)
-arena@media[[1]]  <- Substance(arena@n, arena@m, smax=0, gridgeometry=arena@gridgeometry, id="test", name="test substance", difspeed=D)
+arena@media[[1]]  <- Substance(arena@n, arena@m, smax=0, gridgeometry=arena@gridgeometry, id="test", name="test substance", difspeed=D, pde="ConstBoundAdvecDiff2d", boundS=1)
 names(arena@media) <- "test"
+arena@mediac[[1]] <- "test"
 arena@media[[1]]@diffmat[round(arena@n/2), 1] <- init
 sim_diff <- simEnv(arena, time=tsteps, continue = TRUE)
 
-par(mfrow=c(3,3))
-lapply(sim_diff@medlist, function(x){image(matrix(x$test, nrow=arena@n, byrow=FALSE))})
-par(mfrow=c(1,1))
+getSubHist(sim_diff, "test")
+#plotCurves2(sim_diff, subs = "test")
+
+#par(mfrow=c(3,3))
+#lapply(sim_diff@medlist, function(x){image(matrix(x$test, nrow=arena@n, byrow=FALSE))})
+#par(mfrow=c(1,1))
 
 outa <- lapply(seq_along(sim_diff@medlist), function(i){c(i, sim_diff@medlist[i])})
 outa <- matrix(unlist(outa), byrow=TRUE, nrow=tsteps+1) # t_0
@@ -41,7 +45,7 @@ colnames(outa) <- c("time", paste(1:(n*m)))
 attributes(outa)$class <- c("deSolve", "matrix")
 attributes(outa)$dimens <- c(n,m)
 attributes(outa)$nspec <- 1
-image(outa, ask = FALSE, mfrow = c(3, 3), main = paste("time", times))
+image(outa, ask = FALSE, mfrow = c(3, 3), main = paste("time", tsteps), legend=TRUE)
 
 # 2b) Comparison to pde only
 library(ReacTran)

@@ -93,6 +93,28 @@ InfluxBoundDiff2d <- function (t, y, parms)  {
   })
 }
 
+ConstBoundAdvecDiff2d <- function (t, y, parms)  {
+  # geometry values are in parms
+  #print("test")
+  with (as.list(parms), {
+    vgrid <- setup.prop.2D(value = 0, y.value=1, grid = gridgeometry.grid2D)
+    CONC  <- matrix(nrow = gridgeometry.grid2D$x.N, ncol = gridgeometry.grid2D$y.N, data = y)
+    dCONC <- tran.2D(CONC, grid = gridgeometry.grid2D, D.grid = diffgeometry.Dgrid, full.check=TRUE, 
+                     v.grid = vgrid, 
+                     C.y.down=rep(-5*boundS, gridgeometry.grid2D$y.N),
+                     C.y.up=rep(boundS, gridgeometry.grid2D$y.N))$dC
+                     
+                     #C.y.down=rep(1, gridgeometry.grid2D$x.N),
+                     #flux.y.down=rep(boundS, gridgeometry.grid2D$y.N),
+                     #flux.y.up=rep(boundS, gridgeometry.grid2D$y.N))$dC#,
+                     #flux.x.down=c(0,rep(-boundS, gridgeometry.grid2D$x.N-2),0),  # reduce edge bias
+                     #flux.x.up=c(0, rep(boundS, gridgeometry.grid2D$x.N-2),0))$dC # "
+    return (list(dCONC))
+  })
+}
+
+
+
 
 
 
@@ -147,16 +169,16 @@ plotSubCurve <-function(simlist, mediac=NULL){
   if(sum(mediac %in% simlist[[1]]@mediac) != length(mediac)) stop("Substance does not exist in exchange reactions.")
   
   if(length(mediac)==0) mediac <- names(getVarSubs(simlist[[1]]))[1:5] # get 5 most varying substances (from first sim)
-  
   all_df <- data.frame()
   for(i in seq_along(simlist)){
     object <- simlist[[i]]
     prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
     list <- lapply(prelist, function(x){lapply(x, sum)})
     mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
-    rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",object@mediac))
+    rownames(mat) <- object@mediac
     mat_nice <- mat[which(rownames(mat) %in% mediac),]
-    all_df <- rbind(all_df, melt(mat_nice))
+    rownames(mat_nice) <- gsub("\\(e\\)$","", gsub("\\[e\\]$","", gsub("EX_","",rownames(mat_nice))))
+    all_df <- rbind(all_df, reshape2::melt(mat_nice))
   }
   
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
@@ -169,9 +191,9 @@ plotSubCurve <-function(simlist, mediac=NULL){
   #  stat_summary(geom="ribbon", fun.ymin="min", fun.ymax="max", aes(fill=Var1), alpha=0.3)
   
   usd <- function(y){mean(y) + sd(y)}
-  lsd <- function(y){mean(y) - sd(y)}
-  ggplot(all_df, aes(color=Var1, y=value, x=Var2)) +
-    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3)
+  lsd <- function(y){lb=mean(y)-sd(y); ifelse(lb<0,0,lb)}
+  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
+    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3)
 }
 
 
@@ -185,13 +207,13 @@ plotGrowthCurve <-function(simlist){
     })
     mat_bac  <- do.call(cbind, list)
     rownames(mat_bac) <- names(object@specs)
-    all_df <- rbind(all_df, melt(mat_bac))
+    all_df <- rbind(all_df, reshape2::melt(mat_bac))
   }
   
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
   
   usd <- function(y){mean(y) + sd(y)}
   lsd <- function(y){mean(y) - sd(y)}
-  ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + #stat_smooth(se = FALSE) + 
+  q<-ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + #stat_smooth(se = FALSE) + 
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3)
 }

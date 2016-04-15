@@ -5,7 +5,7 @@ library(roxygen2)
 
 setwd("~/uni/bacarena")
 devtools::document()
-check_doc()
+devtools::check_man()
 
 install_github(repo="euba/bacarena")
 install_local(path="~/uni/bacarena")

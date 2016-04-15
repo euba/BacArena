@@ -1,10 +1,12 @@
 library(devtools)
 install_github(repo="euba/bacarena")
+#install_local("~/uni/bacarena")
 library(BacArena)
 library(parallel)
 
 # create cluster with all available cores
-nr_cores <- detectCores()
+#nr_cores <- detectCores()
+nr_cores <- 4
 print(paste("cores available:", nr_cores))
 cl <- makeCluster(nr_cores, type="PSOCK") # PSOCK works with win/mac/lin
 
@@ -19,7 +21,8 @@ print(system.time(simlist <- parLapply(cl, 1:nr_cores, function(i){
   arena <- BacArena::addMinMed(arena, bac)
   arena <- BacArena::addSubs(arena, mediac="EX_o2(e)", smax=3, unit="fmol/cell", add = F)
   arena <- BacArena::rmSubs(arena, mediac="EX_co2(e)")
-  sim   <- BacArena::simEnv(arena, time=10)  
+  #sim   <- BacArena::simEnv(arena, time=10)   # 44.845 
+  sim   <- BacArena::simEnv(arena, time=10, diff_par = TRUE, cl_size = 2)   # 104.373 
 }) ))
 stopCluster(cl)
 
