@@ -272,7 +272,6 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
          stop("Solver not suported!"))
   if(!solve_ok | fbasl$obj<cutoff){fbasl$obj <- 0}
   if(mtf && fbasl$obj!=0){
-    obj = fbasl$obj
     mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub)
     mtf <- sybil::optimizeProb(mod, algorithm="mtf", wtobj=fbasl$obj)
     fbasl$fluxes = sybil::getFluxDist(mtf)
