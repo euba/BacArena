@@ -274,8 +274,8 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
   if(mtf && fbasl$obj!=0){
     obj = fbasl$obj
     mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub)
-    fbasl <- sybil::optimizeProb(mod, algorithm="mtf", wtobj=fbasl$obj, retOptSol=F)
-    fbasl$obj = obj
+    mtf <- sybil::optimizeProb(mod, algorithm="mtf", wtobj=fbasl$obj)
+    fbasl$fluxes = sybil::getFluxDist(mtf)
   }
   names(fbasl$fluxes) <- names(object@lbnd)
   return(fbasl)
