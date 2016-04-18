@@ -263,7 +263,6 @@ setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=
 #' @rdname optimizeLP
 setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j, mtf=F){ 
   fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
-  names(fbasl$fluxes) <- names(object@lbnd)
   switch(lpob@problem@solver,
          glpkAPI = {solve_ok <- fbasl$stat==5},
          cplexAPI = {solve_ok <- fbasl$stat==1},
@@ -271,16 +270,14 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
          lpSolveAPI = {solve_ok <- fbasl$stat==0},
          sybilGUROBI = {solve_ok <- fbasl$stat==2},
          stop("Solver not suported!"))
-  #if(is.na(fbasl$obj)){fbasl$obj <- 0}
-  #if(is.na(fbasl$obj)){browser()}
   if(!solve_ok | fbasl$obj<cutoff){fbasl$obj <- 0}
   if(mtf && fbasl$obj!=0){
     obj = fbasl$obj
     mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub)
     fbasl <- sybil::optimizeProb(mod, algorithm="mtf", wtobj=fbasl$obj, retOptSol=F)
     fbasl$obj = obj
-    #fbasl <- optimizeProb(object@model, algorithm="mtf", wtobj=fbasl$obj, react=1:length(lb), ub=ub, lb=lb, retOptSol=F)
   }
+  names(fbasl$fluxes) <- names(object@lbnd)
   return(fbasl)
 })
 
