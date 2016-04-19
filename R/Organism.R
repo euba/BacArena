@@ -251,6 +251,7 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' @param ub A numeric vector giving the constraint values of upper bounds.
 #' @param cutoff value used to define numeric accuracy while interpreting optimization results
 #' @param j debuging index to track cell
+#' @param mtf True if minimize total flux should be used.
 #' @return Modified problem object according to the constraints and then solved with \code{optimizeProb}.
 #' @seealso \code{\link{Organism-class}}, \code{\link{optimizeProb}} and \code{\link{sysBiolAlg}}
 #' @examples
@@ -258,10 +259,10 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' org <- Organism(Ec_core,deathrate=0.05,
 #'            growthlimit=0.05,growtype="exponential") #initialize a organism
 #' org@fbasol <- optimizeLP(org)
-setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j, mtf=F){standardGeneric("optimizeLP")})
+setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j, mtf=FALSE){standardGeneric("optimizeLP")})
 #' @export
 #' @rdname optimizeLP
-setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j, mtf=F){ 
+setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j, mtf=FALSE){ 
   fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
   switch(lpob@problem@solver,
          glpkAPI = {solve_ok <- fbasl$stat==5},
@@ -273,8 +274,8 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
   if(!solve_ok | fbasl$obj<cutoff){fbasl$obj <- 0}
   if(mtf && fbasl$obj!=0){
     mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub)
-    mtf <- sybil::optimizeProb(mod, algorithm="mtf", wtobj=fbasl$obj)
-    fbasl$fluxes = sybil::getFluxDist(mtf)
+    mtf_sol <- sybil::optimizeProb(mod, algorithm="mtf", wtobj=fbasl$obj)
+    fbasl$fluxes = sybil::getFluxDist(mtf_sol)
   }
   names(fbasl$fluxes) <- names(object@lbnd)
   return(fbasl)
@@ -747,15 +748,16 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 #' @param j The index of the organism of interest in orgdat.
 #' @param bacnum integer indicating the number of bacteria individuals per gridcell
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
+#' @param mtf True if minimize total flux should be used.
 #' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.
 #' @details Bacterial individuals undergo step by step the following procedures: First the individuals are constrained with \code{constrain} to the substrate environment, then flux balance analysis is computed with \code{optimizeLP}, after this the substrate concentrations are updated with \code{consume}, then the bacterial growth is implemented with \code{growth}, the potential new phenotypes are added with \code{checkPhen}, finally the additional and conditional functions \code{lysis}, \code{move} or \code{chemotaxis} are performed. Can be used as a wrapper for all important bacterial functions in a function similar to \code{simEnv}.
 #' @seealso \code{\link{Bac-class}}, \code{\link{Arena-class}}, \code{\link{simEnv}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{growth}, \code{checkPhen}, \code{lysis}, \code{move} and \code{chemotaxis}
 #' @examples
 #' NULL
-setGeneric("simBac", function(object, arena, j, sublb, bacnum, mtf=F){standardGeneric("simBac")})
+setGeneric("simBac", function(object, arena, j, sublb, bacnum, mtf=FALSE){standardGeneric("simBac")})
 #' @export
 #' @rdname simBac
-setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, mtf=F){
+setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, mtf=FALSE){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale, j)
   fbasol <- optimizeLP(object, lb=lobnd, j=j, mtf=mtf)
@@ -796,12 +798,13 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, mtf=F){
 #' @param bacnum integer indicating the number of bacteria individuals per gridcell
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
 #' @param lpobject linar programming object (copy of organism@lpobj) that have to be a deep copy in parallel due to pointer use in sybil.
+#' @param mtf True if minimize total flux should be used.
 #' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.
 #'
-setGeneric("simBac_par", function(object, arena, j, sublb, bacnum, lpobject,mtf=F){standardGeneric("simBac_par")})
+setGeneric("simBac_par", function(object, arena, j, sublb, bacnum, lpobject,mtf=FALSE){standardGeneric("simBac_par")})
 #' @export
 #' @rdname simBac_par
-setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum, lpobject,mtf=F){
+setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum, lpobject,mtf=FALSE){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
   

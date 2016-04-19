@@ -628,6 +628,7 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' @param diffusion True if diffusion should be done (default on).
 #' @param diff_par True if diffusion should be run in parallel (default off).
 #' @param cl_size If diff_par is true then cl_size defines the number of cores to be used in parallelized diffusion.
+#' @param mtf True if minimize total flux should be used.
 #' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
 #' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
 #' @seealso \code{\link{Arena-class}} and \code{\link{Eval-class}}
@@ -639,10 +640,10 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
-setGeneric("simEnv", function(object, time, lrw=NULL, continue=F, reduce=F, diffusion=TRUE, diff_par=FALSE, cl_size=2, mtf=F){standardGeneric("simEnv")})
+setGeneric("simEnv", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, mtf=FALSE){standardGeneric("simEnv")})
 #' @export
 #' @rdname simEnv
-setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F, diffusion=TRUE, diff_par=FALSE, cl_size=2, mtf=F){
+setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, mtf=FALSE){
   if(length(object@media)==0) stop("No media present in Arena!")
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
@@ -790,6 +791,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
 #' @param reduce A boolean indicating if the resulting \code{Eval} object should be reduced
 #' @param cluster_size Number of cpu cores to be used.
 #' @param diffusion True if diffusion should be done (default on).
+#' @param mtf True if minimize total flux should be used.
 #' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
 #' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
 #' @seealso \code{\link{Arena-class}} and \code{\link{Eval-class}}
@@ -801,10 +803,10 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
-setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL, diffusion=TRUE, mtf=F){standardGeneric("simEnv_par")})
+setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, cluster_size=NULL, diffusion=TRUE, mtf=FALSE){standardGeneric("simEnv_par")})
 #' @export
 #' @rdname simEnv_par
-setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=F, reduce=F, cluster_size=NULL, diffusion=TRUE, mtf=F){
+setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, cluster_size=NULL, diffusion=TRUE, mtf=FALSE){
   if(length(object@media)==0) stop("No media present in Arena!")
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
