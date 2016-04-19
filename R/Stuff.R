@@ -172,6 +172,10 @@ reset_screen <- function(){
 }
 
 
+usd <- function(y){mean(y) + sd(y)}
+lsd <- function(y){lb=mean(y)-sd(y); ifelse(lb<0,0,lb)}
+
+
 #' @title Plot substance curve for several simulations
 #'
 #' @description The function \code{plotSubCurve} takes a list of simulations and plots the time course of substances with standard deviation.
@@ -207,8 +211,6 @@ plotSubCurve <-function(simlist, mediac=NULL){
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) +
   #  stat_summary(geom="ribbon", fun.ymin="min", fun.ymax="max", aes(fill=Var1), alpha=0.3)
   
-  usd <- function(y){mean(y) + sd(y)}
-  lsd <- function(y){lb=mean(y)-sd(y); ifelse(lb<0,0,lb)}
   ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
     ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3)
 }
@@ -238,9 +240,6 @@ plotGrowthCurve <-function(simlist){
   }
   
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
-  
-  usd <- function(y){mean(y) + sd(y)}
-  lsd <- function(y){mean(y) - sd(y)}
   q<-ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + #stat_smooth(se = FALSE) + 
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3)
 }
@@ -265,8 +264,6 @@ plotPhenCurve <- function(simlist, subs, phencurve=NULL, phens=NULL){
   if(length(phencurve)>0 & length(phens)>0){
     small_df <- phencurve[which(phenvurve$Var1 %in% phens),]
     
-    usd <- function(y){mean(y) + sd(y)}
-    lsd <- function(y){mean(y) - sd(y)}
     ggplot(small_df, aes(colour=Var1, y=value, x=Var2)) + #stat_summary(fun.y = mean, geom="line") +
       stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3) + 
       scale_fill_manual(values=colpal3) + scale_colour_manual(values=colpal3)
@@ -340,14 +337,14 @@ plotPhenCurve <- function(simlist, subs, phencurve=NULL, phens=NULL){
     all_df <- rbind(all_df, melt(mat_groups))
   }
   # 4) plotting
-  usd <- function(y){mean(y) + sd(y)}
-  lsd <- function(y){mean(y) - sd(y)}
-  ggplot(all_df, aes(colour=Var1, y=value, x=Var2)) + #stat_summary(fun.y = mean, geom="line") +
+  p <- ggplot(all_df, aes(colour=Var1, y=value, x=Var2)) + #stat_summary(fun.y = mean, geom="line") +
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3) + 
     scale_fill_manual(values=colpal3) + scale_colour_manual(values=colpal3)
+  print(p)
   
-  ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line") +
+  p <- ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line") +
     scale_colour_manual(values=colpal3)
+  print(p)
   
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth(level = 0.99) + geom_point()
