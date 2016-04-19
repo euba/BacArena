@@ -192,7 +192,7 @@ plotSubCurve <-function(simlist, mediac=NULL){
   
   usd <- function(y){mean(y) + sd(y)}
   lsd <- function(y){lb=mean(y)-sd(y); ifelse(lb<0,0,lb)}
-  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
+  ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
     ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3)
 }
 
@@ -216,4 +216,103 @@ plotGrowthCurve <-function(simlist){
   lsd <- function(y){mean(y) - sd(y)}
   q<-ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + #stat_smooth(se = FALSE) + 
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3)
+}
+
+
+plotPhenCurve <- function(simlist, subs, again=TRUE, phencurve=NULL, phens=NULL){
+  if(sum(subs %in% simlist[[1]]@mediac) != length(subs)) stop("Substances invalid.")
+  if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
+  
+  # if old ohencurve object is available -> fine tuning plot 
+  if(again & length(phencurve)>0 & length(phens)>0){
+    small_df <- phencurve[which(phenvurve$Var1 %in% phens),]
+    
+    usd <- function(y){mean(y) + sd(y)}
+    lsd <- function(y){mean(y) - sd(y)}
+    ggplot(small_df, aes(colour=Var1, y=value, x=Var2)) + #stat_summary(fun.y = mean, geom="line") +
+      stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3) + 
+      scale_fill_manual(values=colpal3) + scale_colour_manual(values=colpal3)
+    
+    ggplot(small_df, aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line") +
+      scale_colour_manual(values=colpal3)
+  }  
+  
+  # 1) cluster phenotypes according to relevant substrates
+  pos <- which(simlist[[1]]@mediac %in% rel)
+  simlist_prefac <- lapply(simlist, function(l){
+    mediac <- gsub("\\(e\\)","", gsub("EX_","",l@mediac))
+    phens <- l@phenotypes
+    phenmat <- matrix(0, nrow=length(phens), ncol=length(l@mediac))
+    colnames(phenmat) <- mediac
+    counter = vector("numeric", length(l@specs))
+    names(counter) <- lapply(names(l@specs), function(org_name){org_name})
+    new_names = unlist(lapply(names(phens), function(x){
+      counter[x] <<- counter[x] + 1
+      paste0(x, "_", counter[x])
+    }))
+    rownames(phenmat) <- new_names
+    for(i in 1:nrow(phenmat)){
+      phenmat[i,] = as.numeric(unlist(strsplit(phens[i],split={})))
+    }
+    phenmat_bin <- replace(phenmat, phenmat==2, -1)
+    for(i in seq_along(l@specs)) { # add inactive phenotypes
+      phenmat_bin <- rbind(phenmat_bin, rep(0,ncol(phenmat_bin)))
+      rownames(phenmat_bin)[nrow(phenmat_bin)] <- paste0(names(l@specs)[i],"_",0)
+    }
+    
+    small <- phenmat_bin[,pos]
+    prefac <- apply(small, 1, paste, collapse="_")
+  })
+  
+  prefac <- unlist(simlist_prefac)
+  fac <- factor(prefac, levels=unique(prefac), labels=1:length(unique(prefac)))
+  simlist_fac <- split(fac, unlist(lapply(seq_along(simlist), function(i){rep(i, length(simlist_prefac[[i]]))}))) # split unique pheno ids according for each simulation
+  
+  # 2) print legend
+  group_mem <- unique(cbind(unname(fac),names(prefac)))
+  group_mem <- split(group_mem[,2], paste0("P",group_mem[,1]))
+  print(group_mem)
+  
+  group_sub <- unique(cbind(unname(fac),unname(prefac)))
+  m_group_sub <- matrix(as.numeric(unlist(strsplit(group_sub[,2], "_"))), byrow=TRUE, ncol=length(rel))
+  rownames(m_group_sub) <- paste0("P", group_sub[,1])
+  colnames(m_group_sub) <- gsub("\\(e\\)","", gsub("EX_","",names(simlist[[1]]@mediac)))[pos]
+  print(m_group_sub)
+  
+  
+  # 3) get growth of selected phenotypes
+  all_df <- data.frame()
+  for(i in seq_along(simlist)){
+    pheno_nr <- table(names(simlist[[i]]@phenotypes))
+    list <- lapply(simlist[[i]]@simlist, function(x){ # time step
+      unlist(lapply(seq_along(simlist[[i]]@specs), function(j){ # bac type
+        occ <- table(x[which(x$type==j),]$phenotype)
+        p <- unlist(lapply(seq(0,pheno_nr[[names(simlist[[i]]@specs[j])]]), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
+        names(p) <- paste0(names(simlist[[i]]@specs)[j], "_pheno", seq(0,pheno_nr[[names(simlist[[i]]@specs[j])]]))
+        p
+      }))})
+    mat_phen  <- do.call(cbind, list)
+    
+    mat_groups <- rowsum(mat_phen, group=simlist_fac[[i]]) # phenotype0 singularity
+    #rownames(mat_groups) <- 1:dim(mat_groups)[1]
+    rownames(mat_groups) <- paste0("P", 1:dim(mat_groups)[1])
+    all_df <- rbind(all_df, melt(mat_groups))
+  }
+  
+  # 4) plotting
+  usd <- function(y){mean(y) + sd(y)}
+  lsd <- function(y){mean(y) - sd(y)}
+  ggplot(all_df, aes(colour=Var1, y=value, x=Var2)) + #stat_summary(fun.y = mean, geom="line") +
+    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3) + 
+    scale_fill_manual(values=colpal3) + scale_colour_manual(values=colpal3)
+  
+  ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line") +
+    scale_colour_manual(values=colpal3)
+  
+  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
+  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth(level = 0.99) + geom_point()
+  
+  
+  # return object to call method again for fine tuning
+  return(all_df)
 }
