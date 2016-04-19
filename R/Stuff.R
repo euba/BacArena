@@ -160,12 +160,29 @@ openArena <- function(){
   return(sim)
 }
 
+
+#' @title Reset plotting screen
+#'
+#' @description The function \code{reset_screen} set plotting window to default
+#' @export
+#' @rdname reset_screen
+#'
 reset_screen <- function(){
   par(mfrow=c(1,1))
 }
 
 
+#' @title Plot substance curve for several simulations
+#'
+#' @description The function \code{plotSubCurve} takes a list of simulations and plots the time course of substances with standard deviation.
+#' @export
+#' @rdname plotSubCurve
+#' 
+#' @param simlist A list of simulations (eval objects).
+#' @param mediac A vector of substances (if not specified most varying substances will be taken.)
+#'
 plotSubCurve <-function(simlist, mediac=NULL){
+  if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(sum(mediac %in% simlist[[1]]@mediac) != length(mediac)) stop("Substance does not exist in exchange reactions.")
   
   if(length(mediac)==0) mediac <- names(getVarSubs(simlist[[1]]))[1:5] # get 5 most varying substances (from first sim)
@@ -197,7 +214,17 @@ plotSubCurve <-function(simlist, mediac=NULL){
 }
 
 
+#' @title Plot growth curve for several simulations
+#'
+#' @description The function \code{plotGrowthCurve} takes a list of simulations and plots the time course of species with standard deviation.
+#' @export
+#' @rdname plotGrowthCurve
+#' 
+#' @param simlist A list of simulations (eval objects).
+#'
 plotGrowthCurve <-function(simlist){
+  if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
+  
   all_df <- data.frame()
   for(i in seq_along(simlist)){
     object <- simlist[[i]]
@@ -219,12 +246,23 @@ plotGrowthCurve <-function(simlist){
 }
 
 
-plotPhenCurve <- function(simlist, subs, again=TRUE, phencurve=NULL, phens=NULL){
+#' @title Plot growth curve for several simulations
+#'
+#' @description The function \code{plotPhenCurve} takes a list of simulations and plots the time course of species with standard deviation.
+#' @export
+#' @rdname plotPhenCurve
+#' 
+#' @param simlist A list of simulations (eval objects).
+#' @param subs A vector of substance names that are used for phenotype clustering.
+#' @param phencurve Old return of this function to reused and plot again.
+#' @param phens If phencurve is given then phens specifies the phenotypes which sould be plotted again.
+#'
+plotPhenCurve <- function(simlist, subs, phencurve=NULL, phens=NULL){
   if(sum(subs %in% simlist[[1]]@mediac) != length(subs)) stop("Substances invalid.")
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   
   # if old ohencurve object is available -> fine tuning plot 
-  if(again & length(phencurve)>0 & length(phens)>0){
+  if(length(phencurve)>0 & length(phens)>0){
     small_df <- phencurve[which(phenvurve$Var1 %in% phens),]
     
     usd <- function(y){mean(y) + sd(y)}
