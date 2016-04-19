@@ -1652,7 +1652,8 @@ setMethod("getVarSubs", "Eval", function(object, only_products=FALSE, only_subst
   mat <- round(matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist)), round(-log10(cutoff)))
   #mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
   mediac <- object@mediac
-  rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
+  #rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
+  rownames(mat) <- mediac
   mat_var  <- apply(mat, 1, var)
   if(!(only_products || only_substrates)) {
     return(sort(mat_var[which(mat_var>0)], decreasing=TRUE))

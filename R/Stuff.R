@@ -197,11 +197,15 @@ plotSubCurve <-function(simlist, mediac=NULL){
     list <- lapply(prelist, function(x){lapply(x, sum)})
     mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
     rownames(mat) <- object@mediac
-    mat_nice <- mat[which(rownames(mat) %in% mediac),]
-    rownames(mat_nice) <- gsub("\\(e\\)$","", gsub("\\[e\\]$","", gsub("EX_","",rownames(mat_nice))))
+    if(length(mediac) > 1){
+      mat_nice <- mat[which(rownames(mat) %in% mediac),]
+      rownames(mat_nice) <- gsub("\\(e\\)$","", gsub("\\[e\\]$","", gsub("EX_","",rownames(mat_nice))))
+    }else{
+      mat_nice <- t(as.matrix(mat[which(rownames(mat) %in% mediac),]))
+      rownames(mat_nice) <- gsub("\\(e\\)$","", gsub("\\[e\\]$","", gsub("EX_","",mediac)))
+    }
     all_df <- rbind(all_df, reshape2::melt(mat_nice))
   }
-  
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth() + geom_point()
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth(level=0.999) # confidence level default: 0.95
@@ -213,6 +217,8 @@ plotSubCurve <-function(simlist, mediac=NULL){
   
   ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
     ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3)
+  
+  ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line")
 }
 
 
