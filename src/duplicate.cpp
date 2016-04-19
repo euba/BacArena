@@ -27,7 +27,7 @@ DataFrame duplicateCpp(DataFrame orgdat, int n, int m, List cellweight, IntegerM
     int sel = static_cast<int>(round(as<double>(runif(1, 0, size-1))));
 
     //check if growth is high enough to duplicate
-    if(growth_vec[sel]>cellweight[type_vec[sel]-1]){
+    if(growth_vec[sel]>as<double>(cellweight[type_vec[sel]-1])){
       int old_x = x_vec[sel];
       int old_y = y_vec[sel];      
       std::vector<std::pair<int,int> > list_free; 
