@@ -276,8 +276,9 @@ plotPhenCurve <- function(simlist, subs, phencurve=NULL, phens=NULL){
   }  
   
   # 1) cluster phenotypes according to relevant substrates
-  pos <- which(simlist[[1]]@mediac %in% rel)
-  simlist_prefac <- lapply(simlist, function(l){
+  pos <- which(simlist[[1]]@mediac %in% subs)
+  simlist_prefac <- lapply(seq_along(simlist), function(j){
+    l <- simlist[[j]]
     mediac <- gsub("\\(e\\)","", gsub("EX_","",l@mediac))
     phens <- l@phenotypes
     phenmat <- matrix(0, nrow=length(phens), ncol=length(l@mediac))
@@ -286,7 +287,7 @@ plotPhenCurve <- function(simlist, subs, phencurve=NULL, phens=NULL){
     names(counter) <- lapply(names(l@specs), function(org_name){org_name})
     new_names = unlist(lapply(names(phens), function(x){
       counter[x] <<- counter[x] + 1
-      paste0(x, "_", counter[x])
+      paste0(x, "_", counter[x],"-sim_",j)
     }))
     rownames(phenmat) <- new_names
     for(i in 1:nrow(phenmat)){
@@ -295,16 +296,17 @@ plotPhenCurve <- function(simlist, subs, phencurve=NULL, phens=NULL){
     phenmat_bin <- replace(phenmat, phenmat==2, -1)
     for(i in seq_along(l@specs)) { # add inactive phenotypes
       phenmat_bin <- rbind(phenmat_bin, rep(0,ncol(phenmat_bin)))
-      rownames(phenmat_bin)[nrow(phenmat_bin)] <- paste0(names(l@specs)[i],"_",0)
+      rownames(phenmat_bin)[nrow(phenmat_bin)] <- paste0(names(l@specs)[i],"_",0,"-sim_",j)
     }
-    
     small <- phenmat_bin[,pos]
-    prefac <- apply(small, 1, paste, collapse="_")
+    if(length(subs)>1) prefac <- apply(small, 1, paste, collapse="_") else prefac <- small
   })
   
   prefac <- unlist(simlist_prefac)
   fac <- factor(prefac, levels=unique(prefac), labels=1:length(unique(prefac)))
-  simlist_fac <- split(fac, unlist(lapply(seq_along(simlist), function(i){rep(i, length(simlist_prefac[[i]]))}))) # split unique pheno ids according for each simulation
+  fac2 <- fac
+  names(fac2) <- gsub("-sim_.$", "", names(fac)) # remove 'simulation i' tag
+  simlist_fac <- split(fac2, unlist(lapply(seq_along(simlist), function(i){rep(i, length(simlist_prefac[[i]]))}))) # split unique pheno ids according for each simulation
   
   # 2) print legend
   group_mem <- unique(cbind(unname(fac),names(prefac)))
@@ -312,11 +314,12 @@ plotPhenCurve <- function(simlist, subs, phencurve=NULL, phens=NULL){
   print(group_mem)
   
   group_sub <- unique(cbind(unname(fac),unname(prefac)))
-  m_group_sub <- matrix(as.numeric(unlist(strsplit(group_sub[,2], "_"))), byrow=TRUE, ncol=length(rel))
+  if(length(subs)>1){
+    m_group_sub <- matrix(as.numeric(unlist(strsplit(group_sub[,2], "_"))), byrow=TRUE, ncol=length(subs))
+  }else m_group_sub <- matrix(group_sub[,2])
   rownames(m_group_sub) <- paste0("P", group_sub[,1])
   colnames(m_group_sub) <- gsub("\\(e\\)","", gsub("EX_","",names(simlist[[1]]@mediac)))[pos]
   print(m_group_sub)
-  
   
   # 3) get growth of selected phenotypes
   all_df <- data.frame()
@@ -336,7 +339,6 @@ plotPhenCurve <- function(simlist, subs, phencurve=NULL, phens=NULL){
     rownames(mat_groups) <- paste0("P", 1:dim(mat_groups)[1])
     all_df <- rbind(all_df, melt(mat_groups))
   }
-  
   # 4) plotting
   usd <- function(y){mean(y) + sd(y)}
   lsd <- function(y){mean(y) - sd(y)}
