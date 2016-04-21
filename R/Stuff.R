@@ -7,7 +7,7 @@ colpal1 <- c("#000000","#FFFF00","#1CE6FF","#FF34FF","#FF4A46","#008941","#006FA
 # 20 optimally distinct colors
 colpal2 <- c("#C48736", "#CE54D1", "#96CED5", "#76D73C", "#403552", "#D4477D", "#5A7E36", "#D19EC4", "#CBC594", "#722A2D", "#D0CD47", "#CF4A31", "#7B6FD0", "#597873", "#6CD3A7", "#484125", "#C17E73", "#688EC1",  "#844081", "#7DD06F")
 
-# K. Kelly (1965): Twenty-two colors of maximum contrast. // Color Eng., 3(6)
+# K. Kelly (1965): Twenty-two colors of maximum contrast. // Color Eng., 3(6), 1965
 colpal3 = c(
   "#FFB300", # Vivid Yellow
   "#803E75", # Strong Purple
@@ -171,8 +171,21 @@ reset_screen <- function(){
   par(mfrow=c(1,1))
 }
 
-
+#' @title Computer standard deviation upper bound
+#'
+#' @description Helper function to get upper error bounds in plotting
+#' @param y Vector with numbers
+#' @export
+#' @rdname usd
+#'
 usd <- function(y){mean(y) + sd(y)}
+#' @title Computer standard deviation lower bound
+#'
+#' @description Helper function to get lower error bounds in plotting
+#' @param y Vector with numbers
+#' @export
+#' @rdname lsd
+#'
 lsd <- function(y){lb=mean(y)-sd(y); ifelse(lb<0,0,lb)}
 
 
@@ -215,10 +228,13 @@ plotSubCurve <-function(simlist, mediac=NULL){
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) +
   #  stat_summary(geom="ribbon", fun.ymin="min", fun.ymax="max", aes(fill=Var1), alpha=0.3)
   
-  ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
-    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3)
+  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
+    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3) + 
+    xlab("time") + ylab("amount of substance [fmol]") + ggtitle("Substance curve with standard deviation")
+  print(q)
   
-  ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line")
+  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line")
+  print(q)
 }
 
 
@@ -247,7 +263,9 @@ plotGrowthCurve <-function(simlist){
   
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
   q<-ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + #stat_smooth(se = FALSE) + 
-    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3)
+    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3) + 
+    xlab("time") + ylab("number organism") + ggtitle("Growth curve with standard deviation")
+  print(q)
 }
 
 
