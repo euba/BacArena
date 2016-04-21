@@ -2130,17 +2130,17 @@ setMethod("statPheno", "Eval", function(object, type_nr=1, phenotype_nr, dict=NU
 #' 
 #' @param object An object of class Eval.
 #' @param tcut Integer giving the minimal mutual occurence ot be considered (dismiss very seldom feedings)
-#' @param scut List of substance names which should be ignored
+#' @param scut substance names which should be ignored
 #' @param legendpos A character variable declaring the position of the legend
 #' @param dict List defining new substance names. List entries are intepreted as old names and the list names as the new ones.
 #' @param lwd Line thickness scale in graph
 #' @param org_dict A named list/vector with names that should replace (eg. unreadable) IDs
 #' @return Graph (igraph)
 #' 
-setGeneric("findFeeding", function(object, dict=NULL, tcut=5, scut=list(), org_dict=NULL, legendpos="topleft", lwd=1){standardGeneric("findFeeding")})
+setGeneric("findFeeding", function(object, dict=NULL, tcut=5, scut=NULL, org_dict=NULL, legendpos="topleft", lwd=1){standardGeneric("findFeeding")})
 #' @export
 #' @rdname findFeeding
-setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list(), org_dict=NULL, legendpos="topleft", lwd=1){
+setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=NULL, org_dict=NULL, legendpos="topleft", lwd=1){
 
   # possible problem inactive phenotype is not mentioned in object@phenotypes...
 
@@ -2153,7 +2153,7 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
       p <- unlist(lapply(seq(0,pheno_nr[[names(object@specs[j])]]), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
       if(names(object@specs[j]) %in% org_dict){
         org_name <- names(org_dict[which(org_dict==names(object@specs[j]))])
-    }else org_name <- names(object@specs)[j]
+      }else org_name <- names(object@specs)[j]
       names(p) <- paste0(org_name, "_", seq(0,pheno_nr[[names(object@specs[j])]]))
       p
     }))})
@@ -2194,9 +2194,11 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   phenmat_bin <- replace(phenmat, phenmat==2, -1)
   phenmat_abs <- abs(phenmat_bin)
   res <- phenmat_bin[,which(abs(colSums(phenmat_bin)) != colSums(phenmat_abs))]
-  browser()
-  if(length(scut)>0) res <- res[,-which(colnames(res) %in% scut)] # reduce substrates
-
+  if(all(scut %in% object@mediac)) scut <- gsub("\\(e\\)","", gsub("EX_","",scut))
+  if(length(intersect(scut, mediac)) > 0) {
+    res <- res[,-which(colnames(res) %in% scut)] # reduce substrates
+  }else if(!is.null(scut)) print("scut should have valid names (as defined in mediac)")
+  
   # graph
   pindex <- rownames(mat_phen)# phenotype index
   cindex <- colnames(res) # substance color index
@@ -2216,19 +2218,17 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
       ex_both     <- res[c(combi[,i][1], combi[,i][2]),]
       feeding_index <- which(colSums(ex_both)==0 & colSums(abs(ex_both))!=0)
       if(length(feeding_index)>0){
-        # if only one substance is exchanged some hack to get name of substance into returned data structure of feeding
-        if(length(feeding_index)==1){
-          feeding <- unlist(list(colnames(ex_both)[feeding_index], ex_both[,feeding_index]))
-        } else {
-          feeding <- ex_both[,feeding_index]
-          lapply(seq(dim(feeding)[2]), function(x){
-            if(feeding[1,x] == -1){
-              new_edge <- c(which(pindex==combi[,i][2]), which(pindex==combi[,i][1]))
-            }else new_edge <- c(which(pindex==combi[,i][1]), which(pindex==combi[,i][2]))
-            col <- colpal3[which(cindex == colnames(feeding)[x])]
-            g <<- igraph::add.edges(g, new_edge, color=col, weight=length(co_occ)*lwd)
-          })
-        }
+        feeding <- ex_both[,feeding_index]
+        if(length(feeding_index)==1){ # if only one substance is exchanged some hack to get name of substance into returned data structure of feeding
+          feeding <- as.matrix(ex_both[,feeding_index])
+          colnames(feeding) <- colnames(ex_both)[feeding_index]}
+        lapply(seq(dim(feeding)[2]), function(x){
+          if(feeding[1,x] == -1){
+            new_edge <- c(which(pindex==combi[,i][2]), which(pindex==combi[,i][1]))
+          }else new_edge <- c(which(pindex==combi[,i][1]), which(pindex==combi[,i][2]))
+          col <- colpal3[which(cindex == colnames(feeding)[x])]
+          g <<- igraph::add.edges(g, new_edge, color=col, weight=length(co_occ)*lwd)
+        })
         #cat("\npossible cross feeding at time steps\n")
         #print(co_occ)
         #print(feeding)
@@ -2246,6 +2246,7 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   }
   return(list(g=g, cindex=cindex))
 })
+
 
 #' @title Function for investigation of feeding between phenotypes
 #'
