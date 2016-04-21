@@ -1543,13 +1543,15 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
         if(show_legend){
           df_legend <- unique(object@simlist[[i]][,c("type", "phenotype")])
           df_legend <- df_legend[order(df_legend$phenotype),]
-          legend(legend_pos, legend=paste(df_legend$type, df_legend$phenotype), col=df_legend$phenotype+1, pch=df_legend$type-1)
+          par(mar=c(5.1, 4.1, 4.1, 7.1), xpd=TRUE) # extra space for legend
+          legend("topright", inset=c(-0.4,0), legend=paste(df_legend$type, df_legend$phenotype), col=df_legend$phenotype+1, pch=df_legend$type-1)
         }
       }else{
         plot(object@simlist[[i]][,c('x','y')],xlim=c(0,object@n),ylim=c(0,object@m),xlab='',ylab='',
              pch=object@simlist[[i]]$type-1,axes=FALSE,cex=1,main=paste('Population', ": #", i), col=object@simlist[[i]]$type)
         if(show_legend){
-          legend(legend_pos, legend=names(object@specs), col=c(1:length(names(object@specs))), pch=c(1:length(names(object@specs)))-1)
+          par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE) # extra space for legend
+          legend(legend_pos, inset=c(-0.8,0),legend=names(object@specs), col=c(1:length(names(object@specs))), pch=c(1:length(names(object@specs)))-1)
         }
       }
     }
@@ -2192,6 +2194,7 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   phenmat_bin <- replace(phenmat, phenmat==2, -1)
   phenmat_abs <- abs(phenmat_bin)
   res <- phenmat_bin[,which(abs(colSums(phenmat_bin)) != colSums(phenmat_abs))]
+  browser()
   if(length(scut)>0) res <- res[,-which(colnames(res) %in% scut)] # reduce substrates
 
   # graph
