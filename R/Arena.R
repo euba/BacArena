@@ -1441,20 +1441,20 @@ setMethod("redEval", "Eval", function(object, time=1:length(object@medlist)){ #i
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' med5 <- extractMed(eval,5)
-setGeneric("extractMed", function(object, time=length(object@medlist)){standardGeneric("extractMed")})
+setGeneric("extractMed", function(object, time=length(object@medlist), mediac=object@mediac){standardGeneric("extractMed")})
 #' @export
 #' @rdname extractMed
-setMethod("extractMed", "Eval", function(object, time=length(object@medlist)){
+setMethod("extractMed", "Eval", function(object, time=length(object@medlist), mediac=object@mediac){
   medl <- object@medlist
   medlind <- medl[[time]]
-  for(i in which(names(medlind) %in% object@mediac)){
+  for(i in which(names(medlind) %in% mediac)){
     if(length(medl[[time]][[i]])==0){
       j <- time
       while(length(medl[[j]][[i]])==0){j <- j-1}
       medlind[[i]] <- medl[[j]][[i]]
     }
   }
-  return(medlind)
+  return(medlind[which(names(medlind) %in% mediac)])
 })
 
 #' @title Function for plotting spatial and temporal change of populations and/or concentrations
