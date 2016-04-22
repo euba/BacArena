@@ -1441,20 +1441,20 @@ setMethod("redEval", "Eval", function(object, time=1:length(object@medlist)){ #i
 #' addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' med5 <- extractMed(eval,5)
-setGeneric("extractMed", function(object, time=length(object@medlist)){standardGeneric("extractMed")})
+setGeneric("extractMed", function(object, time=length(object@medlist), mediac=object@mediac){standardGeneric("extractMed")})
 #' @export
 #' @rdname extractMed
-setMethod("extractMed", "Eval", function(object, time=length(object@medlist)){
+setMethod("extractMed", "Eval", function(object, time=length(object@medlist), mediac=object@mediac){
   medl <- object@medlist
   medlind <- medl[[time]]
-  for(i in which(names(medlind) %in% object@mediac)){
+  for(i in which(names(medlind) %in% mediac)){
     if(length(medl[[time]][[i]])==0){
       j <- time
       while(length(medl[[j]][[i]])==0){j <- j-1}
       medlind[[i]] <- medl[[j]][[i]]
     }
   }
-  return(medlind)
+  return(medlind[which(names(medlind) %in% mediac)])
 })
 
 #' @title Function for plotting spatial and temporal change of populations and/or concentrations
@@ -1543,13 +1543,15 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
         if(show_legend){
           df_legend <- unique(object@simlist[[i]][,c("type", "phenotype")])
           df_legend <- df_legend[order(df_legend$phenotype),]
-          legend(legend_pos, legend=paste(df_legend$type, df_legend$phenotype), col=df_legend$phenotype+1, pch=df_legend$type-1)
+          par(mar=c(5.1, 4.1, 4.1, 7.1), xpd=TRUE) # extra space for legend
+          legend("topright", inset=c(-0.4,0), legend=paste(df_legend$type, df_legend$phenotype), col=df_legend$phenotype+1, pch=df_legend$type-1)
         }
       }else{
         plot(object@simlist[[i]][,c('x','y')],xlim=c(0,object@n),ylim=c(0,object@m),xlab='',ylab='',
              pch=object@simlist[[i]]$type-1,axes=FALSE,cex=1,main=paste('Population', ": #", i), col=object@simlist[[i]]$type)
         if(show_legend){
-          legend(legend_pos, legend=names(object@specs), col=c(1:length(names(object@specs))), pch=c(1:length(names(object@specs)))-1)
+          par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE) # extra space for legend
+          legend(legend_pos, inset=c(-0.8,0),legend=names(object@specs), col=c(1:length(names(object@specs))), pch=c(1:length(names(object@specs)))-1)
         }
       }
     }
@@ -1737,12 +1739,12 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
     
     if(length(subs)==0){ # CASE1: plot most varying substances
       #remove substances that should be ignored
-      ignore_subs <- which(object@mediac %in% ignore | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% ignore)
+      ignore_subs <- which(object@mediac %in% ignore |  gsub("\\[e\\]","", gsub("\\(e\\)","", gsub("EX_","",object@mediac))) %in% ignore)
       if(length(ignore_subs) != 0){
         mat <- mat[-ignore_subs,]
         mediac <- object@mediac[-ignore_subs]
       } else mediac <- object@mediac
-      rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
+      rownames(mat) <-  gsub("\\[e\\]","", gsub("\\(e\\)","", gsub("EX_","",mediac)))
       mat_var  <- apply(mat, 1, var)
       num_var <- length(which(mat_var>0))
       if(num_var>0){
@@ -1752,9 +1754,9 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
         mat_nice <- tail(mat[order(mat_var),], num)
       }
     }else{ # CASE2: plot only substances given by subs
-      subs_index <- which(object@mediac %in% subs | gsub("\\(e\\)","", gsub("EX_","",object@mediac)) %in% subs)
-      mat_nice <- mat[subs_index,]
-      rownames(mat_nice) <- gsub("\\(e\\)","", gsub("EX_","",object@mediac[subs_index]))
+      subs_index <- which(object@mediac %in% subs | gsub("\\[e\\]","", gsub("\\(e\\)","", gsub("EX_","",object@mediac))) %in% subs)
+      if(length(subs_index)==1) mat_nice <- matrix(mat[subs_index,], nrow=1) else  mat_nice <- mat[subs_index,]
+      rownames(mat_nice) <- gsub("\\[e\\]","", gsub("\\(e\\)","", gsub("EX_","",object@mediac[subs_index])))
     }
     if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
     matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
@@ -2128,17 +2130,17 @@ setMethod("statPheno", "Eval", function(object, type_nr=1, phenotype_nr, dict=NU
 #' 
 #' @param object An object of class Eval.
 #' @param tcut Integer giving the minimal mutual occurence ot be considered (dismiss very seldom feedings)
-#' @param scut List of substance names which should be ignored
+#' @param scut substance names which should be ignored
 #' @param legendpos A character variable declaring the position of the legend
 #' @param dict List defining new substance names. List entries are intepreted as old names and the list names as the new ones.
 #' @param lwd Line thickness scale in graph
 #' @param org_dict A named list/vector with names that should replace (eg. unreadable) IDs
 #' @return Graph (igraph)
 #' 
-setGeneric("findFeeding", function(object, dict=NULL, tcut=5, scut=list(), org_dict=NULL, legendpos="topleft", lwd=1){standardGeneric("findFeeding")})
+setGeneric("findFeeding", function(object, dict=NULL, tcut=5, scut=NULL, org_dict=NULL, legendpos="topleft", lwd=1){standardGeneric("findFeeding")})
 #' @export
 #' @rdname findFeeding
-setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list(), org_dict=NULL, legendpos="topleft", lwd=1){
+setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=NULL, org_dict=NULL, legendpos="topleft", lwd=1){
 
   # possible problem inactive phenotype is not mentioned in object@phenotypes...
 
@@ -2151,7 +2153,7 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
       p <- unlist(lapply(seq(0,pheno_nr[[names(object@specs[j])]]), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
       if(names(object@specs[j]) %in% org_dict){
         org_name <- names(org_dict[which(org_dict==names(object@specs[j]))])
-    }else org_name <- names(object@specs)[j]
+      }else org_name <- names(object@specs)[j]
       names(p) <- paste0(org_name, "_", seq(0,pheno_nr[[names(object@specs[j])]]))
       p
     }))})
@@ -2192,8 +2194,11 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   phenmat_bin <- replace(phenmat, phenmat==2, -1)
   phenmat_abs <- abs(phenmat_bin)
   res <- phenmat_bin[,which(abs(colSums(phenmat_bin)) != colSums(phenmat_abs))]
-  if(length(scut)>0) res <- res[,-which(colnames(res) %in% scut)] # reduce substrates
-
+  if(all(scut %in% object@mediac)) scut <- gsub("\\(e\\)","", gsub("EX_","",scut))
+  if(length(intersect(scut, mediac)) > 0) {
+    res <- res[,-which(colnames(res) %in% scut)] # reduce substrates
+  }else if(!is.null(scut)) print("scut should have valid names (as defined in mediac)")
+  
   # graph
   pindex <- rownames(mat_phen)# phenotype index
   cindex <- colnames(res) # substance color index
@@ -2213,19 +2218,17 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
       ex_both     <- res[c(combi[,i][1], combi[,i][2]),]
       feeding_index <- which(colSums(ex_both)==0 & colSums(abs(ex_both))!=0)
       if(length(feeding_index)>0){
-        # if only one substance is exchanged some hack to get name of substance into returned data structure of feeding
-        if(length(feeding_index)==1){
-          feeding <- unlist(list(colnames(ex_both)[feeding_index], ex_both[,feeding_index]))
-        } else {
-          feeding <- ex_both[,feeding_index]
-          lapply(seq(dim(feeding)[2]), function(x){
-            if(feeding[1,x] == -1){
-              new_edge <- c(which(pindex==combi[,i][2]), which(pindex==combi[,i][1]))
-            }else new_edge <- c(which(pindex==combi[,i][1]), which(pindex==combi[,i][2]))
-            col <- colpal3[which(cindex == colnames(feeding)[x])]
-            g <<- igraph::add.edges(g, new_edge, color=col, weight=length(co_occ)*lwd)
-          })
-        }
+        feeding <- ex_both[,feeding_index]
+        if(length(feeding_index)==1){ # if only one substance is exchanged some hack to get name of substance into returned data structure of feeding
+          feeding <- as.matrix(ex_both[,feeding_index])
+          colnames(feeding) <- colnames(ex_both)[feeding_index]}
+        lapply(seq(dim(feeding)[2]), function(x){
+          if(feeding[1,x] == -1){
+            new_edge <- c(which(pindex==combi[,i][2]), which(pindex==combi[,i][1]))
+          }else new_edge <- c(which(pindex==combi[,i][1]), which(pindex==combi[,i][2]))
+          col <- colpal3[which(cindex == colnames(feeding)[x])]
+          g <<- igraph::add.edges(g, new_edge, color=col, weight=length(co_occ)*lwd)
+        })
         #cat("\npossible cross feeding at time steps\n")
         #print(co_occ)
         #print(feeding)
@@ -2243,6 +2246,7 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=list()
   }
   return(list(g=g, cindex=cindex))
 })
+
 
 #' @title Function for investigation of feeding between phenotypes
 #'

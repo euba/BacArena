@@ -7,7 +7,7 @@ colpal1 <- c("#000000","#FFFF00","#1CE6FF","#FF34FF","#FF4A46","#008941","#006FA
 # 20 optimally distinct colors
 colpal2 <- c("#C48736", "#CE54D1", "#96CED5", "#76D73C", "#403552", "#D4477D", "#5A7E36", "#D19EC4", "#CBC594", "#722A2D", "#D0CD47", "#CF4A31", "#7B6FD0", "#597873", "#6CD3A7", "#484125", "#C17E73", "#688EC1",  "#844081", "#7DD06F")
 
-# K. Kelly (1965): Twenty-two colors of maximum contrast. // Color Eng., 3(6)
+# K. Kelly (1965): Twenty-two colors of maximum contrast. // Color Eng., 3(6), 1965
 colpal3 = c(
   "#FFB300", # Vivid Yellow
   "#803E75", # Strong Purple
@@ -171,8 +171,21 @@ reset_screen <- function(){
   par(mfrow=c(1,1))
 }
 
-
+#' @title Computer standard deviation upper bound
+#'
+#' @description Helper function to get upper error bounds in plotting
+#' @param y Vector with numbers
+#' @export
+#' @rdname usd
+#'
 usd <- function(y){mean(y) + sd(y)}
+#' @title Computer standard deviation lower bound
+#'
+#' @description Helper function to get lower error bounds in plotting
+#' @param y Vector with numbers
+#' @export
+#' @rdname lsd
+#'
 lsd <- function(y){lb=mean(y)-sd(y); ifelse(lb<0,0,lb)}
 
 
@@ -184,18 +197,21 @@ lsd <- function(y){lb=mean(y)-sd(y); ifelse(lb<0,0,lb)}
 #' 
 #' @param simlist A list of simulations (eval objects).
 #' @param mediac A vector of substances (if not specified most varying substances will be taken.)
+#' @param time Vector with two entries defining start and end time
 #'
-plotSubCurve <-function(simlist, mediac=NULL){
+plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL)){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(sum(mediac %in% simlist[[1]]@mediac) != length(mediac)) stop("Substance does not exist in exchange reactions.")
+  if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@medlist))) stop("Time interval not valid")
   
   if(length(mediac)==0) mediac <- names(getVarSubs(simlist[[1]]))[1:5] # get 5 most varying substances (from first sim)
   all_df <- data.frame()
   for(i in seq_along(simlist)){
     object <- simlist[[i]]
-    prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
+    if(all(!is.null(time))) time_seq <- seq(time[1],time[2]) else time_seq <- seq_along(object@medlist)
+    prelist <- lapply(time_seq, function(j){extractMed(object, j)})
     list <- lapply(prelist, function(x){lapply(x, sum)})
-    mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(object@medlist))
+    mat <- matrix(unlist(list), nrow=length(object@media), ncol=length(time_seq))
     rownames(mat) <- object@mediac
     if(length(mediac) > 1){
       mat_nice <- mat[which(rownames(mat) %in% mediac),]
@@ -204,6 +220,7 @@ plotSubCurve <-function(simlist, mediac=NULL){
       mat_nice <- t(as.matrix(mat[which(rownames(mat) %in% mediac),]))
       rownames(mat_nice) <- gsub("\\(e\\)$","", gsub("\\[e\\]$","", gsub("EX_","",mediac)))
     }
+    colnames(mat_nice) <- time_seq
     all_df <- rbind(all_df, reshape2::melt(mat_nice))
   }
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
@@ -215,10 +232,14 @@ plotSubCurve <-function(simlist, mediac=NULL){
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) +
   #  stat_summary(geom="ribbon", fun.ymin="min", fun.ymax="max", aes(fill=Var1), alpha=0.3)
   
-  ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
-    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3)
+  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
+    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3) + 
+    xlab("time") + ylab("amount of substance [fmol]") + ggtitle("Substance curve with standard deviation")
+  print(q)
   
-  ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line")
+  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line") + 
+    xlab("time") + ylab("amount of substance [fmol]") + ggtitle("Mean substance curve")
+  print(q)
 }
 
 
@@ -229,25 +250,29 @@ plotSubCurve <-function(simlist, mediac=NULL){
 #' @rdname plotGrowthCurve
 #' 
 #' @param simlist A list of simulations (eval objects).
+#' @param time Vector with two entries defining start and end time
 #'
-plotGrowthCurve <-function(simlist, bcol){
+plotGrowthCurve <-function(simlist, bcol, time=c(NULL,NULL)){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
+  if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@simlist))) stop("Time interval not valid")
   
   all_df <- data.frame()
   for(i in seq_along(simlist)){
     object <- simlist[[i]]
-    list <- lapply(object@simlist, function(x){
-      occ <- table(x$type)
+    if(all(!is.null(time))) time_seq <- seq(time[1],time[2]) else time_seq <- seq_along(object@simlist)
+    list <- lapply(time_seq, function(i){
+      occ <- table(object@simlist[[i]]$type)
       unlist(lapply(seq_along(object@specs), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
     })
     mat_bac  <- do.call(cbind, list)
     rownames(mat_bac) <- names(object@specs)
+    colnames(mat_bac) <- time_seq
     all_df <- rbind(all_df, reshape2::melt(mat_bac))
   }
   
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
-  q<-ggplot(all_df, aes(color=Var1, y=value, x=Var2-1)) + #stat_smooth(se = FALSE) + 
-    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3) +
+  q<-ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + #stat_smooth(se = FALSE) + 
+    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3) + 
     scale_fill_manual(values=bcol) +
     scale_color_manual(values=bcol) +
     xlab("Time in h") +
@@ -265,8 +290,8 @@ plotGrowthCurve <-function(simlist, bcol){
       panel.border = element_rect(colour='black',size=2),
       axis.ticks = element_line(size=1,color='black'),
       plot.title = element_text(size=20)) #15x5           # Position legend in bottom right
-  return(q)
-  
+    #xlab("time") + ylab("number organism") + ggtitle("Growth curve with standard deviation")
+  print(q)
 }
 
 
@@ -278,24 +303,12 @@ plotGrowthCurve <-function(simlist, bcol){
 #' 
 #' @param simlist A list of simulations (eval objects).
 #' @param subs A vector of substance names that are used for phenotype clustering.
-#' @param phencurve Old return of this function to reused and plot again.
 #' @param phens If phencurve is given then phens specifies the phenotypes which sould be plotted again.
+#' @param time Vector with two entries defining start and end time
 #'
-plotPhenCurve <- function(simlist, subs, phencurve=NULL, phens=NULL){
+plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL)){
   if(sum(subs %in% simlist[[1]]@mediac) != length(subs)) stop("Substances invalid.")
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
-  
-  # if old ohencurve object is available -> fine tuning plot 
-  if(length(phencurve)>0 & length(phens)>0){
-    small_df <- phencurve[which(phenvurve$Var1 %in% phens),]
-    
-    ggplot(small_df, aes(colour=Var1, y=value, x=Var2)) + #stat_summary(fun.y = mean, geom="line") +
-      stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3) + 
-      scale_fill_manual(values=colpal3) + scale_colour_manual(values=colpal3)
-    
-    ggplot(small_df, aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line") +
-      scale_colour_manual(values=colpal3)
-  }  
   
   # 1) cluster phenotypes according to relevant substrates
   pos <- which(simlist[[1]]@mediac %in% subs)
@@ -346,12 +359,14 @@ plotPhenCurve <- function(simlist, subs, phencurve=NULL, phens=NULL){
   # 3) get growth of selected phenotypes
   all_df <- data.frame()
   for(i in seq_along(simlist)){
-    pheno_nr <- table(names(simlist[[i]]@phenotypes))
-    list <- lapply(simlist[[i]]@simlist, function(x){ # time step
-      unlist(lapply(seq_along(simlist[[i]]@specs), function(j){ # bac type
-        occ <- table(x[which(x$type==j),]$phenotype)
-        p <- unlist(lapply(seq(0,pheno_nr[[names(simlist[[i]]@specs[j])]]), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
-        names(p) <- paste0(names(simlist[[i]]@specs)[j], "_pheno", seq(0,pheno_nr[[names(simlist[[i]]@specs[j])]]))
+    object <- simlist[[i]]
+    pheno_nr <- table(names(object@phenotypes))
+    if(all(!is.null(time))) time_seq <- seq(time[1],time[2]) else time_seq <- seq_along(object@simlist)
+    list <- lapply(time_seq, function(t){ # time step
+      unlist(lapply(seq_along(object@specs), function(j){ # bac type
+        occ <- table(object@simlist[[t]][which(object@simlist[[t]]$type==j),]$phenotype)
+        p <- unlist(lapply(seq(0,pheno_nr[[names(object@specs[j])]]), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
+        names(p) <- paste0(names(object@specs)[j], "_pheno", seq(0,pheno_nr[[names(object@specs[j])]]))
         p
       }))})
     mat_phen  <- do.call(cbind, list)
@@ -359,8 +374,10 @@ plotPhenCurve <- function(simlist, subs, phencurve=NULL, phens=NULL){
     mat_groups <- rowsum(mat_phen, group=simlist_fac[[i]]) # phenotype0 singularity
     #rownames(mat_groups) <- 1:dim(mat_groups)[1]
     rownames(mat_groups) <- paste0("P", 1:dim(mat_groups)[1])
+    colnames(mat_groups) <- time_seq
     all_df <- rbind(all_df, melt(mat_groups))
   }
+  all_df <- all_df[which(all_df$value!=0),]
   # 4) plotting
   p <- ggplot(all_df, aes(colour=Var1, y=value, x=Var2)) + #stat_summary(fun.y = mean, geom="line") +
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3) + 
@@ -373,8 +390,4 @@ plotPhenCurve <- function(simlist, subs, phencurve=NULL, phens=NULL){
   
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth(level = 0.99) + geom_point()
-  
-  
-  # return object to call method again for fine tuning
-  return(all_df)
 }
