@@ -2194,7 +2194,7 @@ setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=NULL, 
   phenmat_bin <- replace(phenmat, phenmat==2, -1)
   phenmat_abs <- abs(phenmat_bin)
   res <- phenmat_bin[,which(abs(colSums(phenmat_bin)) != colSums(phenmat_abs))]
-  if(all(scut %in% object@mediac)) scut <- gsub("\\(e\\)","", gsub("EX_","",scut))
+  if(!is.null(scut) && all(scut %in% object@mediac)) scut <- gsub("\\(e\\)","", gsub("EX_","",scut))
   if(length(intersect(scut, mediac)) > 0) {
     res <- res[,-which(colnames(res) %in% scut)] # reduce substrates
   }else if(!is.null(scut)) print("scut should have valid names (as defined in mediac)")
