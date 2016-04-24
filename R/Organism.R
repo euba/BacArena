@@ -754,15 +754,15 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 #' @seealso \code{\link{Bac-class}}, \code{\link{Arena-class}}, \code{\link{simEnv}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{growth}, \code{checkPhen}, \code{lysis}, \code{move} and \code{chemotaxis}
 #' @examples
 #' NULL
-setGeneric("simBac", function(object, arena, j, sublb, bacnum, mtf=FALSE){standardGeneric("simBac")})
+setGeneric("simBac", function(object, arena, j, sublb, bacnum, mtf=FALSE, cutoff=1e-6){standardGeneric("simBac")})
 #' @export
 #' @rdname simBac
-setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, mtf=FALSE){
+setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, mtf=FALSE, cutoff=1e-6){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale, j)
-  fbasol <- optimizeLP(object, lb=lobnd, j=j, mtf=mtf)
+  fbasol <- optimizeLP(object, lb=lobnd, j=j, mtf=mtf, cutoff)
   
-  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol))) #scale consumption to the number of cells?
+  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol, cutoff) )) #scale consumption to the number of cells?
 
   dead <- growth(object, arena, j, arena@occupyM, fbasol=fbasol)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, org=object, fbasol=fbasol))
@@ -801,16 +801,16 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, mtf=FALSE){
 #' @param mtf True if minimize total flux should be used.
 #' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.
 #'
-setGeneric("simBac_par", function(object, arena, j, sublb, bacnum, lpobject,mtf=FALSE){standardGeneric("simBac_par")})
+setGeneric("simBac_par", function(object, arena, j, sublb, bacnum, lpobject, mtf=FALSE, cutoff=1e-6){standardGeneric("simBac_par")})
 #' @export
 #' @rdname simBac_par
-setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum, lpobject,mtf=FALSE){
+setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum, lpobject, mtf=FALSE, cutoff=1e-6){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
   
-  fbasol <- optimizeLP(object, lb=lobnd, j=j, mtf=mtf)
+  fbasol <- optimizeLP(object, lb=lobnd, j=j, mtf=mtf, cutoff)
 
-  sublb[j,] <- consume(object, sublb=sublb[j,], bacnum=bacnum, fbasol=fbasol) #scale consumption to the number of cells?
+  sublb[j,] <- consume(object, sublb=sublb[j,], bacnum=bacnum, fbasol=fbasol, cutoff=1e-6) #scale consumption to the number of cells?
   
   growth <- growth_par(object, arena, j, fbasol)
   dead <- growth[[1]]
