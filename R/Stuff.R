@@ -252,7 +252,7 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL)){
 #' @param simlist A list of simulations (eval objects).
 #' @param time Vector with two entries defining start and end time
 #'
-plotGrowthCurve <-function(simlist, bcol, time=c(NULL,NULL)){
+plotGrowthCurve <-function(simlist, bcol=NULL, time=c(NULL,NULL)){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@simlist))) stop("Time interval not valid")
   
@@ -273,8 +273,6 @@ plotGrowthCurve <-function(simlist, bcol, time=c(NULL,NULL)){
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
   q<-ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + #stat_smooth(se = FALSE) + 
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3) + 
-    scale_fill_manual(values=bcol) +
-    scale_color_manual(values=bcol) +
     xlab("Time in h") +
     ylab("Number of individuals") +
     theme_bw(base_size = 30) +
@@ -290,6 +288,7 @@ plotGrowthCurve <-function(simlist, bcol, time=c(NULL,NULL)){
       panel.border = element_rect(colour='black',size=2),
       axis.ticks = element_line(size=1,color='black'),
       plot.title = element_text(size=20)) #15x5           # Position legend in bottom right
+  if(!is.null(bcol)) q <- q + scale_fill_manual(values=bcol) + scale_color_manual(values=bcol)
     #xlab("time") + ylab("number organism") + ggtitle("Growth curve with standard deviation")
   print(q)
 }
