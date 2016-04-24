@@ -24181,6 +24181,34 @@
           </listOfParameters>
         </kineticLaw>
       </reaction>
+      <reaction id="R_IR00961b" name="S-(2-Hydroxyacyl)glutathione hydrolase" reversible="false">
+        <notes>
+          <html xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: PA1813</p>
+            <p>SUBSYSTEM: Transport</p>
+          </html>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_C0001_None_" stoichiometry="1"/>
+          <speciesReference species="M_C2153_None_" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_C0065_None_" stoichiometry="1"/>
+          <speciesReference species="M_C0154_None_" stoichiometry="1"/>
+          <speciesReference species="M_C0042_None_" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> FLUX_VALUE </ci>
+          </math>
+          <listOfParameters>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr"/>
+            <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
       <reaction id="R_IR02603" name="2-Hexaprenyl-3-methyl-6-methoxy-1,4-benzoquinone + Oxygen +NADPH &gt;=&lt;2-Hexaprenyl-3-methyl-5-hydroxy-6-methoxy-1,4-benzoquinone +NADP+ + H2O" reversible="false">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
@@ -39211,7 +39239,7 @@
           </listOfParameters>
         </kineticLaw>
       </reaction>
-      <reaction id="R_RR00405b" name="(R)-Lactate:NAD+ oxidoreductase" reversible="true">
+      <reaction id="R_RR00405b" name="(S)-Lactate:NAD+ oxidoreductase" reversible="true">
         <notes>
           <html xmlns="http://www.w3.org/1999/xhtml">
             <p>GENE_ASSOCIATION: PA0927</p>

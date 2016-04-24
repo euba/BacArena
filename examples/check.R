@@ -24,12 +24,14 @@ openArena()
 #
 # 2a) Diffusion test
 #
-n=100; m=100; D=1; tsteps=8; L=10; init=1
+n=100; m=100; D=1; tsteps=8; L=15; init=1
 arena <- Arena(n=n, m=m, Lx=L, Ly=L)
-arena@media[[1]]  <- Substance(arena@n, arena@m, smax=0, gridgeometry=arena@gridgeometry, id="test", name="test substance", difspeed=D, pde="ConstBoundAdvecDiff2d", boundS=1)
+#arena@media[[1]]  <- Substance(arena@n, arena@m, smax=0, gridgeometry=arena@gridgeometry, id="test", name="test substance", difspeed=D, pde="ConstBoundAdvecDiff2d", boundS=1)
+arena@media[[1]]  <- Substance(arena@n, arena@m, smax=0, gridgeometry=arena@gridgeometry, id="test", name="test substance", difspeed=D, pde="AdvecDiffConserv2d", boundS=1)
 names(arena@media) <- "test"
 arena@mediac[[1]] <- "test"
-arena@media[[1]]@diffmat[round(arena@n/2), 1] <- init
+#arena@media[[1]]@diffmat[round(arena@n/2), 1] <- init
+arena@media[[1]]@diffmat[1, round(arena@m/2,1)] <- init
 sim_diff <- simEnv(arena, time=tsteps, continue = TRUE)
 
 getSubHist(sim_diff, "test")
@@ -65,3 +67,10 @@ Diff2d_2 <- function (t, y, pars)  {
 outb <- ode.2D (y = y0, func = Diff2d_2, t = 1:tsteps+1, parms=NULL, # t_0
                 dim = c(n, m), lrw = 1706236)
 image(outb, ask = FALSE, mfrow = c(3, 3), main = paste("time", times))
+
+
+
+
+
+# 3a)
+sybil::optimizeProb(poa2)
