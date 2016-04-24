@@ -758,7 +758,6 @@ setGeneric("simBac", function(object, arena, j, sublb, bacnum, mtf=FALSE, cutoff
 #' @export
 #' @rdname simBac
 setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, mtf=FALSE, cutoff=1e-6){
-  browser()
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale, j)
   fbasol <- optimizeLP(object, lb=lobnd, j=j, mtf=mtf, cutoff=cutoff)
