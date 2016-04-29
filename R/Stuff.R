@@ -99,14 +99,14 @@ ConstBoundAdvecDiff2d <- function (t, y, parms)  {
   with (as.list(parms), {
     vgrid <- setup.prop.2D(value = 0, y.value=1, grid = gridgeometry.grid2D)
     CONC  <- matrix(nrow = gridgeometry.grid2D$x.N, ncol = gridgeometry.grid2D$y.N, data = y)
-    dCONC <- tran.2D(CONC, grid = gridgeometry.grid2D, D.grid = diffgeometry.Dgrid, full.check=TRUE, 
-                     v.grid = vgrid, 
-                     C.y.down=rep(-5*boundS, gridgeometry.grid2D$y.N),
-                     C.y.up=rep(boundS, gridgeometry.grid2D$y.N))$dC
+    dCONC <- tran.2D(CONC, grid = gridgeometry.grid2D, D.x=1, D.y=1, #D.grid = diffgeometry.Dgrid, 
+                     v.x = 0, v.y=1, #v.grid = vgrid,
+                     #C.y.down=rep(boundS, gridgeometry.grid2D$y.N),
+                     #C.y.up=rep(boundS, gridgeometry.grid2D$y.N))$dC
                      
                      #C.y.down=rep(1, gridgeometry.grid2D$x.N),
-                     #flux.y.down=rep(boundS, gridgeometry.grid2D$y.N),
-                     #flux.y.up=rep(boundS, gridgeometry.grid2D$y.N))$dC#,
+                     flux.x.down=rep(boundS, gridgeometry.grid2D$y.N),
+                     flux.x.up=rep(boundS, gridgeometry.grid2D$y.N))$dC
                      #flux.x.down=c(0,rep(-boundS, gridgeometry.grid2D$x.N-2),0),  # reduce edge bias
                      #flux.x.up=c(0, rep(boundS, gridgeometry.grid2D$x.N-2),0))$dC # "
     return (list(dCONC))
@@ -199,7 +199,7 @@ lsd <- function(y){lb=mean(y)-sd(y); ifelse(lb<0,0,lb)}
 #' @param mediac A vector of substances (if not specified most varying substances will be taken.)
 #' @param time Vector with two entries defining start and end time
 #'
-plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL)){
+plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(sum(mediac %in% simlist[[1]]@mediac) != length(mediac)) stop("Substance does not exist in exchange reactions.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@medlist))) stop("Time interval not valid")
@@ -234,11 +234,39 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL)){
   
   q <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
     ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3) + 
-    xlab("time") + ylab("amount of substance [fmol]") + ggtitle("Substance curve with standard deviation")
+    xlab("time") + ylab("amount of substance [fmol]") + ggtitle("Substance curve with standard deviation") + 
+    theme_bw(base_size = 30) +
+    theme(#legend.position='none',
+      legend.text=element_text(size=14),
+      legend.key=element_blank(),
+      legend.title = element_blank(),
+      axis.text.x = element_text(size=20),
+      axis.text.y = element_text(size=20),
+      axis.title.y = element_text(size=30,vjust=0.5),
+      #panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(colour='black',size=2),
+      axis.ticks = element_line(size=1,color='black'),
+      plot.title = element_text(size=20)) #15x5           # Position legend in bottom right
+  if(!is.null(scol)) q <- q + scale_fill_manual(values=scol) + scale_color_manual(values=scol)
   print(q)
   
   q <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line") + 
-    xlab("time") + ylab("amount of substance [fmol]") + ggtitle("Mean substance curve")
+    xlab("time") + ylab("amount of substance [fmol]") + ggtitle("Mean substance curve") + 
+    theme_bw(base_size = 30) +
+    theme(#legend.position='none',
+      legend.text=element_text(size=14),
+      legend.key=element_blank(),
+      legend.title = element_blank(),
+      axis.text.x = element_text(size=20),
+      axis.text.y = element_text(size=20),
+      axis.title.y = element_text(size=30,vjust=0.5),
+      #panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(colour='black',size=2),
+      axis.ticks = element_line(size=1,color='black'),
+      plot.title = element_text(size=20)) #15x5           # Position legend in bottom right
+  if(!is.null(scol)) q <- q + scale_fill_manual(values=scol) + scale_color_manual(values=scol)
   print(q)
 }
 
@@ -305,7 +333,7 @@ plotGrowthCurve <-function(simlist, bcol=NULL, time=c(NULL,NULL)){
 #' @param phens If phencurve is given then phens specifies the phenotypes which sould be plotted again.
 #' @param time Vector with two entries defining start and end time
 #'
-plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL)){
+plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phengroups=FALSE){
   if(sum(subs %in% simlist[[1]]@mediac) != length(subs)) stop("Substances invalid.")
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   
@@ -380,13 +408,43 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL)){
   # 4) plotting
   p <- ggplot(all_df, aes(colour=Var1, y=value, x=Var2)) + #stat_summary(fun.y = mean, geom="line") +
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3) + 
-    scale_fill_manual(values=colpal3) + scale_colour_manual(values=colpal3)
+    scale_fill_manual(values=colpal3) + scale_colour_manual(values=colpal3) +
+    xlab("time") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
+    theme_bw(base_size = 30) +
+    theme(#legend.position='none',
+      legend.text=element_text(size=14),
+      legend.key=element_blank(),
+      legend.title = element_blank(),
+      axis.text.x = element_text(size=20),
+      axis.text.y = element_text(size=20),
+      axis.title.y = element_text(size=30,vjust=0.5),
+      #panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(colour='black',size=2, fill=NA),
+      axis.ticks = element_line(size=1,color='black'),
+      plot.title = element_text(size=20)) #15x5   
   print(p)
   
   p <- ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line") +
-    scale_colour_manual(values=colpal3)
+    scale_colour_manual(values=colpal3) + 
+    xlab("time") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
+    theme_bw(base_size = 30) +
+    theme(#legend.position='none',
+      legend.text=element_text(size=14),
+      legend.key=element_blank(),
+      legend.title = element_blank(),
+      axis.text.x = element_text(size=20),
+      axis.text.y = element_text(size=20),
+      axis.title.y = element_text(size=30,vjust=0.5),
+      #panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(colour='black',size=2, fill=NA),
+      axis.ticks = element_line(size=1,color='black'),
+      plot.title = element_text(size=20)) #15x5   
   print(p)
   
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth(level = 0.99) + geom_point()
+  
+  if(ret_phengroups) return(simlist_fac)
 }
