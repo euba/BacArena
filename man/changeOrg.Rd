@@ -24,7 +24,7 @@ The argument \code{neworgdat} contains the same information as the \code{orgdat}
 \examples{
 data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 bac <- Bac(Ec_core,deathrate=0.05,
-           growthlimit=0.05,growtype="exponential") #initialize a bacterium
+           minweight=0.05,growtype="exponential") #initialize a bacterium
 arena <- Arena(n=20,m=20) #initialize the environment
 addOrg(arena,bac,amount=10) #add 10 organisms
 neworgdat <- arena@orgdat #get the current orgdat

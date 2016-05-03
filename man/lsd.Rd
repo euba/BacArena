@@ -2,11 +2,14 @@
 % Please edit documentation in R/Stuff.R
 \name{lsd}
 \alias{lsd}
-\title{Reset plotting screen}
+\title{Computer standard deviation lower bound}
 \usage{
 lsd(y)
 }
+\arguments{
+\item{y}{Vector with numbers}
+}
 \description{
-The function \code{lsd} set plotting window to default
+Helper function to get lower error bounds in plotting
 }
 

@@ -7,10 +7,11 @@
 \title{Main function for simulating in parallel all processes in the environment}
 \usage{
 simEnv_par(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
-  cluster_size = NULL, diffusion = TRUE, mtf = FALSE)
+  cluster_size = NULL, diffusion = TRUE, mtf = FALSE, cutoff = 1e-06)
 
 \S4method{simEnv_par}{Arena}(object, time, lrw = NULL, continue = FALSE,
-  reduce = FALSE, cluster_size = NULL, diffusion = TRUE, mtf = FALSE)
+  reduce = FALSE, cluster_size = NULL, diffusion = TRUE, mtf = FALSE,
+  cutoff = 1e-06)
 }
 \arguments{
 \item{object}{An object of class Arena or Eval.}
@@ -41,7 +42,7 @@ The returned object itself can be used for a subsequent simulation, due to the i
 \examples{
 data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 bac <- Bac(Ec_core,deathrate=0.05,
-           growthlimit=0.05,growtype="exponential") #initialize a bacterium
+           minweight=0.05,growtype="exponential") #initialize a bacterium
 arena <- Arena(n=20,m=20) #initialize the environment
 addOrg(arena,bac,amount=10) #add 10 organisms
 addSubs(arena,40) #add all possible substances

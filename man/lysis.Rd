@@ -6,9 +6,9 @@
 \alias{lysis,Organism-method}
 \title{Lysis function of organismal cells by adding biomass_compounds to the medium}
 \usage{
-lysis(object, sublb, factor = object@growthlimit)
+lysis(object, sublb, factor = object@minweight)
 
-\S4method{lysis}{Organism}(object, sublb, factor = object@growthlimit)
+\S4method{lysis}{Organism}(object, sublb, factor = object@minweight)
 }
 \arguments{
 \item{object}{An object of class Organisms.}

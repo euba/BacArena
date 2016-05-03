@@ -6,10 +6,10 @@
 \alias{findFeeding,Eval-method}
 \title{Function for investigation of feeding between phenotypes}
 \usage{
-findFeeding(object, dict = NULL, tcut = 5, scut = list(),
-  org_dict = NULL, legendpos = "topleft", lwd = 1)
+findFeeding(object, dict = NULL, tcut = 5, scut = NULL, org_dict = NULL,
+  legendpos = "topleft", lwd = 1)
 
-\S4method{findFeeding}{Eval}(object, dict = NULL, tcut = 5, scut = list(),
+\S4method{findFeeding}{Eval}(object, dict = NULL, tcut = 5, scut = NULL,
   org_dict = NULL, legendpos = "topleft", lwd = 1)
 }
 \arguments{
@@ -19,7 +19,7 @@ findFeeding(object, dict = NULL, tcut = 5, scut = list(),
 
 \item{tcut}{Integer giving the minimal mutual occurence ot be considered (dismiss very seldom feedings)}
 
-\item{scut}{List of substance names which should be ignored}
+\item{scut}{substance names which should be ignored}
 
 \item{org_dict}{A named list/vector with names that should replace (eg. unreadable) IDs}
 

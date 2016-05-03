@@ -33,7 +33,7 @@ The phenotypes are defined by flux through exchange reactions, which indicate po
 \dontrun{
 data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 org <- Organism(Ec_core,deathrate=0.05,
-           growthlimit=0.05,growtype="exponential") #initialize a organism
+           minweight=0.05,growtype="exponential") #initialize a organism
 getPhenotype(org)
 }
 }

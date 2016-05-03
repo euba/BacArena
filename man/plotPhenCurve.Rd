@@ -4,16 +4,17 @@
 \alias{plotPhenCurve}
 \title{Plot growth curve for several simulations}
 \usage{
-plotPhenCurve(simlist, subs, phencurve = NULL, phens = NULL)
+plotPhenCurve(simlist, subs, phens = NULL, time = c(NULL, NULL),
+  ret_phengroups = FALSE)
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}
 
 \item{subs}{A vector of substance names that are used for phenotype clustering.}
 
-\item{phencurve}{Old return of this function to reused and plot again.}
-
 \item{phens}{If phencurve is given then phens specifies the phenotypes which sould be plotted again.}
+
+\item{time}{Vector with two entries defining start and end time}
 }
 \description{
 The function \code{plotPhenCurve} takes a list of simulations and plots the time course of species with standard deviation.

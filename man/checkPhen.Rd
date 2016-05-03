@@ -31,7 +31,7 @@ The phenotypes are defined by flux through exchange reactions, which indicate po
 \examples{
 data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 bac <- Bac(Ec_core,deathrate=0.05,
-           growthlimit=0.05,growtype="exponential") #initialize a bacterium
+           minweight=0.05,growtype="exponential") #initialize a bacterium
 arena <- Arena(n=20,m=20) #initialize the environment
 checkPhen(arena,bac) #returns 1 as the index of the current phenotype in the list.
 }

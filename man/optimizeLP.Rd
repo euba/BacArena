@@ -36,7 +36,7 @@ The generic function \code{optimizeLP} implements a linear programming based on 
 \examples{
 data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 org <- Organism(Ec_core,deathrate=0.05,
-           growthlimit=0.05,growtype="exponential") #initialize a organism
+           minweight=0.05,growtype="exponential") #initialize a organism
 org@fbasol <- optimizeLP(org)
 }
 \seealso{

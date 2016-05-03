@@ -19,12 +19,12 @@
 #' @slot lyse A boolean variable indicating if the organism should lyse after death.
 #' @slot feat A list containing conditional features for the object (contains at the momement only biomass components for lysis).
 #' @slot deathrate A numeric value giving the factor by which the growth should be reduced in every iteration (unit: fg)
-#' @slot growthlimit A numeric value giving the growth limit at which the organism dies.
+#' @slot minweight A numeric value giving the growth limit at which the organism dies.
 #' @slot growtype A character vector giving the functional type for growth (linear or exponential).
 #' @slot kinetics A List containing Km and v_max values for each reactions.
 #' @slot speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
 #' @slot cellarea A numeric value indicating the surface that one organism occupies (unit: mu cm^2)
-#' @slot cellweight A numeric value giving the maximal dry weight of single organism (unit: fg)
+#' @slot maxweight A numeric value giving the maximal dry weight of single organism (unit: fg)
 #' @param cellweight_mean A numeric giving the mean of starting biomass 
 #' @param cellweight_sd A numeric giving the standard derivation of starting biomass 
 #' @slot model Object of class sybil::modelorg containging the genome sclae metabolic model
@@ -39,11 +39,11 @@ setClass("Organism",
            lyse="logical",
            feat="list",
            deathrate="numeric",
-           growthlimit="numeric",
+           minweight="numeric",
            growtype="character",
            kinetics="list",
            cellarea="numeric",
-           cellweight="numeric",
+           maxweight="numeric",
            cellweight_mean = "numeric",
            cellweight_sd = "numeric",
            speed="numeric",
@@ -51,11 +51,11 @@ setClass("Organism",
          ),
          prototype(
            deathrate = 0.21,
-           growthlimit = 0.083,
+           minweight = 0.083,
            growtype = "exponential",
            kinetics = list(),
            cellarea = 4.42,
-           cellweight = 1.172,
+           maxweight = 1.172,
            cellweight_mean = 0.489,
            cellweight_sd = 0.132,
            speed = 2       
@@ -151,8 +151,8 @@ setGeneric("feat", function(object){standardGeneric("feat")})
 setMethod("feat", "Organism", function(object){return(object@feat)})
 setGeneric("deathrate", function(object){standardGeneric("deathrate")})
 setMethod("deathrate", "Organism", function(object){return(object@deathrate)})
-setGeneric("growthlimit", function(object){standardGeneric("growthlimit")})
-setMethod("growthlimit", "Organism", function(object){return(object@growthlimit)})
+setGeneric("minweight", function(object){standardGeneric("minweight")})
+setMethod("minweight", "Organism", function(object){return(object@minweight)})
 setGeneric("growtype", function(object){standardGeneric("growtype")})
 setMethod("growtype", "Organism", function(object){return(object@feat)})
 setGeneric("kinetics", function(object){standardGeneric("kinetics")})
@@ -185,7 +185,7 @@ setMethod("model", "Organism", function(object){return(object@model)})
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' org <- Organism(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize an organism
+#'            minweight=0.05,growtype="exponential") #initialize an organism
 #' lobnds <- constrain(org,org@medium,org@lbnd[org@medium],1,1)
 setGeneric("constrain", function(object, reacts, lb, dryweight, time, scale, j){standardGeneric("constrain")})
 #' @export
@@ -257,7 +257,7 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' org <- Organism(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a organism
+#'            minweight=0.05,growtype="exponential") #initialize a organism
 #' org@fbasol <- optimizeLP(org)
 setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j, mtf=FALSE){standardGeneric("optimizeLP")})
 #' @export
@@ -328,7 +328,7 @@ setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum, fb
 #' \dontrun{
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' org <- Organism(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a organism
+#'            minweight=0.05,growtype="exponential") #initialize a organism
 #' getPhenotype(org)
 #' }
 setGeneric("getPhenotype", function(object, cutoff=1e-6, fbasol, par=FALSE){standardGeneric("getPhenotype")})
@@ -359,7 +359,7 @@ setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6, fbasol, par=
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' org <- Organism(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a organism
+#'            minweight=0.05,growtype="exponential") #initialize a organism
 #' growLin(org,1)
 setGeneric("growLin", function(object, growth, fbasol){standardGeneric("growLin")})
 #' @export
@@ -389,7 +389,7 @@ setMethod("growLin", "Organism", function(object, growth, fbasol){
 #' \dontrun{
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' org <- Organism(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a organism
+#'            minweight=0.05,growtype="exponential") #initialize a organism
 #' growExp(org,1)
 #' }
 setGeneric("growExp", function(object, growth, fbasol){standardGeneric("growExp")})
@@ -418,10 +418,10 @@ setMethod("growExp", "Organism", function(object, growth, fbasol){
 #' @seealso \code{\link{Organism-class}} and \code{\link{optimizeLP}}
 #' @examples
 #' NULL
-setGeneric("lysis", function(object, sublb, factor=object@growthlimit){standardGeneric("lysis")})
+setGeneric("lysis", function(object, sublb, factor=object@minweight){standardGeneric("lysis")})
 #' @export
 #' @rdname lysis
-setMethod("lysis", "Organism", function(object, sublb, factor=object@growthlimit){
+setMethod("lysis", "Organism", function(object, sublb, factor=object@minweight){
   stoch = object@feat[["biomass"]]
   lysate = round(abs(stoch)*factor, 6)
   sublb[names(lysate)] = sublb[names(lysate)] + lysate
@@ -517,7 +517,7 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -568,9 +568,9 @@ setClass("Bac",
          ),
          prototype(
            deathrate = 0.21,
-           growthlimit = 0.083,
+           minweight = 0.083,
            cellarea = 4.42,
-           cellweight = 1.172
+           maxweight = 1.172
          )
 )
 
@@ -619,7 +619,7 @@ setMethod("chem", "Bac", function(object){return(object@chem)})
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -636,7 +636,7 @@ setMethod("growth", "Bac", function(object, population, j, occupyM, fbasol){
          stop("Growth type must be either linear or exponential"))
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
-  if(popvec$growth > object@cellweight){
+  if(popvec$growth > object@maxweight){
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
               population@n, population@m, popvec$x, popvec$y)
     if(length(freenb) != 0){
@@ -651,7 +651,7 @@ setMethod("growth", "Bac", function(object, population, j, occupyM, fbasol){
         neworgdat[j,'growth'] <- popvec$growth/2
       }
     }
-  }else if(popvec$growth < object@growthlimit){
+  }else if(popvec$growth < object@minweight){
     neworgdat[j,'growth'] <- NA
     dead <- T
   }
@@ -683,7 +683,7 @@ setMethod("growth_par", "Bac", function(object, population, j, fbasol){
          stop("Growth type must be either linear or exponential"))
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
-  if(popvec$growth < object@growthlimit){
+  if(popvec$growth < object@minweight){
     neworgdat[j,'growth'] <- NA
     dead <- T
   }
@@ -707,7 +707,7 @@ setMethod("growth_par", "Bac", function(object, population, j, fbasol){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05, chem = "EX_o2(e)",
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -908,7 +908,7 @@ setMethod("objective", "Human", function(object){return(object@objective)})
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' human <- Human(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' changeFobj(human,'EX_glc(e)',Ec_core)
 setGeneric("changeFobj", function(object, new_fobj, model, alg="fba"){standardGeneric("changeFobj")})
 #' @export
@@ -936,7 +936,7 @@ setMethod("changeFobj", "Human", function(object, new_fobj, model, alg="fba"){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' human <- Human(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,human,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -953,7 +953,7 @@ setMethod("cellgrowth", "Human", function(object, population, j, occupyM, fbasol
          stop("Growth type must be either linear or exponential"))
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
-  if(popvec$growth > object@cellweight){
+  if(popvec$growth > object@maxweight){
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
                         population@n, population@m, popvec$x, popvec$y)
     if(length(freenb) != 0){
@@ -968,7 +968,7 @@ setMethod("cellgrowth", "Human", function(object, population, j, occupyM, fbasol
         neworgdat[j,'growth'] <- popvec$growth/2
       }
     }
-  }else if(popvec$growth < object@growthlimit){
+  }else if(popvec$growth < object@minweight){
     neworgdat[j,'growth'] <- NA
     dead <- T
   }

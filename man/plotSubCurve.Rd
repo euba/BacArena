@@ -4,12 +4,14 @@
 \alias{plotSubCurve}
 \title{Plot substance curve for several simulations}
 \usage{
-plotSubCurve(simlist, mediac = NULL)
+plotSubCurve(simlist, mediac = NULL, time = c(NULL, NULL), scol = NULL)
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}
 
 \item{mediac}{A vector of substances (if not specified most varying substances will be taken.)}
+
+\item{time}{Vector with two entries defining start and end time}
 }
 \description{
 The function \code{plotSubCurve} takes a list of simulations and plots the time course of substances with standard deviation.

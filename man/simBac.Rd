@@ -6,9 +6,10 @@
 \alias{simBac,Bac-method}
 \title{Function for one simulation iteration for objects of Bac class}
 \usage{
-simBac(object, arena, j, sublb, bacnum, mtf = FALSE)
+simBac(object, arena, j, sublb, bacnum, mtf = FALSE, cutoff = 1e-06)
 
-\S4method{simBac}{Bac}(object, arena, j, sublb, bacnum, mtf = FALSE)
+\S4method{simBac}{Bac}(object, arena, j, sublb, bacnum, mtf = FALSE,
+  cutoff = 1e-06)
 }
 \arguments{
 \item{object}{An object of class Bac.}

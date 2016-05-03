@@ -28,7 +28,7 @@ To avoid the bias to just one particular objective function, the objective can b
 \examples{
 data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 human <- Human(Ec_core,deathrate=0.05,
-           growthlimit=0.05,growtype="exponential") #initialize a bacterium
+           minweight=0.05,growtype="exponential") #initialize a bacterium
 changeFobj(human,'EX_glc(e)',Ec_core)
 }
 \seealso{

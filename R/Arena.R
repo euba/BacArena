@@ -143,7 +143,7 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=NA){standardGeneric("addOrg")})
@@ -247,7 +247,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
@@ -307,7 +307,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena) #add all substances with no concentrations.
@@ -390,7 +390,7 @@ setMethod("rmSubs", "Arena", function(object, mediac){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena, smax=40) #add all substances with no concentrations.
@@ -419,7 +419,7 @@ setMethod("flushSubs", "Arena", function(object){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,30) #add all substances with no concentrations.
@@ -456,7 +456,7 @@ setMethod("changeDiff", "Arena", function(object, newdiffmat, mediac){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,30) #add all substances with no concentrations.
@@ -506,7 +506,7 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' neworgdat <- arena@orgdat #get the current orgdat
@@ -536,7 +536,7 @@ setMethod("changeOrg", "Arena", function(object, neworgdat){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' checkPhen(arena,bac) #returns 1 as the index of the current phenotype in the list.
 setGeneric("checkPhen", function(object, org, cutoff=1e-6, fbasol){standardGeneric("checkPhen")})
@@ -635,7 +635,7 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -798,7 +798,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -925,7 +925,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=FALSE
       #movdup_t <- system.time({
       arena@orgdat <- arena@orgdat[,-which(colnames(arena@orgdat)=="nr")] # remove dummy numbering
       movementCpp(arena@orgdat, arena@n, arena@m, arena@occupyM) # call by ref
-      arena@orgdat <- duplicateCpp(arena@orgdat, arena@n, arena@m, lapply(arena@specs, function(x){x@cellweight}), arena@occupyM) # call by val
+      arena@orgdat <- duplicateCpp(arena@orgdat, arena@n, arena@m, lapply(arena@specs, function(x){x@maxweight}), arena@occupyM) # call by val
       #})[3]
       
       # delete dead organisms
@@ -1041,7 +1041,7 @@ setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -1080,7 +1080,7 @@ setMethod("getSublb", "Arena", function(object){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -1137,7 +1137,7 @@ setMethod("stirEnv", "Arena", function(object, sublb){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' occmat <- dat2mat(arena)
@@ -1308,7 +1308,7 @@ setMethod("subchange", "Eval", function(object){return(object@subchange)})
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -1368,7 +1368,7 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -1405,7 +1405,7 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -1435,7 +1435,7 @@ setMethod("redEval", "Eval", function(object, time=1:length(object@medlist)){ #i
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -1476,7 +1476,7 @@ setMethod("extractMed", "Eval", function(object, time=length(object@medlist), me
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -1580,7 +1580,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -1716,7 +1716,7 @@ setMethod("getSubHist", "Eval", function(object, sub){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -1825,7 +1825,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -1867,7 +1867,7 @@ setMethod("plotTotFlux", "Eval", function(object, legendpos="topright", num=20){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -1921,7 +1921,7 @@ setMethod("getPhenoMat", "Eval", function(object, time="total", sparse=F){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -1981,7 +1981,7 @@ setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, time=
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -2050,7 +2050,7 @@ setMethod(show, signature(object="Eval"), function(object){
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -2405,7 +2405,7 @@ setMethod("statSpec", "Eval", function(object, type_nr=1, dict=NULL,
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances
@@ -2461,7 +2461,7 @@ setMethod("getCorrM", "Eval", function(object, reactions=TRUE, bacs=TRUE, substr
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 #' bac <- Bac(Ec_core,deathrate=0.05,
-#'            growthlimit=0.05,growtype="exponential") #initialize a bacterium
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' addOrg(arena,bac,amount=10) #add 10 organisms
 #' addSubs(arena,40) #add all possible substances

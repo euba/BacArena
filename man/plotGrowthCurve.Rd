@@ -4,10 +4,12 @@
 \alias{plotGrowthCurve}
 \title{Plot growth curve for several simulations}
 \usage{
-plotGrowthCurve(simlist)
+plotGrowthCurve(simlist, bcol = NULL, time = c(NULL, NULL))
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}
+
+\item{time}{Vector with two entries defining start and end time}
 }
 \description{
 The function \code{plotGrowthCurve} takes a list of simulations and plots the time course of species with standard deviation.

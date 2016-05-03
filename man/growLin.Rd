@@ -29,7 +29,7 @@ Linear growth of organisms is implemented by adding the calculated growthrate by
 \examples{
 data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 org <- Organism(Ec_core,deathrate=0.05,
-           growthlimit=0.05,growtype="exponential") #initialize a organism
+           minweight=0.05,growtype="exponential") #initialize a organism
 growLin(org,1)
 }
 \seealso{

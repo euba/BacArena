@@ -2,11 +2,14 @@
 % Please edit documentation in R/Stuff.R
 \name{usd}
 \alias{usd}
-\title{Reset plotting screen}
+\title{Computer standard deviation upper bound}
 \usage{
 usd(y)
 }
+\arguments{
+\item{y}{Vector with numbers}
+}
 \description{
-The function \code{usd} set plotting window to default
+Helper function to get upper error bounds in plotting
 }
 

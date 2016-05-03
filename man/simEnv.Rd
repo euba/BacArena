@@ -7,11 +7,12 @@
 \title{Main function for simulating all processes in the environment}
 \usage{
 simEnv(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
-  diffusion = TRUE, diff_par = FALSE, cl_size = 2, mtf = FALSE)
+  diffusion = TRUE, diff_par = FALSE, cl_size = 2, mtf = FALSE,
+  cutoff = 1e-06)
 
 \S4method{simEnv}{Arena}(object, time, lrw = NULL, continue = FALSE,
   reduce = FALSE, diffusion = TRUE, diff_par = FALSE, cl_size = 2,
-  mtf = FALSE)
+  mtf = FALSE, cutoff = 1e-06)
 }
 \arguments{
 \item{object}{An object of class Arena or Eval.}
@@ -44,7 +45,7 @@ The returned object itself can be used for a subsequent simulation, due to the i
 \examples{
 data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 bac <- Bac(Ec_core,deathrate=0.05,
-           growthlimit=0.05,growtype="exponential") #initialize a bacterium
+           minweight=0.05,growtype="exponential") #initialize a bacterium
 arena <- Arena(n=20,m=20) #initialize the environment
 addOrg(arena,bac,amount=10) #add 10 organisms
 addSubs(arena,40) #add all possible substances
