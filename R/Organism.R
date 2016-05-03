@@ -85,7 +85,7 @@ setClass("Organism",
 #' @param ... Arguments of \code{\link{Organism-class}}
 #' @return Object of class Organism
 Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]", esuffix="\\[e\\]", lyse=F, feat=list(), 
-                     typename=NA, setExInf=FALSE, ...){
+                     typename=NA, setExInf=TRUE, ...){
   if(is.na(typename)) typename <- sybil::mod_desc(model)
   rxname = sybil::react_id(model)
   lpobject <- sybil::sysBiolAlg(model, algorithm=algo)
