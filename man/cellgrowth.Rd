@@ -35,8 +35,8 @@ data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 human <- Human(Ec_core,deathrate=0.05,
            minweight=0.05,growtype="exponential") #initialize a bacterium
 arena <- Arena(n=20,m=20) #initialize the environment
-addOrg(arena,human,amount=10) #add 10 organisms
-addSubs(arena,40) #add all possible substances
+arena <- addOrg(arena,human,amount=10) #add 10 organisms
+arena <- addSubs(arena,40) #add all possible substances
 cellgrowth(human,arena,1)
 }
 \seealso{

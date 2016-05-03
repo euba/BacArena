@@ -15,6 +15,8 @@ plotPhenCurve(simlist, subs, phens = NULL, time = c(NULL, NULL),
 \item{phens}{If phencurve is given then phens specifies the phenotypes which sould be plotted again.}
 
 \item{time}{Vector with two entries defining start and end time}
+
+\item{ret_phengroups}{True if clustered phenotype groups should be returned.}
 }
 \description{
 The function \code{plotPhenCurve} takes a list of simulations and plots the time course of species with standard deviation.

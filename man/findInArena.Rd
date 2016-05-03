@@ -27,7 +27,7 @@ The generic function \code{findInArena} tries to find information (e.g. full nam
 data(Ec_core)
 bac <- Bac(Ec_core)
 arena <- Arena(n=20,m=20)
-addOrg(arena,bac,amount=10)
+arena <- addOrg(arena,bac,amount=10)
 findInArena(arena, "acetate")
 }
 

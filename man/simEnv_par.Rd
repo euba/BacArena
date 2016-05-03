@@ -29,6 +29,8 @@ simEnv_par(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
 \item{diffusion}{True if diffusion should be done (default on).}
 
 \item{mtf}{True if minimize total flux should be used.}
+
+\item{cutoff}{value used to define numeric accuracy}
 }
 \value{
 Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
@@ -44,8 +46,8 @@ data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 bac <- Bac(Ec_core,deathrate=0.05,
            minweight=0.05,growtype="exponential") #initialize a bacterium
 arena <- Arena(n=20,m=20) #initialize the environment
-addOrg(arena,bac,amount=10) #add 10 organisms
-addSubs(arena,40) #add all possible substances
+arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+arena <- addSubs(arena,40) #add all possible substances
 eval <- simEnv(arena,10)
 }
 \seealso{

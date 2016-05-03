@@ -145,7 +145,7 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=NA){standardGeneric("addOrg")})
 #' @export
 #' @rdname addOrg
@@ -249,8 +249,8 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
 setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=TRUE){standardGeneric("addSubs")})
 #' @rdname addSubs
 #' @export
@@ -309,9 +309,9 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena) #add all substances with no concentrations.
-#' changeSub(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) 
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena) #add all substances with no concentrations.
+#' arena <- changeSub(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) 
 #' #add substances glucose, oxygen and phosphate
 setGeneric("changeSub", function(object, smax, mediac, unit="mmol/cell"){standardGeneric("changeSub")})
 #' @rdname changeSub
@@ -392,11 +392,11 @@ setMethod("rmSubs", "Arena", function(object, mediac){
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena, smax=40) #add all substances with no concentrations.
-#' changeSub(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) 
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena, smax=40) #add all substances with no concentrations.
+#' arena <- changeSub(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) 
 #' #add substances glucose, oxygen and phosphate
-#' flushSubs(arena) #remove all created substance concentrations
+#' arena <- flushSubs(arena) #remove all created substance concentrations
 setGeneric("flushSubs", function(object){standardGeneric("flushSubs")})
 #' @export
 #' @rdname flushSubs
@@ -421,10 +421,10 @@ setMethod("flushSubs", "Arena", function(object){
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,30) #add all substances with no concentrations.
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,30) #add all substances with no concentrations.
 #' gradient <- matrix(1:200,20,20)
-#' changeDiff(arena,gradient,c("EX_glc(e)","EX_o2(e)","EX_pi(e)"))
+#' arena <- changeDiff(arena,gradient,c("EX_glc(e)","EX_o2(e)","EX_pi(e)"))
 #' # add substances glucose, oxygen and phosphate
 setGeneric("changeDiff", function(object, newdiffmat, mediac){standardGeneric("changeDiff")})
 #' @export
@@ -458,9 +458,9 @@ setMethod("changeDiff", "Arena", function(object, newdiffmat, mediac){
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,30) #add all substances with no concentrations.
-#' createGradient(arena,smax=50,mediac=c("EX_glc(e)","EX_o2(e)","EX_pi(e)"),
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,30) #add all substances with no concentrations.
+#' arena <- createGradient(arena,smax=50,mediac=c("EX_glc(e)","EX_o2(e)","EX_pi(e)"),
 #'              position='top',steep=0.5, add=FALSE)
 setGeneric("createGradient", function(object, mediac, position, smax, steep, add=FALSE, unit='mmol/cell'){standardGeneric("createGradient")})
 #' @export
@@ -508,10 +508,10 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' neworgdat <- arena@orgdat #get the current orgdat
 #' neworgdat <- neworgdat[-1,] #remove the first individual
-#' changeOrg(arena,neworgdat)
+#' arena <- changeOrg(arena,neworgdat)
 setGeneric("changeOrg", function(object, neworgdat){standardGeneric("changeOrg")})
 #' @export
 #' @rdname changeOrg
@@ -629,6 +629,7 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' @param diff_par True if diffusion should be run in parallel (default off).
 #' @param cl_size If diff_par is true then cl_size defines the number of cores to be used in parallelized diffusion.
 #' @param mtf True if minimize total flux should be used.
+#' @param cutoff value used to define numeric accuracy
 #' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
 #' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
 #' @seealso \code{\link{Arena-class}} and \code{\link{Eval-class}}
@@ -637,8 +638,8 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 setGeneric("simEnv", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, mtf=FALSE, cutoff=1e-6){standardGeneric("simEnv")})
 #' @export
@@ -792,6 +793,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
 #' @param cluster_size Number of cpu cores to be used.
 #' @param diffusion True if diffusion should be done (default on).
 #' @param mtf True if minimize total flux should be used.
+#' @param cutoff value used to define numeric accuracy
 #' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
 #' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
 #' @seealso \code{\link{Arena-class}} and \code{\link{Eval-class}}
@@ -800,8 +802,8 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, cluster_size=NULL, diffusion=TRUE, mtf=FALSE, cutoff=1e-6){standardGeneric("simEnv_par")})
 #' @export
@@ -1043,8 +1045,8 @@ setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' sublb <- getSublb(arena)
 setGeneric("getSublb", function(object){standardGeneric("getSublb")})
 #' @export
@@ -1082,8 +1084,8 @@ setMethod("getSublb", "Arena", function(object){
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' sublb <- getSublb(arena)
 #' stirEnv(arena,sublb)
 setGeneric("stirEnv", function(object, sublb){standardGeneric("stirEnv")})
@@ -1139,7 +1141,7 @@ setMethod("stirEnv", "Arena", function(object, sublb){
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' occmat <- dat2mat(arena)
 #' image(occmat)
 setGeneric("dat2mat", function(object){standardGeneric("dat2mat")})
@@ -1167,7 +1169,7 @@ setMethod("dat2mat", "Arena", function(object){
 #' data(Ec_core)
 #' bac <- Bac(Ec_core)
 #' arena <- Arena(n=20,m=20)
-#' addOrg(arena,bac,amount=10)
+#' arena <- addOrg(arena,bac,amount=10)
 #' findInArena(arena, "acetate")
 setGeneric("findInArena", function(object, pattern, search_rea=TRUE, search_sub=TRUE){standardGeneric("findInArena")})
 #' @export
@@ -1310,8 +1312,8 @@ setMethod("subchange", "Eval", function(object){return(object@subchange)})
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' addEval(eval,arena)
 setGeneric("addEval", function(object, arena, replace=F){standardGeneric("addEval")})
@@ -1370,8 +1372,8 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' arena5 <- getArena(eval,5)
 setGeneric("getArena", function(object, time=(length(object@medlist)-1)){standardGeneric("getArena")})
@@ -1407,8 +1409,8 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' eval_reduce <- redEval(eval,5)
 setGeneric("redEval", function(object, time="all"){standardGeneric("redEval")})
@@ -1429,6 +1431,7 @@ setMethod("redEval", "Eval", function(object, time=1:length(object@medlist)){ #i
 #'
 #' @param object An object of class Eval.
 #' @param time A number giving the simulation step of interest.
+#' @param mediac A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).
 #' @return Returns a list containing concentration vectors of all medium substances.
 #' @details Medium concentrations in slot \code{medlist} of an object of class \code{Eval} store only the changes of concentrations in the simulation process. The function \code{extractMed} reconstructs the original and uncompressed version of medium concentrations.
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
@@ -1437,8 +1440,8 @@ setMethod("redEval", "Eval", function(object, time=1:length(object@medlist)){ #i
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' med5 <- extractMed(eval,5)
 setGeneric("extractMed", function(object, time=length(object@medlist), mediac=object@mediac){standardGeneric("extractMed")})
@@ -1478,8 +1481,8 @@ setMethod("extractMed", "Eval", function(object, time=length(object@medlist), me
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' evalArena(eval)
 #'\dontrun{
@@ -1582,8 +1585,8 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' plotCurves(eval)
 setGeneric("plotCurves", function(object, medplot=object@mediac, retdata=F, remove=F, legend=F){standardGeneric("plotCurves")})
@@ -1718,8 +1721,8 @@ setMethod("getSubHist", "Eval", function(object, sub){
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' plotCurves2(eval)
 setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"),
@@ -1827,8 +1830,8 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' plotTotFlux(eval)
 setGeneric("plotTotFlux", function(object, legendpos="topright", num=20){standardGeneric("plotTotFlux")})
@@ -1869,8 +1872,8 @@ setMethod("plotTotFlux", "Eval", function(object, legendpos="topright", num=20){
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' phenmat <- getPhenoMat(eval)
 setGeneric("getPhenoMat", function(object, time="total", sparse=F){standardGeneric("getPhenoMat")})
@@ -1923,8 +1926,8 @@ setMethod("getPhenoMat", "Eval", function(object, time="total", sparse=F){
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' minePheno(eval)
 setGeneric("minePheno", function(object, plot_type="pca", legend=F, time="total"){standardGeneric("minePheno")})
@@ -1983,8 +1986,8 @@ setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, time=
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' selPheno(eval,time=10,type='ecoli_core_model',reduce=TRUE)
 setGeneric("selPheno", function(object, time, type, reduce=F){standardGeneric("selPheno")})
@@ -2052,8 +2055,8 @@ setMethod(show, signature(object="Eval"), function(object){
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' statPheno(eval, type_nr=1, phenotype_nr=2)
 setGeneric("statPheno", function(object, type_nr=1, phenotype_nr, dict=NULL){standardGeneric("statPheno")})
@@ -2407,8 +2410,8 @@ setMethod("statSpec", "Eval", function(object, type_nr=1, dict=NULL,
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' getCorrM(eval)
 setGeneric("getCorrM", function(object, reactions=TRUE, bacs=TRUE, substrates=TRUE){standardGeneric("getCorrM")})
@@ -2463,8 +2466,8 @@ setMethod("getCorrM", "Eval", function(object, reactions=TRUE, bacs=TRUE, substr
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
 #' checkCorr(eval, tocheck="o2")
 setGeneric("checkCorr", function(object, corr=NULL, tocheck=list()){standardGeneric("checkCorr")})

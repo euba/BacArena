@@ -9,6 +9,8 @@ plotGrowthCurve(simlist, bcol = NULL, time = c(NULL, NULL))
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}
 
+\item{bcol}{Vector with color that should be used}
+
 \item{time}{Vector with two entries defining start and end time}
 }
 \description{

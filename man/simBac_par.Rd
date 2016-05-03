@@ -26,6 +26,8 @@ simBac_par(object, arena, j, sublb, bacnum, lpobject, mtf = FALSE,
 \item{lpobject}{linar programming object (copy of organism@lpobj) that have to be a deep copy in parallel due to pointer use in sybil.}
 
 \item{mtf}{True if minimize total flux should be used.}
+
+\item{cutoff}{value used to define numeric accuracy}
 }
 \value{
 Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.

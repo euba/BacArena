@@ -15,6 +15,8 @@ extractMed(object, time = length(object@medlist), mediac = object@mediac)
 \item{object}{An object of class Eval.}
 
 \item{time}{A number giving the simulation step of interest.}
+
+\item{mediac}{A character vector giving the names of substances, which should be added to the environment (the default takes all possible substances).}
 }
 \value{
 Returns a list containing concentration vectors of all medium substances.
@@ -30,8 +32,8 @@ data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
 bac <- Bac(Ec_core,deathrate=0.05,
            minweight=0.05,growtype="exponential") #initialize a bacterium
 arena <- Arena(n=20,m=20) #initialize the environment
-addOrg(arena,bac,amount=10) #add 10 organisms
-addSubs(arena,40) #add all possible substances
+arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+arena <- addSubs(arena,40) #add all possible substances
 eval <- simEnv(arena,10)
 med5 <- extractMed(eval,5)
 }

@@ -11,7 +11,9 @@ plotSubCurve(simlist, mediac = NULL, time = c(NULL, NULL), scol = NULL)
 
 \item{mediac}{A vector of substances (if not specified most varying substances will be taken.)}
 
-\item{time}{Vector with two entries defining start and end time}
+\item{time}{Vector with two entries defining start and end time.}
+
+\item{scol}{Vector with colors that should be used.}
 }
 \description{
 The function \code{plotSubCurve} takes a list of simulations and plots the time course of substances with standard deviation.

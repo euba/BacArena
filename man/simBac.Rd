@@ -23,6 +23,8 @@ simBac(object, arena, j, sublb, bacnum, mtf = FALSE, cutoff = 1e-06)
 \item{bacnum}{integer indicating the number of bacteria individuals per gridcell}
 
 \item{mtf}{True if minimize total flux should be used.}
+
+\item{cutoff}{value used to define numeric accuracy}
 }
 \value{
 Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.

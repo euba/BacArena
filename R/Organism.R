@@ -519,8 +519,8 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' move(bac,n=20,m=20,j=1,pos=arena@orgdat[,c('x','y')])
 setGeneric("move", function(object, pos, n, m, j, occupyM){standardGeneric("move")})
 #' @export
@@ -621,8 +621,8 @@ setMethod("chem", "Bac", function(object){return(object@chem)})
 #' bac <- Bac(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' growth(bac,arena,1)
 setGeneric("growth", function(object, population, j, occupyM, fbasol){standardGeneric("growth")})
 #' @export
@@ -709,8 +709,8 @@ setMethod("growth_par", "Bac", function(object, population, j, fbasol){
 #' bac <- Bac(Ec_core,deathrate=0.05, chem = "EX_o2(e)",
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,bac,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' chemotaxis(bac,arena,1)
 setGeneric("chemotaxis", function(object, population, j){standardGeneric("chemotaxis")})
 #' @export
@@ -749,6 +749,7 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 #' @param bacnum integer indicating the number of bacteria individuals per gridcell
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
 #' @param mtf True if minimize total flux should be used.
+#' @param cutoff value used to define numeric accuracy
 #' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.
 #' @details Bacterial individuals undergo step by step the following procedures: First the individuals are constrained with \code{constrain} to the substrate environment, then flux balance analysis is computed with \code{optimizeLP}, after this the substrate concentrations are updated with \code{consume}, then the bacterial growth is implemented with \code{growth}, the potential new phenotypes are added with \code{checkPhen}, finally the additional and conditional functions \code{lysis}, \code{move} or \code{chemotaxis} are performed. Can be used as a wrapper for all important bacterial functions in a function similar to \code{simEnv}.
 #' @seealso \code{\link{Bac-class}}, \code{\link{Arena-class}}, \code{\link{simEnv}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{growth}, \code{checkPhen}, \code{lysis}, \code{move} and \code{chemotaxis}
@@ -799,6 +800,7 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, mtf=FALSE, 
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
 #' @param lpobject linar programming object (copy of organism@lpobj) that have to be a deep copy in parallel due to pointer use in sybil.
 #' @param mtf True if minimize total flux should be used.
+#' @param cutoff value used to define numeric accuracy
 #' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.
 #'
 setGeneric("simBac_par", function(object, arena, j, sublb, bacnum, lpobject, mtf=FALSE, cutoff=1e-6){standardGeneric("simBac_par")})
@@ -938,8 +940,8 @@ setMethod("changeFobj", "Human", function(object, new_fobj, model, alg="fba"){
 #' human <- Human(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
-#' addOrg(arena,human,amount=10) #add 10 organisms
-#' addSubs(arena,40) #add all possible substances
+#' arena <- addOrg(arena,human,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
 #' cellgrowth(human,arena,1)
 setGeneric("cellgrowth", function(object, population, j, occupyM, fbasol){standardGeneric("cellgrowth")})
 #' @export

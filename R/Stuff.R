@@ -197,7 +197,8 @@ lsd <- function(y){lb=mean(y)-sd(y); ifelse(lb<0,0,lb)}
 #' 
 #' @param simlist A list of simulations (eval objects).
 #' @param mediac A vector of substances (if not specified most varying substances will be taken.)
-#' @param time Vector with two entries defining start and end time
+#' @param time Vector with two entries defining start and end time.
+#' @param scol Vector with colors that should be used.
 #'
 plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
@@ -279,6 +280,7 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL){
 #' 
 #' @param simlist A list of simulations (eval objects).
 #' @param time Vector with two entries defining start and end time
+#' @param bcol Vector with color that should be used
 #'
 plotGrowthCurve <-function(simlist, bcol=NULL, time=c(NULL,NULL)){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
@@ -332,6 +334,7 @@ plotGrowthCurve <-function(simlist, bcol=NULL, time=c(NULL,NULL)){
 #' @param subs A vector of substance names that are used for phenotype clustering.
 #' @param phens If phencurve is given then phens specifies the phenotypes which sould be plotted again.
 #' @param time Vector with two entries defining start and end time
+#' @param ret_phengroups True if clustered phenotype groups should be returned. 
 #'
 plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phengroups=FALSE){
   if(sum(subs %in% simlist[[1]]@mediac) != length(subs)) stop("Substances invalid.")
