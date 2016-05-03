@@ -38,25 +38,25 @@ ecore <- Ec_core
 The model is already integrated in the sybil R package by default. Alternatively you can also load your own model of interest with commands of the sybil and libSBML. After we loaded the model, we convert it into an object of class Bac by calling its constructor
 
 ```{r}
-bac <- Bac(ecore, growtype="exponential", cellarea=4.42, lyse=T)
+bac <- Bac(ecore)
 ```
 
 Now we have to set up an environment in which the organisms can interact
 
 ```{r}
-arena = Arena(n=100, m=100, Lx=0.025, Ly=0.025)
+arena <- Arena()
 ```
 
-Here, we chose 100 times 100 as the grid size of the environment and a physical area of 0.25mm times 0.25mm. Next we want to put our created organism in its environment by
+Here, by default we chose 100 times 100 as the grid size of the environment and a physical area of 0.25mm times 0.25mm. Next we want to put our created organism in its environment by
 
 ```{r}
-addOrg(arena,bac,amount=1,x=50,y=50)
+arena <- addOrg(arena,bac,amount=1,x=50,y=50)
 ```
 
 With this command we added one individual of our bacterium in the middle of the environment (by its x and y position). Next we can add the substances to the environment
 
 ```{r}
-addSubs(arena, smax=0.05, unit='mM', difspeed=6.7e-6) 
+arena <- addSubs(arena, smax=0.05, unit='mM', difspeed=6.7e-6) 
 ```
 
 Now we added all possible substances to the environment arena with a concentration 0.05 mM per gridcell. Finally, we can start the simulation with
@@ -110,25 +110,23 @@ The object pmat carries now the different phenotypes which are defined by used e
 Now we want to multiple organisms or organism types in the environment. For this we create two different types of the *Escherichia coli* core metabolic model: A wildtype *E. coli* and an auxotrophic mutant which is unable to use aerobic respiration.
 
 ```{r}
-bac1 <- Bac(ecore,deathrate=0.1,type="ecoli_wt",
-           growthlimit=0.05,growtype="exponential")
+bac1 <- Bac(ecore,type="ecoli_wt")
 ```
 
 Now we create the auxotrophic mutant by using basic commands of the sybil package.
 
 ```{r}
 ecore_aux <- changeBounds(ecore,"EX_o2(e)",lb=0)
-bac2 <- Bac(ecore_aux,deathrate=0.1,type="ecoli_aux",
-           growthlimit=0.05,growtype="exponential")
+bac2 <- Bac(ecore_aux,type="ecoli_aux", setExInf=FALSE)
 ```
 
 Again we set up an environment and insert organisms and substances
 
 ```{r}
-arena = Arena(n=100, m=100, Lx=0.025, Ly=0.025)
-addOrg(arena,bac1,amount=1,x=25,y=50)
-addOrg(arena,bac2,amount=1,x=75,y=50)
-addSubs(arena,100)
+arena <- Arena()
+arena <- addOrg(arena,bac1,amount=1,x=25,y=50)
+arena <- addOrg(arena,bac2,amount=1,x=75,y=50)
+arena <- addSubs(arena,100)
 eval <- simEnv(arena,time=20)
 ```
 
