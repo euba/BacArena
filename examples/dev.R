@@ -1,3 +1,5 @@
+devtools::install_github("hadley/devtools")
+
 library(devtools)
 library(knitr)
 library(roxygen2)
