@@ -2033,7 +2033,16 @@ setMethod("selPheno", "Eval", function(object, time, type, reduce=F){
 
 #show function for class Eval
 setMethod(show, signature(object="Eval"), function(object){
-  print(paste('Evaluation results of ',length(object@medlist)-1,' simulation steps.',sep=''))
+  cat('Evaluation results of ',length(object@medlist)-1,' simulation steps.\n')
+  cat("\tarena grid cells:",object@n,"x",object@m,"\n")
+  cat("\tarena grid size [cm]:",object@Lx,"x",object@Ly,"\n")
+  cat("\tdimension of one grid cell [cm]:",object@Lx/object@n,"x",object@Ly/object@m,"\n")
+  cat("\tarea of one grid cell [cm^2]:", (object@Lx*object@Ly)/(object@n*object@m),"\n")
+  cat("\tflux unit:","mmol/(h*g_dw)","\n")
+  cat("\t1 mM in arena correspons to mmol/grid_cell:", 1/100 * (object@Lx*object@Ly)/(object@n*object@m) ,"\n")
+  cat('\tArena of size ',object@n,'x',object@m,' with at first ',nrow(object@orgdat),
+              ' organisms of ',length(object@specs),' species.',"\n")
+  
 })
 
 
