@@ -200,7 +200,7 @@ lsd <- function(y){lb=mean(y)-sd(y); ifelse(lb<0,0,lb)}
 #' @param time Vector with two entries defining start and end time.
 #' @param scol Vector with colors that should be used.
 #'
-plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL){
+plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title="Substance curve with standard deviation",size=1){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(sum(mediac %in% simlist[[1]]@mediac) != length(mediac)) stop("Substance does not exist in exchange reactions.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@medlist))) stop("Time interval not valid")
@@ -232,12 +232,31 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL){
   
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) +
   #  stat_summary(geom="ribbon", fun.ymin="min", fun.ymax="max", aes(fill=Var1), alpha=0.3)
-  
-  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
-    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3) + 
-    xlab("time") + ylab("amount of substance [fmol]") + ggtitle("Substance curve with standard deviation") + 
+  colnames(all_df) = c("met","time","conc")
+  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=met, y=conc, x=time)) +
+    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=met), alpha=0.3) + 
+    xlab("time") + ylab("amount of substance [fmol]") + 
+    ggtitle(title) + 
+    theme_bw(base_size = 30*size) +
+    theme(legend.position='none',
+      legend.text=element_text(size=14*size),
+      legend.key=element_blank(),
+      legend.title = element_blank(),
+      axis.text.x = element_text(size=20*size),
+      axis.text.y = element_text(size=20*size),
+      axis.title.y = element_text(size=30*size,vjust=0.5),
+      #panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(colour='black',size=2*size),
+      axis.ticks = element_line(size=1*size,color='black'),
+      plot.title = element_text(size=30*size)) #15x5           # Position legend in bottom right
+  if(!is.null(scol)) q <- q + scale_fill_manual(values=scol) + scale_color_manual(values=scol)
+  print(q)
+  retq = q
+  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=met, y=conc, x=time)) + stat_summary(fun.y = mean, geom="line") + 
+    xlab("Time") + ylab("Amount of substance [fmol]") + ggtitle("Mean substance curve") + 
     theme_bw(base_size = 30) +
-    theme(#legend.position='none',
+    theme(legend.position='none',
       legend.text=element_text(size=14),
       legend.key=element_blank(),
       legend.title = element_blank(),
@@ -248,27 +267,10 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL){
       panel.grid.minor = element_blank(),
       panel.border = element_rect(colour='black',size=2),
       axis.ticks = element_line(size=1,color='black'),
-      plot.title = element_text(size=20)) #15x5           # Position legend in bottom right
+      plot.title = element_text(size=30)) #15x5           # Position legend in bottom right
   if(!is.null(scol)) q <- q + scale_fill_manual(values=scol) + scale_color_manual(values=scol)
   print(q)
-  
-  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line") + 
-    xlab("time") + ylab("amount of substance [fmol]") + ggtitle("Mean substance curve") + 
-    theme_bw(base_size = 30) +
-    theme(#legend.position='none',
-      legend.text=element_text(size=14),
-      legend.key=element_blank(),
-      legend.title = element_blank(),
-      axis.text.x = element_text(size=20),
-      axis.text.y = element_text(size=20),
-      axis.title.y = element_text(size=30,vjust=0.5),
-      #panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      panel.border = element_rect(colour='black',size=2),
-      axis.ticks = element_line(size=1,color='black'),
-      plot.title = element_text(size=20)) #15x5           # Position legend in bottom right
-  if(!is.null(scol)) q <- q + scale_fill_manual(values=scol) + scale_color_manual(values=scol)
-  print(q)
+  return(retq)
 }
 
 
@@ -282,7 +284,7 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL){
 #' @param time Vector with two entries defining start and end time
 #' @param bcol Vector with color that should be used
 #'
-plotGrowthCurve <-function(simlist, bcol=NULL, time=c(NULL,NULL)){
+plotGrowthCurve <-function(simlist, bcol=NULL, time=c(NULL,NULL),title="", size=1){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@simlist))) stop("Time interval not valid")
   
@@ -299,28 +301,29 @@ plotGrowthCurve <-function(simlist, bcol=NULL, time=c(NULL,NULL)){
     colnames(mat_bac) <- time_seq
     all_df <- rbind(all_df, reshape2::melt(mat_bac))
   }
-  
+  colnames(all_df) = c("spec","time","growth")
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
-  q<-ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + #stat_smooth(se = FALSE) + 
-    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3) + 
+  q<-ggplot(all_df, aes(color=spec, y=growth, x=time)) + #stat_smooth(se = FALSE) + 
+    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=spec), alpha=0.3) + 
     xlab("Time in h") +
     ylab("Number of individuals") +
-    theme_bw(base_size = 30) +
-    theme(#legend.position='none',
-      legend.text=element_text(size=14),
+    ggtitle(title) +
+    theme_bw(base_size = 30*size) +
+    theme(legend.position='none',
+      legend.text=element_text(size=14*size),
       legend.key=element_blank(),
       legend.title = element_blank(),
-      axis.text.x = element_text(size=20),
-      axis.text.y = element_text(size=20),
-      axis.title.y = element_text(size=30,vjust=0.5),
+      axis.text.x = element_text(size=20*size),
+      axis.text.y = element_text(size=20*size),
+      axis.title.y = element_text(size=30*size,vjust=0.5),
       #panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
-      panel.border = element_rect(colour='black',size=2),
-      axis.ticks = element_line(size=1,color='black'),
-      plot.title = element_text(size=20)) #15x5           # Position legend in bottom right
+      panel.border = element_rect(colour='black',size=2*size),
+      axis.ticks = element_line(size=1*size,color='black'),
+      plot.title = element_text(size=30*size)) #15x5           # Position legend in bottom right
   if(!is.null(bcol)) q <- q + scale_fill_manual(values=bcol) + scale_color_manual(values=bcol)
     #xlab("time") + ylab("number organism") + ggtitle("Growth curve with standard deviation")
-  print(q)
+  return(q)
 }
 
 
@@ -386,7 +389,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       m_group_sub <- matrix(as.numeric(unlist(strsplit(group_sub[,2], "_"))), byrow=TRUE, ncol=length(subs))
     }else m_group_sub <- matrix(group_sub[,2])
     rownames(m_group_sub) <- paste0("P", group_sub[,1])
-    colnames(m_group_sub) <- gsub("\\(e\\)","", gsub("EX_","",names(simlist[[1]]@mediac)))[pos]
+    colnames(m_group_sub) <- gsub("\\(lu\\)","", gsub("EX_","",names(simlist[[1]]@mediac)))[pos]
     print(m_group_sub)
   }
   
@@ -455,4 +458,89 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth(level = 0.99) + geom_point()
   if(ret_phengroups & cluster) return(simlist_fac)
+}
+
+
+#' @title Plot number of phenotypes curve for several simulations
+#'
+#' @description The function \code{plotPhenNum} takes a list of simulations and plots the time course of the number of phenotypes with standard deviation.
+#' @export
+#' @rdname plotPhenNum
+#' 
+#' @param simlist A list of simulations (eval objects).
+#' @param size A scaling factor for plot text and line size
+#'
+plotPhenNum <-function(simlist, title="Phenotype number variation", size=1){
+  if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
+  pdat = data.frame()
+  for(i in 1:length(simlist)){
+    pmat = matrix(0,length(simlist[[1]]@specs),length(simlist[[i]]@simlist))
+    rownames(pmat) = names(simlist[[1]]@specs)
+    for(j in 2:length(simlist[[i]]@simlist)){
+      datp = simlist[[i]]@simlist[[j]]
+      for(k in 1:length(simlist[[1]]@specs)){
+        pmat[k,j] = length(unique(datp[which(datp$type==k),"phenotype"]))
+      }
+    }
+    pdat = rbind(pdat, reshape2::melt(pmat))
+  }
+  colnames(pdat) = c("spec","time","phens")
+  q <- ggplot2::ggplot(pdat, ggplot2::aes(color=spec, y=phens, x=time)) +
+    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=spec), alpha=0.3) + 
+    xlab("Time") + ylab("Number of phenotypes") + 
+    ggtitle(title) + 
+    theme_bw(base_size = 30*size) +
+    theme(legend.position='none',
+          legend.text=element_text(size=14*size),
+          legend.key=element_blank(),
+          legend.title = element_blank(),
+          axis.text.x = element_text(size=20*size),
+          axis.text.y = element_text(size=20*size),
+          axis.title.y = element_text(size=30*size,vjust=0.5),
+          #panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_rect(colour='black',size=2*size),
+          axis.ticks = element_line(size=1*size,color='black'),
+          plot.title = element_text(size=30*size)) #15x5           # Position legend in bottom right
+  return(q)
+}
+
+#' @title Plot number of variation in number of interactions for several simulations
+#'
+#' @description The function \code{plotInterNum} takes a list of simulations and plots the time course of the number of metabolic interactions with standard deviation.
+#' @export
+#' @rdname plotPhenNum
+#' 
+#' @param simlist A list of simulations (eval objects).
+#' @param size A scaling factor for plot text and line size
+#'
+plotInterNum <-function(simlist, title="Variation in number of interactions", size=1){
+  if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
+  imat = matrix(0,length(simlist),length(simlist[[i]]@simlist))
+  for(i in 1:length(simlist)){
+    for(j in 2:length(simlist[[i]]@simlist)){
+      imat[i,j] = length(which(apply(getPhenoMat(simlist[[i]],j-1),2,sum)==3))
+    }
+  }
+  idat = reshape2::melt(imat)
+  colnames(idat) = c("rep","time","inter")
+  q <- ggplot2::ggplot(idat, ggplot2::aes(y=inter, x=time)) +
+    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", alpha=0.3) + 
+    ggplot2::stat_summary(fun.y = mean, geom="line") + 
+    xlab("Time") + ylab("Number of phenotypes") + 
+    ggtitle(title) + 
+    theme_bw(base_size = 30*size) +
+    theme(legend.position='none',
+          legend.text=element_text(size=14*size),
+          legend.key=element_blank(),
+          legend.title = element_blank(),
+          axis.text.x = element_text(size=20*size),
+          axis.text.y = element_text(size=20*size),
+          axis.title.y = element_text(size=30*size,vjust=0.5),
+          #panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_rect(colour='black',size=2*size),
+          axis.ticks = element_line(size=1*size,color='black'),
+          plot.title = element_text(size=30*size)) #15x5           # Position legend in bottom right
+  return(q)
 }
