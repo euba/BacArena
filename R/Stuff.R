@@ -410,7 +410,10 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       colnames(mat_groups) <- time_seq
     } else mat_groups <- mat_phen
     #rownames(mat_groups) <- 1:dim(mat_groups)[1]
-    all_df <- rbind(all_df, melt(mat_groups))
+    mat_groups_m <- melt(mat_groups)
+    colnames(mat_groups_m) <- c("Cphen", "time", "value")
+    mat_groups_m$replc <- as.character(i)
+    all_df <- rbind(all_df, mat_groups_m)
   }
   #all_df <- all_df[which(all_df$value!=0),]
   
@@ -451,6 +454,48 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       axis.ticks = element_line(size=1,color='black'),
       plot.title = element_text(size=20)) #15x5   
   print(p)
+  
+  p <- ggplot(all_df, aes(color=replc, group=replc,y=value, x=time)) + geom_line(size=1) +
+    scale_colour_manual(values=colpal3) + 
+    facet_wrap(~Cphen, nrow=4) +
+    #facet_grid(~Cphen) +
+    xlab("time") + ylab("number organism") + ggtitle("Phenotype growth curve for each replicate") + 
+#    theme_bw(base_size = 30) +
+    theme_classic(base_size = 30) +
+    theme(#legend.position='none',
+      legend.text=element_text(size=14),
+      legend.key=element_blank(),
+      legend.title = element_blank(),
+      axis.text.x = element_text(size=15),
+      axis.text.y = element_text(size=20),
+      axis.title.y = element_text(size=30,vjust=0.5),
+      #panel.grid.major = element_blank(),
+      #panel.grid.minor = element_blank(),
+ #     panel.border = element_rect(colour='black',size=2, fill=NA),
+      axis.ticks = element_line(size=1,color='black'),
+      plot.title = element_text(size=20)) #15x5   
+  print(p)
+
+  p <- ggplot(all_df, aes(color=Cphen, group=Cphen,y=value, x=time)) + geom_line(size=1) +
+    scale_colour_manual(values=colpal3) + 
+    facet_wrap(~replc) +
+    xlab("time") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
+    theme_bw(base_size = 30) +
+    theme(#legend.position='none',
+      legend.text=element_text(size=14),
+      legend.key=element_blank(),
+      legend.title = element_blank(),
+      axis.text.x = element_text(size=20),
+      axis.text.y = element_text(size=20),
+      axis.title.y = element_text(size=30,vjust=0.5),
+      #panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(colour='black',size=2, fill=NA),
+      axis.ticks = element_line(size=1,color='black'),
+      plot.title = element_text(size=20)) #15x5   
+  print(p)
+  
+    
   
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth(level = 0.99) + geom_point()
