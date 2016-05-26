@@ -297,12 +297,36 @@ plotGrowthCurve <-function(simlist, bcol=NULL, time=c(NULL,NULL)){
     mat_bac  <- do.call(cbind, list)
     rownames(mat_bac) <- names(object@specs)
     colnames(mat_bac) <- time_seq
-    all_df <- rbind(all_df, reshape2::melt(mat_bac))
+    mat_bac_m <- reshape2::melt(mat_bac)
+    colnames(mat_bac_m) <- c("species", "time", "value")
+    mat_bac_m$replc <- as.character(i)
+    all_df <- rbind(all_df, mat_bac_m)
   }
+
+  q<-ggplot(all_df, aes(color=species, y=value, x=time)) + 
+    geom_line(size=1) + facet_wrap(~replc) + 
+    xlab("Time in h") +
+    ylab("Number of individuals") +
+    theme_bw(base_size = 30) +
+    theme(#legend.position='none',
+      legend.text=element_text(size=14),
+      legend.key=element_blank(),
+      legend.title = element_blank(),
+      axis.text.x = element_text(size=20),
+      axis.text.y = element_text(size=20),
+      axis.title.y = element_text(size=30,vjust=0.5),
+      #panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(colour='black',size=2),
+      axis.ticks = element_line(size=1,color='black'),
+      plot.title = element_text(size=20)) #15x5           # Position legend in bottom right
+  if(!is.null(bcol)) q <- q + scale_fill_manual(values=bcol) + scale_color_manual(values=bcol)
+  #xlab("time") + ylab("number organism") + ggtitle("Growth curve with standard deviation")
+  print(q)
   
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
-  q<-ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + #stat_smooth(se = FALSE) + 
-    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3) + 
+  q<-ggplot(all_df, aes(color=species, y=value, x=time)) + #stat_smooth(se = FALSE) + 
+    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=species), alpha=0.3) + 
     xlab("Time in h") +
     ylab("Number of individuals") +
     theme_bw(base_size = 30) +
