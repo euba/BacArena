@@ -386,8 +386,8 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       }
       phenmat_bin <- replace(phenmat, phenmat==2, -1)
       for(i in seq_along(l@specs)) { # add inactive phenotypes
-        phenmat_bin <- rbind(phenmat_bin, rep(0,ncol(phenmat_bin)))
-        rownames(phenmat_bin)[nrow(phenmat_bin)] <- paste0(names(l@specs)[i],"_",0,"-sim_",j)
+        phenmat_bin <- rbind(rep(0,ncol(phenmat_bin)), phenmat_bin)
+        rownames(phenmat_bin)[1] <- paste0(names(l@specs)[i],"_",0,"-sim_",j)
       }
       small <- phenmat_bin[,pos]
       if(length(subs)>1) prefac <- apply(small, 1, paste, collapse="_") else prefac <- small
@@ -442,8 +442,8 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
   #all_df <- all_df[which(all_df$value!=0),]
   
   # 4) plotting
-  p <- ggplot(all_df, aes(colour=Var1, y=value, x=Var2)) + #stat_summary(fun.y = mean, geom="line") +
-    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Var1), alpha=0.3) + 
+  p <- ggplot(all_df, aes(colour=Cphen, y=value, x=time)) + #stat_summary(fun.y = mean, geom="line") +
+    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Cphen), alpha=0.3, size=1) + 
     scale_fill_manual(values=colpal3) + scale_colour_manual(values=colpal3) +
     xlab("time") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
     theme_bw(base_size = 30) +
@@ -461,7 +461,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       plot.title = element_text(size=20)) #15x5   
   print(p)
   
-  p <- ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line") +
+  p <- ggplot(all_df, aes(color=Cphen, y=value, x=time)) + stat_summary(fun.y = mean, geom="line") +
     scale_colour_manual(values=colpal3) + 
     xlab("time") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
     theme_bw(base_size = 30) +
