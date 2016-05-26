@@ -1,4 +1,4 @@
-globalVariables(c("Ec_core"))
+globalVariables(c("Ec_core", "colpal1", "colpal2", "colpal3"))
 
 
 #color dictionary of 269 maximally distinct colors from all previous colors 
