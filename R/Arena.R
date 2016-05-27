@@ -1644,13 +1644,14 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
 #' @rdname getVarSubs
 #' 
 #' @param object An object of class Eval.
-#' @param only_products A boolean indicating if only products should be shown
-#' @param only_substrates A boolean indicating if only substrates should be shown
+#' @param show_products A boolean indicating if only products should be shown
+#' @param show_substrates A boolean indicating if only substrates should be shown
+#' @param size Maximal number of returned substances (default: show all)
 #' @param cutoff Value used to define numeric accuracy while interpreting optimization results
-setGeneric("getVarSubs", function(object, only_products=TRUE, only_substrates=TRUE, cutoff=1e-6){standardGeneric("getVarSubs")})
+setGeneric("getVarSubs", function(object, show_products=TRUE, show_substrates=TRUE, cutoff=1e-6, size=NULL){standardGeneric("getVarSubs")})
 #' @export
 #' @rdname getVarSubs
-setMethod("getVarSubs", "Eval", function(object, only_products=FALSE, only_substrates=FALSE, cutoff=1e-6){
+setMethod("getVarSubs", "Eval", function(object, show_products=FALSE, show_substrates=FALSE, cutoff=1e-6, size=NULL){
   prelist <- lapply(seq_along(object@medlist), function(i){extractMed(object, i)})
   list <- lapply(prelist, function(x){lapply(x, sum)})
   # attention round due to numeric accuracy
@@ -1660,16 +1661,32 @@ setMethod("getVarSubs", "Eval", function(object, only_products=FALSE, only_subst
   #rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
   rownames(mat) <- mediac
   mat_var  <- apply(mat, 1, var)
-  if(!(only_products || only_substrates)) {
-    return(sort(mat_var[which(mat_var>0)], decreasing=TRUE))
+  if(!(show_products || show_substrates)) {
+    ret <- sort(mat_var[which(mat_var>0)], decreasing=TRUE)
+    len_ret <- length(ret)
+    if(is.null(size) || size >= len_ret) n <- len_ret
+    else n <- size
+    return(ret[1:n])
   }
   #mat <- mat[which(mat_var>0),]
   rowMin <- apply(mat, 1, min)
   rowMax <- apply(mat, 1, max)
   mat_substrates <- mat_var[which(mat[,1] == rowMax & mat_var > 0)]
   mat_products   <- mat_var[which(mat[,1] == rowMin & mat_var > 0)]
-  if( only_products) return(sort(mat_products, decreasing=TRUE))
-  if( only_substrates ) return(sort(mat_substrates, decreasing=TRUE))
+  if( show_products) {
+    mat_products <- sort(mat_products, decreasing=TRUE)
+    len_mat_products = length(mat_products)
+    if(is.null(size) || size >= len_mat_products) n <- len_mat_products
+    else n <- size
+    return(mat_products[1:n])
+  }
+  if( show_substrates ){
+    mat_substrates <- sort(mat_substrates, decreasing=TRUE)
+    len_mat_substrates <- length(mat_substrates)
+    if(is.null(size) || size >= len_mat_substrates) n <- len_mat_substrates
+    else n <- size
+    return(mat_substrates[1:n])
+  } 
   return()
 })
 
