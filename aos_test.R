@@ -554,6 +554,3 @@ grid.arrange(plotInterNum(sim_cplex_prim,title="cplex primal simplex",size=txtsi
              plotInterNum(sim_glpk_opt_ex,title="glpk optimize exchange",size=txtsize),
              ncol=3)#12x18
 
-length(which(apply(getPhenoMat(sim_cplex[[1]],1),2,sum)==3))
-simlist=sim_cplex
-plotInterNum(sim_cplex)
