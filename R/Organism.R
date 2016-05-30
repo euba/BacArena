@@ -769,10 +769,10 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 #' @seealso \code{\link{Bac-class}}, \code{\link{Arena-class}}, \code{\link{simEnv}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{growth}, \code{checkPhen}, \code{lysis}, \code{move} and \code{chemotaxis}
 #' @examples
 #' NULL
-setGeneric("simBac", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6){standardGeneric("simBac")})
+setGeneric("simBac", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6){standardGeneric("simBac")})
 #' @export
 #' @rdname simBac
-setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6){
+setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale, j)
   fbasol <- optimizeLP(object, lb=lobnd, j=j, sec_obj=sec_obj, cutoff=cutoff)
@@ -780,7 +780,7 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="no
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol, cutoff) )) #scale consumption to the number of cells?
 
   dead <- growth(object, arena, j, arena@occupyM, fbasol=fbasol)
-  arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, org=object, fbasol=fbasol))
+  arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, org=object, fbasol=fbasol, cutoff=pcut))
   
   type <- object@type
   arena@mflux[[type]] <- arena@mflux[[type]] + fbasol$fluxes # remember active fluxes

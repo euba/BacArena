@@ -7,6 +7,8 @@ library(RcppArmadillo)
 library(sybil)
 library(igraph)
 library(parallel)
+library(gridExtra)
+library(ggplot2)
 setwd('P:/GitRep/BacArena')
 
 source(file="R/Arena.R")
@@ -554,3 +556,288 @@ grid.arrange(plotInterNum(sim_cplex_prim,title="cplex primal simplex",size=txtsi
              plotInterNum(sim_glpk_opt_ex,title="glpk optimize exchange",size=txtsize),
              ncol=3)#12x18
 
+#######################################################################################
+################################################### Checking different phenotype cutoffs
+#######################################################################################
+
+#########################################################################
+cl <- makeCluster(5, type="PSOCK",outfile="cluster_sihumi.log") # PSOCK works with win/mac/lin
+clusterExport(cl, "orglist")
+print(system.time(sim_cplex5 <- parLapply(cl, 1:10, function(i){
+  library(sybil)
+  library(Rcpp)
+  library(RcppArmadillo)
+  library(ReacTran)
+  setwd('P:/GitRep/BacArena')
+  source(file="R/Arena.R")
+  source(file="R/Stuff.R")
+  source(file="R/Substance.R")
+  source(file="R/Organism.R")
+  Rcpp::sourceCpp("src/diff.cpp")
+  sybil::SYBIL_SETTINGS("SOLVER","cplexAPI")
+  arena <- Arena(50, 50, stir=F, Lx=0.01, Ly=0.01, tstep=1)
+  for(j in 1:length(orglist)){
+    model = orglist[[j]]
+    bac = Bac(model=model, growtype="exponential", speed=5)
+    arena = addOrg(arena, bac, amount=5)
+  }
+  arena=addSubs(arena, smax=5*10^-5, difspeed=6.7e-6, unit='mmol/cm2')
+  sim = simEnv(arena, time=10, sec_obj="none",pcut=1e-5)
+}) ))
+stopCluster(cl)
+cl <- makeCluster(5, type="PSOCK",outfile="cluster_sihumi.log") # PSOCK works with win/mac/lin
+clusterExport(cl, "orglist")
+print(system.time(sim_cplex4 <- parLapply(cl, 1:10, function(i){
+  library(sybil)
+  library(Rcpp)
+  library(RcppArmadillo)
+  library(ReacTran)
+  setwd('P:/GitRep/BacArena')
+  source(file="R/Arena.R")
+  source(file="R/Stuff.R")
+  source(file="R/Substance.R")
+  source(file="R/Organism.R")
+  Rcpp::sourceCpp("src/diff.cpp")
+  sybil::SYBIL_SETTINGS("SOLVER","cplexAPI")
+  arena <- Arena(50, 50, stir=F, Lx=0.01, Ly=0.01, tstep=1)
+  for(j in 1:length(orglist)){
+    model = orglist[[j]]
+    bac = Bac(model=model, growtype="exponential", speed=5)
+    arena = addOrg(arena, bac, amount=5)
+  }
+  arena=addSubs(arena, smax=5*10^-5, difspeed=6.7e-6, unit='mmol/cm2')
+  sim = simEnv(arena, time=10, sec_obj="none",pcut=1e-4)
+}) ))
+stopCluster(cl)
+cl <- makeCluster(5, type="PSOCK",outfile="cluster_sihumi.log") # PSOCK works with win/mac/lin
+clusterExport(cl, "orglist")
+print(system.time(sim_cplex3 <- parLapply(cl, 1:10, function(i){
+  library(sybil)
+  library(Rcpp)
+  library(RcppArmadillo)
+  library(ReacTran)
+  setwd('P:/GitRep/BacArena')
+  source(file="R/Arena.R")
+  source(file="R/Stuff.R")
+  source(file="R/Substance.R")
+  source(file="R/Organism.R")
+  Rcpp::sourceCpp("src/diff.cpp")
+  sybil::SYBIL_SETTINGS("SOLVER","cplexAPI")
+  arena <- Arena(50, 50, stir=F, Lx=0.01, Ly=0.01, tstep=1)
+  for(j in 1:length(orglist)){
+    model = orglist[[j]]
+    bac = Bac(model=model, growtype="exponential", speed=5)
+    arena = addOrg(arena, bac, amount=5)
+  }
+  arena=addSubs(arena, smax=5*10^-5, difspeed=6.7e-6, unit='mmol/cm2')
+  sim = simEnv(arena, time=10, sec_obj="none",pcut=1e-3)
+}) ))
+stopCluster(cl)
+cl <- makeCluster(5, type="PSOCK",outfile="cluster_sihumi.log") # PSOCK works with win/mac/lin
+clusterExport(cl, "orglist")
+print(system.time(sim_cplex2 <- parLapply(cl, 1:10, function(i){
+  library(sybil)
+  library(Rcpp)
+  library(RcppArmadillo)
+  library(ReacTran)
+  setwd('P:/GitRep/BacArena')
+  source(file="R/Arena.R")
+  source(file="R/Stuff.R")
+  source(file="R/Substance.R")
+  source(file="R/Organism.R")
+  Rcpp::sourceCpp("src/diff.cpp")
+  sybil::SYBIL_SETTINGS("SOLVER","cplexAPI")
+  arena <- Arena(50, 50, stir=F, Lx=0.01, Ly=0.01, tstep=1)
+  for(j in 1:length(orglist)){
+    model = orglist[[j]]
+    bac = Bac(model=model, growtype="exponential", speed=5)
+    arena = addOrg(arena, bac, amount=5)
+  }
+  arena=addSubs(arena, smax=5*10^-5, difspeed=6.7e-6, unit='mmol/cm2')
+  sim = simEnv(arena, time=10, sec_obj="none",pcut=1e-2)
+}) ))
+stopCluster(cl)
+cl <- makeCluster(5, type="PSOCK",outfile="cluster_sihumi.log") # PSOCK works with win/mac/lin
+clusterExport(cl, "orglist")
+print(system.time(sim_cplex1 <- parLapply(cl, 1:10, function(i){
+  library(sybil)
+  library(Rcpp)
+  library(RcppArmadillo)
+  library(ReacTran)
+  setwd('P:/GitRep/BacArena')
+  source(file="R/Arena.R")
+  source(file="R/Stuff.R")
+  source(file="R/Substance.R")
+  source(file="R/Organism.R")
+  Rcpp::sourceCpp("src/diff.cpp")
+  sybil::SYBIL_SETTINGS("SOLVER","cplexAPI")
+  arena <- Arena(50, 50, stir=F, Lx=0.01, Ly=0.01, tstep=1)
+  for(j in 1:length(orglist)){
+    model = orglist[[j]]
+    bac = Bac(model=model, growtype="exponential", speed=5)
+    arena = addOrg(arena, bac, amount=5)
+  }
+  arena=addSubs(arena, smax=5*10^-5, difspeed=6.7e-6, unit='mmol/cm2')
+  sim = simEnv(arena, time=10, sec_obj="none",pcut=1e-1)
+}) ))
+stopCluster(cl)
+
+cl <- makeCluster(5, type="PSOCK",outfile="cluster_sihumi.log") # PSOCK works with win/mac/lin
+clusterExport(cl, "orglist")
+print(system.time(sim_cplex_ex5 <- parLapply(cl, 1:10, function(i){
+  library(sybil)
+  library(Rcpp)
+  library(RcppArmadillo)
+  library(ReacTran)
+  setwd('P:/GitRep/BacArena')
+  source(file="R/Arena.R")
+  source(file="R/Stuff.R")
+  source(file="R/Substance.R")
+  source(file="R/Organism.R")
+  Rcpp::sourceCpp("src/diff.cpp")
+  sybil::SYBIL_SETTINGS("SOLVER","cplexAPI")
+  arena <- Arena(50, 50, stir=F, Lx=0.01, Ly=0.01, tstep=1)
+  for(j in 1:length(orglist)){
+    model = orglist[[j]]
+    bac = Bac(model=model, growtype="exponential", speed=5)
+    arena = addOrg(arena, bac, amount=5)
+  }
+  arena=addSubs(arena, smax=5*10^-5, difspeed=6.7e-6, unit='mmol/cm2')
+  sim = simEnv(arena, time=10, sec_obj="opt_ex",pcut=1e-5)
+}) ))
+stopCluster(cl)
+cl <- makeCluster(5, type="PSOCK",outfile="cluster_sihumi.log") # PSOCK works with win/mac/lin
+clusterExport(cl, "orglist")
+print(system.time(sim_cplex_ex4 <- parLapply(cl, 1:10, function(i){
+  library(sybil)
+  library(Rcpp)
+  library(RcppArmadillo)
+  library(ReacTran)
+  setwd('P:/GitRep/BacArena')
+  source(file="R/Arena.R")
+  source(file="R/Stuff.R")
+  source(file="R/Substance.R")
+  source(file="R/Organism.R")
+  Rcpp::sourceCpp("src/diff.cpp")
+  sybil::SYBIL_SETTINGS("SOLVER","cplexAPI")
+  arena <- Arena(50, 50, stir=F, Lx=0.01, Ly=0.01, tstep=1)
+  for(j in 1:length(orglist)){
+    model = orglist[[j]]
+    bac = Bac(model=model, growtype="exponential", speed=5)
+    arena = addOrg(arena, bac, amount=5)
+  }
+  arena=addSubs(arena, smax=5*10^-5, difspeed=6.7e-6, unit='mmol/cm2')
+  sim = simEnv(arena, time=10, sec_obj="opt_ex",pcut=1e-4)
+}) ))
+stopCluster(cl)
+cl <- makeCluster(5, type="PSOCK",outfile="cluster_sihumi.log") # PSOCK works with win/mac/lin
+clusterExport(cl, "orglist")
+print(system.time(sim_cplex_ex3 <- parLapply(cl, 1:10, function(i){
+  library(sybil)
+  library(Rcpp)
+  library(RcppArmadillo)
+  library(ReacTran)
+  setwd('P:/GitRep/BacArena')
+  source(file="R/Arena.R")
+  source(file="R/Stuff.R")
+  source(file="R/Substance.R")
+  source(file="R/Organism.R")
+  Rcpp::sourceCpp("src/diff.cpp")
+  sybil::SYBIL_SETTINGS("SOLVER","cplexAPI")
+  arena <- Arena(50, 50, stir=F, Lx=0.01, Ly=0.01, tstep=1)
+  for(j in 1:length(orglist)){
+    model = orglist[[j]]
+    bac = Bac(model=model, growtype="exponential", speed=5)
+    arena = addOrg(arena, bac, amount=5)
+  }
+  arena=addSubs(arena, smax=5*10^-5, difspeed=6.7e-6, unit='mmol/cm2')
+  sim = simEnv(arena, time=10, sec_obj="opt_ex",pcut=1e-3)
+}) ))
+stopCluster(cl)
+cl <- makeCluster(5, type="PSOCK",outfile="cluster_sihumi.log") # PSOCK works with win/mac/lin
+clusterExport(cl, "orglist")
+print(system.time(sim_cplex_ex2 <- parLapply(cl, 1:10, function(i){
+  library(sybil)
+  library(Rcpp)
+  library(RcppArmadillo)
+  library(ReacTran)
+  setwd('P:/GitRep/BacArena')
+  source(file="R/Arena.R")
+  source(file="R/Stuff.R")
+  source(file="R/Substance.R")
+  source(file="R/Organism.R")
+  Rcpp::sourceCpp("src/diff.cpp")
+  sybil::SYBIL_SETTINGS("SOLVER","cplexAPI")
+  arena <- Arena(50, 50, stir=F, Lx=0.01, Ly=0.01, tstep=1)
+  for(j in 1:length(orglist)){
+    model = orglist[[j]]
+    bac = Bac(model=model, growtype="exponential", speed=5)
+    arena = addOrg(arena, bac, amount=5)
+  }
+  arena=addSubs(arena, smax=5*10^-5, difspeed=6.7e-6, unit='mmol/cm2')
+  sim = simEnv(arena, time=10, sec_obj="opt_ex",pcut=1e-2)
+}) ))
+stopCluster(cl)
+cl <- makeCluster(5, type="PSOCK",outfile="cluster_sihumi.log") # PSOCK works with win/mac/lin
+clusterExport(cl, "orglist")
+print(system.time(sim_cplex_ex1 <- parLapply(cl, 1:10, function(i){
+  library(sybil)
+  library(Rcpp)
+  library(RcppArmadillo)
+  library(ReacTran)
+  setwd('P:/GitRep/BacArena')
+  source(file="R/Arena.R")
+  source(file="R/Stuff.R")
+  source(file="R/Substance.R")
+  source(file="R/Organism.R")
+  Rcpp::sourceCpp("src/diff.cpp")
+  sybil::SYBIL_SETTINGS("SOLVER","cplexAPI")
+  arena <- Arena(50, 50, stir=F, Lx=0.01, Ly=0.01, tstep=1)
+  for(j in 1:length(orglist)){
+    model = orglist[[j]]
+    bac = Bac(model=model, growtype="exponential", speed=5)
+    arena = addOrg(arena, bac, amount=5)
+  }
+  arena=addSubs(arena, smax=5*10^-5, difspeed=6.7e-6, unit='mmol/cm2')
+  sim = simEnv(arena, time=10, sec_obj="opt_ex",pcut=1e-1)
+}) ))
+stopCluster(cl)
+
+save(sim_cplex1, file="P:/BACARENA/AOS/sim_cplex1.RData")
+save(sim_cplex2, file="P:/BACARENA/AOS/sim_cplex2.RData")
+save(sim_cplex3, file="P:/BACARENA/AOS/sim_cplex3.RData")
+save(sim_cplex4, file="P:/BACARENA/AOS/sim_cplex4.RData")
+save(sim_cplex5, file="P:/BACARENA/AOS/sim_cplex5.RData")
+
+save(sim_cplex_ex1, file="P:/BACARENA/AOS/sim_cplex_ex1.RData")
+save(sim_cplex_ex2, file="P:/BACARENA/AOS/sim_cplex_ex2.RData")
+save(sim_cplex_ex3, file="P:/BACARENA/AOS/sim_cplex_ex3.RData")
+save(sim_cplex_ex4, file="P:/BACARENA/AOS/sim_cplex_ex4.RData")
+save(sim_cplex_ex5, file="P:/BACARENA/AOS/sim_cplex_ex5.RData")
+
+
+txtsize= 0.6
+grid.arrange(plotPhenNum(sim_cplex1,title="cplex cutoff 1e-1",size=txtsize),
+             plotPhenNum(sim_cplex2,title="cplex cutoff 1e-2",size=txtsize),
+             plotPhenNum(sim_cplex3,title="cplex cutoff 1e-3",size=txtsize),
+             plotPhenNum(sim_cplex4,title="cplex cutoff 1e-4",size=txtsize),
+             plotPhenNum(sim_cplex5,title="cplex cutoff 1e-5",size=txtsize),
+             plotPhenNum(sim_cplex_ex1,title="exchange optimize cutoff 1e-1",size=txtsize),
+             plotPhenNum(sim_cplex_ex2,title="exchange optimize cutoff 1e-2",size=txtsize),
+             plotPhenNum(sim_cplex_ex3,title="exchange optimize cutoff 1e-3",size=txtsize),
+             plotPhenNum(sim_cplex_ex4,title="exchange optimize cutoff 1e-4",size=txtsize),
+             plotPhenNum(sim_cplex_ex5,title="exchange optimize cutoff 1e-5",size=txtsize),
+             ncol=5)#20x8
+
+txtsize= 0.6
+grid.arrange(plotInterNum(sim_cplex1,title="cplex cutoff 1e-1",size=txtsize),
+             plotInterNum(sim_cplex2,title="cplex cutoff 1e-2",size=txtsize),
+             plotInterNum(sim_cplex3,title="cplex cutoff 1e-3",size=txtsize),
+             plotInterNum(sim_cplex4,title="cplex cutoff 1e-4",size=txtsize),
+             plotInterNum(sim_cplex5,title="cplex cutoff 1e-5",size=txtsize),
+             plotInterNum(sim_cplex_ex1,title="exchange optimize cutoff 1e-1",size=txtsize),
+             plotInterNum(sim_cplex_ex2,title="exchange optimize cutoff 1e-2",size=txtsize),
+             plotInterNum(sim_cplex_ex3,title="exchange optimize cutoff 1e-3",size=txtsize),
+             plotInterNum(sim_cplex_ex4,title="exchange optimize cutoff 1e-4",size=txtsize),
+             plotInterNum(sim_cplex_ex5,title="exchange optimize cutoff 1e-5",size=txtsize),
+             ncol=5)#20x8

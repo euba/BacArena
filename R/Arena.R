@@ -545,7 +545,7 @@ setGeneric("checkPhen", function(object, org, cutoff=1e-6, fbasol){standardGener
 setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6, fbasol){
   pind <- 0
   if(fbasol$obj>=cutoff){
-    test = getPhenotype(org, cutoff=1e-6, fbasol)
+    test = getPhenotype(org, cutoff=cutoff, fbasol)
     tspec = org@type
     pvec = rep(0,length(object@mediac))
     names(pvec) = object@mediac
@@ -581,7 +581,7 @@ setGeneric("checkPhen_par", function(object, org, cutoff=1e-6, fbasol){standardG
 setMethod("checkPhen_par", "Arena", function(object, org, cutoff=1e-6, fbasol){
   pind <- 0
   if(fbasol$obj>=cutoff){
-    test = getPhenotype(org, cutoff=1e-6, fbasol)
+    test = getPhenotype(org, cutoff=cutoff, fbasol)
     tspec = org@type
     pvec = rep(0,length(object@mediac))
     names(pvec) = object@mediac
@@ -641,10 +641,10 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,10)
-setGeneric("simEnv", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, sec_obj="none", cutoff=1e-6){standardGeneric("simEnv")})
+setGeneric("simEnv", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, sec_obj="none", cutoff=1e-6, pcut=1e-6){standardGeneric("simEnv")})
 #' @export
 #' @rdname simEnv
-setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, sec_obj="none", cutoff=1e-6){
+setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, sec_obj="none", cutoff=1e-6, pcut=1e-6){
   if(length(object@media)==0) stop("No media present in Arena!")
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
@@ -654,7 +654,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
   for(i in names(arena@specs)){
     phensel <- arena@phenotypes[which(names(arena@phenotypes)==i)]
     if(length(phensel)==0){
-      test = getPhenotype(arena@specs[[i]], cutoff=1e-6, fbasol=arena@specs[[i]]@fbasol)
+      test = getPhenotype(arena@specs[[i]], cutoff=pcut, fbasol=arena@specs[[i]]@fbasol)
       pvec = rep(0,length(arena@mediac))
       names(pvec) = arena@mediac
       pvec[names(test)] = test
@@ -684,7 +684,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
         org <- arena@specs[[arena@orgdat[j,'type']]]
         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
         switch(class(org),
-               "Bac"= {arena = simBac(org, arena, j, sublb, bacnum, sec_obj=sec_obj, cutoff=cutoff)}, #the sublb matrix will be modified within this function
+               "Bac"= {arena = simBac(org, arena, j, sublb, bacnum, sec_obj=sec_obj, cutoff=cutoff, pcut=pcut)}, #the sublb matrix will be modified within this function
                "Human"= {arena = simHum(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
                stop("Simulation function for Organism object not defined yet."))
       }

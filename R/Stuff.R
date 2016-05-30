@@ -586,7 +586,7 @@ plotPhenNum <-function(simlist, title="Phenotype number variation", size=1){
 #'
 plotInterNum <-function(simlist, title="Variation in number of interactions", size=1){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
-  imat = matrix(0,length(simlist),length(simlist[[i]]@simlist))
+  imat = matrix(0,length(simlist),length(simlist[[1]]@simlist))
   for(i in 1:length(simlist)){
     for(j in 2:length(simlist[[i]]@simlist)){
       imat[i,j] = length(which(apply(getPhenoMat(simlist[[i]],j-1),2,sum)==3))
