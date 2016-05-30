@@ -232,10 +232,10 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title
   
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) +
   #  stat_summary(geom="ribbon", fun.ymin="min", fun.ymax="max", aes(fill=Var1), alpha=0.3)
-  colnames(all_df) = c("met","time","conc")
-  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=met, y=conc, x=time)) +
-    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=met), alpha=0.3) + 
-    xlab("time") + ylab("amount of substance [fmol]") + 
+  
+  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
+    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3, size=1) + 
+    xlab("Time") + ylab("Amount of substance [fmol]") + 
     ggtitle(title) + 
     theme_bw(base_size = 30*size) +
     theme(legend.position='none',
@@ -252,8 +252,8 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title
       plot.title = element_text(size=30*size)) #15x5           # Position legend in bottom right
   if(!is.null(scol)) q <- q + scale_fill_manual(values=scol) + scale_color_manual(values=scol)
   print(q)
-  retq = q
-  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=met, y=conc, x=time)) + stat_summary(fun.y = mean, geom="line") + 
+  
+  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line", size=1) + 
     xlab("Time") + ylab("Amount of substance [fmol]") + ggtitle("Mean substance curve") + 
     theme_bw(base_size = 30) +
     theme(legend.position='none',
@@ -365,7 +365,7 @@ plotGrowthCurve <-function(simlist, bcol=NULL, time=c(NULL,NULL),title="", size=
 #' @param ret_phengroups True if clustered phenotype groups should be returned. 
 #' @param cluster True phenotypes should be clustered/condensed. 
 #'
-plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phengroups=FALSE, cluster=TRUE){
+plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phengroups=FALSE, cluster=TRUE, col=colpal3){
   if(sum(subs %in% simlist[[1]]@mediac) != length(subs)) stop("Substances invalid.")
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   
@@ -448,7 +448,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
   # 4) plotting
   p <- ggplot(all_df, aes(colour=Cphen, y=value, x=time)) + #stat_summary(fun.y = mean, geom="line") +
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Cphen), alpha=0.3, size=1) + 
-    scale_fill_manual(values=colpal3) + scale_colour_manual(values=colpal3) +
+    scale_fill_manual(values=col) + scale_colour_manual(values=col) +
     xlab("time") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
     theme_bw(base_size = 30) +
     theme(#legend.position='none',
@@ -466,7 +466,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
   print(p)
   
   p <- ggplot(all_df, aes(color=Cphen, y=value, x=time)) + stat_summary(fun.y = mean, geom="line") +
-    scale_colour_manual(values=colpal3) + 
+    scale_colour_manual(values=col) + 
     xlab("time") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
     theme_bw(base_size = 30) +
     theme(#legend.position='none',
@@ -484,10 +484,10 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
   print(p)
   
   p <- ggplot(all_df, aes(color=replc, group=replc,y=value, x=time)) + geom_line(size=1) +
-    scale_colour_manual(values=colpal3) + 
+    scale_colour_manual(values=col) + 
     facet_wrap(~Cphen, nrow=4) +
     #facet_grid(~Cphen) +
-    xlab("time") + ylab("number organism") + ggtitle("Phenotype growth curve for each replicate") + 
+    xlab("time") + ylab("number organism") + ggtitle("Comparison of phenotype growth curves") + 
 #    theme_bw(base_size = 30) +
     theme_classic(base_size = 30) +
     theme(#legend.position='none',
@@ -505,9 +505,9 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
   print(p)
 
   p <- ggplot(all_df, aes(color=Cphen, group=Cphen,y=value, x=time)) + geom_line(size=1) +
-    scale_colour_manual(values=colpal3) + 
+    scale_colour_manual(values=col) + 
     facet_wrap(~replc) +
-    xlab("time") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
+    xlab("time") + ylab("number organism") + ggtitle("Comparison of replicate growth curves") + 
     theme_bw(base_size = 30) +
     theme(#legend.position='none',
       legend.text=element_text(size=14),
