@@ -405,7 +405,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
     mat_phen  <- do.call(cbind, list)
     if(cluster){
       mat_groups <- rowsum(mat_phen, group=simlist_fac[[i]]) # phenotype0 singularity
-      rownames(mat_groups) <- paste0("P", 1:dim(mat_groups)[1])
+      rownames(mat_groups) <- paste0("P", rownames(mat_groups))
       colnames(mat_groups) <- time_seq
     } else mat_groups <- mat_phen
     #rownames(mat_groups) <- 1:dim(mat_groups)[1]
