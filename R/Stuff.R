@@ -199,6 +199,8 @@ lsd <- function(y){lb=mean(y)-sd(y); ifelse(lb<0,0,lb)}
 #' @param mediac A vector of substances (if not specified most varying substances will be taken.)
 #' @param time Vector with two entries defining start and end time.
 #' @param scol Vector with colors that should be used.
+#' 
+#' @return list of three ggplot object for further formating
 #'
 plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title="Substance curve with standard deviation",size=1){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
@@ -222,55 +224,24 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title
       rownames(mat_nice) <- gsub("\\(e\\)$","", gsub("\\[e\\]$","", gsub("EX_","",mediac)))
     }
     colnames(mat_nice) <- time_seq
-    all_df <- rbind(all_df, reshape2::melt(mat_nice))
+    mat_nice <- reshape2::melt(mat_nice)
+    mat_nice$replc <- as.character(i)
+    all_df <- rbind(all_df, mat_nice)
   }
-  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
-  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth() + geom_point()
-  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth(level=0.999) # confidence level default: 0.95
-  
-  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth(method="loess", span=0.1, se=TRUE, aes(fill=Var1), alpha=0.3)
-  
-  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) +
-  #  stat_summary(geom="ribbon", fun.ymin="min", fun.ymax="max", aes(fill=Var1), alpha=0.3)
-  
-  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
-    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3, size=1) + 
-    xlab("Time") + ylab("Amount of substance [fmol]") + 
-    ggtitle(title) + 
-    theme_bw(base_size = 30*size) +
-    theme(legend.position='none',
-      legend.text=element_text(size=14*size),
-      legend.key=element_blank(),
-      legend.title = element_blank(),
-      axis.text.x = element_text(size=20*size),
-      axis.text.y = element_text(size=20*size),
-      axis.title.y = element_text(size=30*size,vjust=0.5),
-      #panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      panel.border = element_rect(colour='black',size=2*size),
-      axis.ticks = element_line(size=1*size,color='black'),
-      plot.title = element_text(size=30*size)) #15x5           # Position legend in bottom right
-  if(!is.null(scol)) q <- q + scale_fill_manual(values=scol) + scale_color_manual(values=scol)
-  print(q)
-  
-  q <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line", size=1) + 
-    xlab("Time") + ylab("Amount of substance [fmol]") + ggtitle("Mean substance curve") + 
-    theme_bw(base_size = 30) +
-    theme(legend.position='none',
-      legend.text=element_text(size=14),
-      legend.key=element_blank(),
-      legend.title = element_blank(),
-      axis.text.x = element_text(size=20),
-      axis.text.y = element_text(size=20),
-      axis.title.y = element_text(size=30,vjust=0.5),
-      #panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      panel.border = element_rect(colour='black',size=2),
-      axis.ticks = element_line(size=1,color='black'),
-      plot.title = element_text(size=30)) #15x5           # Position legend in bottom right
-  if(!is.null(scol)) q <- q + scale_fill_manual(values=scol) + scale_color_manual(values=scol)
-  print(q)
-  return(retq)
+   
+   q1 <- ggplot2::ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_line(size=1) + facet_wrap(~replc)
+   print(q1)
+   
+   q2 <- ggplot2::ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line", size=1) + 
+     xlab("Time") + ylab("Amount of substance [fmol]") + ggtitle("Mean substance curve") #+
+   print(q2)
+   
+   q3 <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
+     ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3, size=1) +
+     xlab("Time") + ylab("Amount of substance [fmol]") #+ 
+   print(q3)
+   
+  return(list(q1, q2, q3))
 }
 
 
