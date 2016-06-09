@@ -386,7 +386,13 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
     }else m_group_sub <- matrix(group_sub[,2])
     rownames(m_group_sub) <- paste0("P", group_sub[,1])
     colnames(m_group_sub) <- gsub("\\(lu\\)","", gsub("EX_","",names(simlist[[1]]@mediac)))[pos]
-    print(m_group_sub)
+    #print(m_group_sub)
+    m_group_sub2 <- m_group_sub
+    colnames(m_group_sub2) <- gsub("\\[e\\]","", gsub("EX_","", colnames(m_group_sub2)))
+    m_group_sub2[m_group_sub2==-1] <- "-"
+    m_group_sub2[m_group_sub2==1] <- "+"
+    m_group_sub2[m_group_sub2==0] <- ""
+    print(noquote(m_group_sub2))
   }
   
   # 3) get growth of selected phenotypes
@@ -414,10 +420,11 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
     mat_groups_m$replc <- as.character(i)
     all_df <- rbind(all_df, mat_groups_m)
   }
-  #all_df <- all_df[which(all_df$value!=0),]
+  
+  all_df <- all_df[which(all_df$value!=0),] # important!
   
   # 4) plotting
-  p <- ggplot(all_df, aes(colour=Cphen, y=value, x=time)) + #stat_summary(fun.y = mean, geom="line") +
+  p <- ggplot(all_df, aes(colour=Cphen, y=value, x=time)) + 
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Cphen), alpha=0.3, size=1) + 
     scale_fill_manual(values=col) + scale_colour_manual(values=col) +
     xlab("time") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
@@ -436,8 +443,8 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       plot.title = element_text(size=20)) #15x5   
   print(p)
   
-  p <- ggplot(all_df, aes(color=Cphen, y=value, x=time)) + stat_summary(fun.y = mean, geom="line") +
-    scale_colour_manual(values=col) + 
+  p <- ggplot(all_df, aes(color=Cphen, y=value, x=time)) + stat_summary(fun.y = mean, geom="line", size=1) +
+    stat_summary(fun.y = mean, geom="point", shape=3, size=2) + scale_colour_manual(values=col) + 
     xlab("time") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
     theme_bw(base_size = 30) +
     theme(#legend.position='none',
@@ -454,7 +461,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       plot.title = element_text(size=20)) #15x5   
   print(p)
   
-  p <- ggplot(all_df, aes(color=replc, group=replc,y=value, x=time)) + geom_line(size=1) +
+  p <- ggplot(all_df, aes(color=replc, group=replc,y=value, x=time)) + geom_line(size=1) + geom_point(size=2, shape=3) +
     scale_colour_manual(values=col) + 
     facet_wrap(~Cphen, nrow=4) +
     #facet_grid(~Cphen) +
@@ -475,7 +482,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       plot.title = element_text(size=20)) #15x5   
   print(p)
 
-  p <- ggplot(all_df, aes(color=Cphen, group=Cphen,y=value, x=time)) + geom_line(size=1) +
+  p <- ggplot(all_df, aes(color=Cphen, group=Cphen,y=value, x=time)) + geom_line(size=1) + geom_point(size=2, shape=3) +
     scale_colour_manual(values=col) + 
     facet_wrap(~replc) +
     xlab("time") + ylab("number organism") + ggtitle("Comparison of replicate growth curves") + 
