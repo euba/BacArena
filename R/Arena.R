@@ -353,9 +353,9 @@ setGeneric("addMinMed", function(object, org){standardGeneric("addMinMed")})
 #' @rdname addMinMed
 #' @export
 setMethod("addMinMed", "Arena", function(object, org){
-  ex <- findExchReact(org@model)
-  min_id  <- ex@react_id[which(ex@lowbnd < 0)]
-  min_val <- -1 * ex@lowbnd[which(ex@lowbnd < 0)]
+  lb_ex <- org@model@lowbnd[which(org@model@react_id %in% unname(org@medium))]
+  min_id  <-  unname(org@medium[which(lb_ex < 0)])
+  min_val <-  lb_ex[which(lb_ex < 0)]
   for(id in min_id){
     object@media[[id]]@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@n, ncol=object@m, sparse=TRUE)}
   return(object)
