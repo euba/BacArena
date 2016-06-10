@@ -31,6 +31,15 @@ colpal3 = c(
   "#232C16" # Dark Olive Green
 )
 
+#26 distinct colors (Zeileis(2009): Escaping RGBland: Selecting Colors for Statistical Graphics)
+colpal4 <- c("#023fa5", "#7d87b9", "#bec1d4", "#d6bcc0", "#bb7784", "#8e063b", "#4a6fe3", "#8595e1", "#b5bbe3", "#e6afb9", "#e07b91", "#d33f6a", "#11c638", "#8dd593", "#c6dec7", "#ead3c6", "#f0b98d", "#ef9708", "#0fcfc0", "#9cded6", "#d5eae7", "#f3e1eb", "#f6c4e1", "#f79cd4")
+
+# 64 destinct colors
+colpal5 <- c("#000000","#00FF00","#0000FF","#FF0000","#01FFFE","#FFA6FE","#FFDB66","#006401","#010067","#95003A","#007DB5","#FF00F6","#FFEEE8","#774D00","#90FB92","#0076FF","#D5FF00","#FF937E","#6A826C","#FF029D","#FE8900","#7A4782","#7E2DD2","#85A900","#FF0056","#A42400","#00AE7E","#683D3B","#BDC6FF","#263400","#BDD393","#00B917","#9E008E","#001544","#C28C9F","#FF74A3","#01D0FF","#004754","#E56FFE","#788231","#0E4CA1","#91D0CB","#BE9970","#968AE8","#BB8800","#43002C","#DEFF74    ","#00FFC6","#FFE502","#620E00","#008F9C","#98FF52","#7544B1","#B500FF","#00FF78","#FF6E41","#005F39","#6B6882","#5FAD4E","#A75740","#A5FFD2","#FFB167","#009BFF","#E85EBE")
+
+# 64 destinc colors
+colpal6 <- c("FF0000", "00FF00", "0000FF", "FFFF00", "FF00FF", "00FFFF", "000000", "800000", "008000", "000080", "808000", "800080", "008080", "808080", "C00000", "00C000", "0000C0", "C0C000", "C000C0", "00C0C0", "C0C0C0", "400000", "004000", "000040", "404000", "400040", "004040", "404040", "200000", "002000", "000020", "202000", "200020", "002020", "202020", "600000", "006000", "000060", "606000", "600060", "006060", "606060", "A00000", "00A000", "0000A0", "A0A000", "A000A0", "00A0A0", "A0A0A0", "E00000", "00E000", "0000E0", "E0E000", "E000E0", "00E0E0", "E0E0E0")
+
 # Diffusion pde solver function
 Diff2d <- function (t, y, parms){
   # geometry values are in parms
@@ -228,18 +237,21 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title
     mat_nice$replc <- as.character(i)
     all_df <- rbind(all_df, mat_nice)
   }
+  
+  all_df$Var2 <- all_df$Var2 * simlist[[1]]@tstep # adjust time to hours 
+  all_df$value <- all_df$value * 10^{-12} # adjust to mmol
+  
+  q1 <- ggplot2::ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_line(size=1) + facet_wrap(~replc)
+  print(q1)
    
-   q1 <- ggplot2::ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_line(size=1) + facet_wrap(~replc)
-   print(q1)
+  q2 <- ggplot2::ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line", size=1) + 
+    xlab("Time [h]") + ylab("Amount of substance [mmol]") + ggtitle("Mean substance curve") #+
+  print(q2)
    
-   q2 <- ggplot2::ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line", size=1) + 
-     xlab("Time") + ylab("Amount of substance [fmol]") + ggtitle("Mean substance curve") #+
-   print(q2)
-   
-   q3 <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
-     ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3, size=1) +
-     xlab("Time") + ylab("Amount of substance [fmol]") #+ 
-   print(q3)
+  q3 <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
+    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3, size=1) +
+     xlab("Time [h]") + ylab("Amount of substance [mmol]") #+ 
+  print(q3)
    
   return(list(q1, q2, q3))
 }
@@ -275,11 +287,13 @@ plotGrowthCurve <-function(simlist, bcol=NULL, time=c(NULL,NULL),title="", size=
     mat_bac_m$replc <- as.character(i)
     all_df <- rbind(all_df, mat_bac_m)
   }
+  
+  all_df$time <- all_df$time * simlist[[1]]@tstep # adjust time to hours
 
   q<-ggplot(all_df, aes(color=species, y=value, x=time)) + 
     geom_line(size=1) + facet_wrap(~replc) + 
     #stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=spec), alpha=0.3) + 
-    xlab("Time in h") +
+    xlab("Time [h]") +
     ylab("Number of individuals") +
     theme_bw(base_size = 30) +
     theme(#legend.position='none',
@@ -301,7 +315,7 @@ plotGrowthCurve <-function(simlist, bcol=NULL, time=c(NULL,NULL),title="", size=
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
   q<-ggplot(all_df, aes(color=species, y=value, x=time)) + #stat_smooth(se = FALSE) + 
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=species), alpha=0.3) + 
-    xlab("Time in h") +
+    xlab("Time [h]") +
     ylab("Number of individuals") +
     ggtitle(title) +
     theme_bw(base_size = 30*size) +
@@ -422,12 +436,13 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
   }
   
   all_df <- all_df[which(all_df$value!=0),] # important!
+  all_df$time <- all_df$time * simlist[[1]]@tstep # adjust time to hours
   
   # 4) plotting
   p <- ggplot(all_df, aes(colour=Cphen, y=value, x=time)) + 
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Cphen), alpha=0.3, size=1) + 
     scale_fill_manual(values=col) + scale_colour_manual(values=col) +
-    xlab("time") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
+    xlab("time [h]") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
     theme_bw(base_size = 30) +
     theme(#legend.position='none',
       legend.text=element_text(size=14),
@@ -445,7 +460,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
   
   p <- ggplot(all_df, aes(color=Cphen, y=value, x=time)) + stat_summary(fun.y = mean, geom="line", size=1) +
     stat_summary(fun.y = mean, geom="point", shape=3, size=2) + scale_colour_manual(values=col) + 
-    xlab("time") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
+    xlab("time [h]") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
     theme_bw(base_size = 30) +
     theme(#legend.position='none',
       legend.text=element_text(size=14),
@@ -465,7 +480,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
     scale_colour_manual(values=col) + 
     facet_wrap(~Cphen, nrow=4) +
     #facet_grid(~Cphen) +
-    xlab("time") + ylab("number organism") + ggtitle("Comparison of phenotype growth curves") + 
+    xlab("time [h]") + ylab("number organism") + ggtitle("Comparison of phenotype growth curves") + 
 #    theme_bw(base_size = 30) +
     theme_classic(base_size = 30) +
     theme(#legend.position='none',
@@ -485,7 +500,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
   p <- ggplot(all_df, aes(color=Cphen, group=Cphen,y=value, x=time)) + geom_line(size=1) + geom_point(size=2, shape=3) +
     scale_colour_manual(values=col) + 
     facet_wrap(~replc) +
-    xlab("time") + ylab("number organism") + ggtitle("Comparison of replicate growth curves") + 
+    xlab("time [h]") + ylab("number organism") + ggtitle("Comparison of replicate growth curves") + 
     theme_bw(base_size = 30) +
     theme(#legend.position='none',
       legend.text=element_text(size=14),
@@ -500,8 +515,6 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       axis.ticks = element_line(size=1,color='black'),
       plot.title = element_text(size=20)) #15x5   
   print(p)
-  
-    
   
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth(level = 0.99) + geom_point()
