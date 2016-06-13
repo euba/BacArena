@@ -605,3 +605,36 @@ plotInterNum <-function(simlist, title="Variation in number of interactions", si
           plot.title = element_text(size=30*size)) #15x5           # Position legend in bottom right
   return(q)
 }
+
+#' @title Plot abundancies of species
+#'
+#' @description The function \code{plotAbudancies} takes a list of simulations and return a boxplot with species abundancies 
+#' @export
+#' @rdname plotPhenNum
+#' 
+#' @param simlist A list of simulations (eval objects).
+#' @param time A vector with start and end time to be considered (default: total time)
+#' @return boxplot
+#'
+plotAbudances <- function(simlist, time=c(NULL,NULL)){
+  all_df <- data.frame()
+  for(i in seq_along(simlist)){
+    object <- simlist[[i]]
+    if(all(!is.null(time))) time_seq <- seq(time[1],time[2]) else time_seq <- seq_along(object@simlist)
+    list <- lapply(time_seq, function(i){
+      occ <- table(object@simlist[[i]]$type)
+      unlist(lapply(seq_along(object@specs), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
+    })
+    mat_bac  <- do.call(cbind, list)
+    rownames(mat_bac) <- names(object@specs)
+    colnames(mat_bac) <- time_seq
+    mat_bac_m <- reshape2::melt(mat_bac)
+    colnames(mat_bac_m) <- c("species", "time", "value")
+    mat_bac_m$replc <- as.character(i)
+    all_df <- rbind(all_df, mat_bac_m)
+  }
+  
+  q <- ggplot(all_df, aes(factor(species), value)) + geom_boxplot(aes(fill=factor(species))) + theme(axis.text.x = element_blank())
+  print(q)
+  return(q)
+}
