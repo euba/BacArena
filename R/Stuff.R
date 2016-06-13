@@ -349,6 +349,7 @@ plotGrowthCurve <-function(simlist, bcol=NULL, time=c(NULL,NULL),title="", size=
 #' @param time Vector with two entries defining start and end time
 #' @param ret_phengroups True if clustered phenotype groups should be returned. 
 #' @param cluster True phenotypes should be clustered/condensed. 
+#' @param col Vector with color that should be used
 #'
 plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phengroups=FALSE, cluster=TRUE, col=colpal3){
   if(sum(subs %in% simlist[[1]]@mediac) != length(subs)) stop("Substances invalid.")
@@ -606,17 +607,18 @@ plotInterNum <-function(simlist, title="Variation in number of interactions", si
   return(q)
 }
 
-#' @title Plot abundancies of species
+#' @title Plot abundances of species
 #'
-#' @description The function \code{plotAbudancies} takes a list of simulations and return a boxplot with species abundancies 
+#' @description The function \code{plotAbudances} takes a list of simulations and return a boxplot with species abundances 
 #' @export
 #' @rdname plotPhenNum
 #' 
 #' @param simlist A list of simulations (eval objects).
 #' @param time A vector with start and end time to be considered (default: total time)
+#' @param col Vector with color that should be used
 #' @return boxplot
 #'
-plotAbudances <- function(simlist, time=c(NULL,NULL)){
+plotAbudances <- function(simlist, time=c(NULL,NULL), col=colpal3){
   all_df <- data.frame()
   for(i in seq_along(simlist)){
     object <- simlist[[i]]
@@ -634,7 +636,8 @@ plotAbudances <- function(simlist, time=c(NULL,NULL)){
     all_df <- rbind(all_df, mat_bac_m)
   }
   
-  q <- ggplot(all_df, aes(factor(species), value)) + geom_boxplot(aes(fill=factor(species))) + theme(axis.text.x = element_blank())
+  q <- ggplot(all_df, aes(factor(species), value)) + geom_boxplot(aes(fill=factor(species))) + 
+    scale_fill_manual(values=col) + theme(axis.text.x = element_blank())
   print(q)
   return(q)
 }
