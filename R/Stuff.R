@@ -267,7 +267,7 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title
 #' @param time Vector with two entries defining start and end time
 #' @param bcol Vector with color that should be used
 #'
-plotGrowthCurve <-function(simlist, bcol=NULL, time=c(NULL,NULL),title="", size=1){
+plotGrowthCurve <-function(simlist, bcol=colpal3, time=c(NULL,NULL),title="", size=1){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@simlist))) stop("Time interval not valid")
   
@@ -290,50 +290,36 @@ plotGrowthCurve <-function(simlist, bcol=NULL, time=c(NULL,NULL),title="", size=
   
   all_df$time <- all_df$time * simlist[[1]]@tstep # adjust time to hours
 
-  q<-ggplot(all_df, aes(color=species, y=value, x=time)) + 
-    geom_line(size=1) + facet_wrap(~replc) + 
-    #stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=spec), alpha=0.3) + 
-    xlab("Time [h]") +
-    ylab("Number of individuals") +
-    theme_bw(base_size = 30) +
-    theme(#legend.position='none',
-      legend.text=element_text(size=14),
-      legend.key=element_blank(),
-      legend.title = element_blank(),
-      axis.text.x = element_text(size=20),
-      axis.text.y = element_text(size=20),
-      axis.title.y = element_text(size=30,vjust=0.5),
-      #panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      panel.border = element_rect(colour='black',size=2),
-      axis.ticks = element_line(size=1,color='black'),
-      plot.title = element_text(size=20)) #15x5           # Position legend in bottom right
-  if(!is.null(bcol)) q <- q + scale_fill_manual(values=bcol) + scale_color_manual(values=bcol)
-  #xlab("time") + ylab("number organism") + ggtitle("Growth curve with standard deviation")
-  print(q)
+  # test if capacity is reached
+  cap <- unlist(lapply(simlist, function(sim){
+    capacity   <- sim@n*sim@m
+    org_number <- lapply(sim@simlist, nrow)
+    cap_reached<- which(org_number == capacity)
+    if(length(cap_reached)>0) min(cap_reached)
+    else NULL
+  }))
+  cap <- cap * simlist[[1]]@tstep - 1
+  dat_cap <- data.frame(replc=seq_along(simlist), cap=cap)
   
-  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
-  q<-ggplot(all_df, aes(color=species, y=value, x=time)) + #stat_smooth(se = FALSE) + 
+  q1<-ggplot(all_df, aes(color=species, y=value, x=time)) + 
+    geom_line(size=1) + facet_wrap(~replc) + 
+    xlab("Time [h]") + ylab("Number of individuals") +
+    scale_color_manual(values=bcol) + geom_vline(data=dat_cap, aes(xintercept=cap))
+  print(q1)
+  
+  q2<-ggplot(all_df, aes(color=species, y=value, x=time)) +
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=species), alpha=0.3) + 
-    xlab("Time [h]") +
-    ylab("Number of individuals") +
-    ggtitle(title) +
-    theme_bw(base_size = 30*size) +
-    theme(legend.position='none',
-      legend.text=element_text(size=14*size),
-      legend.key=element_blank(),
-      legend.title = element_blank(),
-      axis.text.x = element_text(size=20*size),
-      axis.text.y = element_text(size=20*size),
-      axis.title.y = element_text(size=30*size,vjust=0.5),
-      #panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      panel.border = element_rect(colour='black',size=2*size),
-      axis.ticks = element_line(size=1*size,color='black'),
-      plot.title = element_text(size=30*size)) #15x5           # Position legend in bottom right
-  if(!is.null(bcol)) q <- q + scale_fill_manual(values=bcol) + scale_color_manual(values=bcol)
-    #xlab("time") + ylab("number organism") + ggtitle("Growth curve with standard deviation")
-  return(q)
+    xlab("Time [h]") + ylab("Number of individuals") + scale_color_manual(values=bcol) + scale_fill_manual(values=bcol) +
+    geom_vline(xintercept=min(cap))
+  print(q2)
+    
+  q3<-ggplot(all_df, aes(color=species, y=value, x=time)) +
+    stat_summary(fun.y = mean, geom="line", size=1) + 
+    xlab("Time [h]") + ylab("Number of individuals") + scale_color_manual(values=bcol) + 
+    geom_vline(xintercept=min(cap))
+  print(q3)
+  
+  return(list(q1, q2, q3))
 }
 
 
