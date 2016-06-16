@@ -595,16 +595,16 @@ plotInterNum <-function(simlist, title="Variation in number of interactions", si
 
 #' @title Plot abundances of species
 #'
-#' @description The function \code{plotAbudances} takes a list of simulations and return a boxplot with species abundances 
+#' @description The function \code{plotAbundance} takes a list of simulations and return a boxplot with species abundances 
 #' @export
-#' @rdname plotPhenNum
+#' @rdname plotAbundance
 #' 
 #' @param simlist A list of simulations (eval objects).
 #' @param time A vector with start and end time to be considered (default: total time)
 #' @param col Vector with color that should be used
 #' @return boxplot
 #'
-plotAbudances <- function(simlist, time=c(NULL,NULL), col=colpal3){
+plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3){
   all_df <- data.frame()
   for(i in seq_along(simlist)){
     object <- simlist[[i]]
