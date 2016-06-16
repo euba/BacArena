@@ -299,24 +299,25 @@ plotGrowthCurve <-function(simlist, bcol=colpal3, time=c(NULL,NULL),title="", si
     else NULL
   }))
   cap <- cap * simlist[[1]]@tstep - 1
-  dat_cap <- data.frame(replc=seq_along(simlist), cap=cap)
+  if(length(cap)!=0){dat_cap <- data.frame(replc=seq_along(simlist), cap=cap)}
   
   q1<-ggplot(all_df, aes(color=species, y=value, x=time)) + 
     geom_line(size=1) + facet_wrap(~replc) + 
-    xlab("Time [h]") + ylab("Number of individuals") +
-    scale_color_manual(values=bcol) + geom_vline(data=dat_cap, aes(xintercept=cap))
+    xlab("Time in h") + ylab("Number of individuals") +
+    scale_color_manual(values=bcol)
+  if(length(cap)!=0){q1 + geom_vline(data=dat_cap, aes(xintercept=cap))}
   print(q1)
   
   q2<-ggplot(all_df, aes(color=species, y=value, x=time)) +
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=species), alpha=0.3) + 
-    xlab("Time [h]") + ylab("Number of individuals") + scale_color_manual(values=bcol) + scale_fill_manual(values=bcol) +
-    geom_vline(xintercept=min(cap))
+    xlab("Time in h") + ylab("Number of individuals") + scale_color_manual(values=bcol) + scale_fill_manual(values=bcol)
+  if(length(cap)!=0){q2 + geom_vline(xintercept=min(cap))}
   print(q2)
     
   q3<-ggplot(all_df, aes(color=species, y=value, x=time)) +
     stat_summary(fun.y = mean, geom="line", size=1) + 
-    xlab("Time [h]") + ylab("Number of individuals") + scale_color_manual(values=bcol) + 
-    geom_vline(xintercept=min(cap))
+    xlab("Time in h") + ylab("Number of individuals") + scale_color_manual(values=bcol)
+  if(length(cap)!=0){q3 + geom_vline(xintercept=min(cap))}
   print(q3)
   
   return(list(q1, q2, q3))
