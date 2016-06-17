@@ -211,7 +211,7 @@ lsd <- function(y){lb=mean(y)-sd(y); ifelse(lb<0,0,lb)}
 #' 
 #' @return list of three ggplot object for further formating
 #'
-plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title="Substance curve with standard deviation",size=1){
+plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title="Substance curve with standard deviation",size=1,unit="mmol"){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(sum(mediac %in% simlist[[1]]@mediac) != length(mediac)) stop("Substance does not exist in exchange reactions.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@medlist))) stop("Time interval not valid")
@@ -238,19 +238,28 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title
     all_df <- rbind(all_df, mat_nice)
   }
   
+  
   all_df$Var2 <- all_df$Var2 * simlist[[1]]@tstep # adjust time to hours 
-  all_df$value <- all_df$value * 10^{-12} # adjust to mmol
+  
+  ylabel = "Amount of substance in"
+  switch(unit,
+         'mmol'={all_df$value <- all_df$value * 10^{-12}; ylabel=paste(ylabel,"mmol")},
+         'umol'={all_df$value <- all_df$value * 10^{-9}; ylabel=paste(ylabel,"umol")},
+         'nmol'={all_df$value <- all_df$value * 10^{-6}; ylabel=paste(ylabel,"nmol")},
+         'pmol'={all_df$value <- all_df$value * 10^{-3}; ylabel=paste(ylabel,"pmol")},
+         'fmol'={all_df$value <- all_df$value * 1; ylabel=paste(ylabel,"fmol")},
+         stop("Wrong unit for concentration."))
   
   q1 <- ggplot2::ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_line(size=1) + facet_wrap(~replc)
   print(q1)
    
   q2 <- ggplot2::ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line", size=1) + 
-    xlab("Time [h]") + ylab("Amount of substance [mmol]") + ggtitle("Mean substance curve") #+
+    xlab("Time in h") + ylab(ylabel) + ggtitle("Mean substance curve") #+
   print(q2)
    
   q3 <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
     ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3, size=1) +
-     xlab("Time [h]") + ylab("Amount of substance [mmol]") #+ 
+     xlab("Time in h") + ylab(ylabel) #+ 
   print(q3)
    
   return(list(q1, q2, q3))
