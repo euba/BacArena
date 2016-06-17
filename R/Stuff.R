@@ -314,19 +314,19 @@ plotGrowthCurve <-function(simlist, bcol=colpal3, time=c(NULL,NULL),title="", si
     geom_line(size=1) + facet_wrap(~replc) + 
     xlab("Time in h") + ylab("Number of individuals") +
     scale_color_manual(values=bcol)
-  if(length(cap)!=0){q1 + geom_vline(data=dat_cap, aes(xintercept=cap))}
+  if(length(cap)!=0){q1 <- q1 + geom_vline(data=dat_cap, aes(xintercept=cap))}
   print(q1)
   
   q2<-ggplot(all_df, aes(color=species, y=value, x=time)) +
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=species), alpha=0.3) + 
     xlab("Time in h") + ylab("Number of individuals") + scale_color_manual(values=bcol) + scale_fill_manual(values=bcol)
-  if(length(cap)!=0){q2 + geom_vline(xintercept=min(cap))}
+  if(length(cap)!=0){q2 <- q2 + geom_vline(xintercept=min(cap))}
   print(q2)
     
   q3<-ggplot(all_df, aes(color=species, y=value, x=time)) +
     stat_summary(fun.y = mean, geom="line", size=1) + 
     xlab("Time in h") + ylab("Number of individuals") + scale_color_manual(values=bcol)
-  if(length(cap)!=0){q3 + geom_vline(xintercept=min(cap))}
+  if(length(cap)!=0){q3 <- q3 + geom_vline(xintercept=min(cap))}
   print(q3)
   
   return(list(q1, q2, q3))
@@ -563,11 +563,12 @@ plotPhenNum <-function(simlist, title="Phenotype number variation", size=1){
   return(q)
 }
 
+
 #' @title Plot number of variation in number of interactions for several simulations
 #'
 #' @description The function \code{plotInterNum} takes a list of simulations and plots the time course of the number of metabolic interactions with standard deviation.
 #' @export
-#' @rdname plotPhenNum
+#' @rdname plotInterNum
 #' 
 #' @param simlist A list of simulations (eval objects).
 #' @param size A scaling factor for plot text and line size
@@ -603,18 +604,18 @@ plotInterNum <-function(simlist, title="Variation in number of interactions", si
   return(q)
 }
 
+
 #' @title Plot abundances of species
 #'
-#' @description The function \code{plotAbudances} takes a list of simulations and return a boxplot with species abundances 
+#' @description The function \code{plotAbundance} takes a list of simulations and return a boxplot with species abundances 
 #' @export
-#' @rdname plotPhenNum
+#' @rdname plotAbundance
 #' 
 #' @param simlist A list of simulations (eval objects).
 #' @param time A vector with start and end time to be considered (default: total time)
 #' @param col Vector with color that should be used
-#' @return boxplot
 #'
-plotAbudances <- function(simlist, time=c(NULL,NULL), col=colpal3){
+plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3){
   all_df <- data.frame()
   for(i in seq_along(simlist)){
     object <- simlist[[i]]
