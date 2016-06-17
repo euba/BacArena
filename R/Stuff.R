@@ -216,7 +216,7 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title
   if(sum(mediac %in% simlist[[1]]@mediac) != length(mediac)) stop("Substance does not exist in exchange reactions.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@medlist))) stop("Time interval not valid")
   
-  if(length(mediac)==0) mediac <- names(getVarSubs(simlist[[1]]))[1:5] # get 5 most varying substances (from first sim)
+  if(length(mediac)==0) mediac <- names(getVarSubs(simlist[[1]]))[1:10] # get 10 most varying substances (from first sim)
   all_df <- data.frame()
   for(i in seq_along(simlist)){
     object <- simlist[[i]]
@@ -251,18 +251,19 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title
          stop("Wrong unit for concentration."))
   
   q1 <- ggplot2::ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_line(size=1) + facet_wrap(~replc)
-  print(q1)
    
   q2 <- ggplot2::ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line", size=1) + 
-    xlab("Time in h") + ylab(ylabel) + ggtitle("Mean substance curve") #+
-  print(q2)
+        xlab("Time in h") + ylab(ylabel) + ggtitle("Mean substance curve")
    
   q3 <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
-    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3, size=1) +
-     xlab("Time in h") + ylab(ylabel) #+ 
-  print(q3)
+        ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3, size=1) +
+        xlab("Time in h") + ylab(ylabel)
    
-  return(list(q1, q2, q3))
+  q4 <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
+        ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3, size=1) +
+        facet_wrap(~Var1, scales="free_y") + xlab("Time in h") + ylab(ylabel) #+ 
+  
+  return(list(q1, q2, q3, q4))
 }
 
 
