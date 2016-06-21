@@ -343,19 +343,19 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
 
 #' @title Add minimal medium of an organism to arena.
 #'
-#' @description The generic function \code{addMinMed} uses the lower bounds defined in an organism's model file to compose minimal medium.
+#' @description The generic function \code{addDefaultMed} uses the lower bounds defined in an organism's model file to compose minimal medium.
 #' @export
-#' @rdname addMinMed
+#' @rdname addDefaultMed
 #'
 #' @param object An object of class Arena.
 #' @param org An object of class Organism
-setGeneric("addMinMed", function(object, org){standardGeneric("addMinMed")})
-#' @rdname addMinMed
+setGeneric("addDefaultMed", function(object, org){standardGeneric("addDefaultMed")})
+#' @rdname addDefaultMed
 #' @export
-setMethod("addMinMed", "Arena", function(object, org){
+setMethod("addDefaultMed", "Arena", function(object, org){
   lb_ex <- org@model@lowbnd[which(org@model@react_id %in% unname(org@medium))]
   min_id  <-  unname(org@medium[which(lb_ex < 0)])
-  min_val <-  lb_ex[which(lb_ex < 0)]
+  min_val <-  -lb_ex[which(lb_ex < 0)]
   for(id in min_id){
     object@media[[id]]@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@n, ncol=object@m, sparse=TRUE)}
   return(object)
