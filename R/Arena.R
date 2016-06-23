@@ -343,7 +343,7 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
 })
 
 
-#' @title Add minimal medium of an organism to arena.
+#' @title Add default medium of an organism to arena.
 #'
 #' @description The generic function \code{addDefaultMed} uses the lower bounds defined in an organism's model file to compose minimal medium.
 #' @export
@@ -362,6 +362,33 @@ setMethod("addDefaultMed", "Arena", function(object, org){
     object@media[[id]]@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@n, ncol=object@m, sparse=TRUE)}
   return(object)
 })
+
+#' @title Add minimal medium of an organism to arena.
+#'
+#' @description The generic function \code{addEssentialMed} uses flux variability analysis to determine a essential growth medium  components (eg. cofactors)
+#' @export
+#' @rdname addEssentialMed
+#'
+#' @param object An object of class Arena.
+#' @param org An object of class Organism
+setGeneric("addEssentialMed", function(object, org){standardGeneric("addEssentialMed")})
+#' @rdname addEssentialMed
+#' @export
+setMethod("addEssentialMed", "Arena", function(object, org){
+  var_r <- sybil::fluxVar(org@model, percentage=0.5)
+  
+  ex <- sybil::findExchReact(org@model)
+  ex_max <- sybil::maxSol(var_r, "lp_obj")[ex@react_pos]
+  
+  min_id  <- ex@react_id[which(ex_max<0)]
+  min_val <- -ex@lowbnd[which(ex_max<0)]
+  min_val[min_val==Inf] <- 1000
+  
+  for(id in intersect(min_id, object@mediac)){
+    object@media[[id]]@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@n, ncol=object@m, sparse=TRUE)}
+  return(object)
+})
+
 
 
 #' @title Remove substances
