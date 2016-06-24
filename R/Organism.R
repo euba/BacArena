@@ -274,21 +274,28 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
   if(!solve_ok | fbasl$obj<cutoff){fbasl$obj <- 0}
   if(sec_obj!="none" && fbasl$obj!=0){
     switch(sec_obj,
-           mtf = {mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub);
-               mtf_sol <- sybil::optimizeProb(mod, algorithm="mtf", wtobj=fbasl$obj);
-               fbasl$fluxes = sybil::getFluxDist(mtf_sol)},
-           opt_rxn = {mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub);
-               mod = sybil::changeBounds(mod, mod@react_id[which(obj_coef(mod)==1)], lb=fbasl$obj, ub=fbasl$obj);
-               mod <- sybil::changeObjFunc(mod, sample(mod@react_id,1));
-               solrand <- sybil::optimizeProb(mod, lpdir=sample(c("max","min"),1));
-               solrand@lp_obj
-               fbasl$fluxes = sybil::getFluxDist(solrand)},
-           opt_ex = {mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub);
-               mod = sybil::changeBounds(mod, mod@react_id[which(obj_coef(mod)==1)], lb=fbasl$obj, ub=fbasl$obj);
-               mod <- sybil::changeObjFunc(mod, sample(object@medium,1));
-               solrand <- sybil::optimizeProb(mod, lpdir=sample(c("max","min"),1));
-               solrand@lp_obj
-               fbasl$fluxes = sybil::getFluxDist(solrand)},
+           mtf =   {mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub);
+                    mtf_sol <- sybil::optimizeProb(mod, algorithm="mtf", wtobj=fbasl$obj);
+                    fbasl$fluxes = sybil::getFluxDist(mtf_sol)},
+           opt_rxn={mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub);
+                    mod = sybil::changeBounds(mod, mod@react_id[which(obj_coef(mod)==1)], lb=fbasl$obj, ub=fbasl$obj);
+                    mod <- sybil::changeObjFunc(mod, sample(mod@react_id,1));
+                    solrand <- sybil::optimizeProb(mod, lpdir=sample(c("max","min"),1));
+                    solrand@lp_obj
+                    fbasl$fluxes = sybil::getFluxDist(solrand)},
+           opt_ex ={mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub);
+                    mod = sybil::changeBounds(mod, mod@react_id[which(obj_coef(mod)==1)], lb=fbasl$obj, ub=fbasl$obj);
+                    mod <- sybil::changeObjFunc(mod, sample(object@medium,1));
+                    solrand <- sybil::optimizeProb(mod, lpdir=sample(c("max","min"),1));
+                    solrand@lp_obj
+                    fbasl$fluxes = sybil::getFluxDist(solrand)},
+           sumex = {mod <- sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub);
+                    old_obj_coef <- which(obj_coef(mod)==1)
+                    mod <- sybil::changeBounds(mod, mod@react_id[old_obj_coef], lb=fbasl$obj*0.05);
+                    mod <- sybil::changeObjFunc(mod, unname(object@medium));
+                    solrand <- sybil::optimizeProb(mod);
+                    fbasl$fluxes = sybil::getFluxDist(solrand);
+                    fbasl$obj <- fbasl$fluxes[old_obj_coef]},
            stop("Secondary objective not suported!"))
   }
   names(fbasl$fluxes) <- names(object@lbnd)
