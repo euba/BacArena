@@ -7,11 +7,12 @@
 \title{Main function for simulating in parallel all processes in the environment}
 \usage{
 simEnv_par(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
-  cluster_size = NULL, diffusion = TRUE, mtf = FALSE, cutoff = 1e-06)
+  cluster_size = NULL, diffusion = TRUE, sec_obj = "none",
+  cutoff = 1e-06)
 
 \S4method{simEnv_par}{Arena}(object, time, lrw = NULL, continue = FALSE,
-  reduce = FALSE, cluster_size = NULL, diffusion = TRUE, mtf = FALSE,
-  cutoff = 1e-06)
+  reduce = FALSE, cluster_size = NULL, diffusion = TRUE,
+  sec_obj = "none", cutoff = 1e-06)
 }
 \arguments{
 \item{object}{An object of class Arena or Eval.}
@@ -28,7 +29,7 @@ simEnv_par(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
 
 \item{diffusion}{True if diffusion should be done (default on).}
 
-\item{mtf}{True if minimize total flux should be used.}
+\item{sec_obj}{character giving the secondary objective for a bi-level LP if wanted.}
 
 \item{cutoff}{value used to define numeric accuracy}
 }

@@ -6,20 +6,22 @@
 \alias{getVarSubs,Eval-method}
 \title{Function to get varying substances}
 \usage{
-getVarSubs(object, only_products = TRUE, only_substrates = TRUE,
-  cutoff = 1e-06)
+getVarSubs(object, show_products = TRUE, show_substrates = TRUE,
+  cutoff = 1e-06, size = NULL)
 
-\S4method{getVarSubs}{Eval}(object, only_products = FALSE,
-  only_substrates = FALSE, cutoff = 1e-06)
+\S4method{getVarSubs}{Eval}(object, show_products = FALSE,
+  show_substrates = FALSE, cutoff = 1e-06, size = NULL)
 }
 \arguments{
 \item{object}{An object of class Eval.}
 
-\item{only_products}{A boolean indicating if only products should be shown}
+\item{show_products}{A boolean indicating if only products should be shown}
 
-\item{only_substrates}{A boolean indicating if only substrates should be shown}
+\item{show_substrates}{A boolean indicating if only substrates should be shown}
 
 \item{cutoff}{Value used to define numeric accuracy while interpreting optimization results}
+
+\item{size}{Maximal number of returned substances (default: show all)}
 }
 \description{
 The generic function \code{getVarSubs} returns ordered list of substances that showed variance during simulation

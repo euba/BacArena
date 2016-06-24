@@ -7,10 +7,11 @@
 \title{Function for computing the linear programming according to the model structure}
 \usage{
 optimizeLP(object, lpob = object@lpobj, lb = object@lbnd,
-  ub = object@ubnd, cutoff = 1e-06, j, mtf = FALSE)
+  ub = object@ubnd, cutoff = 1e-06, j, sec_obj = "none")
 
 \S4method{optimizeLP}{Organism}(object, lpob = object@lpobj,
-  lb = object@lbnd, ub = object@ubnd, cutoff = 1e-06, j, mtf = FALSE)
+  lb = object@lbnd, ub = object@ubnd, cutoff = 1e-06, j,
+  sec_obj = "none")
 }
 \arguments{
 \item{object}{An object of class Organisms.}
@@ -25,7 +26,7 @@ optimizeLP(object, lpob = object@lpobj, lb = object@lbnd,
 
 \item{j}{debuging index to track cell}
 
-\item{mtf}{True if minimize total flux should be used.}
+\item{sec_obj}{character giving the secondary objective for a bi-level LP if wanted.}
 }
 \value{
 Modified problem object according to the constraints and then solved with \code{optimizeProb}.

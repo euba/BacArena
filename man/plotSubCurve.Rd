@@ -4,7 +4,9 @@
 \alias{plotSubCurve}
 \title{Plot substance curve for several simulations}
 \usage{
-plotSubCurve(simlist, mediac = NULL, time = c(NULL, NULL), scol = NULL)
+plotSubCurve(simlist, mediac = NULL, time = c(NULL, NULL), scol = NULL,
+  title = "Substance curve with standard deviation", size = 1,
+  unit = "mmol")
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}
@@ -14,6 +16,9 @@ plotSubCurve(simlist, mediac = NULL, time = c(NULL, NULL), scol = NULL)
 \item{time}{Vector with two entries defining start and end time.}
 
 \item{scol}{Vector with colors that should be used.}
+}
+\value{
+list of three ggplot object for further formating
 }
 \description{
 The function \code{plotSubCurve} takes a list of simulations and plots the time course of substances with standard deviation.

@@ -6,11 +6,11 @@
 \alias{simBac_par,Bac-method}
 \title{Function for one simulation iteration for objects of Bac class}
 \usage{
-simBac_par(object, arena, j, sublb, bacnum, lpobject, mtf = FALSE,
+simBac_par(object, arena, j, sublb, bacnum, lpobject, sec_obj = "none",
   cutoff = 1e-06)
 
 \S4method{simBac_par}{Bac}(object, arena, j, sublb, bacnum, lpobject,
-  mtf = FALSE, cutoff = 1e-06)
+  sec_obj = "none", cutoff = 1e-06)
 }
 \arguments{
 \item{object}{An object of class Bac.}
@@ -25,7 +25,7 @@ simBac_par(object, arena, j, sublb, bacnum, lpobject, mtf = FALSE,
 
 \item{lpobject}{linar programming object (copy of organism@lpobj) that have to be a deep copy in parallel due to pointer use in sybil.}
 
-\item{mtf}{True if minimize total flux should be used.}
+\item{sec_obj}{character giving the secondary objective for a bi-level LP if wanted.}
 
 \item{cutoff}{value used to define numeric accuracy}
 }
