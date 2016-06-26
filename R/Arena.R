@@ -2539,3 +2539,42 @@ setMethod("checkCorr", "Eval", function(object, corr=NULL, tocheck=list()){
     barplot(names.arg=names(dat_interest), height=dat_interest, las=2, main=paste("Highest correlations of", feature))
   })
 })
+
+
+#' @title Function to plot usage of substances species wise 
+#'
+#' @description The generic function \code{plotSubUsage} displays for given substances the quantities of absorption and production for each species
+#' @export
+#' @rdname plotSubUsage
+#'
+#' @param object An object of class Eval.
+#' @param subs List of substance names
+#' @param cutoff Total values below cutoff will be dismissed
+#' @details Returns ggplot objects
+setGeneric("plotSubUsage", function(object, subs=list(), cutoff=1e-2){standardGeneric("plotSubUsage")})
+#' @export
+#' @rdname plotSubUsage
+setMethod("plotSubUsage", "Eval", function(object, subs=list(), cutoff=1e-2){
+  
+  if(length(subs)==0) subs <- names(getVarSubs(sim, size = 9))
+  else if(sum(subs %in% object@mediac) != length(subs)) stop("Substance do not exist in arena")
+  df <- data.frame(spec=as.character(), sub=as.character(), mflux=as.numeric(), time=as.integer())
+  
+  for(t in seq_along(object@mfluxlist)){
+    for(spec in names(object@specs)){
+      mflux=object@mfluxlist[[t]][[spec]][which(names(object@mfluxlist[[t]][[spec]]) %in% subs)]
+      df <- rbind(df, data.frame(spec=spec, sub=names(mflux), mflux=unname(mflux), time=t))
+    }
+  }
+
+  df <- df[-which(abs(df$mflux) < cutoff),]
+    
+  q1 <- ggplot(df, aes(factor(spec), mflux)) + geom_boxplot(aes(fill=factor(spec))) + 
+    facet_wrap(~sub) + theme(axis.text.x = element_blank())
+  print(q1)
+
+  q2 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=spec)) + facet_wrap(~sub)
+  print(q2)
+  
+  return(list(q1, q2))
+})
