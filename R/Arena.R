@@ -2556,14 +2556,17 @@ setGeneric("plotSubUsage", function(object, subs=list(), cutoff=1e-2){standardGe
 #' @rdname plotSubUsage
 setMethod("plotSubUsage", "Eval", function(object, subs=list(), cutoff=1e-2){
   
-  if(length(subs)==0) subs <- names(getVarSubs(sim, size = 9))
-  else if(sum(subs %in% object@mediac) != length(subs)) stop("Substance do not exist in arena")
+  if(length(subs)==0){ subs <- names(getVarSubs(sim, size = 9))
+  }else if(sum(subs %in% object@mediac) != length(subs)) stop("Substance do not exist in arena")
   df <- data.frame(spec=as.character(), sub=as.character(), mflux=as.numeric(), time=as.integer())
   
   for(t in seq_along(object@mfluxlist)){
     for(spec in names(object@specs)){
-      mflux=object@mfluxlist[[t]][[spec]][which(names(object@mfluxlist[[t]][[spec]]) %in% subs)]
-      df <- rbind(df, data.frame(spec=spec, sub=names(mflux), mflux=unname(mflux), time=t))
+      available_subs <- intersect(subs,unname(sim@specs[[spec]]@medium))
+      if(length(available_subs) > 0){
+        mflux=object@mfluxlist[[t]][[spec]][which(names(object@mfluxlist[[t]][[spec]]) %in% available_subs )]
+        df <- rbind(df, data.frame(spec=spec, sub=names(mflux), mflux=unname(mflux), time=t))
+      }
     }
   }
 
@@ -2576,7 +2579,7 @@ setMethod("plotSubUsage", "Eval", function(object, subs=list(), cutoff=1e-2){
   q2 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=spec)) + facet_wrap(~sub)
   print(q2)
   
-  return(list(q1, q2))
+  return(list(q2, q1))
 })
 
 
@@ -2620,5 +2623,5 @@ setMethod("plotSpecActivity", "Eval", function(object, spec_nr=1, var_nr=10){
   q2 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=sub)) + ggtitle(spec_name)
   print(q2)
   
-  return(list(q1, q2))
+  return(list(q2, q1))
   })
