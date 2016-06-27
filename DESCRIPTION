@@ -26,6 +26,7 @@ Imports:
     utils,
     stats,
     graphics,
+    ggplot2,
     Rcpp
 Suggests: 
     sybilSBML,
