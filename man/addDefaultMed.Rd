@@ -4,7 +4,7 @@
 \name{addDefaultMed}
 \alias{addDefaultMed}
 \alias{addDefaultMed,Arena-method}
-\title{Add minimal medium of an organism to arena.}
+\title{Add default medium of an organism to arena.}
 \usage{
 addDefaultMed(object, org)
 
