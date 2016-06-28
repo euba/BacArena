@@ -2563,7 +2563,7 @@ setMethod("plotSubUsage", "Eval", function(object, subs=list(), cutoff=1e-2){
   for(t in seq_along(object@mfluxlist)){
     for(spec in names(object@specs)){
       available_subs <- intersect(subs,unname(sim@specs[[spec]]@medium))
-      if(length(available_subs) > 0){
+      if(length(available_subs) > 0 && length(object@mfluxlist[[t]][[spec]])) > 0 ){
         mflux=object@mfluxlist[[t]][[spec]][which(names(object@mfluxlist[[t]][[spec]]) %in% available_subs )]
         df <- rbind(df, data.frame(spec=spec, sub=names(mflux), mflux=unname(mflux), time=t))
       }
@@ -2571,15 +2571,13 @@ setMethod("plotSubUsage", "Eval", function(object, subs=list(), cutoff=1e-2){
   }
 
   df <- df[-which(abs(df$mflux) < cutoff),]
-    
-  q1 <- ggplot(df, aes(factor(spec), mflux)) + geom_boxplot(aes(fill=factor(spec))) + 
-    facet_wrap(~sub) + theme(axis.text.x = element_blank())
-  print(q1)
 
-  q2 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=spec)) + facet_wrap(~sub)
-  print(q2)
+  q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=spec), size=1) + facet_wrap(~sub, scales="free_y")
   
-  return(list(q2, q1))
+  q2 <- ggplot(df, aes(factor(spec), mflux)) + geom_boxplot(aes(fill=factor(spec))) + 
+    facet_wrap(~sub, scales="free_y") + theme(axis.text.x = element_blank())
+  
+  return(list(q1, q2))
 })
 
 
@@ -2616,12 +2614,10 @@ setMethod("plotSpecActivity", "Eval", function(object, spec_nr=1, var_nr=10){
   
   df <- df[which(df$sub %in% names(mflux_var)[1:10]),]
   
-  q1 <- ggplot(df, aes(factor(sub), mflux)) + geom_boxplot(aes(fill=factor(sub))) + 
+  q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=sub), size=1) + ggtitle(spec_name)
+  
+  q2 <- ggplot(df, aes(factor(sub), mflux)) + geom_boxplot(aes(fill=factor(sub))) + 
     ggtitle(spec_name) + theme(axis.text.x = element_blank())
-  print(q1)
   
-  q2 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=sub)) + ggtitle(spec_name)
-  print(q2)
-  
-  return(list(q2, q1))
+  return(list(q1, q2))
   })
