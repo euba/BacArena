@@ -2,9 +2,12 @@
 % Please edit documentation in R/Stuff.R
 \name{plotAbundance}
 \alias{plotAbundance}
+\alias{plotSubVar}
 \title{Plot abundances of species}
 \usage{
 plotAbundance(simlist, time = c(NULL, NULL), col = colpal3)
+
+plotSubVar(simlist, metsel)
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}
@@ -12,8 +15,14 @@ plotAbundance(simlist, time = c(NULL, NULL), col = colpal3)
 \item{time}{A vector with start and end time to be considered (default: total time)}
 
 \item{col}{Vector with color that should be used}
+
+\item{simlist}{A list of simulations (eval objects).}
+
+\item{metlist}{A vector with the name of exchange reactions of interest}
 }
 \description{
 The function \code{plotAbundance} takes a list of simulations and return a boxplot with species abundances
+
+The function \code{plotSubVar} takes a list of simulations and return a barplot with most varying substances
 }
 

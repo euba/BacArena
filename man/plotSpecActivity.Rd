@@ -4,21 +4,21 @@
 \name{plotSpecActivity}
 \alias{plotSpecActivity}
 \alias{plotSpecActivity,Eval-method}
-\title{Function to plot substance usage for a single species}
+\title{Function to plot substance usage for every species}
 \usage{
-plotSpecActivity(object, spec_nr = 1, var_nr = 10)
+plotSpecActivity(object, subs = list(), var_nr = 10)
 
-\S4method{plotSpecActivity}{Eval}(object, spec_nr = 1, var_nr = 10)
+\S4method{plotSpecActivity}{Eval}(object, subs = list(), var_nr = 10)
 }
 \arguments{
 \item{object}{An object of class Eval.}
 
-\item{spec_nr}{Number of the species}
+\item{subs}{List of substance names}
 
-\item{var_nr}{Number of most varying substances to be used}
+\item{var_nr}{Number of most varying substances to be used (if subs is not specified)}
 }
 \description{
-The generic function \code{plotSpecActivity} displays the input/output substances with the highest variance for certain species
+The generic function \code{plotSpecActivity} displays the input/output substances with the highest variance (could also be defiened manually) for all species
 }
 \details{
 Returns ggplot objects

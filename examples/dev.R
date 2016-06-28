@@ -14,7 +14,7 @@ check()
 check_doc()
 check_man()
 
-install_github(repo="euba/bacarena")
+install_github(repo="euba/bacarena", quick=TRUE)
 install_local(path="~/uni/bacarena", quick=TRUE)
 
 Rcpp::sourceCpp("src/duplicate.cpp")

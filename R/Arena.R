@@ -2563,7 +2563,7 @@ setMethod("plotSubUsage", "Eval", function(object, subs=list(), cutoff=1e-2){
   for(t in seq_along(object@mfluxlist)){
     for(spec in names(object@specs)){
       available_subs <- intersect(subs,unname(sim@specs[[spec]]@medium))
-      if(length(available_subs) > 0 && length(object@mfluxlist[[t]][[spec]])) > 0 ){
+      if(length(available_subs) > 0 && length(names(object@mfluxlist[[t]][[spec]])) > 0 ){
         mflux=object@mfluxlist[[t]][[spec]][which(names(object@mfluxlist[[t]][[spec]]) %in% available_subs )]
         df <- rbind(df, data.frame(spec=spec, sub=names(mflux), mflux=unname(mflux), time=t))
       }
@@ -2581,43 +2581,48 @@ setMethod("plotSubUsage", "Eval", function(object, subs=list(), cutoff=1e-2){
 })
 
 
-#' @title Function to plot substance usage for a single species
+#' @title Function to plot substance usage for every species
 #'
-#' @description The generic function \code{plotSpecActivity} displays the input/output substances with the highest variance for certain species
+#' @description The generic function \code{plotSpecActivity} displays the input/output substances with the highest variance (could also be defiened manually) for all species
 #' @export
 #' @rdname plotSpecActivity
 #'
 #' @param object An object of class Eval.
-#' @param spec_nr Number of the species
-#' @param var_nr Number of most varying substances to be used
+#' @param subs List of substance names
+#' @param var_nr Number of most varying substances to be used (if subs is not specified)
 #' @details Returns ggplot objects
-setGeneric("plotSpecActivity", function(object, spec_nr=1, var_nr=10){standardGeneric("plotSpecActivity")})
+setGeneric("plotSpecActivity", function(object, subs=list(), var_nr=10){standardGeneric("plotSpecActivity")})
 #' @export
 #' @rdname plotSpecActivity
-setMethod("plotSpecActivity", "Eval", function(object, spec_nr=1, var_nr=10){
+setMethod("plotSpecActivity", "Eval", function(object, subs=list(), var_nr=10){
   
-  subs <- names(getVarSubs(sim))
-  spec_name <- names(object@specs)[spec_nr]
+  if(length(subs)==0) {subs_tocheck <- names(getVarSubs(sim))
+  }else subs_tocheck <- subs
   
   df <- data.frame(spec=as.character(), sub=as.character(), mflux=as.numeric(), time=as.integer())
   
   for(t in seq_along(object@mfluxlist)){
-    mflux=object@mfluxlist[[t]][[spec_name]][which(names(object@mfluxlist[[t]][[spec_name]]) %in% subs)]
-    df <- rbind(df, data.frame(spec=spec_name, sub=names(mflux), mflux=unname(mflux), time=t))
+    for(spec in names(object@specs)){
+      if(length(intersect(subs_tocheck, unname(sim@specs[[spec]]@medium))) > 0 &  length(names(object@mfluxlist[[t]][[spec]])) > 0 ){
+        mflux=object@mfluxlist[[t]][[spec]][which(names(object@mfluxlist[[t]][[spec]]) %in% subs_tocheck)]
+        df <- rbind(df, data.frame(spec=spec, sub=names(mflux), mflux=unname(mflux), time=t))
+      }
+    }
   }
   
-  mflux_var <- unlist(lapply(levels(df$sub), function(sub){
-    var(df[which(df$sub==sub),]$mflux)
-  }))
-  names(mflux_var) <- levels(df$sub)
-  mflux_var <- sort(mflux_var, decreasing = TRUE)
+  if(length(subs)==0){ # in case subs is not specified take substances with highest variance
+    mflux_var <- unlist(lapply(levels(df$sub), function(sub){
+      var(df[which(df$sub==sub),]$mflux)
+    }))
+    names(mflux_var) <- levels(df$sub)
+    mflux_var <- sort(mflux_var, decreasing = TRUE)
+    df <- df[which(df$sub %in% names(mflux_var)[1:var_nr]),]
+  }
   
-  df <- df[which(df$sub %in% names(mflux_var)[1:10]),]
+  q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=sub), size=1) + facet_wrap(~spec, scales="free_y") 
   
-  q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=sub), size=1) + ggtitle(spec_name)
-  
-  q2 <- ggplot(df, aes(factor(sub), mflux)) + geom_boxplot(aes(fill=factor(sub))) + 
-    ggtitle(spec_name) + theme(axis.text.x = element_blank())
+  q2 <- ggplot(df, aes(factor(sub), mflux)) + geom_boxplot(aes(fill=factor(sub))) +  facet_wrap(~spec, scales="free_y") +
+    theme(axis.text.x = element_blank())
   
   return(list(q1, q2))
   })
