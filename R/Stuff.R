@@ -640,3 +640,26 @@ plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3){
   print(q)
   return(q)
 }
+
+#' @title Plot substance variations
+#'
+#' @description The function \code{plotSubVar} takes a list of simulations and return a barplot with most varying substances
+#' @export
+#' @rdname plotAbundance
+#' 
+#' @param simlist A list of simulations (eval objects).
+#' @param metlist A vector with the name of exchange reactions of interest
+#'
+plotSubVar <- function(simlist, metsel){
+  varsub = do.call(rbind,lapply(simlist,function(x,metsel){
+    getVarSubs(x)[metsel]
+  },metsel=metsel))
+  #varsub = log10(varsub)
+  vardat = data.frame("mean"=apply(varsub,2,mean),
+                      "sd"=apply(varsub,2,sd),
+                      "mets"=factor(colnames(varsub),levels=metsel))
+  p <- ggplot(vardat, aes(fill=mets, y=mean, x=mets)) +
+    geom_bar(position="dodge", stat="identity") +
+    geom_errorbar(aes(ymax=mean+sd,ymin=mean-sd), position=position_dodge(width=0.9), width=0.25)
+  return(p)
+}
