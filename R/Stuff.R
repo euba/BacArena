@@ -663,3 +663,53 @@ plotSubVar <- function(simlist, metsel){
     geom_errorbar(aes(ymax=mean+sd,ymin=mean-sd), position=position_dodge(width=0.9), width=0.25)
   return(p)
 }
+
+#' @title Plot population flux variations
+#'
+#' @description The function \code{plotFluxVar} takes a list of simulations and metabolites, returning a plot with metabolite fluxes for each species
+#' @export
+#' @rdname plotFluxVar
+#' 
+#' @param simlist A list of simulations (eval objects).
+#' @param metsel A vector with the name of exchange reactions of interest
+#'
+plotFluxVar <- function(simlist, metsel){
+  concdat=data.frame()
+  concmean=data.frame()
+  for(i in 1:length(metsel)){
+    meanmat=matrix(0,ncol=length(simlist),nrow=length(simlist[[1]]@simlist)*length(simlist[[1]]@specs))
+    for(j in 1:length(simlist)){
+      conc = do.call(cbind,lapply(simlist[[j]]@mfluxlist, function(x,mets){
+        unlist(lapply(x,function(x){x[mets]}))
+      },mets=metsel[i]))
+      conc = ifelse(is.na(conc),0,conc)
+      rownames(conc) = unlist(lapply(strsplit(rownames(conc),split="\\."),function(x){x[1]}))
+      cdat = melt(conc)
+      meanmat[,j] = cdat$value
+      cdat$rep = rep(j,nrow(cdat))
+      cdat$met = rep(metsel[i],nrow(cdat))
+      concdat = rbind(concdat,cdat) 
+    }
+    concmean=rbind(concmean,data.frame(org=cdat$Var1,time=cdat$Var2,mean=apply(meanmat,1,mean),
+                                       sd=apply(meanmat,1,sd),met=cdat$met))
+  }
+  
+  msum = vector("numeric",length=length(unique(paste(unique(paste(concmean$org,concmean$met))))))
+  names(msum) = unique(paste(concmean$org,concmean$met))
+  rownames(concmean) = paste(concmean$org,concmean$met,concmean$time)
+  for(i in unique(concmean$time)){
+    for(j in names(msum)){
+      msum[j] = msum[j] + concmean[paste(j,i),"mean"]
+    }
+  }
+  msum[is.na(msum)] = 0
+  rmind = which(rownames(concmean) %in% paste(names(which(msum==0)),unique(concmean$time)))
+  if(length(rmind)!=0){concmean=concmean[-rmind,]}
+  concmean$time = concmean$time-1
+  g <- ggplot(concmean, aes(color=met, y=mean, x=time, shape=org)) +
+    geom_line(aes(x=time,y=mean,color=met),size=0.6) +
+    scale_shape_manual(values=1:nlevels(concmean$org)) +
+    geom_point(aes(shape=org),stroke=0.8,size=2.5) +
+    geom_errorbar(aes(ymax=mean+sd, ymin=mean-sd), width=0.2)
+  return(g)
+}
