@@ -2590,11 +2590,12 @@ setMethod("plotSubUsage", "Eval", function(object, subs=list(), cutoff=1e-2){
 #' @param object An object of class Eval.
 #' @param subs List of substance names
 #' @param var_nr Number of most varying substances to be used (if subs is not specified)
+#' @param spec_list List of species names to be considered
 #' @details Returns ggplot objects
-setGeneric("plotSpecActivity", function(object, subs=list(), var_nr=10){standardGeneric("plotSpecActivity")})
+setGeneric("plotSpecActivity", function(object, subs=list(), var_nr=10, spec_list=names(object@specs)){standardGeneric("plotSpecActivity")})
 #' @export
 #' @rdname plotSpecActivity
-setMethod("plotSpecActivity", "Eval", function(object, subs=list(), var_nr=10){
+setMethod("plotSpecActivity", "Eval", function(object, subs=list(), var_nr=10, spec_list=names(object@specs)){
   
   if(length(subs)==0) {subs_tocheck <- names(getVarSubs(sim))
   }else subs_tocheck <- subs
@@ -2602,7 +2603,7 @@ setMethod("plotSpecActivity", "Eval", function(object, subs=list(), var_nr=10){
   df <- data.frame(spec=as.character(), sub=as.character(), mflux=as.numeric(), time=as.integer())
   
   for(t in seq_along(object@mfluxlist)){
-    for(spec in names(object@specs)){
+    for(spec in spec_list){
       if(length(intersect(subs_tocheck, unname(sim@specs[[spec]]@medium))) > 0 &  length(names(object@mfluxlist[[t]][[spec]])) > 0 ){
         mflux=object@mfluxlist[[t]][[spec]][which(names(object@mfluxlist[[t]][[spec]]) %in% subs_tocheck)]
         df <- rbind(df, data.frame(spec=spec, sub=names(mflux), mflux=unname(mflux), time=t))
