@@ -2391,7 +2391,43 @@ setMethod("findFeeding2", "Eval", function(object, time, mets, rm_own=T, ind_thr
   return(list(inter,g))
 })
 
-
+#' @title Function for investigation of feeding between phenotypes
+#'
+#' @description The generic function \code{findFeeding3} 
+#' @export
+#' @rdname findFeeding3
+#' @importFrom igraph V E graph.data.frame layout.circle
+#' 
+#' @param object An object of class Eval.
+#' @param time A numeric vector giving the simulation steps which should be plotted. 
+#' @param mets Character vector of substance names which should be considered
+#' @return Graph (igraph)
+#' 
+setGeneric("findFeeding3", function(object, time, mets){standardGeneric("findFeeding3")})
+#' @export
+#' @rdname findFeeding3
+setMethod("findFeeding3", "Eval", function(object, time, mets){
+  time = time+1
+  mflux = object@mfluxlist[[time]]
+  mfluxmat = do.call(cbind,lapply(mflux,function(x){return(ifelse(is.na(x[mets]),0,x[mets]))}))
+  rownames(mfluxmat) = mets
+  inter = data.frame()
+  for(i in rownames(mfluxmat)){
+    x = mfluxmat[i,]
+    interact = matrix(0,ncol=2,nrow=1)
+    for(j in names(which(x<0))){
+      if(length(which(x>0))!=0){interact = rbind(interact,cbind(names(which(x>0)),j))}
+    }
+    interact = interact[-1,]
+    if(nrow(interact)!=0){inter = rbind(inter,data.frame(prod=interact[,1],cons=interact[,2],met=i))}
+  }
+  g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE)
+  l <- igraph::layout.kamada.kawai(g)
+  plot(g,edge.color=rainbow(length(levels(inter$met)))[as.numeric(inter$met)],
+       edge.width=3,edge.arrow.size=0.8,vertex.color=1:length(V(g)),layout=l)
+  legend("bottomright",legend=levels(inter$met),col=rainbow(length(levels(inter$met))), pch=19, cex=0.7)
+  return(list(inter,g))
+})
                           
 
 
