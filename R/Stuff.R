@@ -616,8 +616,9 @@ plotInterNum <-function(simlist, title="Variation in number of interactions", si
 #' @param simlist A list of simulations (eval objects).
 #' @param time A vector with start and end time to be considered (default: total time)
 #' @param col Vector with color that should be used
+#' @param return_dat Should plain text mean abundances be returned? (default false)
 #'
-plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3){
+plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3, return_dat=F){
   all_df <- data.frame()
   for(i in seq_along(simlist)){
     object <- simlist[[i]]
@@ -634,11 +635,17 @@ plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3){
     mat_bac_m$replc <- as.character(i)
     all_df <- rbind(all_df, mat_bac_m)
   }
-  
-  q <- ggplot(all_df, aes(factor(species), value)) + geom_boxplot(aes(fill=factor(species))) + 
-    scale_fill_manual(values=col) + theme(axis.text.x = element_blank())
-  print(q)
-  return(q)
+  if(return_dat){
+    abundances<-unlist(lapply(levels(all_df$species), function(s){
+      mean(all_df$value[which(all_df$species==s)])}))
+    names(abundances) <- levels(all_df$species)
+    return(abundances)
+  }else{
+    q <- ggplot(all_df, aes(factor(species), value)) + geom_boxplot(aes(fill=factor(species))) + 
+      scale_fill_manual(values=col) + theme(axis.text.x = element_blank())
+    print(q)
+    return(q)
+  }
 }
 
 #' @title Plot substance variations
