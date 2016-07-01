@@ -2685,3 +2685,48 @@ setMethod("plotSpecActivity", "Eval", function(object, subs=list(), var_nr=10, s
   
   return(list(q1, q2))
   })
+
+
+#' @title Function to plot substance shadow costs for a specie
+#'
+#' @description The generic function \code{plotShadowCost} plots substances have the highest impact on further growth (shadow cost < 0)
+#' @export
+#' @rdname plotShadowCost
+#'
+#' @param object An object of class Eval.
+#' @param spec_nr Number of the specie
+#' @param sub_nr Maximal number of substances to be show
+#' @param cutoff Shadow costs should be smaller than cutoff
+#' @details Returns ggplot objects
+setGeneric("plotShadowCost", function(object, spec_nr=1, sub_nr=10, cutoff=-1){standardGeneric("plotShadowCost")})
+#' @export
+#' @rdname plotShadowCost
+setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutoff=-1){
+
+  df <- data.frame(spec=as.character(), sub=as.character(), shadow=as.numeric(), time=as.integer())
+  
+  m <- matrix(0, ncol=length(object@shadowlist[[1]][[spec_nr]]), nrow=length(object@shadowlist))
+  for(t in seq_along(object@shadowlist)){
+        m[t,] <- object@shadowlist[[t]][[spec_nr]]
+  }
+  df <- as.data.frame(m)
+  colnames(df) <- names(object@shadowlist[[1]][[spec_nr]])
+  
+  variance <- apply(m,2,var)
+  sorted_var <- sort(variance, decreasing=T, index.return=T)
+  
+  df <- df[,sorted_var$ix[1:sub_nr]]
+  colmin <- apply(df, 2, min)
+  df <- df[,which(colmin<cutoff), drop=FALSE]
+  df$time=seq_along(object@shadowlist)
+  df <- melt(df, id.vars="time")
+  colnames(df)[2:3] <- c("sub", "shadow")
+  
+  q1 <- ggplot(df, aes(x=time, y=shadow)) + geom_line(aes(col=sub), size=1)
+  
+  q2 <- ggplot(df, aes(factor(sub), shadow)) + geom_boxplot(aes(fill=factor(sub))) +  ggtitle(names(object@specs)[spec_nr]) +
+    theme(axis.text.x = element_blank())
+
+  return(list(q1, q2))
+  })
+

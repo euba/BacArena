@@ -5,7 +5,8 @@
 \alias{plotSubVar}
 \title{Plot abundances of species}
 \usage{
-plotAbundance(simlist, time = c(NULL, NULL), col = colpal3)
+plotAbundance(simlist, time = c(NULL, NULL), col = colpal3,
+  return_dat = F)
 
 plotSubVar(simlist, metsel)
 }
@@ -15,6 +16,8 @@ plotSubVar(simlist, metsel)
 \item{time}{A vector with start and end time to be considered (default: total time)}
 
 \item{col}{Vector with color that should be used}
+
+\item{return_dat}{Should plain text mean abundances be returned? (default false)}
 
 \item{simlist}{A list of simulations (eval objects).}
 
