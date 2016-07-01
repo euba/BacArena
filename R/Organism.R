@@ -298,8 +298,14 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
                     fbasl$obj <- fbasl$fluxes[old_obj_coef]},
            stop("Secondary objective not suported!"))
   }
+  if(lpob@problem@solver=="glpkAPI"){ # get shadow cost from dual problem (only for gplkAPI yet implemented)
+    ex <- findExchReact(object@model)
+    shadow <- glpkAPI::getRowsDualGLPK(lpob@problem@oobj)[ex@met_pos]
+    names(shadow) <- ex@met_id
+  } else shadow=NULL
+  
   names(fbasl$fluxes) <- names(object@lbnd)
-  return(fbasl)
+  return(list(fbasl, shadow))
 })
 
 
@@ -782,7 +788,8 @@ setGeneric("simBac", function(object, arena, j, sublb, bacnum, sec_obj="none", c
 setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale, j)
-  fbasol <- optimizeLP(object, lb=lobnd, j=j, sec_obj=sec_obj, cutoff=cutoff)
+  optimization <- optimizeLP(object, lb=lobnd, j=j, sec_obj=sec_obj, cutoff=cutoff)
+  fbasol <- optimization[[1]]
   
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol, cutoff) )) #scale consumption to the number of cells?
 
@@ -790,7 +797,8 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="no
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, org=object, fbasol=fbasol, cutoff=pcut))
   
   type <- object@type
-  arena@mflux[[type]] <- arena@mflux[[type]] + fbasol$fluxes # remember active fluxes
+  arena@mflux[[type]]  <- arena@mflux[[type]] + fbasol$fluxes # remember active fluxes
+  arena@shadow[[type]] <- arena@shadow[[type]]+ optimization[[2]]
   
   if(dead && object@lyse){
     eval.parent(substitute(sublb[j,] <- lysis(object, sublb[j,])))

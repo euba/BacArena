@@ -19,6 +19,7 @@ globalVariables(c("diffuseNaiveCpp","diffuseSteveCpp"))
 #' @slot tstep A number giving the time (in h) per iteration.
 #' @slot stir A boolean variable indicating if environment should be stirred.
 #' @slot mflux A vector containing highly used metabolic reactions within the arena
+#' @slot shadow A vector containing shadow prices of metabolites present in the arena
 #' @slot n A number giving the horizontal size of the environment.
 #' @slot m A number giving the vertical size of the environment.
 #' @slot Lx A number giving the horizontal grid size in cm.
@@ -39,6 +40,7 @@ setClass("Arena",
            tstep="numeric",
            stir="logical",
            mflux="list",
+           shadow="list",
            n="numeric",
            m="numeric",
            gridgeometry="list",
@@ -59,6 +61,7 @@ setClass("Arena",
           tstep = 1,
           stir = F,
           mflux = list(),
+          shadow = list(),
           seed=sample(1:10000,1),
           models=list(),
           sublb=matrix()
@@ -109,7 +112,9 @@ setMethod("tstep", "Arena", function(object){return(object@tstep)})
 setGeneric("stir", function(object){standardGeneric("stir")})
 setMethod("stir", "Arena", function(object){return(object@stir)})
 setGeneric("mflux", function(object){standardGeneric("mflux")})
-setMethod("mflux", "Arena", function(object){return(object@mflux)})
+setMethod("mflux", "Arena", function(object){return(object@shadow)})
+setGeneric("shadow", function(object){standardGeneric("shadow")})
+setMethod("shadow", "Arena", function(object){return(object@mflux)})
 setGeneric("n", function(object){standardGeneric("n")})
 setMethod("n", "Arena", function(object){return(object@n)})
 setGeneric("m", function(object){standardGeneric("m")})
@@ -166,11 +171,16 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   newspecs[[spectype]] <- specI
   type <- which(names(newspecs)==spectype)
   newmflux <- object@mflux
+  newshadow <- object@shadow
 
   # mflux
   newmflux[[spectype]] <- numeric(length(specI@lbnd))
   names(newmflux[[spectype]]) <- names(specI@lbnd)
-  
+  #shadow
+  ex=sybil::findExchReact(specI@model)
+  newshadow[[spectype]] <- numeric(length(ex))
+  names(newshadow[[spectype]]) <- ex@met_id
+
   type <- which(names(newspecs)==spectype) 
   lastind <- nrow(object@orgdat)
   if(length(x*y)==0){
@@ -217,6 +227,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   object@orgdat <- neworgdat
   object@specs <- newspecs
   object@mflux <- newmflux
+  object@shadow <- newshadow
   object@models <- c(object@models, specI@model)
   return(object)
   # eval.parent(substitute(object@media <- c(object@media,newmedia)))
@@ -710,6 +721,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
     org_stat <- cbind(org_stat, biomass_stat, 100*(biomass_stat-old_biomass)/old_biomass); rownames(org_stat) <- names(arena@specs); colnames(org_stat) <- c("count", "biomass", "%")
     print(org_stat)
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
+    arena@shadow <-lapply(arena@shadow, function(x){numeric(length(x))}) # empty shadow pool
       if(nrow(arena@orgdat) > 0){ # if there are organisms left
       for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
         org <- arena@specs[[arena@orgdat[j,'type']]]
@@ -875,6 +887,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=FALSE
     names(org_stat) <- names(arena@specs)[as.numeric(names(org_stat))]
     print(org_stat)
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
+    arena@shadow <-lapply(arena@shadow, function(x){numeric(length(x))}) # empty shadow pool
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
       #if(nrow(arena@orgdat) >= arena@n*arena@m) browser()
       test_init_t <- proc.time()[3]
@@ -936,6 +949,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=FALSE
           
           fba_fluxes <- sapply(parallel_sol, with, fbasol_flux)
           arena@mflux[[names(arena@specs)[[spec_nr]]]] <<- arena@mflux[[names(arena@specs)[[spec_nr]]]] + colSums(matrix(unlist(fba_fluxes), ncol=length(arena@mflux[[names(arena@specs)[[spec_nr]]]]), byrow = TRUE)) # remember active fluxes
+          #arena@shadow[[names(arena@specs)[[spec_nr]]]] <<- arena@shadow[[names(arena@specs)[[spec_nr]]]] + colSums(matrix(unlist(fba_fluxes), ncol=length(arena@mflux[[names(arena@specs)[[spec_nr]]]]), byrow = TRUE)) # remember active fluxes
           todo_pheno <- sapply(parallel_sol, with, todo_pheno)
           todo_pheno <- as.numeric(unname(unlist(todo_pheno)))
           todo_pheno_nr <- sapply(parallel_sol, with, todo_pheno_nr)
@@ -1278,6 +1292,7 @@ setMethod(show, "Arena", function(object){
 #' @slot medlist A list of compressed medium concentrations (only changes of concentrations are stored) per time step.
 #' @slot simlist A list of the organism features per time step.
 #' @slot mfluxlist A list of containing highly used metabolic reactions per time step. 
+#' @slot shadowlist A list of containing shadow prices per time step. 
 #' @slot subchange A vector of all substrates with numbers indicating the degree of change in the overall simulation.
 setClass("Eval",
          contains="Arena",
@@ -1285,12 +1300,14 @@ setClass("Eval",
            medlist="list",
            simlist="list",
            mfluxlist="list",
+           shadowlist="list",
            subchange="numeric"
          ),
          prototype(
            medlist = list(),
            simlist = list(),
-           mfluxlist = list()
+           mfluxlist = list(),
+           shadowlist = list()
          )
 )
 
@@ -1307,7 +1324,7 @@ Eval <- function(arena){
   subc = rep(0, length(arena@mediac))
   names(subc) <- arena@mediac
   new("Eval", n=arena@n, m=arena@m, Lx=arena@Lx, Ly=arena@Ly, tstep=arena@tstep, specs=arena@specs, mediac=arena@mediac, subchange=subc,
-      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir, mfluxlist=list())
+      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir, mfluxlist=list(), shadowlist=list() )
 }
 
 ########################################################################################################
@@ -1320,6 +1337,8 @@ setGeneric("simlist", function(object){standardGeneric("simlist")})
 setMethod("simlist", "Eval", function(object){return(object@simlist)})
 setGeneric("mfluxlist", function(object){standardGeneric("mfluxlist")})
 setMethod("mfluxlist", "Eval", function(object){return(object@mfluxlist)})
+setGeneric("shadowlist", function(object){standardGeneric("shadowlist")})
+setMethod("shadowlist", "Eval", function(object){return(object@shadowlist)})
 setGeneric("subchange", function(object){standardGeneric("subchange")})
 setMethod("subchange", "Eval", function(object){return(object@subchange)})
 
@@ -1375,6 +1394,7 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
     eval.parent(substitute(object@simlist[[length(object@simlist)+1]] <- arena@orgdat))
     eval.parent(substitute(object@phenotypes <- arena@phenotypes))
     eval.parent(substitute(object@mfluxlist[[length(object@mfluxlist)+1]] <- arena@mflux))
+    eval.parent(substitute(object@shadowlist[[length(object@shadowlist)+1]] <- arena@shadow))
   }else{
     eval.parent(substitute(object@medlist[[length(object@medlist)]] <- lapply(arena@media, function(x){
       return(as.vector(x@diffmat))
@@ -1420,7 +1440,7 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
   occdat <- object@simlist[[time]]
   
   arena <- Arena(n=object@n, m=object@m, Lx=object@Lx, Ly=object@Ly, tstep=object@tstep, specs=object@specs, mediac=object@mediac, mflux=object@mfluxlist[[time]],
-                 phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, stir=object@stir)
+                 phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, stir=object@stir, shadow=object@shadowlist[[time]])
   return(arena)
 })
 
