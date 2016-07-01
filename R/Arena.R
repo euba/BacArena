@@ -705,7 +705,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       sublb = sublb[new_ind,] #apply shuffeling also to sublb to ensure same index as orgdat
     }
     cat("\niteration:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "pg \n")
-    org_stat <- table(arena@orgdat$type)
+    org_stat <- sapply(seq_along(arena@specs), function(x){dim(arena@orgdat[which(arena@orgdat$type==x),])[1]})
     old_biomass<-biomass_stat; biomass_stat <- sapply(seq_along(arena@specs), function(x){sum(arena@orgdat$growth[which(arena@orgdat$type==x)])})
     org_stat <- cbind(org_stat, biomass_stat, 100*(biomass_stat-old_biomass)/old_biomass); rownames(org_stat) <- names(arena@specs); colnames(org_stat) <- c("count", "biomass", "%")
     print(org_stat)
