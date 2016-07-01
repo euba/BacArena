@@ -2655,14 +2655,14 @@ setGeneric("plotSpecActivity", function(object, subs=list(), var_nr=10, spec_lis
 #' @rdname plotSpecActivity
 setMethod("plotSpecActivity", "Eval", function(object, subs=list(), var_nr=10, spec_list=names(object@specs)){
   
-  if(length(subs)==0) {subs_tocheck <- names(getVarSubs(sim))
+  if(length(subs)==0) {subs_tocheck <- names(getVarSubs(object))
   }else subs_tocheck <- subs
   
   df <- data.frame(spec=as.character(), sub=as.character(), mflux=as.numeric(), time=as.integer())
   
   for(t in seq_along(object@mfluxlist)){
     for(spec in spec_list){
-      if(length(intersect(subs_tocheck, unname(sim@specs[[spec]]@medium))) > 0 &  length(names(object@mfluxlist[[t]][[spec]])) > 0 ){
+      if(length(intersect(subs_tocheck, unname(object@specs[[spec]]@medium))) > 0 &  length(names(object@mfluxlist[[t]][[spec]])) > 0 ){
         mflux=object@mfluxlist[[t]][[spec]][which(names(object@mfluxlist[[t]][[spec]]) %in% subs_tocheck)]
         df <- rbind(df, data.frame(spec=spec, sub=names(mflux), mflux=unname(mflux), time=t))
       }
