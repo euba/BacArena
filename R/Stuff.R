@@ -617,16 +617,19 @@ plotInterNum <-function(simlist, title="Variation in number of interactions", si
 #' @param time A vector with start and end time to be considered (default: total time)
 #' @param col Vector with color that should be used
 #' @param return_dat Should plain text mean abundances be returned? (default false)
+#' @param use_biomass If enabled then biomass is used instead of cell number
 #'
-plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3, return_dat=F){
+plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3, return_dat=F, use_biomass=F){
   all_df <- data.frame()
   for(i in seq_along(simlist)){
     object <- simlist[[i]]
     if(all(!is.null(time))) time_seq <- seq(time[1],time[2]) else time_seq <- seq_along(object@simlist)
-    list <- lapply(time_seq, function(i){
-      occ <- table(object@simlist[[i]]$type)
-      unlist(lapply(seq_along(object@specs), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
-    })
+    if(use_biomass){
+      list <- biomass_stat <- sapply(seq_along(object@specs), function(x){sum(object@simlist[[i]]$growth[which(object@simlist[[i]]$type==x)])})
+    }else{
+      list <- lapply(time_seq, function(i){
+        occ <- table(object@simlist[[i]]$type)
+        unlist(lapply(seq_along(object@specs), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)}))
     mat_bac  <- do.call(cbind, list)
     rownames(mat_bac) <- names(object@specs)
     colnames(mat_bac) <- time_seq
