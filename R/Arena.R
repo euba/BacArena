@@ -271,7 +271,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   }
   if(sum(mediac %in% object@mediac) != length(mediac)){
     print(setdiff(mediac, object@mediac))
-    warning("Substance does not exist in exchange reactions. They will not be added")
+    warning("Substance does not exist in exchange reactions. It will not be added")
   }
   if(length(object@media)==0){
     stop("Organisms need to be defined first to determine what substances can be exchanged.")
@@ -2630,10 +2630,10 @@ setMethod("plotSubUsage", "Eval", function(object, subs=list(), cutoff=1e-2){
 
   df <- df[-which(abs(df$mflux) < cutoff),]
 
-  q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=spec), size=1) + facet_wrap(~sub, scales="free_y")
+  q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=spec), size=1) + facet_wrap(~sub, scales="free_y")+ xlab("") + ylab("mmol/(h*g_dw)")
   
-  q2 <- ggplot(df, aes(factor(spec), mflux)) + geom_boxplot(aes(fill=factor(spec))) + 
-    facet_wrap(~sub, scales="free_y") + theme(axis.text.x = element_blank())
+  q2 <- ggplot(df, aes(factor(spec), mflux)) + geom_boxplot(aes(color=factor(spec))) + 
+    facet_wrap(~sub, scales="free_y") + theme(axis.text.x = element_blank()) + xlab("") + ylab("mmol/(h*g_dw)")
   
   return(list(q1, q2))
 })
@@ -2678,10 +2678,10 @@ setMethod("plotSpecActivity", "Eval", function(object, subs=list(), var_nr=10, s
     df <- df[which(df$sub %in% names(mflux_var)[1:var_nr]),]
   }
   
-  q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=sub), size=1) + facet_wrap(~spec, scales="free_y") 
+  q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=sub), size=1) + facet_wrap(~spec, scales="free_y") + xlab("") + ylab("mmol/(h*g_dw)")
   
-  q2 <- ggplot(df, aes(factor(sub), mflux)) + geom_boxplot(aes(fill=factor(sub))) +  facet_wrap(~spec, scales="free_y") +
-    theme(axis.text.x = element_blank())
+  q2 <- ggplot(df, aes(factor(sub), mflux)) + geom_boxplot(aes(color=factor(sub))) +  facet_wrap(~spec, scales="free_y") +
+    theme(axis.text.x = element_blank()) + xlab("") + ylab("mmol/(h*g_dw)")
   
   return(list(q1, q2))
   })
@@ -2724,7 +2724,7 @@ setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutof
   
   q1 <- ggplot(df, aes(x=time, y=shadow)) + geom_line(aes(col=sub), size=1)
   
-  q2 <- ggplot(df, aes(factor(sub), shadow)) + geom_boxplot(aes(fill=factor(sub))) +  ggtitle(names(object@specs)[spec_nr]) +
+  q2 <- ggplot(df, aes(factor(sub), shadow)) + geom_boxplot(aes(color=factor(sub))) +  ggtitle(names(object@specs)[spec_nr]) +
     theme(axis.text.x = element_blank())
 
   return(list(q1, q2))

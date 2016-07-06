@@ -645,9 +645,9 @@ plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3, return_dat=F,
     names(abundances) <- levels(all_df$species)
     return(abundances)
   }else{
-    q <- ggplot(all_df, aes(factor(species), value)) + geom_boxplot(aes(fill=factor(species))) + 
-      scale_fill_manual(values=col) + theme(axis.text.x = element_blank())
-    print(q)
+    q <- ggplot(all_df, aes(factor(species), value)) + geom_boxplot(aes(color=factor(species), fill=factor(species)), alpha = 0.2, outlier.size=1) + 
+      scale_fill_manual(values=col) + scale_color_manual(values=col) + 
+      theme(axis.text.x = element_blank(), legend.title=element_blank(),axis.title.x = element_blank(),axis.title.y = element_blank())
     return(q)
   }
 }
