@@ -6,7 +6,7 @@
 \title{Plot abundances of species}
 \usage{
 plotAbundance(simlist, time = c(NULL, NULL), col = colpal3,
-  return_dat = F)
+  return_dat = F, use_biomass = F)
 
 plotSubVar(simlist, metsel)
 }
@@ -18,6 +18,8 @@ plotSubVar(simlist, metsel)
 \item{col}{Vector with color that should be used}
 
 \item{return_dat}{Should plain text mean abundances be returned? (default false)}
+
+\item{use_biomass}{If enabled then biomass is used instead of cell number}
 
 \item{simlist}{A list of simulations (eval objects).}
 

@@ -718,3 +718,95 @@ plotFluxVar <- function(simlist, metsel){
     geom_errorbar(aes(ymax=mean+sd, ymin=mean-sd), width=0.2)
   return(g)
 }
+
+#' @title Function to plot usage of substances species wise 
+#'
+#' @description The generic function \code{plotSubUsage} displays for given substances the quantities of absorption and production for each species
+#' @export
+#' @rdname plotSubUsage
+#'
+#' @param simlist An object of class Eval or a list with objects of class Eval.
+#' @param subs List of substance names
+#' @param cutoff Total values below cutoff will be dismissed
+#' @details Returns ggplot objects
+plotSubUsage <- function(simlist, subs=list(), cutoff=1e-2){
+  
+  if(is(simlist, "Eval")) simlist <- list(simlist)
+  if(length(subs)==0){ subs <- names(getVarSubs(simlist[[1]], size = 9))
+  }else if(sum(subs %in% simlist[[1]]@mediac) != length(subs)) stop("Substance do not exist in arena")
+  
+  df <- data.frame(spec=as.character(), sub=as.character(), mflux=as.numeric(), time=as.integer())
+  
+  for(i in seq_along(simlist)){
+    object <- simlist[[i]]
+    for(t in seq_along(object@mfluxlist)){
+      for(spec in names(object@specs)){
+        available_subs <- intersect(subs,unname(object@specs[[spec]]@medium))
+        if(length(available_subs) > 0 && length(names(object@mfluxlist[[t]][[spec]])) > 0 ){
+          mflux=object@mfluxlist[[t]][[spec]][which(names(object@mfluxlist[[t]][[spec]]) %in% available_subs )]
+          df <- rbind(df, data.frame(spec=spec, sub=names(mflux), mflux=unname(mflux), time=t, replc=i))
+        }
+      }
+    }
+  }
+  
+  df <- df[which(abs(df$mflux) > cutoff),,drop = FALSE]
+  
+  q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=spec), size=1) + facet_wrap(~sub, scales="free_y")+ xlab("") + ylab("mmol/(h*g_dw)")
+  
+  q2 <- ggplot(df, aes(factor(spec), mflux)) + geom_boxplot(aes(color=factor(spec), fill=factor(spec)), alpha=0.2) + 
+    facet_wrap(~sub, scales="free_y") + theme(axis.text.x = element_blank()) + xlab("") + ylab("mmol/(h*g_dw)")
+  
+  return(list(q1, q2))
+}
+
+
+#' @title Function to plot substance usage for every species
+#'
+#' @description The generic function \code{plotSpecActivity} displays the input/output substances with the highest variance (could also be defiened manually) for all species
+#' @export
+#' @rdname plotSpecActivity
+#'
+#' @param simlist An object of class Eval or a list with objects of class Eval.
+#' @param subs List of substance names
+#' @param var_nr Number of most varying substances to be used (if subs is not specified)
+#' @param spec_list List of species names to be considered (default all)
+#' @details Returns ggplot objects
+plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL){
+  
+  if(is(simlist, "Eval")) simlist <- list(simlist)
+  if(length(subs)==0) {subs_tocheck <- names(getVarSubs(simlist[[1]]))
+  }else subs_tocheck <- subs
+  if(length(spec_list)==0) spec_list <- names(simlist[[1]]@specs)
+  
+  df <- data.frame(spec=as.character(), sub=as.character(), mflux=as.numeric(), time=as.integer())
+  
+  for(i in seq_along(simlist)){
+    object <- simlist[[i]]  
+    for(t in seq_along(object@mfluxlist)){
+      for(spec in spec_list){
+        if(length(intersect(subs_tocheck, unname(object@specs[[spec]]@medium))) > 0 &  length(names(object@mfluxlist[[t]][[spec]])) > 0 ){
+          mflux=object@mfluxlist[[t]][[spec]][which(names(object@mfluxlist[[t]][[spec]]) %in% subs_tocheck)]
+          df <- rbind(df, data.frame(spec=spec, sub=names(mflux), mflux=unname(mflux), time=t, replc=i))
+        }
+      }
+    }
+  }
+  
+  if(length(subs)==0){ # in case subs is not specified take substances with highest variance
+    mflux_var <- unlist(lapply(levels(df$sub), function(sub){
+      var(df[which(df$sub==sub),]$mflux)
+    }))
+    names(mflux_var) <- levels(df$sub)
+    mflux_var <- sort(mflux_var, decreasing = TRUE)
+    df <- df[which(df$sub %in% names(mflux_var)[1:var_nr]),]
+  }
+  
+  q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=sub), size=1) + facet_wrap(~spec, scales="free_y") + xlab("") + ylab("mmol/(h*g_dw)")
+  
+  q2 <- ggplot(df, aes(factor(sub), mflux)) + geom_boxplot(aes(color=factor(sub), fill=factor(sub)), alpha=0.2) +  facet_wrap(~spec, scales="free_y") +
+    theme(axis.text.x = element_blank()) + xlab("") + ylab("mmol/(h*g_dw)")
+  
+  return(list(q1, q2))
+}
+
