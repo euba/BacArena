@@ -2614,13 +2614,13 @@ setGeneric("plotSubUsage", function(object, subs=list(), cutoff=1e-2){standardGe
 #' @rdname plotSubUsage
 setMethod("plotSubUsage", "Eval", function(object, subs=list(), cutoff=1e-2){
   
-  if(length(subs)==0){ subs <- names(getVarSubs(sim, size = 9))
+  if(length(subs)==0){ subs <- names(getVarSubs(object, size = 9))
   }else if(sum(subs %in% object@mediac) != length(subs)) stop("Substance do not exist in arena")
   df <- data.frame(spec=as.character(), sub=as.character(), mflux=as.numeric(), time=as.integer())
   
   for(t in seq_along(object@mfluxlist)){
     for(spec in names(object@specs)){
-      available_subs <- intersect(subs,unname(sim@specs[[spec]]@medium))
+      available_subs <- intersect(subs,unname(object@specs[[spec]]@medium))
       if(length(available_subs) > 0 && length(names(object@mfluxlist[[t]][[spec]])) > 0 ){
         mflux=object@mfluxlist[[t]][[spec]][which(names(object@mfluxlist[[t]][[spec]]) %in% available_subs )]
         df <- rbind(df, data.frame(spec=spec, sub=names(mflux), mflux=unname(mflux), time=t))
@@ -2628,11 +2628,11 @@ setMethod("plotSubUsage", "Eval", function(object, subs=list(), cutoff=1e-2){
     }
   }
 
-  df <- df[-which(abs(df$mflux) < cutoff),]
+  df <- df[which(abs(df$mflux) > cutoff),,drop = FALSE]
 
   q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=spec), size=1) + facet_wrap(~sub, scales="free_y")+ xlab("") + ylab("mmol/(h*g_dw)")
   
-  q2 <- ggplot(df, aes(factor(spec), mflux)) + geom_boxplot(aes(color=factor(spec))) + 
+  q2 <- ggplot(df, aes(factor(spec), mflux)) + geom_boxplot(aes(color=factor(spec), fill=factor(spec)), alpha=0.2) + 
     facet_wrap(~sub, scales="free_y") + theme(axis.text.x = element_blank()) + xlab("") + ylab("mmol/(h*g_dw)")
   
   return(list(q1, q2))
@@ -2680,7 +2680,7 @@ setMethod("plotSpecActivity", "Eval", function(object, subs=list(), var_nr=10, s
   
   q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=sub), size=1) + facet_wrap(~spec, scales="free_y") + xlab("") + ylab("mmol/(h*g_dw)")
   
-  q2 <- ggplot(df, aes(factor(sub), mflux)) + geom_boxplot(aes(color=factor(sub))) +  facet_wrap(~spec, scales="free_y") +
+  q2 <- ggplot(df, aes(factor(sub), mflux)) + geom_boxplot(aes(color=factor(sub), fill=factor(sub)), alpha=0.2) +  facet_wrap(~spec, scales="free_y") +
     theme(axis.text.x = element_blank()) + xlab("") + ylab("mmol/(h*g_dw)")
   
   return(list(q1, q2))
@@ -2724,7 +2724,7 @@ setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutof
   
   q1 <- ggplot(df, aes(x=time, y=shadow)) + geom_line(aes(col=sub), size=1)
   
-  q2 <- ggplot(df, aes(factor(sub), shadow)) + geom_boxplot(aes(color=factor(sub))) +  ggtitle(names(object@specs)[spec_nr]) +
+  q2 <- ggplot(df, aes(factor(sub), shadow)) + geom_boxplot(aes(color=factor(sub), fill=factor(sub)), alpha=0.2) +  ggtitle(names(object@specs)[spec_nr]) +
     theme(axis.text.x = element_blank())
 
   return(list(q1, q2))

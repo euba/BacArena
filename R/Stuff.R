@@ -317,19 +317,16 @@ plotGrowthCurve <-function(simlist, bcol=colpal3, time=c(NULL,NULL),title="", si
     xlab("Time in h") + ylab("Number of individuals") +
     scale_color_manual(values=bcol)
   if(length(cap)!=0){q1 <- q1 + geom_vline(data=dat_cap, aes(xintercept=cap))}
-  print(q1)
   
   q2<-ggplot(all_df, aes(color=species, y=value, x=time)) +
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=species), alpha=0.3) + 
     xlab("Time in h") + ylab("Number of individuals") + scale_color_manual(values=bcol) + scale_fill_manual(values=bcol)
   if(length(cap)!=0){q2 <- q2 + geom_vline(xintercept=min(cap))}
-  print(q2)
     
   q3<-ggplot(all_df, aes(color=species, y=value, x=time)) +
     stat_summary(fun.y = mean, geom="line", size=1) + 
     xlab("Time in h") + ylab("Number of individuals") + scale_color_manual(values=bcol)
   if(length(cap)!=0){q3 <- q3 + geom_vline(xintercept=min(cap))}
-  print(q3)
   
   return(list(q1, q2, q3))
 }
@@ -438,7 +435,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
   all_df$time <- all_df$time * simlist[[1]]@tstep # adjust time to hours
   
   # 4) plotting
-  p <- ggplot(all_df, aes(colour=Cphen, y=value, x=time)) + 
+  p1 <- ggplot(all_df, aes(colour=Cphen, y=value, x=time)) + 
     stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Cphen), alpha=0.3, size=1) + 
     scale_fill_manual(values=col) + scale_colour_manual(values=col) +
     xlab("time [h]") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
@@ -455,9 +452,8 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       panel.border = element_rect(colour='black',size=2, fill=NA),
       axis.ticks = element_line(size=1,color='black'),
       plot.title = element_text(size=20)) #15x5   
-  print(p)
   
-  p <- ggplot(all_df, aes(color=Cphen, y=value, x=time)) + stat_summary(fun.y = mean, geom="line", size=1) +
+  p2 <- ggplot(all_df, aes(color=Cphen, y=value, x=time)) + stat_summary(fun.y = mean, geom="line", size=1) +
     stat_summary(fun.y = mean, geom="point", shape=3, size=2) + scale_colour_manual(values=col) + 
     xlab("time [h]") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
     theme_bw(base_size = 30) +
@@ -473,9 +469,8 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       panel.border = element_rect(colour='black',size=2, fill=NA),
       axis.ticks = element_line(size=1,color='black'),
       plot.title = element_text(size=20)) #15x5   
-  print(p)
   
-  p <- ggplot(all_df, aes(color=replc, group=replc,y=value, x=time)) + geom_line(size=1) + geom_point(size=2, shape=3) +
+  p3 <- ggplot(all_df, aes(color=replc, group=replc,y=value, x=time)) + geom_line(size=1) + geom_point(size=2, shape=3) +
     scale_colour_manual(values=col) + 
     facet_wrap(~Cphen, nrow=4) +
     #facet_grid(~Cphen) +
@@ -494,9 +489,8 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
  #     panel.border = element_rect(colour='black',size=2, fill=NA),
       axis.ticks = element_line(size=1,color='black'),
       plot.title = element_text(size=20)) #15x5   
-  print(p)
 
-  p <- ggplot(all_df, aes(color=Cphen, group=Cphen,y=value, x=time)) + geom_line(size=1) + geom_point(size=2, shape=3) +
+  p4 <- ggplot(all_df, aes(color=Cphen, group=Cphen,y=value, x=time)) + geom_line(size=1) + geom_point(size=2, shape=3) +
     scale_colour_manual(values=col) + 
     facet_wrap(~replc) +
     xlab("time [h]") + ylab("number organism") + ggtitle("Comparison of replicate growth curves") + 
@@ -513,11 +507,11 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       panel.border = element_rect(colour='black',size=2, fill=NA),
       axis.ticks = element_line(size=1,color='black'),
       plot.title = element_text(size=20)) #15x5   
-  print(p)
   
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
   #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth(level = 0.99) + geom_point()
   if(ret_phengroups & cluster) return(simlist_fac)
+  else(return(list(p1,p2,p3,p4)))
 }
 
 
