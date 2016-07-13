@@ -208,15 +208,17 @@ lsd <- function(y){lb=mean(y)-sd(y); ifelse(lb<0,0,lb)}
 #' @param mediac A vector of substances (if not specified most varying substances will be taken.)
 #' @param time Vector with two entries defining start and end time.
 #' @param scol Vector with colors that should be used.
+#' @param ret_data Set true if data should be returned
+#' @param num_var Number of varying substances to be shown (if mediac is not specified)
 #' 
 #' @return list of three ggplot object for further formating
 #'
-plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title="Substance curve with standard deviation",size=1,unit="mmol"){
+plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title="Substance curve with standard deviation",size=1,unit="mmol", ret_data=FALSE, num_var=10){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(sum(mediac %in% simlist[[1]]@mediac) != length(mediac)) stop("Substance does not exist in exchange reactions.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@medlist))) stop("Time interval not valid")
   
-  if(length(mediac)==0) mediac <- names(getVarSubs(simlist[[1]]))[1:10] # get 10 most varying substances (from first sim)
+  if(length(mediac)==0) mediac <- names(getVarSubs(simlist[[1]]))[1:num_var] # get the most varying substances (from first sim)
   all_df <- data.frame()
   for(i in seq_along(simlist)){
     object <- simlist[[i]]
@@ -264,7 +266,7 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title
         ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3, size=1) +
         facet_wrap(~Var1, scales="free_y") + xlab("Time in h") + ylab(ylabel) #+ 
   
-  return(list(q1, q2, q3, q4))
+  if(ret_data) return(all_df) else return(list(q1, q2, q3, q4))
 }
 
 
@@ -728,8 +730,9 @@ plotFluxVar <- function(simlist, metsel){
 #' @param simlist An object of class Eval or a list with objects of class Eval.
 #' @param subs List of substance names
 #' @param cutoff Total values below cutoff will be dismissed
+#' @param ret_data Set true if data should be returned
 #' @details Returns ggplot objects
-plotSubUsage <- function(simlist, subs=list(), cutoff=1e-2){
+plotSubUsage <- function(simlist, subs=list(), cutoff=1e-2, ret_data=FALSE){
   
   if(is(simlist, "Eval")) simlist <- list(simlist)
   if(length(subs)==0){ subs <- names(getVarSubs(simlist[[1]], size = 9))
@@ -750,14 +753,13 @@ plotSubUsage <- function(simlist, subs=list(), cutoff=1e-2){
     }
   }
   
-  df <- df[which(abs(df$mflux) > cutoff),,drop = FALSE]
+  if(!ret_data) df <- df[which(abs(df$mflux) > cutoff),,drop = FALSE] # do not drop if date is used further
   
   q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=spec), size=1) + facet_wrap(~sub, scales="free_y")+ xlab("") + ylab("mmol/(h*g_dw)")
   
   q2 <- ggplot(df, aes(factor(spec), mflux)) + geom_boxplot(aes(color=factor(spec), fill=factor(spec)), alpha=0.2) + 
     facet_wrap(~sub, scales="free_y") + theme(axis.text.x = element_blank()) + xlab("") + ylab("mmol/(h*g_dw)")
-  
-  return(list(q1, q2))
+  if(ret_data) return(df) else return(list(q1, q2))
 }
 
 
@@ -771,8 +773,9 @@ plotSubUsage <- function(simlist, subs=list(), cutoff=1e-2){
 #' @param subs List of substance names
 #' @param var_nr Number of most varying substances to be used (if subs is not specified)
 #' @param spec_list List of species names to be considered (default all)
+#' @param ret_data Set true if data should be returned
 #' @details Returns ggplot objects
-plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL){
+plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, ret_data=FALSE){
   
   if(is(simlist, "Eval")) simlist <- list(simlist)
   if(length(subs)==0) {subs_tocheck <- names(getVarSubs(simlist[[1]]))
@@ -807,6 +810,6 @@ plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL){
   q2 <- ggplot(df, aes(factor(sub), mflux)) + geom_boxplot(aes(color=factor(sub), fill=factor(sub)), alpha=0.2) +  facet_wrap(~spec, scales="free_y") +
     theme(axis.text.x = element_blank()) + xlab("") + ylab("mmol/(h*g_dw)")
   
-  return(list(q1, q2))
+  if(ret_data) return(df) else return(list(q1, q2))
 }
 
