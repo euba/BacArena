@@ -1,3 +1,21 @@
+BacArena v1.5 (Release date: 2016-07-13)
+
+Changes:
+* parallel support
+* methods for evaluation of replicates
+* fixed numerical bugs
+* fixed growth model
+* findInArena(), getSubHist()
+* advances plotting using ggplot2:
+  - plotSubCurve(), plotGrowthCurve(), plotPhenCurve()
+  - plotAbundances(), plotSpecActivity(), plotSubUsages()
+* integration of shadow prices
+* addDefaultMed() and addEssentialMed()
+* imporved cross feeding detection 
+* alternative objectives integration
+* lots of smaller bugfixes...
+
+
 BacArena v1.0.1 (Release date: 2016-01-06)
 =============
 
