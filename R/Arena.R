@@ -2632,7 +2632,7 @@ setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutof
   colmin <- apply(df, 2, min)
   df <- df[,which(colmin<cutoff), drop=FALSE]
   df$time=seq_along(object@shadowlist)
-  df <- melt(df, id.vars="time")
+  df <- reshape2::melt(df, id.vars="time")
   colnames(df)[2:3] <- c("sub", "shadow")
   
   q1 <- ggplot(df, aes(x=time, y=shadow)) + geom_line(aes(col=sub), size=1)

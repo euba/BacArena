@@ -6,7 +6,7 @@
 \usage{
 plotSubCurve(simlist, mediac = NULL, time = c(NULL, NULL), scol = NULL,
   title = "Substance curve with standard deviation", size = 1,
-  unit = "mmol")
+  unit = "mmol", ret_data = FALSE, num_var = 10)
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}
@@ -16,6 +16,10 @@ plotSubCurve(simlist, mediac = NULL, time = c(NULL, NULL), scol = NULL,
 \item{time}{Vector with two entries defining start and end time.}
 
 \item{scol}{Vector with colors that should be used.}
+
+\item{ret_data}{Set true if data should be returned}
+
+\item{num_var}{Number of varying substances to be shown (if mediac is not specified)}
 }
 \value{
 list of three ggplot object for further formating

@@ -4,7 +4,7 @@
 \alias{plotSubUsage}
 \title{Function to plot usage of substances species wise}
 \usage{
-plotSubUsage(simlist, subs = list(), cutoff = 0.01)
+plotSubUsage(simlist, subs = list(), cutoff = 0.01, ret_data = FALSE)
 }
 \arguments{
 \item{simlist}{An object of class Eval or a list with objects of class Eval.}
@@ -12,6 +12,8 @@ plotSubUsage(simlist, subs = list(), cutoff = 0.01)
 \item{subs}{List of substance names}
 
 \item{cutoff}{Total values below cutoff will be dismissed}
+
+\item{ret_data}{Set true if data should be returned}
 }
 \description{
 The generic function \code{plotSubUsage} displays for given substances the quantities of absorption and production for each species

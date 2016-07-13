@@ -27,6 +27,7 @@ Imports:
     stats,
     graphics,
     ggplot2,
+    reshape2,
     Rcpp
 Suggests: 
     sybilSBML,
