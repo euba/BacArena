@@ -187,7 +187,7 @@ reset_screen <- function(){
 #' @export
 #' @rdname usd
 #'
-usd <- function(y){mean(y) + sd(y)}
+usd <- function(y){mean(y) + stats::sd(y)}
 #' @title Computer standard deviation lower bound
 #'
 #' @description Helper function to get lower error bounds in plotting
@@ -195,7 +195,7 @@ usd <- function(y){mean(y) + sd(y)}
 #' @export
 #' @rdname lsd
 #'
-lsd <- function(y){lb=mean(y)-sd(y); ifelse(lb<0,0,lb)}
+lsd <- function(y){lb=mean(y)-stats::sd(y); ifelse(lb<0,0,lb)}
 
 
 #' @title Plot substance curve for several simulations
@@ -210,10 +210,11 @@ lsd <- function(y){lb=mean(y)-sd(y); ifelse(lb<0,0,lb)}
 #' @param scol Vector with colors that should be used.
 #' @param ret_data Set true if data should be returned
 #' @param num_var Number of varying substances to be shown (if mediac is not specified)
+#' @param unit Unit for the substances which should be used for plotting (default: mmol)
 #' 
 #' @return list of three ggplot object for further formating
 #'
-plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title="Substance curve with standard deviation",size=1,unit="mmol", ret_data=FALSE, num_var=10){
+plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL, unit="mmol", ret_data=FALSE, num_var=10){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(sum(mediac %in% simlist[[1]]@mediac) != length(mediac)) stop("Substance does not exist in exchange reactions.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@medlist))) stop("Time interval not valid")
@@ -253,18 +254,18 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title
          'mM'  ={all_df$value <- all_df$value * 10^{-12}/(simlist[[1]]@Lx*simlist[[1]]@Ly); ylabel=paste(ylabel,"mM")},
          stop("Wrong unit for concentration."))
   
-  q1 <- ggplot2::ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_line(size=1) + facet_wrap(~replc)
+  q1 <- ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$Var1, y=all_df$value, x=all_df$Var2)) + ggplot2::geom_line(size=1) + ggplot2::facet_wrap(~all_df$replc)
    
-  q2 <- ggplot2::ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_summary(fun.y = mean, geom="line", size=1) + 
-        xlab("Time in h") + ylab(ylabel) + ggtitle("Mean substance curve")
+  q2 <- ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$Var1, y=all_df$value, x=all_df$Var2)) + ggplot2::stat_summary(fun.y = mean, geom="line", size=1) + 
+        ggplot2::xlab("Time in h") + ggplot2::ylab(ylabel) + ggplot2::ggtitle("Mean substance curve")
    
-  q3 <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
-        ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3, size=1) +
-        xlab("Time in h") + ylab(ylabel)
+  q3 <- ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$Var1, y=all_df$value, x=all_df$Var2)) +
+        ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=all_df$Var1), alpha=0.3, size=1) +
+        ggplot2::xlab("Time in h") + ggplot2::ylab(ylabel)
    
-  q4 <- ggplot2::ggplot(all_df, ggplot2::aes(color=Var1, y=value, x=Var2)) +
-        ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=Var1), alpha=0.3, size=1) +
-        facet_wrap(~Var1, scales="free_y") + xlab("Time in h") + ylab(ylabel) #+ 
+  q4 <- ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$Var1, y=all_df$value, x=all_df$Var2)) +
+        ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=all_df$Var1), alpha=0.3, size=1) +
+        ggplot2::facet_wrap(~all_df$Var1, scales="free_y") + ggplot2::xlab("Time in h") + ggplot2::ylab(ylabel) #+ 
   
   if(ret_data) return(all_df) else return(list(q1, q2, q3, q4))
 }
@@ -280,7 +281,7 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL,title
 #' @param time Vector with two entries defining start and end time
 #' @param bcol Vector with color that should be used
 #'
-plotGrowthCurve <-function(simlist, bcol=colpal3, time=c(NULL,NULL),title="", size=1){
+plotGrowthCurve <-function(simlist, bcol=colpal3, time=c(NULL,NULL)){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@simlist))) stop("Time interval not valid")
   
@@ -314,21 +315,21 @@ plotGrowthCurve <-function(simlist, bcol=colpal3, time=c(NULL,NULL),title="", si
   cap <- cap * simlist[[1]]@tstep - 1
   if(length(cap)!=0){dat_cap <- data.frame(replc=seq_along(simlist), cap=cap)}
   
-  q1<-ggplot(all_df, aes(color=species, y=value, x=time)) + 
-    geom_line(size=1) + facet_wrap(~replc) + 
-    xlab("Time in h") + ylab("Number of individuals") +
-    scale_color_manual(values=bcol)
-  if(length(cap)!=0){q1 <- q1 + geom_vline(data=dat_cap, aes(xintercept=cap))}
+  q1<-ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$species, y=all_df$value, x=all_df$time)) + 
+    ggplot2::geom_line(size=1) + ggplot2::facet_wrap(~replc) + 
+    ggplot2::xlab("Time in h") + ggplot2::ylab("Number of individuals") +
+    ggplot2::scale_color_manual(values=bcol)
+  if(length(cap)!=0){q1 <- q1 + ggplot2::geom_vline(data=dat_cap, ggplot2::aes(xintercept=cap))}
   
-  q2<-ggplot(all_df, aes(color=species, y=value, x=time)) +
-    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=species), alpha=0.3) + 
-    xlab("Time in h") + ylab("Number of individuals") + scale_color_manual(values=bcol) + scale_fill_manual(values=bcol)
-  if(length(cap)!=0){q2 <- q2 + geom_vline(xintercept=min(cap))}
+  q2<-ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$species, y=all_df$value, x=all_df$time)) +
+    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=all_df$species), alpha=0.3) + 
+    ggplot2::xlab("Time in h") + ggplot2::ylab("Number of individuals") + ggplot2::scale_color_manual(values=bcol) + ggplot2::scale_fill_manual(values=bcol)
+  if(length(cap)!=0){q2 <- q2 + ggplot2::geom_vline(xintercept=min(cap))}
     
-  q3<-ggplot(all_df, aes(color=species, y=value, x=time)) +
-    stat_summary(fun.y = mean, geom="line", size=1) + 
-    xlab("Time in h") + ylab("Number of individuals") + scale_color_manual(values=bcol)
-  if(length(cap)!=0){q3 <- q3 + geom_vline(xintercept=min(cap))}
+  q3<-ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$species, y=all_df$value, x=all_df$time)) +
+    ggplot2::stat_summary(fun.y = mean, geom="line", size=1) + 
+    ggplot2::xlab("Time in h") + ggplot2::ylab("Number of individuals") + ggplot2::scale_color_manual(values=bcol)
+  if(length(cap)!=0){q3 <- q3 + ggplot2::geom_vline(xintercept=min(cap))}
   
   return(list(q1, q2, q3))
 }
@@ -427,7 +428,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       colnames(mat_groups) <- time_seq
     } else mat_groups <- mat_phen
     #rownames(mat_groups) <- 1:dim(mat_groups)[1]
-    mat_groups_m <- melt(mat_groups)
+    mat_groups_m <- reshape2::melt(mat_groups)
     colnames(mat_groups_m) <- c("Cphen", "time", "value")
     mat_groups_m$replc <- as.character(i)
     all_df <- rbind(all_df, mat_groups_m)
@@ -437,81 +438,78 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
   all_df$time <- all_df$time * simlist[[1]]@tstep # adjust time to hours
   
   # 4) plotting
-  p1 <- ggplot(all_df, aes(colour=Cphen, y=value, x=time)) + 
-    stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", aes(fill=Cphen), alpha=0.3, size=1) + 
-    scale_fill_manual(values=col) + scale_colour_manual(values=col) +
-    xlab("time [h]") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
-    theme_bw(base_size = 30) +
-    theme(#legend.position='none',
-      legend.text=element_text(size=14),
-      legend.key=element_blank(),
-      legend.title = element_blank(),
-      axis.text.x = element_text(size=20),
-      axis.text.y = element_text(size=20),
-      axis.title.y = element_text(size=30,vjust=0.5),
-      #panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      panel.border = element_rect(colour='black',size=2, fill=NA),
-      axis.ticks = element_line(size=1,color='black'),
-      plot.title = element_text(size=20)) #15x5   
+  p1 <- ggplot2::ggplot(all_df, ggplot2::aes(colour=all_df$Cphen, y=all_df$value, x=all_df$time)) + 
+    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=all_df$Cphen), alpha=0.3, size=1) + 
+    ggplot2::scale_fill_manual(values=col) + ggplot2::scale_colour_manual(values=col) +
+    ggplot2::xlab("time [h]") + ggplot2::ylab("number organism") + ggplot2::ggtitle("Phenotyp growth curve with standard deviation") + 
+    ggplot2::theme_bw(base_size = 30) +
+    ggplot2::theme(#legend.position='none',
+      legend.text= ggplot2::element_text(size=14),
+      legend.key=ggplot2::element_blank(),
+      legend.title =ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(size=20),
+      axis.text.y = ggplot2::element_text(size=20),
+      axis.title.y = ggplot2::element_text(size=30,vjust=0.5),
+      #panel.grid.major =ggplot2::element_blank(),
+      panel.grid.minor =ggplot2::element_blank(),
+      panel.border = ggplot2::element_rect(colour='black',size=2, fill=NA),
+      axis.ticks = ggplot2::element_line(size=1,color='black'),
+      plot.title = ggplot2::element_text(size=20)) #15x5   
   
-  p2 <- ggplot(all_df, aes(color=Cphen, y=value, x=time)) + stat_summary(fun.y = mean, geom="line", size=1) +
-    stat_summary(fun.y = mean, geom="point", shape=3, size=2) + scale_colour_manual(values=col) + 
-    xlab("time [h]") + ylab("number organism") + ggtitle("Phenotyp growth curve with standard deviation") + 
-    theme_bw(base_size = 30) +
-    theme(#legend.position='none',
-      legend.text=element_text(size=14),
-      legend.key=element_blank(),
-      legend.title = element_blank(),
-      axis.text.x = element_text(size=20),
-      axis.text.y = element_text(size=20),
-      axis.title.y = element_text(size=30,vjust=0.5),
-      #panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      panel.border = element_rect(colour='black',size=2, fill=NA),
-      axis.ticks = element_line(size=1,color='black'),
-      plot.title = element_text(size=20)) #15x5   
+  p2 <- ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$Cphen, y=all_df$value, x=all_df$time)) + ggplot2::stat_summary(fun.y = mean, geom="line", size=1) +
+    ggplot2::stat_summary(fun.y = mean, geom="point", shape=3, size=2) + ggplot2::scale_colour_manual(values=col) + 
+    ggplot2::xlab("time [h]") + ggplot2::ylab("number organism") + ggplot2::ggtitle("Phenotyp growth curve with standard deviation") + 
+    ggplot2::theme_bw(base_size = 30) +
+    ggplot2::theme(#legend.position='none',
+      legend.text= ggplot2::element_text(size=14),
+      legend.key=ggplot2::element_blank(),
+      legend.title =ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(size=20),
+      axis.text.y = ggplot2::element_text(size=20),
+      axis.title.y = ggplot2::element_text(size=30,vjust=0.5),
+      #panel.grid.major =ggplot2::element_blank(),
+      panel.grid.minor =ggplot2::element_blank(),
+      panel.border = ggplot2::element_rect(colour='black',size=2, fill=NA),
+      axis.ticks = ggplot2::element_line(size=1,color='black'),
+      plot.title = ggplot2::element_text(size=20)) #15x5   
   
-  p3 <- ggplot(all_df, aes(color=replc, group=replc,y=value, x=time)) + geom_line(size=1) + geom_point(size=2, shape=3) +
-    scale_colour_manual(values=col) + 
-    facet_wrap(~Cphen, nrow=4) +
-    #facet_grid(~Cphen) +
-    xlab("time [h]") + ylab("number organism") + ggtitle("Comparison of phenotype growth curves") + 
+  p3 <- ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$replc, group=all_df$replc,y=all_df$value, x=all_df$time)) + ggplot2::geom_line(size=1) + ggplot2::geom_point(size=2, shape=3) +
+    ggplot2::scale_colour_manual(values=col) + 
+    ggplot2::facet_wrap(~Cphen, nrow=4) +
+    ggplot2::xlab("time [h]") + ggplot2::ylab("number organism") + ggplot2::ggtitle("Comparison of phenotype growth curves") + 
 #    theme_bw(base_size = 30) +
-    theme_classic(base_size = 30) +
-    theme(#legend.position='none',
-      legend.text=element_text(size=14),
-      legend.key=element_blank(),
-      legend.title = element_blank(),
-      axis.text.x = element_text(size=15),
-      axis.text.y = element_text(size=20),
-      axis.title.y = element_text(size=30,vjust=0.5),
-      #panel.grid.major = element_blank(),
-      #panel.grid.minor = element_blank(),
- #     panel.border = element_rect(colour='black',size=2, fill=NA),
-      axis.ticks = element_line(size=1,color='black'),
-      plot.title = element_text(size=20)) #15x5   
+    ggplot2::theme_classic(base_size = 30) +
+    ggplot2::theme(#legend.position='none',
+      legend.text= ggplot2::element_text(size=14),
+      legend.key=ggplot2::element_blank(),
+      legend.title =ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(size=15),
+      axis.text.y = ggplot2::element_text(size=20),
+      axis.title.y = ggplot2::element_text(size=30,vjust=0.5),
+      #panel.grid.major =ggplot2::element_blank(),
+      #panel.grid.minor =ggplot2::element_blank(),
+ #     panel.border = ggplot2::element_rect(colour='black',size=2, fill=NA),
+      axis.ticks = ggplot2::element_line(size=1,color='black'),
+      plot.title = ggplot2::element_text(size=20)) #15x5   
 
-  p4 <- ggplot(all_df, aes(color=Cphen, group=Cphen,y=value, x=time)) + geom_line(size=1) + geom_point(size=2, shape=3) +
-    scale_colour_manual(values=col) + 
-    facet_wrap(~replc) +
-    xlab("time [h]") + ylab("number organism") + ggtitle("Comparison of replicate growth curves") + 
-    theme_bw(base_size = 30) +
-    theme(#legend.position='none',
-      legend.text=element_text(size=14),
-      legend.key=element_blank(),
-      legend.title = element_blank(),
-      axis.text.x = element_text(size=20),
-      axis.text.y = element_text(size=20),
-      axis.title.y = element_text(size=30,vjust=0.5),
-      #panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      panel.border = element_rect(colour='black',size=2, fill=NA),
-      axis.ticks = element_line(size=1,color='black'),
-      plot.title = element_text(size=20)) #15x5   
+  p4 <- ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$Cphen, group=all_df$Cphen,y=all_df$value, x=all_df$time)) + ggplot2::geom_line(size=1) + ggplot2::geom_point(size=2, shape=3) +
+    ggplot2::scale_colour_manual(values=col) + 
+    ggplot2::facet_wrap(~replc) +
+    ggplot2::xlab("time [h]") + ggplot2::ylab("number organism") + ggplot2::ggtitle("Comparison of replicate growth curves") + 
+    ggplot2::theme_bw(base_size = 30) +
+    ggplot2::theme(#legend.position='none',
+      legend.text= ggplot2::element_text(size=14),
+      legend.key=ggplot2::element_blank(),
+      legend.title =ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(size=20),
+      axis.text.y = ggplot2::element_text(size=20),
+      axis.title.y = ggplot2::element_text(size=30,vjust=0.5),
+      #panel.grid.major =ggplot2::element_blank(),
+      panel.grid.minor =ggplot2::element_blank(),
+      panel.border = ggplot2::element_rect(colour='black',size=2, fill=NA),
+      axis.ticks = ggplot2::element_line(size=1,color='black'),
+      plot.title = ggplot2::element_text(size=20)) #15x5   
   
-  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + geom_point()
-  #ggplot(all_df, aes(color=Var1, y=value, x=Var2)) + stat_smooth(level = 0.99) + geom_point()
   if(ret_phengroups & cluster) return(simlist_fac)
   else(return(list(p1,p2,p3,p4)))
 }
@@ -525,6 +523,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
 #' 
 #' @param simlist A list of simulations (eval objects).
 #' @param size A scaling factor for plot text and line size
+#' @param title Title of the plot
 #'
 plotPhenNum <-function(simlist, title="Phenotype number variation", size=1){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
@@ -541,23 +540,23 @@ plotPhenNum <-function(simlist, title="Phenotype number variation", size=1){
     pdat = rbind(pdat, reshape2::melt(pmat))
   }
   colnames(pdat) = c("spec","time","phens")
-  q <- ggplot2::ggplot(pdat, ggplot2::aes(color=spec, y=phens, x=time)) +
-    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=spec), alpha=0.3) + 
-    xlab("Time") + ylab("Number of phenotypes") + 
-    ggtitle(title) + 
-    theme_bw(base_size = 30*size) +
-    theme(legend.position='none',
-          legend.text=element_text(size=14*size),
-          legend.key=element_blank(),
-          legend.title = element_blank(),
-          axis.text.x = element_text(size=20*size),
-          axis.text.y = element_text(size=20*size),
-          axis.title.y = element_text(size=30*size,vjust=0.5),
-          #panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.border = element_rect(colour='black',size=2*size),
-          axis.ticks = element_line(size=1*size,color='black'),
-          plot.title = element_text(size=30*size)) #15x5           # Position legend in bottom right
+  q <- ggplot2::ggplot(pdat, ggplot2::aes(color=pdat$spec, y=pdat$phens, x=pdat$time)) +
+    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=pdat$spec), alpha=0.3) + 
+    ggplot2::xlab("Time") + ggplot2::ylab("Number of phenotypes") + 
+    ggplot2::ggtitle(title) + 
+    ggplot2::theme_bw(base_size = 30*size) +
+    ggplot2::theme(legend.position='none',
+          legend.text= ggplot2::element_text(size=14*size),
+          legend.key=ggplot2::element_blank(),
+          legend.title =ggplot2::element_blank(),
+          axis.text.x = ggplot2::element_text(size=20*size),
+          axis.text.y = ggplot2::element_text(size=20*size),
+          axis.title.y = ggplot2::element_text(size=30*size,vjust=0.5),
+          #panel.grid.major =ggplot2::element_blank(),
+          panel.grid.minor =ggplot2::element_blank(),
+          panel.border = ggplot2::element_rect(colour='black',size=2*size),
+          axis.ticks = ggplot2::element_line(size=1*size,color='black'),
+          plot.title = ggplot2::element_text(size=30*size)) #15x5           # Position legend in bottom right
   return(q)
 }
 
@@ -570,6 +569,7 @@ plotPhenNum <-function(simlist, title="Phenotype number variation", size=1){
 #' 
 #' @param simlist A list of simulations (eval objects).
 #' @param size A scaling factor for plot text and line size
+#' @param title Title of the plot
 #'
 plotInterNum <-function(simlist, title="Variation in number of interactions", size=1){
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
@@ -581,24 +581,24 @@ plotInterNum <-function(simlist, title="Variation in number of interactions", si
   }
   idat = reshape2::melt(imat)
   colnames(idat) = c("rep","time","inter")
-  q <- ggplot2::ggplot(idat, ggplot2::aes(y=inter, x=time)) +
+  q <- ggplot2::ggplot(idat, ggplot2::aes(y=idat$inter, x=idat$time)) +
     ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", alpha=0.3) + 
     ggplot2::stat_summary(fun.y = mean, geom="line") + 
-    xlab("Time") + ylab("Number of phenotypes") + 
-    ggtitle(title) + 
-    theme_bw(base_size = 30*size) +
-    theme(legend.position='none',
-          legend.text=element_text(size=14*size),
-          legend.key=element_blank(),
-          legend.title = element_blank(),
-          axis.text.x = element_text(size=20*size),
-          axis.text.y = element_text(size=20*size),
-          axis.title.y = element_text(size=30*size,vjust=0.5),
-          #panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.border = element_rect(colour='black',size=2*size),
-          axis.ticks = element_line(size=1*size,color='black'),
-          plot.title = element_text(size=30*size)) #15x5           # Position legend in bottom right
+    ggplot2::xlab("Time") + ggplot2::ylab("Number of phenotypes") + 
+    ggplot2::ggtitle(title) + 
+    ggplot2::theme_bw(base_size = 30*size) +
+    ggplot2::theme(legend.position='none',
+          legend.text= ggplot2::element_text(size=14*size),
+          legend.key=ggplot2::element_blank(),
+          legend.title =ggplot2::element_blank(),
+          axis.text.x = ggplot2::element_text(size=20*size),
+          axis.text.y = ggplot2::element_text(size=20*size),
+          axis.title.y = ggplot2::element_text(size=30*size,vjust=0.5),
+          #panel.grid.major =ggplot2::element_blank(),
+          panel.grid.minor =ggplot2::element_blank(),
+          panel.border = ggplot2::element_rect(colour='black',size=2*size),
+          axis.ticks = ggplot2::element_line(size=1*size,color='black'),
+          plot.title = ggplot2::element_text(size=30*size)) #15x5           # Position legend in bottom right
   return(q)
 }
 
@@ -641,9 +641,9 @@ plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3, return_dat=F,
     names(abundances) <- levels(all_df$species)
     return(abundances)
   }else{
-    q <- ggplot(all_df, aes(factor(species), value)) + geom_boxplot(aes(color=factor(species), fill=factor(species)), alpha = 0.2, outlier.size=1) + 
-      scale_fill_manual(values=col) + scale_color_manual(values=col) + 
-      theme(axis.text.x = element_blank(), legend.title=element_blank(),axis.title.x = element_blank(),axis.title.y = element_blank())
+    q <- ggplot2::ggplot(all_df, ggplot2::aes(factor(all_df$species), all_df$value)) + ggplot2::geom_boxplot(ggplot2::aes(color=factor(all_df$species), fill=factor(all_df$species)), alpha = 0.2, outlier.size=1) + 
+      ggplot2::scale_fill_manual(values=col) + ggplot2::scale_color_manual(values=col) + 
+      ggplot2::theme(axis.text.x =ggplot2::element_blank(), legend.title=ggplot2::element_blank(),axis.title.x = ggplot2::element_blank(),axis.title.y = ggplot2::element_blank())
     return(q)
   }
 }
@@ -652,10 +652,10 @@ plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3, return_dat=F,
 #'
 #' @description The function \code{plotSubVar} takes a list of simulations and return a barplot with most varying substances
 #' @export
-#' @rdname plotAbundance
+#' @rdname plotSubVar
 #' 
 #' @param simlist A list of simulations (eval objects).
-#' @param metlist A vector with the name of exchange reactions of interest
+#' @param metsel A vector with the name of exchange reactions of interest
 #'
 plotSubVar <- function(simlist, metsel){
   varsub = do.call(rbind,lapply(simlist,function(x,metsel){
@@ -663,11 +663,11 @@ plotSubVar <- function(simlist, metsel){
   },metsel=metsel))
   #varsub = log10(varsub)
   vardat = data.frame("mean"=apply(varsub,2,mean),
-                      "sd"=apply(varsub,2,sd),
+                      "sd"=apply(varsub,2,stats::sd),
                       "mets"=factor(colnames(varsub),levels=metsel))
-  p <- ggplot(vardat, aes(fill=mets, y=mean, x=mets)) +
-    geom_bar(position="dodge", stat="identity") +
-    geom_errorbar(aes(ymax=mean+sd,ymin=mean-sd), position=position_dodge(width=0.9), width=0.25)
+  p <- ggplot2::ggplot(vardat, ggplot2::aes(fill=vardat$mets, y=vardat$mean, x=vardat$mets)) +
+    ggplot2::geom_bar(position="dodge", stat="identity") +
+    ggplot2::geom_errorbar(ggplot2::aes(ymax=vardat$mean+vardat$sd,ymin=vardat$mean-vardat$sd), position=ggplot2::position_dodge(width=0.9), width=0.25)
   return(p)
 }
 
@@ -691,14 +691,14 @@ plotFluxVar <- function(simlist, metsel){
       },mets=metsel[i]))
       conc = ifelse(is.na(conc),0,conc)
       rownames(conc) = unlist(lapply(strsplit(rownames(conc),split="\\."),function(x){x[1]}))
-      cdat = melt(conc)
+      cdat = reshape2::melt(conc)
       meanmat[,j] = cdat$value
       cdat$rep = rep(j,nrow(cdat))
       cdat$met = rep(metsel[i],nrow(cdat))
       concdat = rbind(concdat,cdat) 
     }
     concmean=rbind(concmean,data.frame(org=cdat$Var1,time=cdat$Var2,mean=apply(meanmat,1,mean),
-                                       sd=apply(meanmat,1,sd),met=cdat$met))
+                                       sd=apply(meanmat,1,stats::sd),met=cdat$met))
   }
   
   msum = vector("numeric",length=length(unique(paste(unique(paste(concmean$org,concmean$met))))))
@@ -713,11 +713,11 @@ plotFluxVar <- function(simlist, metsel){
   rmind = which(rownames(concmean) %in% paste(names(which(msum==0)),unique(concmean$time)))
   if(length(rmind)!=0){concmean=concmean[-rmind,]}
   concmean$time = concmean$time-1
-  g <- ggplot(concmean, aes(color=met, y=mean, x=time, shape=org)) +
-    geom_line(aes(x=time,y=mean,color=met),size=0.6) +
-    scale_shape_manual(values=1:nlevels(concmean$org)) +
-    geom_point(aes(shape=org),stroke=0.8,size=2.5) +
-    geom_errorbar(aes(ymax=mean+sd, ymin=mean-sd), width=0.2)
+  g <- ggplot2::ggplot(concmean, ggplot2::aes(color=concmean$met, y=concmean$mean, x=concmean$time, shape=concmean$org)) +
+    ggplot2::geom_line(ggplot2::aes(x=concmean$time,y=concmean$mean,color=concmean$met),size=0.6) +
+    ggplot2::scale_shape_manual(values=1:nlevels(concmean$org)) +
+    ggplot2::geom_point(ggplot2::aes(shape=concmean$org),stroke=0.8,size=2.5) +
+    ggplot2::geom_errorbar(ggplot2::aes(ymax=concmean$mean+concmean$sd, ymin=concmean$mean-concmean$sd), width=0.2)
   return(g)
 }
 
@@ -755,10 +755,10 @@ plotSubUsage <- function(simlist, subs=list(), cutoff=1e-2, ret_data=FALSE){
   
   if(!ret_data) df <- df[which(abs(df$mflux) > cutoff),,drop = FALSE] # do not drop if date is used further
   
-  q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=spec), size=1) + facet_wrap(~sub, scales="free_y")+ xlab("") + ylab("mmol/(h*g_dw)")
+  q1 <- ggplot2::ggplot(df, ggplot2::aes(x=df$time, y=df$mflux)) + ggplot2::geom_line(ggplot2::aes(col=df$spec), size=1) + ggplot2::facet_wrap(~df$sub, scales="free_y")+ ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
   
-  q2 <- ggplot(df, aes(factor(spec), mflux)) + geom_boxplot(aes(color=factor(spec), fill=factor(spec)), alpha=0.2) + 
-    facet_wrap(~sub, scales="free_y") + theme(axis.text.x = element_blank()) + xlab("") + ylab("mmol/(h*g_dw)")
+  q2 <- ggplot2::ggplot(df, ggplot2::aes(factor(df$spec), df$mflux)) + ggplot2::geom_boxplot(ggplot2::aes(color=factor(df$spec), fill=factor(df$spec)), alpha=0.2) + 
+    ggplot2::facet_wrap(~sub, scales="free_y") + ggplot2::theme(axis.text.x =ggplot2::element_blank()) + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
   if(ret_data) return(df) else return(list(q1, q2))
 }
 
@@ -798,17 +798,17 @@ plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, re
   
   if(length(subs)==0){ # in case subs is not specified take substances with highest variance
     mflux_var <- unlist(lapply(levels(df$sub), function(sub){
-      var(df[which(df$sub==sub),]$mflux)
+      stats::var(df[which(df$sub==sub),]$mflux)
     }))
     names(mflux_var) <- levels(df$sub)
     mflux_var <- sort(mflux_var, decreasing = TRUE)
     df <- df[which(df$sub %in% names(mflux_var)[1:var_nr]),]
   }
   
-  q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=sub), size=1) + facet_wrap(~spec, scales="free_y") + xlab("") + ylab("mmol/(h*g_dw)")
+  q1 <- ggplot2::ggplot(df, ggplot2::aes(x=df$time, y=df$mflux)) + ggplot2::geom_line(ggplot2::aes(col=df$sub), size=1) + ggplot2::facet_wrap(~spec, scales="free_y") + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
   
-  q2 <- ggplot(df, aes(factor(sub), mflux)) + geom_boxplot(aes(color=factor(sub), fill=factor(sub)), alpha=0.2) +  facet_wrap(~spec, scales="free_y") +
-    theme(axis.text.x = element_blank()) + xlab("") + ylab("mmol/(h*g_dw)")
+  q2 <- ggplot2::ggplot(df, ggplot2::aes(factor(df$sub), df$mflux)) + ggplot2::geom_boxplot(ggplot2::aes(color=factor(df$sub), fill=factor(df$sub)), alpha=0.2) +  ggplot2::facet_wrap(~df$spec, scales="free_y") +
+    ggplot2::theme(axis.text.x =ggplot2::element_blank()) + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
   
   if(ret_data) return(df) else return(list(q1, q2))
 }

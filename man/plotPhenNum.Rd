@@ -9,6 +9,8 @@ plotPhenNum(simlist, title = "Phenotype number variation", size = 1)
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}
 
+\item{title}{Title of the plot}
+
 \item{size}{A scaling factor for plot text and line size}
 }
 \description{

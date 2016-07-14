@@ -25,8 +25,8 @@
 #' @slot speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
 #' @slot cellarea A numeric value indicating the surface that one organism occupies (unit: mu cm^2)
 #' @slot maxweight A numeric value giving the maximal dry weight of single organism (unit: fg)
-#' @param cellweight_mean A numeric giving the mean of starting biomass 
-#' @param cellweight_sd A numeric giving the standard derivation of starting biomass 
+#' @slot cellweight_mean A numeric giving the mean of starting biomass 
+#' @slot cellweight_sd A numeric giving the standard derivation of starting biomass 
 #' @slot model Object of class sybil::modelorg containging the genome sclae metabolic model
 setClass("Organism",
          representation(
@@ -351,13 +351,6 @@ setMethod("consume", "Organism", function(object, sublb, cutoff=1e-6, bacnum, fb
 #' @return Returns the phenotype of the organisms where the uptake of substances is indicated by a negative and production of substances by a positive number
 #' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages. Uptake of substances is indicated by a negative and production of substances by a positive number.
 #' @seealso \code{\link{Organism-class}}, \code{\link{checkPhen}} and \code{\link{minePheno}}
-#' @examples
-#' \dontrun{
-#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
-#' org <- Organism(Ec_core,deathrate=0.05,
-#'            minweight=0.05,growtype="exponential") #initialize a organism
-#' getPhenotype(org)
-#' }
 setGeneric("getPhenotype", function(object, cutoff=1e-6, fbasol, par=FALSE){standardGeneric("getPhenotype")})
 #' @export
 #' @rdname getPhenotype
@@ -383,11 +376,6 @@ setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6, fbasol, par=
 #' @return Returns the updated biomass of the organisms of interest.
 #' @details Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value.
 #' @seealso \code{\link{Organism-class}} and \code{\link{optimizeLP}}
-#' @examples
-#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
-#' org <- Organism(Ec_core,deathrate=0.05,
-#'            minweight=0.05,growtype="exponential") #initialize a organism
-#' growLin(org,1)
 setGeneric("growLin", function(object, growth, fbasol){standardGeneric("growLin")})
 #' @export
 #' @rdname growLin
@@ -412,13 +400,6 @@ setMethod("growLin", "Organism", function(object, growth, fbasol){
 #' @return Returns the updated biomass of the organisms of interest.
 #' @details Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value
 #' @seealso \code{\link{Organism-class}} and \code{\link{optimizeLP}}
-#' @examples
-#' \dontrun{
-#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
-#' org <- Organism(Ec_core,deathrate=0.05,
-#'            minweight=0.05,growtype="exponential") #initialize a organism
-#' growExp(org,1)
-#' }
 setGeneric("growExp", function(object, growth, fbasol){standardGeneric("growExp")})
 #' @export
 #' @rdname growExp
@@ -548,7 +529,7 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' move(bac,n=20,m=20,j=1,pos=arena@orgdat[,c('x','y')])
+#' move(bac,n=20,m=20,j=1,pos=arena@orgdat[,c('x','y')], occupyM=arena@occupyM)
 setGeneric("move", function(object, pos, n, m, j, occupyM){standardGeneric("move")})
 #' @export
 #' @rdname move
@@ -643,14 +624,6 @@ setMethod("chem", "Bac", function(object){return(object@chem)})
 #' @return Boolean variable of the \code{j}th individual indicating if individual died.
 #' @details Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value. Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value
 #' @seealso \code{\link{Bac-class}}, \code{\link{growLin}} and \code{\link{growExp}}
-#' @examples
-#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
-#' bac <- Bac(Ec_core,deathrate=0.05,
-#'            minweight=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(n=20,m=20) #initialize the environment
-#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
-#' arena <- addSubs(arena,40) #add all possible substances
-#' growth(bac,arena,1)
 setGeneric("growth", function(object, population, j, occupyM, fbasol){standardGeneric("growth")})
 #' @export
 #' @rdname growth
@@ -777,6 +750,7 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
 #' @param sec_obj character giving the secondary objective for a bi-level LP if wanted.
 #' @param cutoff value used to define numeric accuracy.
+#' @param pcut A number giving the cutoff value by which value of objective function is considered greater than 0.
 #' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.
 #' @details Bacterial individuals undergo step by step the following procedures: First the individuals are constrained with \code{constrain} to the substrate environment, then flux balance analysis is computed with \code{optimizeLP}, after this the substrate concentrations are updated with \code{consume}, then the bacterial growth is implemented with \code{growth}, the potential new phenotypes are added with \code{checkPhen}, finally the additional and conditional functions \code{lysis}, \code{move} or \code{chemotaxis} are performed. Can be used as a wrapper for all important bacterial functions in a function similar to \code{simEnv}.
 #' @seealso \code{\link{Bac-class}}, \code{\link{Arena-class}}, \code{\link{simEnv}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{growth}, \code{checkPhen}, \code{lysis}, \code{move} and \code{chemotaxis}
@@ -964,14 +938,6 @@ setMethod("changeFobj", "Human", function(object, new_fobj, model, alg="fba"){
 #' @return Boolean variable of the \code{j}th individual indicating if individual died.
 #' @details Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value. Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value.
 #' @seealso \code{\link{Human-class}}, \code{\link{growLin}} and \code{\link{growExp}}
-#' @examples
-#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
-#' human <- Human(Ec_core,deathrate=0.05,
-#'            minweight=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(n=20,m=20) #initialize the environment
-#' arena <- addOrg(arena,human,amount=10) #add 10 organisms
-#' arena <- addSubs(arena,40) #add all possible substances
-#' cellgrowth(human,arena,1)
 setGeneric("cellgrowth", function(object, population, j, occupyM, fbasol){standardGeneric("cellgrowth")})
 #' @export
 #' @rdname cellgrowth

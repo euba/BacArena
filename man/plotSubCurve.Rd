@@ -5,7 +5,6 @@
 \title{Plot substance curve for several simulations}
 \usage{
 plotSubCurve(simlist, mediac = NULL, time = c(NULL, NULL), scol = NULL,
-  title = "Substance curve with standard deviation", size = 1,
   unit = "mmol", ret_data = FALSE, num_var = 10)
 }
 \arguments{
@@ -16,6 +15,8 @@ plotSubCurve(simlist, mediac = NULL, time = c(NULL, NULL), scol = NULL,
 \item{time}{Vector with two entries defining start and end time.}
 
 \item{scol}{Vector with colors that should be used.}
+
+\item{unit}{Unit for the substances which should be used for plotting (default: mmol)}
 
 \item{ret_data}{Set true if data should be returned}
 

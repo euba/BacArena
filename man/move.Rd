@@ -36,7 +36,7 @@ bac <- Bac(Ec_core,deathrate=0.05,
 arena <- Arena(n=20,m=20) #initialize the environment
 arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 arena <- addSubs(arena,40) #add all possible substances
-move(bac,n=20,m=20,j=1,pos=arena@orgdat[,c('x','y')])
+move(bac,n=20,m=20,j=1,pos=arena@orgdat[,c('x','y')], occupyM=arena@occupyM)
 }
 \seealso{
 \code{\link{Organism-class}}, \code{\link{emptyHood}}
