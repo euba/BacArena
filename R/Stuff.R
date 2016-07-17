@@ -215,11 +215,13 @@ lsd <- function(y){lb=mean(y)-stats::sd(y); ifelse(lb<0,0,lb)}
 #' @return list of three ggplot object for further formating
 #'
 plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL, unit="mmol", ret_data=FALSE, num_var=10){
+  if(is(simlist, "Eval")) simlist <- list(simlist)
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(sum(mediac %in% simlist[[1]]@mediac) != length(mediac)) stop("Substance does not exist in exchange reactions.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@medlist))) stop("Time interval not valid")
   
   if(length(mediac)==0) mediac <- names(getVarSubs(simlist[[1]]))[1:num_var] # get the most varying substances (from first sim)
+  if(length(mediac) == 0) stop("All substance have a variance of zero.")
   all_df <- data.frame()
   for(i in seq_along(simlist)){
     object <- simlist[[i]]
@@ -254,20 +256,31 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL, unit
          'mM'  ={all_df$value <- all_df$value * 10^{-12}/(simlist[[1]]@Lx*simlist[[1]]@Ly); ylabel=paste(ylabel,"mM")},
          stop("Wrong unit for concentration."))
   
-  q1 <- ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$Var1, y=all_df$value, x=all_df$Var2)) + ggplot2::geom_line(size=1) + ggplot2::facet_wrap(~all_df$replc)
-   
-  q2 <- ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$Var1, y=all_df$value, x=all_df$Var2)) + ggplot2::stat_summary(fun.y = mean, geom="line", size=1) + 
-        ggplot2::xlab("Time in h") + ggplot2::ylab(ylabel) + ggplot2::ggtitle("Mean substance curve")
-   
-  q3 <- ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$Var1, y=all_df$value, x=all_df$Var2)) +
-        ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=all_df$Var1), alpha=0.3, size=1) +
-        ggplot2::xlab("Time in h") + ggplot2::ylab(ylabel)
-   
-  q4 <- ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$Var1, y=all_df$value, x=all_df$Var2)) +
-        ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=all_df$Var1), alpha=0.3, size=1) +
-        ggplot2::facet_wrap(~all_df$Var1, scales="free_y") + ggplot2::xlab("Time in h") + ggplot2::ylab(ylabel) #+ 
+  colnames(all_df)[1:2] <- c("sub", "time")
+  plot_list <- list()
   
-  if(ret_data) return(all_df) else return(list(q1, q2, q3, q4))
+  if(length(simlist)>1){
+    q1 <- ggplot2::ggplot(all_df, ggplot2::aes_string(color="sub", y="value", x="time")) + ggplot2::geom_line(size=1) + ggplot2::facet_wrap(~replc)    
+    
+    q3 <- ggplot2::ggplot(all_df, ggplot2::aes_string(color="sub", y="value", x="time")) +
+      ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes_string(fill="sub"), alpha=0.3, size=1) +
+      ggplot2::xlab("Time in h") + ggplot2::ylab(ylabel)
+    
+    q4 <- ggplot2::ggplot(all_df, ggplot2::aes_string(color="sub", y="value", x="time")) +
+      ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes_string(fill="sub"), alpha=0.3, size=1) +
+      ggplot2::facet_wrap(~sub, scales="free_y") + ggplot2::xlab("Time in h") + ggplot2::ylab(ylabel) #+ 
+  plot_list <- list(q1, q3, q4)
+  }else{
+  q4 <- ggplot2::ggplot(all_df, ggplot2::aes_string(color="sub", x="time", y="value")) +
+    ggplot2::geom_line(size=1) + 
+    ggplot2::facet_wrap(~sub, scales="free_y") + ggplot2::xlab("Time in h") + ggplot2::ylab(ylabel) #+ 
+    plot_list <- list(q4)
+  }
+  q2 <- ggplot2::ggplot(all_df, ggplot2::aes_string(color="sub", y="value", x="time")) + ggplot2::stat_summary(fun.y = mean, geom="line", size=1) + 
+        ggplot2::xlab("Time in h") + ggplot2::ylab(ylabel) + ggplot2::ggtitle("Mean substance curve")
+  plot_list[[length(plot_list)+1]] <- q2
+  
+  if(ret_data) return(all_df) else return(plot_list)
 }
 
 
@@ -282,6 +295,7 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL, unit
 #' @param bcol Vector with color that should be used
 #'
 plotGrowthCurve <-function(simlist, bcol=colpal3, time=c(NULL,NULL)){
+  if(is(simlist, "Eval")) simlist <- list(simlist)
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@simlist))) stop("Time interval not valid")
   
@@ -315,23 +329,29 @@ plotGrowthCurve <-function(simlist, bcol=colpal3, time=c(NULL,NULL)){
   cap <- cap * simlist[[1]]@tstep - 1
   if(length(cap)!=0){dat_cap <- data.frame(replc=seq_along(simlist), cap=cap)}
   
-  q1<-ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$species, y=all_df$value, x=all_df$time)) + 
-    ggplot2::geom_line(size=1) + ggplot2::facet_wrap(~replc) + 
-    ggplot2::xlab("Time in h") + ggplot2::ylab("Number of individuals") +
-    ggplot2::scale_color_manual(values=bcol)
-  if(length(cap)!=0){q1 <- q1 + ggplot2::geom_vline(data=dat_cap, ggplot2::aes(xintercept=cap))}
-  
-  q2<-ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$species, y=all_df$value, x=all_df$time)) +
-    ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=all_df$species), alpha=0.3) + 
-    ggplot2::xlab("Time in h") + ggplot2::ylab("Number of individuals") + ggplot2::scale_color_manual(values=bcol) + ggplot2::scale_fill_manual(values=bcol)
-  if(length(cap)!=0){q2 <- q2 + ggplot2::geom_vline(xintercept=min(cap))}
+  plot_list <- list()
+  if(length(simlist) > 1){ # first two plots only possible if replicates are available
+    q1<-ggplot2::ggplot(all_df, ggplot2::aes_string(color="species", y="value", x="time")) + 
+      ggplot2::geom_line(size=1) + ggplot2::facet_wrap(~replc) +
+      ggplot2::xlab("Time in h") + ggplot2::ylab("Number of individuals") +
+      ggplot2::scale_color_manual(values=bcol)
+    if(length(cap)!=0){q1 <- q1 + ggplot2::geom_vline(data=dat_cap, ggplot2::aes(xintercept=cap))}
     
-  q3<-ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$species, y=all_df$value, x=all_df$time)) +
+    q2<-ggplot2::ggplot(all_df, ggplot2::aes_string(color="species", y="value", x="time")) +
+      ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes_string(fill="species"), alpha=0.3) + 
+      ggplot2::xlab("Time in h") + ggplot2::ylab("Number of individuals") + ggplot2::scale_color_manual(values=bcol) + ggplot2::scale_fill_manual(values=bcol)
+    if(length(cap)!=0){q2 <- q2 + ggplot2::geom_vline(xintercept=min(cap))}
+    
+    plot_list <- list(q1, q2)
+  }
+    
+  q3<-ggplot2::ggplot(all_df, ggplot2::aes_string(color="species", y="value", x="time")) +
     ggplot2::stat_summary(fun.y = mean, geom="line", size=1) + 
     ggplot2::xlab("Time in h") + ggplot2::ylab("Number of individuals") + ggplot2::scale_color_manual(values=bcol)
   if(length(cap)!=0){q3 <- q3 + ggplot2::geom_vline(xintercept=min(cap))}
+  if(length(plot_list)==0) plot_list <- q3 else plot_list[[length(plot_list)+1]] <- q3
   
-  return(list(q1, q2, q3))
+  return(plot_list)
 }
 
 
@@ -616,6 +636,7 @@ plotInterNum <-function(simlist, title="Variation in number of interactions", si
 #' @param use_biomass If enabled then biomass is used instead of cell number
 #'
 plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3, return_dat=F, use_biomass=F){
+  if(is(simlist, "Eval")) simlist <- list(simlist)
   all_df <- data.frame()
   for(i in seq_along(simlist)){
     object <- simlist[[i]]
@@ -641,7 +662,7 @@ plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3, return_dat=F,
     names(abundances) <- levels(all_df$species)
     return(abundances)
   }else{
-    q <- ggplot2::ggplot(all_df, ggplot2::aes(factor(all_df$species), all_df$value)) + ggplot2::geom_boxplot(ggplot2::aes(color=factor(all_df$species), fill=factor(all_df$species)), alpha = 0.2, outlier.size=1) + 
+    q <- ggplot2::ggplot(all_df, ggplot2::aes_string("species", "value")) + ggplot2::geom_boxplot(ggplot2::aes_string(color="species", fill="species"), alpha = 0.2, outlier.size=1) + 
       ggplot2::scale_fill_manual(values=col) + ggplot2::scale_color_manual(values=col) + 
       ggplot2::theme(axis.text.x =ggplot2::element_blank(), legend.title=ggplot2::element_blank(),axis.title.x = ggplot2::element_blank(),axis.title.y = ggplot2::element_blank())
     return(q)
@@ -755,10 +776,10 @@ plotSubUsage <- function(simlist, subs=list(), cutoff=1e-2, ret_data=FALSE){
   
   if(!ret_data) df <- df[which(abs(df$mflux) > cutoff),,drop = FALSE] # do not drop if date is used further
   
-  q1 <- ggplot2::ggplot(df, ggplot2::aes(x=df$time, y=df$mflux)) + ggplot2::geom_line(ggplot2::aes(col=df$spec), size=1) + ggplot2::facet_wrap(~df$sub, scales="free_y")+ ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
+  q1 <- ggplot2::ggplot(df, ggplot2::aes_string(x="time", y="mflux")) + ggplot2::geom_line(ggplot2::aes_string(col="spec"), size=1) + ggplot2::facet_wrap(~sub, scales="free_y")+ ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
   
-  q2 <- ggplot2::ggplot(df, ggplot2::aes(factor(df$spec), df$mflux)) + ggplot2::geom_boxplot(ggplot2::aes(color=factor(df$spec), fill=factor(df$spec)), alpha=0.2) + 
-    ggplot2::facet_wrap(~sub, scales="free_y") + ggplot2::theme(axis.text.x =ggplot2::element_blank()) + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
+  q2 <- ggplot2::ggplot(df, ggplot2::aes_string("spec", "mflux")) + ggplot2::geom_boxplot(ggplot2::aes_string(color="spec", fill="spec"), alpha=0.2) + 
+    ggplot2::facet_wrap(~sub, scales="free_y") + ggplot2::theme(legend.title=ggplot2::element_blank(), axis.text.x =ggplot2::element_blank()) + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
   if(ret_data) return(df) else return(list(q1, q2))
 }
 
@@ -805,10 +826,12 @@ plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, re
     df <- df[which(df$sub %in% names(mflux_var)[1:var_nr]),]
   }
   
-  q1 <- ggplot2::ggplot(df, ggplot2::aes(x=df$time, y=df$mflux)) + ggplot2::geom_line(ggplot2::aes(col=df$sub), size=1) + ggplot2::facet_wrap(~spec, scales="free_y") + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
+  q1 <- ggplot2::ggplot(df, ggplot2::aes_string(x="time", y="mflux")) + ggplot2::geom_line(ggplot2::aes_string(col="sub"), size=1) + 
+        ggplot2::facet_wrap(~spec, scales="free_y") + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
   
-  q2 <- ggplot2::ggplot(df, ggplot2::aes(factor(df$sub), df$mflux)) + ggplot2::geom_boxplot(ggplot2::aes(color=factor(df$sub), fill=factor(df$sub)), alpha=0.2) +  ggplot2::facet_wrap(~df$spec, scales="free_y") +
+  q2 <- ggplot2::ggplot(df, ggplot2::aes_string("sub", "mflux")) + ggplot2::geom_boxplot(ggplot2::aes_string(color="sub", fill="sub"), alpha=0.2) + 
     ggplot2::theme(axis.text.x =ggplot2::element_blank()) + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
+  if(length(levels(df$spec)) > 2) q2 <- q2 + ggplot2::facet_wrap(~spec, scales="free_y")
   
   if(ret_data) return(df) else return(list(q1, q2))
 }
