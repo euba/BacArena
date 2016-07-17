@@ -1707,6 +1707,7 @@ setMethod("getVarSubs", "Eval", function(object, show_products=FALSE, show_subst
   #rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
   rownames(mat) <- mediac
   mat_var  <- apply(mat, 1, stats::var)
+  if(length(mat_var[which(mat_var>0)]) == 0) return() # no substance having a variance > 0
   if(!(show_products || show_substrates)) {
     ret <- sort(mat_var[which(mat_var>0)], decreasing=TRUE)
     len_ret <- length(ret)
