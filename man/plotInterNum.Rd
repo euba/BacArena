@@ -10,6 +10,8 @@ plotInterNum(simlist, title = "Variation in number of interactions",
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}
 
+\item{title}{Title of the plot}
+
 \item{size}{A scaling factor for plot text and line size}
 }
 \description{

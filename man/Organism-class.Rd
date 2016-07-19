@@ -4,11 +4,6 @@
 \name{Organism-class}
 \alias{Organism-class}
 \title{Structure of the S4 class "Organism"}
-\arguments{
-\item{cellweight_mean}{A numeric giving the mean of starting biomass}
-
-\item{cellweight_sd}{A numeric giving the standard derivation of starting biomass}
-}
 \description{
 Structure of the S4 class \code{Organism} representing the organisms present in the environment.
 }
@@ -44,6 +39,10 @@ Structure of the S4 class \code{Organism} representing the organisms present in 
 \item{\code{cellarea}}{A numeric value indicating the surface that one organism occupies (unit: mu cm^2)}
 
 \item{\code{maxweight}}{A numeric value giving the maximal dry weight of single organism (unit: fg)}
+
+\item{\code{cellweight_mean}}{A numeric giving the mean of starting biomass}
+
+\item{\code{cellweight_sd}}{A numeric giving the standard derivation of starting biomass}
 
 \item{\code{model}}{Object of class sybil::modelorg containging the genome sclae metabolic model}
 }}

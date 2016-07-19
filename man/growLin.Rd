@@ -26,12 +26,6 @@ The generic function \code{growLin} implements a growth model of organisms in th
 \details{
 Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value.
 }
-\examples{
-data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
-org <- Organism(Ec_core,deathrate=0.05,
-           minweight=0.05,growtype="exponential") #initialize a organism
-growLin(org,1)
-}
 \seealso{
 \code{\link{Organism-class}} and \code{\link{optimizeLP}}
 }

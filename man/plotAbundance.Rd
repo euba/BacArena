@@ -2,12 +2,10 @@
 % Please edit documentation in R/Stuff.R
 \name{plotAbundance}
 \alias{plotAbundance}
-\alias{plotSubVar}
 \title{Plot abundances of species}
 \usage{
-plotAbundance(simlist, time = c(NULL, NULL), col = colpal3)
-
-plotSubVar(simlist, metsel)
+plotAbundance(simlist, time = c(NULL, NULL), col = colpal3,
+  return_dat = F, use_biomass = F)
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}
@@ -16,13 +14,11 @@ plotSubVar(simlist, metsel)
 
 \item{col}{Vector with color that should be used}
 
-\item{simlist}{A list of simulations (eval objects).}
+\item{return_dat}{Should plain text mean abundances be returned? (default false)}
 
-\item{metlist}{A vector with the name of exchange reactions of interest}
+\item{use_biomass}{If enabled then biomass is used instead of cell number}
 }
 \description{
 The function \code{plotAbundance} takes a list of simulations and return a boxplot with species abundances
-
-The function \code{plotSubVar} takes a list of simulations and return a barplot with most varying substances
 }
 

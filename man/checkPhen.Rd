@@ -28,13 +28,6 @@ The generic function \code{checkPhen} checks and adds the phenotypes of organism
 \details{
 The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages. Uptake of substances are indicated by a negative and production of substances by a positive number.
 }
-\examples{
-data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
-bac <- Bac(Ec_core,deathrate=0.05,
-           minweight=0.05,growtype="exponential") #initialize a bacterium
-arena <- Arena(n=20,m=20) #initialize the environment
-checkPhen(arena,bac) #returns 1 as the index of the current phenotype in the list.
-}
 \seealso{
 \code{\link{Arena-class}} and \code{\link{getPhenotype}}
 }

@@ -34,6 +34,8 @@ simEnv(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
 \item{sec_obj}{character giving the secondary objective for a bi-level LP if wanted.}
 
 \item{cutoff}{value used to define numeric accuracy}
+
+\item{pcut}{A number giving the cutoff value by which value of objective function is considered greater than 0.}
 }
 \value{
 Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
@@ -51,7 +53,7 @@ bac <- Bac(Ec_core,deathrate=0.05,
 arena <- Arena(n=20,m=20) #initialize the environment
 arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 arena <- addSubs(arena,40) #add all possible substances
-eval <- simEnv(arena,10)
+eval <- simEnv(arena,5)
 }
 \seealso{
 \code{\link{Arena-class}} and \code{\link{Eval-class}}

@@ -26,6 +26,8 @@ Structure of the S4 class \code{Arena} to represent the environment in which Org
 
 \item{\code{mflux}}{A vector containing highly used metabolic reactions within the arena}
 
+\item{\code{shadow}}{A vector containing shadow prices of metabolites present in the arena}
+
 \item{\code{n}}{A number giving the horizontal size of the environment.}
 
 \item{\code{m}}{A number giving the vertical size of the environment.}

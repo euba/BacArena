@@ -4,8 +4,7 @@
 \alias{plotGrowthCurve}
 \title{Plot growth curve for several simulations}
 \usage{
-plotGrowthCurve(simlist, bcol = colpal3, time = c(NULL, NULL), title = "",
-  size = 1)
+plotGrowthCurve(simlist, bcol = colpal3, time = c(NULL, NULL))
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}

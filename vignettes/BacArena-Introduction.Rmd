@@ -3,16 +3,13 @@ title: "BacArena - An Agent-Based Modeling Framework for Cellular Communities"
 author: "Eugen Bauer and Johannes Zimmermann"
 date: "`r Sys.Date()`"
 output:
-  rmarkdown::html_vignette:
-    toc: true
-  rmarkdown::pdf_vignette:
-    toc: true
-#output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Vignette Title}
-  %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+  html_document:
+      theme: flatly
 ---
+<!--
+%\VignetteEngine{knitr::rmarkdown}
+%\VignetteIndexEntry{BacArena-Introduction}
+-->
 
 # Introduction to BacArena
 

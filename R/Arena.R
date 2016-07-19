@@ -19,6 +19,7 @@ globalVariables(c("diffuseNaiveCpp","diffuseSteveCpp"))
 #' @slot tstep A number giving the time (in h) per iteration.
 #' @slot stir A boolean variable indicating if environment should be stirred.
 #' @slot mflux A vector containing highly used metabolic reactions within the arena
+#' @slot shadow A vector containing shadow prices of metabolites present in the arena
 #' @slot n A number giving the horizontal size of the environment.
 #' @slot m A number giving the vertical size of the environment.
 #' @slot Lx A number giving the horizontal grid size in cm.
@@ -39,6 +40,7 @@ setClass("Arena",
            tstep="numeric",
            stir="logical",
            mflux="list",
+           shadow="list",
            n="numeric",
            m="numeric",
            gridgeometry="list",
@@ -59,6 +61,7 @@ setClass("Arena",
           tstep = 1,
           stir = F,
           mflux = list(),
+          shadow = list(),
           seed=sample(1:10000,1),
           models=list(),
           sublb=matrix()
@@ -109,7 +112,9 @@ setMethod("tstep", "Arena", function(object){return(object@tstep)})
 setGeneric("stir", function(object){standardGeneric("stir")})
 setMethod("stir", "Arena", function(object){return(object@stir)})
 setGeneric("mflux", function(object){standardGeneric("mflux")})
-setMethod("mflux", "Arena", function(object){return(object@mflux)})
+setMethod("mflux", "Arena", function(object){return(object@shadow)})
+setGeneric("shadow", function(object){standardGeneric("shadow")})
+setMethod("shadow", "Arena", function(object){return(object@mflux)})
 setGeneric("n", function(object){standardGeneric("n")})
 setMethod("n", "Arena", function(object){return(object@n)})
 setGeneric("m", function(object){standardGeneric("m")})
@@ -166,11 +171,16 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   newspecs[[spectype]] <- specI
   type <- which(names(newspecs)==spectype)
   newmflux <- object@mflux
+  newshadow <- object@shadow
 
   # mflux
   newmflux[[spectype]] <- numeric(length(specI@lbnd))
   names(newmflux[[spectype]]) <- names(specI@lbnd)
-  
+  #shadow
+  ex=sybil::findExchReact(specI@model)
+  newshadow[[spectype]] <- numeric(length(ex))
+  names(newshadow[[spectype]]) <- ex@met_id
+
   type <- which(names(newspecs)==spectype) 
   lastind <- nrow(object@orgdat)
   if(length(x*y)==0){
@@ -217,6 +227,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   object@orgdat <- neworgdat
   object@specs <- newspecs
   object@mflux <- newmflux
+  object@shadow <- newshadow
   object@models <- c(object@models, specI@model)
   return(object)
   # eval.parent(substitute(object@media <- c(object@media,newmedia)))
@@ -250,7 +261,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
-#' arena <- addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
+#' arena <- addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add glucose, o2, pi
 setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=TRUE){standardGeneric("addSubs")})
 #' @rdname addSubs
 #' @export
@@ -260,7 +271,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   }
   if(sum(mediac %in% object@mediac) != length(mediac)){
     print(setdiff(mediac, object@mediac))
-    warning("Substance does not exist in exchange reactions. They will not be added")
+    warning("Substance does not exist in exchange reactions. It will not be added")
   }
   if(length(object@media)==0){
     stop("Organisms need to be defined first to determine what substances can be exchanged.")
@@ -562,12 +573,6 @@ setMethod("changeOrg", "Arena", function(object, neworgdat){
 #' @return Returns a number indicating the number of the phenotype in the phenotype list.
 #' @details The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages. Uptake of substances are indicated by a negative and production of substances by a positive number.
 #' @seealso \code{\link{Arena-class}} and \code{\link{getPhenotype}}
-#' @examples
-#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
-#' bac <- Bac(Ec_core,deathrate=0.05,
-#'            minweight=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(n=20,m=20) #initialize the environment
-#' checkPhen(arena,bac) #returns 1 as the index of the current phenotype in the list.
 setGeneric("checkPhen", function(object, org, cutoff=1e-6, fbasol){standardGeneric("checkPhen")})
 #' @export
 #' @rdname checkPhen
@@ -659,6 +664,7 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' @param cl_size If diff_par is true then cl_size defines the number of cores to be used in parallelized diffusion.
 #' @param sec_obj character giving the secondary objective for a bi-level LP if wanted.
 #' @param cutoff value used to define numeric accuracy
+#' @param pcut A number giving the cutoff value by which value of objective function is considered greater than 0.
 #' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
 #' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
 #' @seealso \code{\link{Arena-class}} and \code{\link{Eval-class}}
@@ -669,7 +675,7 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
+#' eval <- simEnv(arena,5)
 setGeneric("simEnv", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, sec_obj="none", cutoff=1e-6, pcut=1e-6){standardGeneric("simEnv")})
 #' @export
 #' @rdname simEnv
@@ -695,6 +701,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
   if(class(object)!="Eval"){addEval(evaluation, arena)}
   arena@sublb <- getSublb(arena)
   diff_t=0
+  biomass_stat <- sapply(seq_along(arena@specs), function(x){sum(arena@orgdat$growth[which(arena@orgdat$type==x)])})
   for(i in 1:time){
     init_t <- proc.time()[3]
     sublb <- arena@sublb
@@ -704,10 +711,12 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       sublb = sublb[new_ind,] #apply shuffeling also to sublb to ensure same index as orgdat
     }
     cat("\niteration:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "pg \n")
-    org_stat <- table(arena@orgdat$type)
-    names(org_stat) <- names(arena@specs)[as.numeric(names(org_stat))]
+    org_stat <- sapply(seq_along(arena@specs), function(x){dim(arena@orgdat[which(arena@orgdat$type==x),])[1]})
+    old_biomass<-biomass_stat; biomass_stat <- sapply(seq_along(arena@specs), function(x){sum(arena@orgdat$growth[which(arena@orgdat$type==x)])})
+    org_stat <- cbind(org_stat, biomass_stat, 100*(biomass_stat-old_biomass)/old_biomass); rownames(org_stat) <- names(arena@specs); colnames(org_stat) <- c("count", "biomass", "%")
     print(org_stat)
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
+    arena@shadow <-lapply(arena@shadow, function(x){numeric(length(x))}) # empty shadow pool
       if(nrow(arena@orgdat) > 0){ # if there are organisms left
       for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
         org <- arena@specs[[arena@orgdat[j,'type']]]
@@ -833,7 +842,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
+#' eval <- simEnv(arena,5)
 setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, cluster_size=NULL, diffusion=TRUE, sec_obj="none", cutoff=1e-6){standardGeneric("simEnv_par")})
 #' @export
 #' @rdname simEnv_par
@@ -873,6 +882,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=FALSE
     names(org_stat) <- names(arena@specs)[as.numeric(names(org_stat))]
     print(org_stat)
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
+    arena@shadow <-lapply(arena@shadow, function(x){numeric(length(x))}) # empty shadow pool
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
       #if(nrow(arena@orgdat) >= arena@n*arena@m) browser()
       test_init_t <- proc.time()[3]
@@ -916,27 +926,28 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=FALSE
                                           todo_pheno <- phen_res[[1]]
                                           list("neworgdat"=neworgdat, "sublb"=sublb, "fbasol"=fbasol, "todo_pheno"=todo_pheno, "todo_pheno_nr"=todo_pheno_nr)
                                         })
-                                      list("neworgdat"=sapply(test, with, neworgdat), "sublb"=sapply(test, with, sublb), "fbasol_flux"=sapply(test, with, fbasol$fluxes), "todo_pheno"=sapply(test, with, todo_pheno), "todo_pheno_nr"=sapply(test, with, todo_pheno_nr))
+                                      list("neworgdat"=sapply(test, with, test$neworgdat), "sublb"=sapply(test, with, test$sublb), "fbasol_flux"=sapply(test, with, fbasol$fluxes), "todo_pheno"=sapply(test, with, test$todo_pheno), "todo_pheno_nr"=sapply(test, with, test$todo_pheno_nr))
           #})
           }, mc.cores=cluster_size))[3]
           
           par_post_init_t <- proc.time()[3]
           tmpnames <- colnames(arena@orgdat)
-          orgdat2 <- data.frame(matrix(unlist(sapply(parallel_sol, with, neworgdat)), ncol=dim(arena@orgdat)[2], byrow=TRUE))
+          orgdat2 <- data.frame(matrix(unlist(sapply(parallel_sol, with, parallel_sol$neworgdat)), ncol=dim(arena@orgdat)[2], byrow=TRUE))
           colnames(orgdat2) <- tmpnames
           if(all(apply(orgdat2, 1, is.numeric)) != TRUE) browser()
           arena@orgdat <<- orgdat2
 
           tmpnames <- colnames(sublb)
-          sublb2 <- matrix(unlist(sapply(parallel_sol, with, sublb)), ncol=dim(sublb)[2], byrow=TRUE)
+          sublb2 <- matrix(unlist(sapply(parallel_sol, with, parallel_sol$parallel_solsublb)), ncol=dim(sublb)[2], byrow=TRUE)
           colnames(sublb2) <- tmpnames
           sublb <<- sublb2
           
-          fba_fluxes <- sapply(parallel_sol, with, fbasol_flux)
+          fba_fluxes <- sapply(parallel_sol, with, parallel_sol$parallel_solfbasol_flux)
           arena@mflux[[names(arena@specs)[[spec_nr]]]] <<- arena@mflux[[names(arena@specs)[[spec_nr]]]] + colSums(matrix(unlist(fba_fluxes), ncol=length(arena@mflux[[names(arena@specs)[[spec_nr]]]]), byrow = TRUE)) # remember active fluxes
-          todo_pheno <- sapply(parallel_sol, with, todo_pheno)
+          #arena@shadow[[names(arena@specs)[[spec_nr]]]] <<- arena@shadow[[names(arena@specs)[[spec_nr]]]] + colSums(matrix(unlist(fba_fluxes), ncol=length(arena@mflux[[names(arena@specs)[[spec_nr]]]]), byrow = TRUE)) # remember active fluxes
+          todo_pheno <- sapply(parallel_sol, with, parallel_sol$parallel_soltodo_pheno)
           todo_pheno <- as.numeric(unname(unlist(todo_pheno)))
-          todo_pheno_nr <- sapply(parallel_sol, with, todo_pheno_nr)
+          todo_pheno_nr <- sapply(parallel_sol, with, parallel_sol$parallel_soltodo_pheno_nr)
           todo_pheno_nr <- unlist(todo_pheno_nr)
           if(all(is.na(arena@orgdat$phenotype))) arena@orgdat$phenotype <<- todo_pheno # init case
           if(length(todo_pheno_nr) > 0){ # handle new phenotypes
@@ -1211,9 +1222,9 @@ setMethod("findInArena", "Arena", function(object, pattern, search_rea=TRUE, sea
     print(object@mediac[res_name])
   }
   
-  if(search_rea & length(arena@models)>0){
-    for(i in 1:length(arena@models)){
-      model = arena@models[[i]]
+  if(search_rea & length(object@models)>0){
+    for(i in 1:length(object@models)){
+      model = object@models[[i]]
       cat(paste0("\n\n", i, ". ", model@mod_desc, model@mod_name))
       res_rea_id   <- grep(x=model@react_id,   pattern=pattern, ignore.case = TRUE)
       print(paste(model@react_id[res_rea_id], model@react_name[res_rea_id]))
@@ -1276,6 +1287,7 @@ setMethod(show, "Arena", function(object){
 #' @slot medlist A list of compressed medium concentrations (only changes of concentrations are stored) per time step.
 #' @slot simlist A list of the organism features per time step.
 #' @slot mfluxlist A list of containing highly used metabolic reactions per time step. 
+#' @slot shadowlist A list of containing shadow prices per time step. 
 #' @slot subchange A vector of all substrates with numbers indicating the degree of change in the overall simulation.
 setClass("Eval",
          contains="Arena",
@@ -1283,12 +1295,14 @@ setClass("Eval",
            medlist="list",
            simlist="list",
            mfluxlist="list",
+           shadowlist="list",
            subchange="numeric"
          ),
          prototype(
            medlist = list(),
            simlist = list(),
-           mfluxlist = list()
+           mfluxlist = list(),
+           shadowlist = list()
          )
 )
 
@@ -1305,7 +1319,7 @@ Eval <- function(arena){
   subc = rep(0, length(arena@mediac))
   names(subc) <- arena@mediac
   new("Eval", n=arena@n, m=arena@m, Lx=arena@Lx, Ly=arena@Ly, tstep=arena@tstep, specs=arena@specs, mediac=arena@mediac, subchange=subc,
-      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir, mfluxlist=list())
+      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir, mfluxlist=list(), shadowlist=list() )
 }
 
 ########################################################################################################
@@ -1318,6 +1332,8 @@ setGeneric("simlist", function(object){standardGeneric("simlist")})
 setMethod("simlist", "Eval", function(object){return(object@simlist)})
 setGeneric("mfluxlist", function(object){standardGeneric("mfluxlist")})
 setMethod("mfluxlist", "Eval", function(object){return(object@mfluxlist)})
+setGeneric("shadowlist", function(object){standardGeneric("shadowlist")})
+setMethod("shadowlist", "Eval", function(object){return(object@shadowlist)})
 setGeneric("subchange", function(object){standardGeneric("subchange")})
 setMethod("subchange", "Eval", function(object){return(object@subchange)})
 
@@ -1343,7 +1359,7 @@ setMethod("subchange", "Eval", function(object){return(object@subchange)})
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
+#' eval <- simEnv(arena,5)
 #' addEval(eval,arena)
 setGeneric("addEval", function(object, arena, replace=F){standardGeneric("addEval")})
 #' @export
@@ -1373,6 +1389,7 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
     eval.parent(substitute(object@simlist[[length(object@simlist)+1]] <- arena@orgdat))
     eval.parent(substitute(object@phenotypes <- arena@phenotypes))
     eval.parent(substitute(object@mfluxlist[[length(object@mfluxlist)+1]] <- arena@mflux))
+    eval.parent(substitute(object@shadowlist[[length(object@shadowlist)+1]] <- arena@shadow))
   }else{
     eval.parent(substitute(object@medlist[[length(object@medlist)]] <- lapply(arena@media, function(x){
       return(as.vector(x@diffmat))
@@ -1403,7 +1420,7 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
+#' eval <- simEnv(arena,5)
 #' arena5 <- getArena(eval,5)
 setGeneric("getArena", function(object, time=(length(object@medlist)-1)){standardGeneric("getArena")})
 #' @export
@@ -1418,7 +1435,7 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
   occdat <- object@simlist[[time]]
   
   arena <- Arena(n=object@n, m=object@m, Lx=object@Lx, Ly=object@Ly, tstep=object@tstep, specs=object@specs, mediac=object@mediac, mflux=object@mfluxlist[[time]],
-                 phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, stir=object@stir)
+                 phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, stir=object@stir, shadow=object@shadowlist[[time]])
   return(arena)
 })
 
@@ -1440,7 +1457,7 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
+#' eval <- simEnv(arena,5)
 #' eval_reduce <- redEval(eval,5)
 setGeneric("redEval", function(object, time="all"){standardGeneric("redEval")})
 #' @export
@@ -1471,7 +1488,7 @@ setMethod("redEval", "Eval", function(object, time=1:length(object@medlist)){ #i
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
+#' eval <- simEnv(arena,5)
 #' med5 <- extractMed(eval,5)
 setGeneric("extractMed", function(object, time=length(object@medlist), mediac=object@mediac){standardGeneric("extractMed")})
 #' @export
@@ -1512,7 +1529,7 @@ setMethod("extractMed", "Eval", function(object, time=length(object@medlist), me
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
+#' eval <- simEnv(arena,5)
 #' evalArena(eval)
 #'\dontrun{
 #' ## if animation package is installed a movie of the simulation can be stored:
@@ -1616,7 +1633,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
+#' eval <- simEnv(arena,5)
 #' plotCurves(eval)
 setGeneric("plotCurves", function(object, medplot=object@mediac, retdata=F, remove=F, legend=F){standardGeneric("plotCurves")})
 #' @export
@@ -1689,7 +1706,8 @@ setMethod("getVarSubs", "Eval", function(object, show_products=FALSE, show_subst
   mediac <- object@mediac
   #rownames(mat) <- gsub("\\(e\\)","", gsub("EX_","",mediac))
   rownames(mat) <- mediac
-  mat_var  <- apply(mat, 1, var)
+  mat_var  <- apply(mat, 1, stats::var)
+  if(length(mat_var[which(mat_var>0)]) == 0) return() # no substance having a variance > 0
   if(!(show_products || show_substrates)) {
     ret <- sort(mat_var[which(mat_var>0)], decreasing=TRUE)
     len_ret <- length(ret)
@@ -1769,7 +1787,7 @@ setMethod("getSubHist", "Eval", function(object, sub){
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
+#' eval <- simEnv(arena,5)
 #' plotCurves2(eval)
 setGeneric("plotCurves2", function(object, legendpos="topleft", ignore=c("EX_h(e)","EX_pi(e)", "EX_h2o(e)"),
                                    num=10, phencol=FALSE, biomcol=FALSE, dict=NULL, subs=list(), growthCurve=TRUE, subCurve=TRUE){standardGeneric("plotCurves2")})
@@ -1794,7 +1812,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
         mediac <- object@mediac[-ignore_subs]
       } else mediac <- object@mediac
       rownames(mat) <-  gsub("\\[e\\]","", gsub("\\(e\\)","", gsub("EX_","",mediac)))
-      mat_var  <- apply(mat, 1, var)
+      mat_var  <- apply(mat, 1, stats::var)
       num_var <- length(which(mat_var>0))
       if(num_var>0){
         mat_nice <- tail(mat[order(mat_var),], ifelse(num_var>num, num, num_var))
@@ -1878,7 +1896,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
+#' eval <- simEnv(arena,5)
 #' plotTotFlux(eval)
 setGeneric("plotTotFlux", function(object, legendpos="topright", num=20){standardGeneric("plotTotFlux")})
 #' @export
@@ -1920,7 +1938,7 @@ setMethod("plotTotFlux", "Eval", function(object, legendpos="topright", num=20){
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
+#' eval <- simEnv(arena,5)
 #' phenmat <- getPhenoMat(eval)
 setGeneric("getPhenoMat", function(object, time="total", sparse=F){standardGeneric("getPhenoMat")})
 #' @export
@@ -1974,7 +1992,7 @@ setMethod("getPhenoMat", "Eval", function(object, time="total", sparse=F){
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
+#' eval <- simEnv(arena,5)
 #' minePheno(eval)
 setGeneric("minePheno", function(object, plot_type="pca", legend=F, time="total"){standardGeneric("minePheno")})
 #' @export
@@ -2034,8 +2052,8 @@ setMethod("minePheno", "Eval", function(object, plot_type="pca", legend=F, time=
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
-#' selPheno(eval,time=10,type='ecoli_core_model',reduce=TRUE)
+#' eval <- simEnv(arena,5)
+#' selPheno(eval,time=5,type='ecoli_core_model',reduce=TRUE)
 setGeneric("selPheno", function(object, time, type, reduce=F){standardGeneric("selPheno")})
 #' @export
 #' @rdname selPheno
@@ -2112,7 +2130,7 @@ setMethod(show, signature(object="Eval"), function(object){
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
+#' eval <- simEnv(arena,5)
 #' statPheno(eval, type_nr=1, phenotype_nr=2)
 setGeneric("statPheno", function(object, type_nr=1, phenotype_nr, dict=NULL){standardGeneric("statPheno")})
 #' @export
@@ -2385,9 +2403,9 @@ setMethod("findFeeding2", "Eval", function(object, time, mets, rm_own=T, ind_thr
   vertexatt = data.frame(name = names(object@specs),color=1:length(object@specs),weight=as.vector(table(object@simlist[[time]]$type)))
   g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE, vertices=vertexatt)
   l <- igraph::layout.kamada.kawai(g)
-  plot(g,vertex.size=vertexatt$weight/max(vertexatt$weight)*20,edge.color=rainbow(length(levels(inter$met)))[as.numeric(inter$met)],
+  plot(g,vertex.size=vertexatt$weight/max(vertexatt$weight)*20,edge.color=grDevices::rainbow(length(levels(inter$met)))[as.numeric(inter$met)],
        edge.arrow.size=0.5,edge.width=(inter$rel_prod*inter$rel_cons)*5,vertex.color=vertexatt$color+1,layout=l)
-  legend("bottomright",legend=levels(inter$met),col=rainbow(length(levels(inter$met))), pch=19, cex=0.7)
+  legend("bottomright",legend=levels(inter$met),col=grDevices::rainbow(length(levels(inter$met))), pch=19, cex=0.7)
   return(list(inter,g))
 })
 
@@ -2424,9 +2442,9 @@ setMethod("findFeeding3", "Eval", function(object, time, mets){
   }
   g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE)
   l <- igraph::layout.kamada.kawai(g)
-  plot(g,edge.color=rainbow(length(levels(inter$met)))[as.numeric(inter$met)],
+  plot(g,edge.color=grDevices::rainbow(length(levels(inter$met)))[as.numeric(inter$met)],
        edge.width=3,edge.arrow.size=0.8,vertex.color=1:length(V(g)),layout=l)
-  legend("bottomright",legend=levels(inter$met),col=rainbow(length(levels(inter$met))), pch=19, cex=0.7)
+  legend("bottomright",legend=levels(inter$met),col=grDevices::rainbow(length(levels(inter$met))), pch=19, cex=0.7)
   return(list(inter,g))
 })
                           
@@ -2504,7 +2522,7 @@ setMethod("statSpec", "Eval", function(object, type_nr=1, dict=NULL,
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
+#' eval <- simEnv(arena,5)
 #' getCorrM(eval)
 setGeneric("getCorrM", function(object, reactions=TRUE, bacs=TRUE, substrates=TRUE){standardGeneric("getCorrM")})
 #' @export
@@ -2560,7 +2578,7 @@ setMethod("getCorrM", "Eval", function(object, reactions=TRUE, bacs=TRUE, substr
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,10)
+#' eval <- simEnv(arena,5)
 #' checkCorr(eval, tocheck="o2")
 setGeneric("checkCorr", function(object, corr=NULL, tocheck=list()){standardGeneric("checkCorr")})
 #' @export
@@ -2578,89 +2596,47 @@ setMethod("checkCorr", "Eval", function(object, corr=NULL, tocheck=list()){
 })
 
 
-#' @title Function to plot usage of substances species wise 
+
+#' @title Function to plot substance shadow costs for a specie
 #'
-#' @description The generic function \code{plotSubUsage} displays for given substances the quantities of absorption and production for each species
+#' @description The generic function \code{plotShadowCost} plots substances have the highest impact on further growth (shadow cost < 0)
 #' @export
-#' @rdname plotSubUsage
-#'
-#' @param object An object of class Eval.
-#' @param subs List of substance names
-#' @param cutoff Total values below cutoff will be dismissed
-#' @details Returns ggplot objects
-setGeneric("plotSubUsage", function(object, subs=list(), cutoff=1e-2){standardGeneric("plotSubUsage")})
-#' @export
-#' @rdname plotSubUsage
-setMethod("plotSubUsage", "Eval", function(object, subs=list(), cutoff=1e-2){
-  
-  if(length(subs)==0){ subs <- names(getVarSubs(sim, size = 9))
-  }else if(sum(subs %in% object@mediac) != length(subs)) stop("Substance do not exist in arena")
-  df <- data.frame(spec=as.character(), sub=as.character(), mflux=as.numeric(), time=as.integer())
-  
-  for(t in seq_along(object@mfluxlist)){
-    for(spec in names(object@specs)){
-      available_subs <- intersect(subs,unname(sim@specs[[spec]]@medium))
-      if(length(available_subs) > 0 && length(names(object@mfluxlist[[t]][[spec]])) > 0 ){
-        mflux=object@mfluxlist[[t]][[spec]][which(names(object@mfluxlist[[t]][[spec]]) %in% available_subs )]
-        df <- rbind(df, data.frame(spec=spec, sub=names(mflux), mflux=unname(mflux), time=t))
-      }
-    }
-  }
-
-  df <- df[-which(abs(df$mflux) < cutoff),]
-
-  q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=spec), size=1) + facet_wrap(~sub, scales="free_y")
-  
-  q2 <- ggplot(df, aes(factor(spec), mflux)) + geom_boxplot(aes(fill=factor(spec))) + 
-    facet_wrap(~sub, scales="free_y") + theme(axis.text.x = element_blank())
-  
-  return(list(q1, q2))
-})
-
-
-#' @title Function to plot substance usage for every species
-#'
-#' @description The generic function \code{plotSpecActivity} displays the input/output substances with the highest variance (could also be defiened manually) for all species
-#' @export
-#' @rdname plotSpecActivity
+#' @rdname plotShadowCost
 #'
 #' @param object An object of class Eval.
-#' @param subs List of substance names
-#' @param var_nr Number of most varying substances to be used (if subs is not specified)
-#' @param spec_list List of species names to be considered
+#' @param spec_nr Number of the specie
+#' @param sub_nr Maximal number of substances to be show
+#' @param cutoff Shadow costs should be smaller than cutoff
 #' @details Returns ggplot objects
-setGeneric("plotSpecActivity", function(object, subs=list(), var_nr=10, spec_list=names(object@specs)){standardGeneric("plotSpecActivity")})
+setGeneric("plotShadowCost", function(object, spec_nr=1, sub_nr=10, cutoff=-1){standardGeneric("plotShadowCost")})
 #' @export
-#' @rdname plotSpecActivity
-setMethod("plotSpecActivity", "Eval", function(object, subs=list(), var_nr=10, spec_list=names(object@specs)){
+#' @rdname plotShadowCost
+setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutoff=-1){
+
+  df <- data.frame(spec=as.character(), sub=as.character(), shadow=as.numeric(), time=as.integer())
   
-  if(length(subs)==0) {subs_tocheck <- names(getVarSubs(sim))
-  }else subs_tocheck <- subs
-  
-  df <- data.frame(spec=as.character(), sub=as.character(), mflux=as.numeric(), time=as.integer())
-  
-  for(t in seq_along(object@mfluxlist)){
-    for(spec in spec_list){
-      if(length(intersect(subs_tocheck, unname(sim@specs[[spec]]@medium))) > 0 &  length(names(object@mfluxlist[[t]][[spec]])) > 0 ){
-        mflux=object@mfluxlist[[t]][[spec]][which(names(object@mfluxlist[[t]][[spec]]) %in% subs_tocheck)]
-        df <- rbind(df, data.frame(spec=spec, sub=names(mflux), mflux=unname(mflux), time=t))
-      }
-    }
+  m <- matrix(0, ncol=length(object@shadowlist[[1]][[spec_nr]]), nrow=length(object@shadowlist))
+  for(t in seq_along(object@shadowlist)){
+        m[t,] <- object@shadowlist[[t]][[spec_nr]]
   }
+  df <- as.data.frame(m)
+  colnames(df) <- names(object@shadowlist[[1]][[spec_nr]])
   
-  if(length(subs)==0){ # in case subs is not specified take substances with highest variance
-    mflux_var <- unlist(lapply(levels(df$sub), function(sub){
-      var(df[which(df$sub==sub),]$mflux)
-    }))
-    names(mflux_var) <- levels(df$sub)
-    mflux_var <- sort(mflux_var, decreasing = TRUE)
-    df <- df[which(df$sub %in% names(mflux_var)[1:var_nr]),]
-  }
+  variance <- apply(m,2,stats::var)
+  sorted_var <- sort(variance, decreasing=T, index.return=T)
   
-  q1 <- ggplot(df, aes(x=time, y=mflux)) + geom_line(aes(col=sub), size=1) + facet_wrap(~spec, scales="free_y") 
+  df <- df[,sorted_var$ix[1:sub_nr]]
+  colmin <- apply(df, 2, min)
+  df <- df[,which(colmin<cutoff), drop=FALSE]
+  df$time=seq_along(object@shadowlist)
+  df <- reshape2::melt(df, id.vars="time")
+  colnames(df)[2:3] <- c("sub", "shadow")
   
-  q2 <- ggplot(df, aes(factor(sub), mflux)) + geom_boxplot(aes(fill=factor(sub))) +  facet_wrap(~spec, scales="free_y") +
-    theme(axis.text.x = element_blank())
+  q1 <- ggplot2::ggplot(df, ggplot2::aes(x=df$time, y=df$shadow)) + ggplot2::geom_line(ggplot2::aes(col=df$sub), size=1)
   
+  q2 <- ggplot2::ggplot(df, ggplot2::aes(factor(df$sub), df$shadow)) + ggplot2::geom_boxplot(ggplot2::aes(color=factor(df$sub), fill=factor(df$sub)), alpha=0.2) +  ggplot2::ggtitle(names(object@specs)[spec_nr]) +
+    ggplot2::theme(axis.text.x = ggplot2::element_blank())
+
   return(list(q1, q2))
   })
+

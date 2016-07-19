@@ -26,14 +26,6 @@ The generic function \code{growExp} implements a growth model of organisms in th
 \details{
 Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value
 }
-\examples{
-\dontrun{
-data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
-org <- Organism(Ec_core,deathrate=0.05,
-           minweight=0.05,growtype="exponential") #initialize a organism
-growExp(org,1)
-}
-}
 \seealso{
 \code{\link{Organism-class}} and \code{\link{optimizeLP}}
 }

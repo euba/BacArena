@@ -16,6 +16,8 @@ Structure of the S4 class \code{Eval} inheriting from class \code{\link{Arena-cl
 
 \item{\code{mfluxlist}}{A list of containing highly used metabolic reactions per time step.}
 
+\item{\code{shadowlist}}{A list of containing shadow prices per time step.}
+
 \item{\code{subchange}}{A vector of all substrates with numbers indicating the degree of change in the overall simulation.}
 }}
 

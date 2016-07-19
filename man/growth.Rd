@@ -30,15 +30,6 @@ The generic function \code{growth} implements different growth models for an obj
 \details{
 Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value. Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value
 }
-\examples{
-data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
-bac <- Bac(Ec_core,deathrate=0.05,
-           minweight=0.05,growtype="exponential") #initialize a bacterium
-arena <- Arena(n=20,m=20) #initialize the environment
-arena <- addOrg(arena,bac,amount=10) #add 10 organisms
-arena <- addSubs(arena,40) #add all possible substances
-growth(bac,arena,1)
-}
 \seealso{
 \code{\link{Bac-class}}, \code{\link{growLin}} and \code{\link{growExp}}
 }

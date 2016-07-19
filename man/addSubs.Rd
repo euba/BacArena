@@ -39,7 +39,7 @@ bac <- Bac(Ec_core,deathrate=0.05,
            minweight=0.05,growtype="exponential") #initialize a bacterium
 arena <- Arena(n=20,m=20) #initialize the environment
 arena <- addOrg(arena,bac,amount=10) #add 10 organisms
-arena <- addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add substances glucose, oxygen and phosphate
+arena <- addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add glucose, o2, pi
 }
 \seealso{
 \code{\link{Arena-class}} and \code{\link{changeSub}}
