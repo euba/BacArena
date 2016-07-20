@@ -271,7 +271,7 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
          lpSolveAPI = {solve_ok <- fbasl$stat==0},
          sybilGUROBI = {solve_ok <- fbasl$stat==2},
          stop("Solver not suported!"))
-  if(is.na(solve_ok)){solve_ok=F}
+  if(is.na(solve_ok)){solve_ok = FALSE}
   if(!solve_ok | fbasl$obj<cutoff){fbasl$obj <- 0}
   if(sec_obj!="none" && fbasl$obj!=0){
     switch(sec_obj,
