@@ -1,5 +1,15 @@
-BacArena v1.5 (Release date: 2016-07-13)
+BacArena v1.5.1 (Release date: 2016-07-20)
+===============
+Changes:
+* improved vignette
+* gut community example data set
+* improved plotting
 
+* github reference: 
+
+
+BacArena v1.5 (Release date: 2016-07-13)
+=============
 Changes:
 * parallel support
 * methods for evaluation of replicates
@@ -15,10 +25,11 @@ Changes:
 * alternative objectives integration
 * lots of smaller bugfixes...
 
+* github reference
+
 
 BacArena v1.0.1 (Release date: 2016-01-06)
 =============
-
 Changes:
 * new method statSpec()
 * fixed bug in addSubs()
@@ -32,7 +43,6 @@ Changes:
 
 BacArena v1.0 (Release date: 2015-12-08)
 =============
-
 initial cran release
 
 * github reference: https://github.com/euba/BacArena/tree/8bf7459530c4a8eda9040e8feb2fa416dea55ab2

@@ -4,12 +4,10 @@
 \alias{plotGrowthCurve}
 \title{Plot growth curve for several simulations}
 \usage{
-plotGrowthCurve(simlist, bcol = colpal3, time = c(NULL, NULL))
+plotGrowthCurve(simlist, time = c(NULL, NULL))
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}
-
-\item{bcol}{Vector with color that should be used}
 
 \item{time}{Vector with two entries defining start and end time}
 }

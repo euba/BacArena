@@ -6,23 +6,25 @@ library(roxygen2)
 
 
 setwd("~/uni/bacarena")
-load_all(pkg="~/uni/bacarena")
-document()
-test()
+#load_all(pkg="~/uni/bacarena")
+devtools::document()
 
-check()
-check_doc()
-check_man()
+devtools::check() # includes document()
 
 install_github(repo="euba/bacarena", quick=TRUE)
 install_local(path="~/uni/bacarena", quick=TRUE)
+install_local(path="~/uni/bacarena", quick=FALSE)
 
 Rcpp::sourceCpp("src/duplicate.cpp")
 
 build_win() # builds a package using win-builder
 
-
 run_examples()
+build_vignettes()
+test()
+devtools::build()
+check_doc()
+check_man()
 
 
 # 

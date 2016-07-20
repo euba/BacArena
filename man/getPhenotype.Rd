@@ -29,14 +29,6 @@ The generic function \code{getPhenotype} implements an identification of organis
 \details{
 The phenotypes are defined by flux through exchange reactions, which indicate potential differential substrate usages. Uptake of substances is indicated by a negative and production of substances by a positive number.
 }
-\examples{
-\dontrun{
-data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
-org <- Organism(Ec_core,deathrate=0.05,
-           minweight=0.05,growtype="exponential") #initialize a organism
-getPhenotype(org)
-}
-}
 \seealso{
 \code{\link{Organism-class}}, \code{\link{checkPhen}} and \code{\link{minePheno}}
 }
