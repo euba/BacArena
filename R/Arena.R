@@ -62,7 +62,6 @@ setClass("Arena",
           stir = F,
           mflux = list(),
           shadow = list(),
-          seed=sample(1:10000,1),
           models=list(),
           sublb=matrix()
         )
@@ -81,15 +80,16 @@ setClass("Arena",
 #' @param Lx A number giving the horizontal grid size in cm.
 #' @param Ly A number giving the vertical grid size in cm.
 #' @param ... Arguments of \code{\link{Arena-class}}
-Arena <- function(Lx=NULL, Ly=NULL, n=100, m=100, ...){
+Arena <- function(Lx=NULL, Ly=NULL, n=100, m=100, seed=sample(1:10000,1), ...){
   if(is.null(Lx)) Lx <- 0.025/100 * n
   if(is.null(Ly)) Ly <- 0.025/100 * m
   
+  set.seed(seed) # remember random seed
   gridgeometry = list(grid2D=ReacTran::setup.grid.2D(ReacTran::setup.grid.1D(x.up = 0, L = Lx, N = n), 
                                                      ReacTran::setup.grid.1D(x.up = 0, L = Ly, N = m)))
   scale   <- (Lx*Ly)/(n*m)
   occupyM <- matrix(0, nrow=n, ncol=m)
-  new("Arena", Lx=Lx, Ly=Ly, n=n, m=m, scale=scale, gridgeometry=gridgeometry, occupyM=occupyM, ...)
+  new("Arena", Lx=Lx, Ly=Ly, n=n, m=m, scale=scale, gridgeometry=gridgeometry, occupyM=occupyM, seed=seed, ...)
 }
 
 
