@@ -6,7 +6,7 @@
 \title{Constructor of the S4 class \code{Organism}}
 \usage{
 Organism(model, algo = "fba", ex = "EX_", ex_comp = NA,
-  csuffix = "\\\\[c\\\\]", esuffix = "\\\\[e\\\\]", lyse = F,
+  csuffix = "\\\\[c\\\\]", esuffix = "\\\\[e\\\\]", lyse = FALSE,
   feat = list(), typename = NA, setExInf = TRUE, ...)
 }
 \arguments{

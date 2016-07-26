@@ -220,7 +220,7 @@ p + ggplot2::scale_color_manual(values=colpal3)
 ```
 The methods *plotAbundances()* returns a ggplot object which can be modified, e.g., to use different colors.
 
-Quit useful is to investigate the metabolic activity of all organisms.
+It is quite to investigate the metabolic activity of all organisms.
 We obtain a figure with uptake (negative values) and production (positive values) patterns of substances which changed most during simulation by
 
 ```{r}

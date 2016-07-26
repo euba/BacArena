@@ -113,9 +113,8 @@ estimate_lrw <- function(grid_n, grid_m){
 #' @examples
 #' \donttest{ 
 #' sim <- openArena()
-#' evalArena(sim, time=7, phencol = TRUE, 
-#'           plot_items=c("Population", "EX_o2(e)", "EX_for(e)",
-#'           "EX_glc(e)", "EX_for(e)"))
+#' evalArena(sim, time=5, phencol = TRUE, 
+#'           plot_items=c("Population", "EX_o2(e)", "EX_for(e)", "EX_glc(e)"))
 #'}
 openArena <- function(){
   data(Ec_core, envir = environment())
