@@ -2619,6 +2619,7 @@ setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutof
   for(t in seq_along(object@shadowlist)){
         m[t,] <- object@shadowlist[[t]][[spec_nr]]
   }
+  if(all(m==0)) print("no shadow costs available"); return()
   df <- as.data.frame(m)
   colnames(df) <- names(object@shadowlist[[1]][[spec_nr]])
   
