@@ -6,14 +6,16 @@
 \alias{addEssentialMed,Arena-method}
 \title{Add minimal medium of an organism to arena.}
 \usage{
-addEssentialMed(object, org)
+addEssentialMed(object, org, only_return = FALSE)
 
-\S4method{addEssentialMed}{Arena}(object, org)
+\S4method{addEssentialMed}{Arena}(object, org, only_return = FALSE)
 }
 \arguments{
 \item{object}{An object of class Arena.}
 
 \item{org}{An object of class Organism}
+
+\item{only_return}{Set true if essential metabolites should only be returned but not added to arena}
 }
 \description{
 The generic function \code{addEssentialMed} uses flux variability analysis to determine a essential growth medium  components (eg. cofactors)

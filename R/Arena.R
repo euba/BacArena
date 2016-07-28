@@ -382,10 +382,11 @@ setMethod("addDefaultMed", "Arena", function(object, org){
 #'
 #' @param object An object of class Arena.
 #' @param org An object of class Organism
-setGeneric("addEssentialMed", function(object, org){standardGeneric("addEssentialMed")})
+#' @param only_return Set true if essential metabolites should only be returned but not added to arena
+setGeneric("addEssentialMed", function(object, org, only_return=FALSE){standardGeneric("addEssentialMed")})
 #' @rdname addEssentialMed
 #' @export
-setMethod("addEssentialMed", "Arena", function(object, org){
+setMethod("addEssentialMed", "Arena", function(object, org, only_return=FALSE){
   var_r <- sybil::fluxVar(org@model, percentage=0.5)
   
   ex <- sybil::findExchReact(org@model)
@@ -395,6 +396,7 @@ setMethod("addEssentialMed", "Arena", function(object, org){
   min_val <- -ex@lowbnd[which(ex_max<0)]
   min_val[min_val==Inf] <- 1000
   
+  if(only_return) return(min_id)
   for(id in intersect(min_id, object@mediac)){
     object@media[[id]]@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@n, ncol=object@m, sparse=TRUE)}
   return(object)
@@ -2619,7 +2621,9 @@ setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutof
   for(t in seq_along(object@shadowlist)){
         m[t,] <- object@shadowlist[[t]][[spec_nr]]
   }
-  if(all(m==0)) print("no shadow costs available"); return()
+  if(all(m==0)) {
+    print("no shadow costs available")
+    return()}
   df <- as.data.frame(m)
   colnames(df) <- names(object@shadowlist[[1]][[spec_nr]])
   
