@@ -1638,10 +1638,10 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
 #' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,5)
 #' plotCurves(eval)
-setGeneric("plotCurves", function(object, medplot=object@mediac, retdata=F, remove=F, legend=F){standardGeneric("plotCurves")})
+setGeneric("plotCurves", function(object, medplot=object@mediac, retdata=F, remove=F, legend=F, graph=T){standardGeneric("plotCurves")})
 #' @export
 #' @rdname plotCurves
-setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=F, remove=F, legend=F){
+setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=F, remove=F, legend=F, graph=T){
   old.par <- par(no.readonly = TRUE)
   growths <- matrix(0, nrow=length(object@specs), ncol=length(object@simlist))
   rownames(growths) = names(object@specs)
@@ -1664,23 +1664,25 @@ setMethod("plotCurves", "Eval", function(object, medplot=object@mediac, retdata=
       subs <- subs[-test,]
     }
   }
-  par(mfrow=c(2,1))
-  times = c((seq_along(object@simlist)-1)*object@tstep)
-  plot(times, times, xlim=c(0,max(times)), ylim=c(0,max(growths)),
-       type='n', xlab='time in h', ylab='number of individuals on grid',
-       main='Population')
-  for(i in 1:nrow(growths)){
-    lines(times, growths[i,], col=i, type='b', pch=i-1)
+  if(graph){
+    par(mfrow=c(2,1))
+    times = c((seq_along(object@simlist)-1)*object@tstep)
+    plot(times, times, xlim=c(0,max(times)), ylim=c(0,max(growths)),
+         type='n', xlab='time in h', ylab='number of individuals on grid',
+         main='Population')
+    for(i in 1:nrow(growths)){
+      lines(times, growths[i,], col=i, type='b', pch=i-1)
+    }
+    if(legend){legend('topleft',legend=rownames(growths),col=1:nrow(growths), cex=ifelse(length(object@specs)==1,1,0.4/log10(nrow(growths)+1)),pch=(0:nrow(growths)-1),lwd=1, bty="n")}
+    plot(times, times, xlim=c(0,max(times)), ylim=c(0,max(subs)),
+         type='n', xlab='time in h', ylab='concentration in mmol per gridcell',
+         main='Substance concentrations')
+    for(i in 1:nrow(subs)){
+      lines(times, subs[i,], col=i)
+    }
+    par(old.par)
+    if(legend){legend('right',legend=rownames(subs),col=1:nrow(subs),cex=0.4/log10(nrow(subs)+1),lwd=1)}
   }
-  if(legend){legend('topleft',legend=rownames(growths),col=1:nrow(growths), cex=ifelse(length(object@specs)==1,1,0.4/log10(nrow(growths)+1)),pch=(0:nrow(growths)-1),lwd=1, bty="n")}
-  plot(times, times, xlim=c(0,max(times)), ylim=c(0,max(subs)),
-       type='n', xlab='time in h', ylab='concentration in mmol per gridcell',
-       main='Substance concentrations')
-  for(i in 1:nrow(subs)){
-    lines(times, subs[i,], col=i)
-  }
-  par(old.par)
-  if(legend){legend('right',legend=rownames(subs),col=1:nrow(subs),cex=0.4/log10(nrow(subs)+1),lwd=1)}
   if(retdata){
     return(list('Population'=growths,'Substances'=subs))
   }
@@ -2598,8 +2600,6 @@ setMethod("checkCorr", "Eval", function(object, corr=NULL, tocheck=list()){
   })
 })
 
-
-
 #' @title Function to plot substance shadow costs for a specie
 #'
 #' @description The generic function \code{plotShadowCost} plots substances have the highest impact on further growth (shadow cost < 0)
@@ -2646,3 +2646,50 @@ setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutof
   return(list(q1, q2))
   })
 
+#' @title Function to compute flux variability analysis on an simulation object to get min/max of substance usage
+#'
+#' @description The generic function \code{fluxVarSim} returns a list with the minimum and maximum substance usage of all individuals for each simulation step.
+#' @export
+#' @rdname fluxVarSim
+#'
+#' @param object An object of class Eval.
+#' @param rnd An integer giving the decimal place to which min/max flux should be rounded.
+#' @details Returns a list with the minimum and maximum substance usage for each time point.
+#' @seealso \code{\link{Eval-class}} and \code{\link{simEnv}}
+#' @examples
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(n=20,m=20) #initialize the environment
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
+#' eval <- simEnv(arena,5)
+#' fluxlist <- fluxVarSim(eval, 6)
+setGeneric("fluxVarSim", function(object, rnd){standardGeneric("fluxVarSim")})
+#' @export
+#' @rdname fluxVarSim
+setMethod("fluxVarSim", "Eval", function(object, rnd){
+  mflist = list()
+  for(i in 1:length(object@simlist)){
+    print(paste("Computing FVA for time point",i-1,"...",sep=" "))
+    arenait = getArena(object, time=i-1)
+    mflmat = matrix(0,nrow=length(arenait@mediac),ncol=2,
+                    dimnames=list(arenait@mediac,c("min","max")))
+    for(j in 1:nrow(arenait@orgdat)){
+      org = arenait@orgdat[j,]
+      bact = arenait@specs[[org$type]]
+      mconc = unlist(lapply(arenait@media,function(med,x,y){med@diffmat[x,y]},x=org$x,y=org$y))
+      mconc = mconc[bact@medium]
+      bacnum = round((arenait@scale/(bact@cellarea*10^(-8))))
+      lbs = constrain(bact,names(mconc),-mconc/bacnum,org$growth,arena@tstep,arena@scale,j)
+      fbasl <- optimizeProb(bact@lpobj, react=1:length(lbs), ub=bact@ubnd, lb=lbs)
+      model = changeBounds(bact@model,names(lbs),lb=lbs)
+      model = changeBounds(model,model@react_id[which(bact@model@obj_coef==1)],lb=fbasl$obj,ub=fbasl$obj)
+      nil=capture.output(suppressMessages(fv <- fluxVar(model, bact@medium)))
+      mflmat[bact@medium,"max"] = mflmat[bact@medium,"max"] + round(minSol(fv,lp_obj),rnd)
+      mflmat[bact@medium,"min"] = mflmat[bact@medium,"min"] + round(maxSol(fv,lp_obj),rnd)
+    }
+    mflist[[i]] = mflmat
+  }
+  return(mflist)
+})
