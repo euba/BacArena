@@ -64,18 +64,21 @@ InfluxBoundDiff2d <- function (t, y, parms)  {
 
 ConstBoundAdvecDiff2d <- function (t, y, parms)  {
   # geometry values are in parms
-  #print("test")
   with (as.list(parms), {
     vgrid <- setup.prop.2D(value = 0, y.value=1, grid = gridgeometry.grid2D)
     CONC  <- matrix(nrow = gridgeometry.grid2D$x.N, ncol = gridgeometry.grid2D$y.N, data = y)
-    dCONC <- tran.2D(CONC, grid = gridgeometry.grid2D, D.x=1, D.y=1, #D.grid = diffgeometry.Dgrid, 
-                     v.x = 0, v.y=1, #v.grid = vgrid,
+    dCONC <- tran.2D(CONC, grid = gridgeometry.grid2D, D.x=6.7e-6, D.y=6.7e-6, #D.grid = diffgeometry.Dgrid, 
+                     v.x = 0, v.y=2, #v.grid = vgrid,
+                     
                      #C.y.down=rep(boundS, gridgeometry.grid2D$y.N),
                      #C.y.up=rep(boundS, gridgeometry.grid2D$y.N))$dC
                      
-                     #C.y.down=rep(1, gridgeometry.grid2D$x.N),
-                     flux.x.down=rep(boundS, gridgeometry.grid2D$y.N),
-                     flux.x.up=rep(boundS, gridgeometry.grid2D$y.N))$dC
+                     
+                     #C.y.down=rep(0, gridgeometry.grid2D$y.N),
+                     #C.y.up=rep(1, gridgeometry.grid2D$y.N),
+                     flux.y.up=rep(1, gridgeometry.grid2D$y.N),
+                     flux.x.down=rep(0, gridgeometry.grid2D$x.N),
+                     flux.x.up=rep(0, gridgeometry.grid2D$x.N))$dC
                      #flux.x.down=c(0,rep(-boundS, gridgeometry.grid2D$x.N-2),0),  # reduce edge bias
                      #flux.x.up=c(0, rep(boundS, gridgeometry.grid2D$x.N-2),0))$dC # "
     return (list(dCONC))

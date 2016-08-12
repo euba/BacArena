@@ -13,8 +13,9 @@ devtools::document()
 
 devtools::check() # includes document()
 
+install_local(path="~/uni/bacarena", quick=TRUE, threads=2)
+
 install_github(repo="euba/bacarena", quick=TRUE)
-install_local(path="~/uni/bacarena", quick=TRUE)
 install_local(path="~/uni/bacarena", quick=FALSE)
 
 Rcpp::sourceCpp("src/duplicate.cpp")
