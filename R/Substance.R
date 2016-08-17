@@ -18,6 +18,7 @@
 #' @slot id A character vector representing the identifier of the substance.
 #' @slot difunc A character vector ("pde","cpp" or "r") describing the function for diffusion.
 #' @slot difspeed A number indicating the diffusion speed (given by cm^2/s).
+#' @slot advspeed A number indicating the advection speed in x direction (given by cm/s).
 #' @slot diffgeometry Diffusion coefficient defined on all grid cells (initially set by constructor).
 #' @slot pde R-function that computes the values of the derivatives in the diffusion system
 #' @slot boundS A number defining the attached amount of substance at the boundary (Warning: boundary-function must be set in pde!)
@@ -52,17 +53,29 @@ setClass("Substance",
 #' @name Substance-constructor
 #' 
 #' @param smax A number representing the start concentration of the substance for each grid cell in the environment. 
-#' @param difspeed A number indicating the diffusion speed (given by cm^2/s).
+#' @param difspeed A number indicating the diffusion speed in x and y direction (given by cm^2/s). For more complex setup define Dgrid.
+#' @param advspeed A number indicating the advection speed in x direction (given by cm/s). For more complex setup define Vgrid.
 #' @param n A number giving the horizontal size of the environment.
 #' @param m A number giving the vertical size of the environment.
 #' @param gridgeometry A list containing grid geometry parameter 
+#' @param occupyM A matrix indicating grid cells that are obstacles
 #' @param ... Arguments of \code{\link{Substance-class}}
 #' @return Object of class \code{Substance}
-Substance <- function(n, m, smax, gridgeometry, difspeed=6.7e-6, ...){
+Substance <- function(n, m, smax, gridgeometry, difspeed=6.7e-6, advspeed=0, occupyM, Dgrid=NULL, Vgrid=NULL, ...){
   diffmat <- Matrix::Matrix(smax, nrow=n, ncol=m, sparse=TRUE)
   
-  Dgrid <- ReacTran::setup.prop.2D(value = difspeed, grid = gridgeometry$grid2D)
-  diffgeometry <- list(Dgrid=Dgrid)
+  new_occupyM <- apply(occupyM, 1, function(x)ifelse(x==0, 1, 0)) # switch 0 and zero for better processing
+  if(length(Dgrid)==0) {
+    Dgrid <- ReacTran::setup.prop.2D(value=difspeed, grid = gridgeometry$grid2D)
+    Dgrid <- lapply(Dgrid, # set obstacle cells to zero
+                    function(x) {
+                      x[1:nrow(new_occupyM),1:ncol(new_occupyM)] <- x[1:nrow(new_occupyM),1:ncol(new_occupyM)]*new_occupyM; x} )}
+  if(length(Vgrid)==0) {
+    Vgrid <- ReacTran::setup.prop.2D(value=0, y.value=advspeed, grid = gridgeometry$grid2D)
+    Vgrid <- lapply(Vgrid, # set obstacle cells to zero
+                    function(x) {x[1:nrow(new_occupyM),1:ncol(new_occupyM)] <- x[1:nrow(new_occupyM),1:ncol(new_occupyM)]*new_occupyM; x} )}
+  diffgeometry <- list(Dgrid=Dgrid, Vgrid=Vgrid)
+  
   new("Substance", smax=smax, diffmat=diffmat, difspeed=difspeed, diffgeometry=diffgeometry, ...)
 }
 

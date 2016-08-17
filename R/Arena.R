@@ -217,7 +217,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   if(length(newmet) > 0){
     newmedia = list()
     for(i in 1:length(newmet)){
-      newmedia[[unname(newmet[i])]] <- Substance(object@n, object@m, smax=0, id=unname(newmet[i]), name=names(newmet[i]), gridgeometry=object@gridgeometry)
+      newmedia[[unname(newmet[i])]] <- Substance(object@n, object@m, smax=0, id=unname(newmet[i]), name=names(newmet[i]), gridgeometry=object@gridgeometry, occupyM=object@occupyM)
     }
     object@media <- c(object@media,newmedia)
     object@media <- object@media[unique(names(object@media))]    
@@ -295,7 +295,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   for(i in 1:length(mediac)){
     if(mediac[[i]] %in% object@mediac){ # add only if possible
       old_diffmat <- object@media[[mediac[i]]]@diffmat
-      object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=names(mediac[i]), gridgeometry=object@gridgeometry, difunc=difunc, difspeed = difspeed[i])
+      object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=names(mediac[i]), gridgeometry=object@gridgeometry, difunc=difunc, difspeed = difspeed[i], occupyM=object@occupyM)
       if(add){
         object@media[[mediac[i]]]@diffmat <- object@media[[mediac[i]]]@diffmat + old_diffmat
       }
@@ -347,7 +347,7 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
     for(i in which(mediac %in% object@mediac)){
       object@media[mediac[i]] <- Substance(object@n, object@m, smax=smax[i], id=mediac[i], name=object@media[[mediac[i]]]@name,
                                                                   difunc=object@media[[mediac[i]]]@difunc,
-                                                                  difspeed=object@media[[mediac[i]]]@difspeed, gridgeometry=object@gridgeometry)
+                                                                  difspeed=object@media[[mediac[i]]]@difspeed, gridgeometry=object@gridgeometry, occupyM=object@occupyM)
       return(object)
     }
   }else stop("Substance does not exist in medium.")
