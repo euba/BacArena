@@ -253,6 +253,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' @param difunc A character vector ("pde","cpp" or "r") describing the function for diffusion.
 #' @param difspeed A number indicating the diffusion speed (given by number of cells per iteration).
 #' @param add A boolean variable defining whether the amount of substance should be summed or replaced
+#' @param diffmat A matrix with spatial distributed initial concentrations (if not set, a homogenous matrix using smax is created)
 #' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub} can be used to modify the concentrations of specific substances.} 
 #' @seealso \code{\link{Arena-class}} and \code{\link{changeSub}} 
 #' @examples
@@ -262,10 +263,10 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add glucose, o2, pi
-setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=TRUE){standardGeneric("addSubs")})
+setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, diffmat=NULL){standardGeneric("addSubs")})
 #' @rdname addSubs
 #' @export
-setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=TRUE){
+setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, diffmat=NULL){
   if(length(smax) != length(mediac) && length(smax) != 1){
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
@@ -283,19 +284,21 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   
   # 1) consider units
   switch(unit,
-         'mM'={smax <- 10^12 * smax* 0.01 * object@scale}, # conversion of mMol in fmol/grid_cell
-         'mmol/cm2'={smax <- 10^12 * smax * object@scale}, # conversion of mmol/arena in fmol/grid_cell
-         'mmol/arena'={smax <- 10^12 * smax / (object@n*object@m)}, # conversion of mmol/arena in fmol/grid_cell
-         'mmol/cell'={smax <- 10^12 * smax}, # conversion of mmol/cell in fmol/cell
-         'fmol/cell'={smax <- smax}, # already in fmol/cell
+         'mM'         = { conv <- 10^12 * 0.01 * object@scale}, # conversion of mMol in fmol/grid_cell
+         'mmol/cm2'   = { conv <- 10^12 * object@scale}, # conversion of mmol/arena in fmol/grid_cell
+         'mmol/arena' = { conv <- 10^12 / (object@n*object@m)}, # conversion of mmol/arena in fmol/grid_cell
+         'mmol/cell'  = { conv <- 10^12}, # conversion of mmol/cell in fmol/cell
+         'fmol/cell'  = { conv <- 1}, # already in fmol/cell
          stop("Wrong unit for concentration."))
+  smax <- conv * smax
+  if(length(diffmat)>0) diffmat <- conv * diffmat
   
   # 2) create and add substances assuming that organisms are already added
   newmedia <- object@media
   for(i in 1:length(mediac)){
     if(mediac[[i]] %in% object@mediac){ # add only if possible
       old_diffmat <- object@media[[mediac[i]]]@diffmat
-      object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=names(mediac[i]), gridgeometry=object@gridgeometry, difunc=difunc, difspeed = difspeed[i], occupyM=object@occupyM)
+      object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=names(mediac[i]), gridgeometry=object@gridgeometry, difunc=difunc, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat)
       if(add){
         object@media[[mediac[i]]]@diffmat <- object@media[[mediac[i]]]@diffmat + old_diffmat
       }
