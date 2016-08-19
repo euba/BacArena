@@ -20,7 +20,7 @@
 #' @slot difspeed A number indicating the diffusion speed (given by cm^2/s).
 #' @slot advspeed A number indicating the advection speed in x direction (given by cm/s).
 #' @slot diffgeometry Diffusion coefficient defined on all grid cells (initially set by constructor).
-#' @slot pde R-function that computes the values of the derivatives in the diffusion system
+#' @slot pde Choose diffusion transport reaction to be used (default is diffusion only)
 #' @slot boundS A number defining the attached amount of substance at the boundary (Warning: boundary-function must be set in pde!)
 setClass("Substance",
          representation(
@@ -61,6 +61,8 @@ setClass("Substance",
 #' @param occupyM A matrix indicating grid cells that are obstacles
 #' @param diffmat A matrix with spatial distributed initial concentrations (unit in fmol) (if not set, a homogenous matrix using smax is created)
 #' @param template True if diffmat matrix should be used as tempalte only (will be multiplied with smax to obtain cocentrations)
+#' @param Dgrid A matrix indicating the diffusion speed in x and y direction (given by cm^2/s).
+#' @param Vgrid A number indicating the advection speed in x direction (given by cm/s).
 #' @param ... Arguments of \code{\link{Substance-class}}
 #' @return Object of class \code{Substance}
 Substance <- function(n, m, smax, gridgeometry, difspeed=6.7e-6, advspeed=0, occupyM, Dgrid=NULL, Vgrid=NULL, diffmat=NULL, template=FALSE, ...){

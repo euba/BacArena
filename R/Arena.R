@@ -251,10 +251,13 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' @param smax A numeric vector indicating the maximum substance concentration per grid cell.
 #' @param unit A character used as chemical unit to set the amount of the substances to be added (valid values are: mmol/cell, mmol/cm2, mmol/arena, mM)
 #' @param difunc A character vector ("pde","cpp" or "r") describing the function for diffusion.
+#' @param pde Choose diffusion transport reaction to be used (default is diffusion only)
 #' @param difspeed A number indicating the diffusion speed (given by number of cells per iteration).
 #' @param add A boolean variable defining whether the amount of substance should be summed or replaced
 #' @param diffmat A matrix with spatial distributed initial concentrations (if not set, a homogenous matrix using smax is created)
 #' @param template True if diffmat matrix should be used as tempalte only (will be multiplied with smax to obtain cocentrations)
+#' @param Dgrid A matrix indicating the diffusion speed in x and y direction (given by cm^2/s).
+#' @param Vgrid A number indicating the advection speed in x direction (given by cm/s).
 #' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub} can be used to modify the concentrations of specific substances.} 
 #' @seealso \code{\link{Arena-class}} and \code{\link{changeSub}} 
 #' @examples
@@ -264,10 +267,10 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add glucose, o2, pi
-setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, diffmat=NULL, template=FALSE){standardGeneric("addSubs")})
+setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", pde="Diff2d", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, diffmat=NULL, template=FALSE, Dgrid=NLL, Vgrid=NULL){standardGeneric("addSubs")})
 #' @rdname addSubs
 #' @export
-setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, diffmat=NULL, template=FALSE){
+setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", pde="Diff2d", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, diffmat=NULL, template=FALSE, Dgrid=NULL, Vgrid=NULL){
   if(length(smax) != length(mediac) && length(smax) != 1){
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
@@ -299,7 +302,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   for(i in 1:length(mediac)){
     if(mediac[[i]] %in% object@mediac){ # add only if possible
       old_diffmat <- object@media[[mediac[i]]]@diffmat
-      object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=names(mediac[i]), gridgeometry=object@gridgeometry, difunc=difunc, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat, template=template)
+      object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=names(mediac[i]), gridgeometry=object@gridgeometry, difunc=difunc, pde=pde, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat, template=template, Dgrid=Dgrid, Vgrid=Vgrid)
       if(add){
         object@media[[mediac[i]]]@diffmat <- object@media[[mediac[i]]]@diffmat + old_diffmat
       }
