@@ -60,10 +60,12 @@ setClass("Substance",
 #' @param gridgeometry A list containing grid geometry parameter 
 #' @param occupyM A matrix indicating grid cells that are obstacles
 #' @param diffmat A matrix with spatial distributed initial concentrations (unit in fmol) (if not set, a homogenous matrix using smax is created)
+#' @param template True if diffmat matrix should be used as tempalte only (will be multiplied with smax to obtain cocentrations)
 #' @param ... Arguments of \code{\link{Substance-class}}
 #' @return Object of class \code{Substance}
-Substance <- function(n, m, smax, gridgeometry, difspeed=6.7e-6, advspeed=0, occupyM, Dgrid=NULL, Vgrid=NULL, diffmat=NULL, ...){
-  if(length(diffmat)==0) diffmat <- Matrix::Matrix(smax, nrow=n, ncol=m, sparse=TRUE) else diffmat <- Matrix::Matrix(diffmat, sparse=T)
+Substance <- function(n, m, smax, gridgeometry, difspeed=6.7e-6, advspeed=0, occupyM, Dgrid=NULL, Vgrid=NULL, diffmat=NULL, template=FALSE, ...){
+  if(length(diffmat)==0) diffmat <- Matrix::Matrix(smax, nrow=n, ncol=m, sparse=TRUE)
+    else if(template) diffmat <- Matrix::Matrix(smax * diffmat, sparse=T) else diffmat <- Matrix::Matrix(diffmat, sparse=T)
   if(ncol(diffmat)!=n && nrow(diffmat)!=m) Stop("Dimension of diffmat is invalid")
   
   new_occupyM <- apply(occupyM, 1, function(x)ifelse(x==0, 1, 0)) # switch 0 and zero for better processing
