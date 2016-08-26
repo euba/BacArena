@@ -191,8 +191,10 @@ setGeneric("constrain", function(object, reacts, lb, dryweight, time, scale, j){
 #' @export
 #' @rdname constrain
 setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time, scale, j){
+  reacts = unique(reacts)
+  lb = lb[reacts]
   lobnd <- object@lbnd
-  lobnd[reacts] <- object@lbnd[reacts]*(dryweight/object@cellweight_mean)*time #costrain according to flux definition: mmol/(gDW*hr)
+  if(dryweight<Inf){lobnd[reacts] <- object@lbnd[reacts]*(dryweight/object@cellweight_mean)*time} #costrain according to flux definition: mmol/(gDW*hr)
   #lobnd[reacts] <- ifelse(lb<=lobnd[reacts], ifelse(lobnd[reacts]==0, lb, lobnd[reacts]), lb) #check if lower bounds in biological relevant range
   lobnd[reacts] <- ifelse(lb<=lobnd[reacts], lobnd[reacts], lb) #check if lower bounds in biological relevant range
   #if(j==1) browser()
@@ -272,7 +274,9 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
          sybilGUROBI = {solve_ok <- fbasl$stat==2},
          stop("Solver not suported!"))
   if(is.na(solve_ok)){solve_ok = FALSE}
-  if(!solve_ok | fbasl$obj<cutoff){fbasl$obj <- 0}
+  if(!solve_ok){fbasl$obj <- 0}
+  if(is.na(fbasl$obj)){fbasl$obj <- 0}
+  if(fbasl$obj<cutoff){fbasl$obj <- 0}
   if(sec_obj!="none" && fbasl$obj!=0){
     switch(sec_obj,
            mtf =   {mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub);
@@ -996,7 +1000,8 @@ setGeneric("simHum", function(object, arena, j, sublb, bacnum){standardGeneric("
 setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum){
   lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
-  fbasol <- optimizeLP(object, lb=lobnd, j=j)
+  fbasol <- optimizeLP(object, lb=lobnd, j=j)[[1]]
+  if(is.null(fbasol$obj)){browser()}
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol))) #rescale from population size
   dead <- cellgrowth(object, arena, j, arena@occupyM, fbasol=fbasol)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object, fbasol=fbasol))

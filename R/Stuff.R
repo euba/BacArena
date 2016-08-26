@@ -220,6 +220,7 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL, unit
   colnames(all_df)[1:2] <- c("sub", "time")
   plot_list <- list()
   
+  #levels(all_df$sub) = sort(simlist[[1]]@mediac)
   if(length(simlist)>1){
     q1 <- ggplot2::ggplot(all_df, ggplot2::aes_string(color="sub", y="value", x="time")) + ggplot2::geom_line(size=1) + ggplot2::facet_wrap(~replc)    
     
