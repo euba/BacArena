@@ -798,3 +798,27 @@ plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, re
   if(ret_data) return(df) else return(list(q1, q2))
 }
 
+
+#' @title Function to plot population level minimum and maximum flux from alternative optimal solutions obtained by FVA
+#'
+#' @description The generic function \code{plotFVA} plots population level flux results obtained from function fluxVarSim
+#' @export
+#' @rdname plotFVA
+#'
+#' @param fvares results of FVA results to plot, obtained from function fluxVarSim
+#' @details Returns ggplot objects
+plotFVA = function(fvares){
+  basedat = data.frame()
+  for(i in 1:length(fvares)){
+    basedat = rbind(basedat,
+                    data.frame(rownames(fvares[[i]]),
+                               fvares[[i]],
+                               rep(i,nrow(fvares[[i]]))))
+  }
+  colnames(basedat) = c("met","min","max","time")
+  fvag = ggplot2::ggplot(basedat, ggplot2::aes(x=time, y=min)) +
+    geom_ribbon(aes(ymin=min,ymax=max,color=met,fill=met),alpha=0.2) +
+    ggplot2::xlab("Time in h") + ggplot2::ylab("Population flux")
+  return(fvag)
+}
+
