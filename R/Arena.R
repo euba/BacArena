@@ -142,6 +142,10 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #' @param amount A numeric number giving the number of individuals to add.
 #' @param x A numeric vector giving the x positions of individuals on the grid.
 #' @param y A numeric vector giving the y positions of individuals on the grid.
+#' @param n0 Start row of matrix to take free positions from (default 1)
+#' @param m0 Start column of matrix to take free positions from (default 1)
+#' @param m End row of matrix to take free positions from (default arena@n)
+#' @param n End column of matrix to take free positions from (default arena@m)
 #' @param growth A numeric vector giving the starting biomass of the individuals.
 #' @details The arguments \code{x} and \code{y} should be in the same length as the number of organisms added (given by the argument \code{amount}).
 #' @seealso \code{\link{Arena-class}} and \code{\link{Bac-class}} 
@@ -151,11 +155,13 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
-setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=NA){standardGeneric("addOrg")})
+setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){standardGeneric("addOrg")})
 #' @export
 #' @rdname addOrg
-setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=NA){
-  if(amount+nrow(object@orgdat) > object@n*object@m-dim(which(object@occupyM>0, arr.ind = TRUE))[1]){
+setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){
+  if(length(n)==0) n <- object@n; if(length(m)==0) m <- object@m
+  if(length(n0)==0) n0 <- 1; if(length(m0)==0) m0 <- 1
+  if(amount+nrow(object@orgdat) > n*m-dim(which(object@occupyM[n0:n,m0:m]>0, arr.ind = TRUE))[1]){
     stop("More individuals than space on the grid")
   }
   bacnum <- round(object@scale/(specI@cellarea*10^(-8)))
@@ -163,8 +169,6 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
     stop("Physical arena size (Lx, Ly) too small. Maximal amount of cells in one grid cell would be zero.")
   }
  
-  n <- object@n
-  m <- object@m
   spectype <- specI@type
   neworgdat <- object@orgdat
   newspecs <- object@specs
@@ -184,14 +188,14 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   type <- which(names(newspecs)==spectype) 
   lastind <- nrow(object@orgdat)
   if(length(x*y)==0){
-    cmbs = expand.grid(1:n,1:m)
+    cmbs = expand.grid(n0:n,m0:m)
     rownames(cmbs) = paste(cmbs[,1],cmbs[,2],sep='_')
     taken <- paste(object@orgdat$x,object@orgdat$y,sep='_')
     obstacles <- which(object@occupyM>0, arr.ind = TRUE) 
     taken <- c(taken, paste(obstacles[,1], obstacles[,2],sep="_")) # extend taken to contain obstacle grid cells
-    if(length(taken)!=0){
-      cmbs <- cmbs[-which(rownames(cmbs) %in% taken),]
-    }
+    not_empty <- which(rownames(cmbs) %in% taken)
+    if(length(not_empty) > 0){
+      cmbs <- cmbs[-which(rownames(cmbs) %in% taken),]}
     sel <- sample(1:nrow(cmbs),amount)
     xp = cmbs[sel,1]
     yp = cmbs[sel,2]
