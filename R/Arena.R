@@ -234,14 +234,6 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   object@shadow <- newshadow
   object@models <- c(object@models, specI@model)
   return(object)
-  # eval.parent(substitute(object@media <- c(object@media,newmedia)))
-  # eval.parent(substitute(object@orgdat <- neworgdat))
-  # eval.parent(substitute(object@specs <- newspecs))
-  # #eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
-  # newmediac <- c(object@mediac, specI@medium)
-  # eval.parent(substitute(object@mediac <- newmediac[!duplicated(newmediac)]))
-  # eval.parent(substitute(object@mflux <- newmflux))
-  # eval.parent(substitute(object@models <- c(object@models, specI@model)))
 })
 
 #' @title Add substances to the environment
@@ -287,7 +279,6 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   }
   
   if(length(smax) != length(mediac))    {smax = rep(as.numeric(smax),length(mediac))}
-  #if(length(names(mediac)) == 0)        {names(mediac) <- names(object@mediac[which(object@mediac %in% mediac)])}
   if(length(difspeed) != length(mediac)){difspeed = rep(difspeed,length(mediac))}
   
   # 1) consider units
