@@ -287,7 +287,7 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   }
   
   if(length(smax) != length(mediac))    {smax = rep(as.numeric(smax),length(mediac))}
-  if(length(names(mediac)) == 0)        {names(mediac) <- names(object@mediac[which(object@mediac %in% mediac)])} # add substance names 
+  #if(length(names(mediac)) == 0)        {names(mediac) <- names(object@mediac[which(object@mediac %in% mediac)])}
   if(length(difspeed) != length(mediac)){difspeed = rep(difspeed,length(mediac))}
   
   # 1) consider units
@@ -306,7 +306,8 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   for(i in 1:length(mediac)){
     if(mediac[[i]] %in% object@mediac){ # add only if possible
       old_diffmat <- object@media[[mediac[i]]]@diffmat
-      object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=names(mediac[i]), gridgeometry=object@gridgeometry, difunc=difunc, pde=pde, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat, template=template, Dgrid=Dgrid, Vgrid=Vgrid)
+      new_name <- ifelse( length(names(mediac[i]))==0, object@media[[mediac[i]]]@name, names(mediac[i]) )  # add substance names 
+      object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=new_name, gridgeometry=object@gridgeometry, difunc=difunc, pde=pde, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat, template=template, Dgrid=Dgrid, Vgrid=Vgrid)
       if(add){
         object@media[[mediac[i]]]@diffmat <- object@media[[mediac[i]]]@diffmat + old_diffmat
       }
