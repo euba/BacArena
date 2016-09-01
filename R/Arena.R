@@ -1396,15 +1396,33 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
     eval.parent(substitute(object@phenotypes <- arena@phenotypes))
     eval.parent(substitute(object@mfluxlist[[length(object@mfluxlist)+1]] <- arena@mflux))
     eval.parent(substitute(object@shadowlist[[length(object@shadowlist)+1]] <- arena@shadow))
+    eval.parent(substitute(object@specs <- arena@specs)) 
+    eval.parent(substitute(object@mediac <- arena@mediac))
+    eval.parent(substitute(object@media <- arena@media))
+    eval.parent(substitute(object@seed <- arena@seed))
+    eval.parent(substitute(object@occupyM <- arena@occupyM))
+    eval.parent(substitute(object@gridgeometry <- arena@gridgeometry))
+    eval.parent(substitute(object@models <- arena@models))
+    eval.parent(substitute(object@scale <- arena@scale))
+    eval.parent(substitute(object@sublb <- arena@sublb))
+    
   }else{
     eval.parent(substitute(object@medlist[[length(object@medlist)]] <- lapply(arena@media, function(x){
       return(as.vector(x@diffmat))
     })))
     eval.parent(substitute(object@simlist[[length(object@simlist)]] <- arena@orgdat))
+    eval.parent(substitute(object@simlist[[length(object@shadowlist)]] <- arena@shadowlist))
     eval.parent(substitute(object@phenotypes <- arena@phenotypes))
     eval.parent(substitute(object@specs <- arena@specs)) 
     eval.parent(substitute(object@mediac <- arena@mediac))
     eval.parent(substitute(object@media <- arena@media))
+    eval.parent(substitute(object@seed <- arena@seed))
+    eval.parent(substitute(object@occupyM <- arena@occupyM))
+    eval.parent(substitute(object@gridgeometry <- arena@gridgeometry))
+    eval.parent(substitute(object@models <- arena@models))
+    eval.parent(substitute(object@scale <- arena@scale))
+    eval.parent(substitute(object@sublb <- arena@sublb))
+    
   }
 })
 
@@ -1441,7 +1459,8 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
   occdat <- object@simlist[[time]]
   
   arena <- Arena(n=object@n, m=object@m, Lx=object@Lx, Ly=object@Ly, tstep=object@tstep, specs=object@specs, mediac=object@mediac, mflux=object@mfluxlist[[time]],
-                 phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, stir=object@stir, shadow=object@shadowlist[[time]])
+                 phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, stir=object@stir, shadow=object@shadowlist[[time]], occupyM=object@occupyM,
+                 gridgeometry=object@gridgeometry, seed=object@seed, models=object@models, scale=object@scale, sublb=object@sublb)
   return(arena)
 })
 
