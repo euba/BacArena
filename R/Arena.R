@@ -1459,8 +1459,7 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
   occdat <- object@simlist[[time]]
   
   arena <- Arena(n=object@n, m=object@m, Lx=object@Lx, Ly=object@Ly, tstep=object@tstep, specs=object@specs, mediac=object@mediac, mflux=object@mfluxlist[[time]],
-                 phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, stir=object@stir, shadow=object@shadowlist[[time]], occupyM=object@occupyM,
-                 gridgeometry=object@gridgeometry, seed=object@seed, models=object@models, scale=object@scale, sublb=object@sublb)
+                 phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, stir=object@stir, shadow=object@shadowlist[[time]])
   return(arena)
 })
 
