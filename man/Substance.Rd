@@ -22,9 +22,11 @@ Structure of the S4 class \code{Substance} representing substances in the enviro
 
 \item{\code{difspeed}}{A number indicating the diffusion speed (given by cm^2/s).}
 
+\item{\code{advspeed}}{A number indicating the advection speed in x direction (given by cm/s).}
+
 \item{\code{diffgeometry}}{Diffusion coefficient defined on all grid cells (initially set by constructor).}
 
-\item{\code{pde}}{R-function that computes the values of the derivatives in the diffusion system}
+\item{\code{pde}}{Choose diffusion transport reaction to be used (default is diffusion only)}
 
 \item{\code{boundS}}{A number defining the attached amount of substance at the boundary (Warning: boundary-function must be set in pde!)}
 }}

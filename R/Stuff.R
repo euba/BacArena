@@ -841,14 +841,13 @@ plotReaActivity <- function(simlist, reactions=list(), spec_list=NULL, ret_data=
   if(length(reactions)==0) stop("You have to define reactions")
   if(length(spec_list)==0) spec_list <- names(simlist[[1]]@specs)
   
-  reactions<-c("MMM2r", "MME", "MMCD", "PYK")
   df <- data.frame(spec=as.character(), rea=as.character(), mflux=as.numeric(), time=as.integer())
   
   for(i in seq_along(simlist)){
     object <- simlist[[i]]  
     for(t in seq_along(object@mfluxlist)){
       for(spec in spec_list){
-        if(length(intersect(reactions, names(object@mflux[[spec]]))) > 0 &  length(names(object@mfluxlist[[t]][[spec]])) > 0 ){
+        if(length(intersect(reactions, names(object@mfluxlist[[i]][[spec]]))) > 0 &  length(names(object@mfluxlist[[t]][[spec]])) > 0 ){
           mflux=object@mfluxlist[[t]][[spec]][which(names(object@mfluxlist[[t]][[spec]]) %in% reactions)]
           df <- rbind(df, data.frame(spec=spec, rea=names(mflux), mflux=unname(mflux), time=t, replc=i))
         }
@@ -863,8 +862,7 @@ plotReaActivity <- function(simlist, reactions=list(), spec_list=NULL, ret_data=
     ggplot2::theme(axis.text.x =ggplot2::element_blank()) + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
   if(length(levels(df$spec)) > 2) q2 <- q2 + ggplot2::facet_wrap(~spec, scales="free_y")
   
-  #library(plyr)
-  df2 <- ddply(df, c("time","rea"), function(tmp) c("mflux"=sum(tmp$mflux) ))
+  df2 <- plyr::ddply(df, c("time","rea"), function(tmp) c("mflux"=sum(tmp$mflux) ))
   q3 <- ggplot2::ggplot(df2, ggplot2::aes_string("time", "rea")) + geom_tile(ggplot2::aes_string(fill = "mflux")) 
 
   if(ret_data) return(df) else return(list(q1, q2, q3))
