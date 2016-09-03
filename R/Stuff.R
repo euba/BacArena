@@ -863,7 +863,7 @@ plotReaActivity <- function(simlist, reactions=list(), spec_list=NULL, ret_data=
   if(length(levels(df$spec)) > 2) q2 <- q2 + ggplot2::facet_wrap(~spec, scales="free_y")
   
   df2 <- plyr::ddply(df, c("time","rea"), function(tmp) c("mflux"=sum(tmp$mflux) ))
-  q3 <- ggplot2::ggplot(df2, ggplot2::aes_string("time", "rea")) + geom_tile(ggplot2::aes_string(fill = "mflux")) 
+  q3 <- ggplot2::ggplot(df2, ggplot2::aes_string("time", "rea")) + ggplot2::geom_tile(ggplot2::aes_string(fill = "mflux")) 
 
   if(ret_data) return(df) else return(list(q1, q2, q3))
 }
