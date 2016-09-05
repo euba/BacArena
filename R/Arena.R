@@ -1412,7 +1412,7 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
       return(as.vector(x@diffmat))
     })))
     eval.parent(substitute(object@simlist[[length(object@simlist)]] <- arena@orgdat))
-    eval.parent(substitute(object@simlist[[length(object@shadowlist)]] <- arena@shadowlist))
+    eval.parent(substitute(object@simlist[[length(object@shadowlist)]] <- arena@shadow))
     eval.parent(substitute(object@phenotypes <- arena@phenotypes))
     eval.parent(substitute(object@specs <- arena@specs)) 
     eval.parent(substitute(object@mflux <- arena@mflux)) 
