@@ -28,6 +28,7 @@ Imports:
     ggplot2,
     reshape2,
     glpkAPI,
+    plyr,
     Rcpp
 Suggests: 
     sybilSBML,

@@ -5,7 +5,9 @@
 \alias{Substance-constructor}
 \title{Constructor of the S4 class \code{Substance}}
 \usage{
-Substance(n, m, smax, gridgeometry, difspeed = 6.7e-06, ...)
+Substance(n, m, smax, gridgeometry, difspeed = 6.7e-06, advspeed = 0,
+  occupyM, Dgrid = NULL, Vgrid = NULL, diffmat = NULL, template = FALSE,
+  ...)
 }
 \arguments{
 \item{n}{A number giving the horizontal size of the environment.}
@@ -16,7 +18,19 @@ Substance(n, m, smax, gridgeometry, difspeed = 6.7e-06, ...)
 
 \item{gridgeometry}{A list containing grid geometry parameter}
 
-\item{difspeed}{A number indicating the diffusion speed (given by cm^2/s).}
+\item{difspeed}{A number indicating the diffusion speed in x and y direction (given by cm^2/s). For more complex setup define Dgrid.}
+
+\item{advspeed}{A number indicating the advection speed in x direction (given by cm/s). For more complex setup define Vgrid.}
+
+\item{occupyM}{A matrix indicating grid cells that are obstacles}
+
+\item{Dgrid}{A matrix indicating the diffusion speed in x and y direction (given by cm^2/s).}
+
+\item{Vgrid}{A number indicating the advection speed in x direction (given by cm/s).}
+
+\item{diffmat}{A matrix with spatial distributed initial concentrations (unit in fmol) (if not set, a homogenous matrix using smax is created)}
+
+\item{template}{True if diffmat matrix should be used as tempalte only (will be multiplied with smax to obtain cocentrations)}
 
 \item{...}{Arguments of \code{\link{Substance-class}}}
 }

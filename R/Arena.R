@@ -142,6 +142,10 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #' @param amount A numeric number giving the number of individuals to add.
 #' @param x A numeric vector giving the x positions of individuals on the grid.
 #' @param y A numeric vector giving the y positions of individuals on the grid.
+#' @param n0 Start row of matrix to take free positions from (default 1)
+#' @param m0 Start column of matrix to take free positions from (default 1)
+#' @param m End row of matrix to take free positions from (default arena@n)
+#' @param n End column of matrix to take free positions from (default arena@m)
 #' @param growth A numeric vector giving the starting biomass of the individuals.
 #' @details The arguments \code{x} and \code{y} should be in the same length as the number of organisms added (given by the argument \code{amount}).
 #' @seealso \code{\link{Arena-class}} and \code{\link{Bac-class}} 
@@ -151,11 +155,13 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
-setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=NA){standardGeneric("addOrg")})
+setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){standardGeneric("addOrg")})
 #' @export
 #' @rdname addOrg
-setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=NA){
-  if(amount+nrow(object@orgdat) > object@n*object@m-dim(which(object@occupyM>0, arr.ind = TRUE))[1]){
+setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){
+  if(length(n)==0) n <- object@n; if(length(m)==0) m <- object@m
+  if(length(n0)==0) n0 <- 1; if(length(m0)==0) m0 <- 1
+  if(amount+nrow(object@orgdat) > n*m-dim(which(object@occupyM[n0:n,m0:m]>0, arr.ind = TRUE))[1]){
     stop("More individuals than space on the grid")
   }
   bacnum <- round(object@scale/(specI@cellarea*10^(-8)))
@@ -163,8 +169,6 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
     stop("Physical arena size (Lx, Ly) too small. Maximal amount of cells in one grid cell would be zero.")
   }
  
-  n <- object@n
-  m <- object@m
   spectype <- specI@type
   neworgdat <- object@orgdat
   newspecs <- object@specs
@@ -184,14 +188,14 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   type <- which(names(newspecs)==spectype) 
   lastind <- nrow(object@orgdat)
   if(length(x*y)==0){
-    cmbs = expand.grid(1:n,1:m)
+    cmbs = expand.grid(n0:n,m0:m)
     rownames(cmbs) = paste(cmbs[,1],cmbs[,2],sep='_')
     taken <- paste(object@orgdat$x,object@orgdat$y,sep='_')
     obstacles <- which(object@occupyM>0, arr.ind = TRUE) 
     taken <- c(taken, paste(obstacles[,1], obstacles[,2],sep="_")) # extend taken to contain obstacle grid cells
-    if(length(taken)!=0){
-      cmbs <- cmbs[-which(rownames(cmbs) %in% taken),]
-    }
+    not_empty <- which(rownames(cmbs) %in% taken)
+    if(length(not_empty) > 0){
+      cmbs <- cmbs[-which(rownames(cmbs) %in% taken),]}
     sel <- sample(1:nrow(cmbs),amount)
     xp = cmbs[sel,1]
     yp = cmbs[sel,2]
@@ -230,14 +234,6 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
   object@shadow <- newshadow
   object@models <- c(object@models, specI@model)
   return(object)
-  # eval.parent(substitute(object@media <- c(object@media,newmedia)))
-  # eval.parent(substitute(object@orgdat <- neworgdat))
-  # eval.parent(substitute(object@specs <- newspecs))
-  # #eval.parent(substitute(object@phenotypes[[spectype]] <- newphens))
-  # newmediac <- c(object@mediac, specI@medium)
-  # eval.parent(substitute(object@mediac <- newmediac[!duplicated(newmediac)]))
-  # eval.parent(substitute(object@mflux <- newmflux))
-  # eval.parent(substitute(object@models <- c(object@models, specI@model)))
 })
 
 #' @title Add substances to the environment
@@ -283,7 +279,6 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   }
   
   if(length(smax) != length(mediac))    {smax = rep(as.numeric(smax),length(mediac))}
-  if(length(names(mediac)) == 0)        {names(mediac) <- names(object@mediac[which(object@mediac %in% mediac)])} # add substance names 
   if(length(difspeed) != length(mediac)){difspeed = rep(difspeed,length(mediac))}
   
   # 1) consider units
@@ -302,7 +297,8 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   for(i in 1:length(mediac)){
     if(mediac[[i]] %in% object@mediac){ # add only if possible
       old_diffmat <- object@media[[mediac[i]]]@diffmat
-      object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=names(mediac[i]), gridgeometry=object@gridgeometry, difunc=difunc, pde=pde, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat, template=template, Dgrid=Dgrid, Vgrid=Vgrid)
+      new_name <- ifelse( length(names(mediac[i]))==0, object@media[[mediac[i]]]@name, names(mediac[i]) )  # add substance names 
+      object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=new_name, gridgeometry=object@gridgeometry, difunc=difunc, pde=pde, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat, template=template, Dgrid=Dgrid, Vgrid=Vgrid)
       if(add){
         object@media[[mediac[i]]]@diffmat <- object@media[[mediac[i]]]@diffmat + old_diffmat
       }
@@ -1400,15 +1396,35 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
     eval.parent(substitute(object@phenotypes <- arena@phenotypes))
     eval.parent(substitute(object@mfluxlist[[length(object@mfluxlist)+1]] <- arena@mflux))
     eval.parent(substitute(object@shadowlist[[length(object@shadowlist)+1]] <- arena@shadow))
+    eval.parent(substitute(object@specs <- arena@specs))
+    eval.parent(substitute(object@mflux <- arena@mflux)) 
+    eval.parent(substitute(object@mediac <- arena@mediac))
+    eval.parent(substitute(object@media <- arena@media))
+    eval.parent(substitute(object@seed <- arena@seed))
+    eval.parent(substitute(object@occupyM <- arena@occupyM))
+    eval.parent(substitute(object@gridgeometry <- arena@gridgeometry))
+    eval.parent(substitute(object@models <- arena@models))
+    eval.parent(substitute(object@scale <- arena@scale))
+    eval.parent(substitute(object@sublb <- arena@sublb))
+    
   }else{
     eval.parent(substitute(object@medlist[[length(object@medlist)]] <- lapply(arena@media, function(x){
       return(as.vector(x@diffmat))
     })))
     eval.parent(substitute(object@simlist[[length(object@simlist)]] <- arena@orgdat))
+    eval.parent(substitute(object@simlist[[length(object@shadowlist)]] <- arena@shadow))
     eval.parent(substitute(object@phenotypes <- arena@phenotypes))
     eval.parent(substitute(object@specs <- arena@specs)) 
+    eval.parent(substitute(object@mflux <- arena@mflux)) 
     eval.parent(substitute(object@mediac <- arena@mediac))
     eval.parent(substitute(object@media <- arena@media))
+    eval.parent(substitute(object@seed <- arena@seed))
+    eval.parent(substitute(object@occupyM <- arena@occupyM))
+    eval.parent(substitute(object@gridgeometry <- arena@gridgeometry))
+    eval.parent(substitute(object@models <- arena@models))
+    eval.parent(substitute(object@scale <- arena@scale))
+    eval.parent(substitute(object@sublb <- arena@sublb))
+    
   }
 })
 
