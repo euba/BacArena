@@ -2682,6 +2682,10 @@ setMethod("fluxVarSim", "Eval", function(object, rnd){
     arenait = getArena(object, time=i-1)
     mflmat = matrix(0,nrow=length(arenait@mediac),ncol=2,
                     dimnames=list(arenait@mediac,c("min","max")))
+    flmat_max = matrix(NA,nrow=length(arenait@mediac),ncol=nrow(arenait@orgdat))
+    flmat_min = matrix(NA,nrow=length(arenait@mediac),ncol=nrow(arenait@orgdat))
+    rownames(flmat_max) = arenait@mediac
+    rownames(flmat_min) = arenait@mediac
     for(j in 1:nrow(arenait@orgdat)){
       org = arenait@orgdat[j,]
       bact = arenait@specs[[org$type]]
@@ -2693,9 +2697,14 @@ setMethod("fluxVarSim", "Eval", function(object, rnd){
       model = changeBounds(bact@model,names(lbs),lb=lbs)
       model = changeBounds(model,model@react_id[which(bact@model@obj_coef==1)],lb=fbasl$obj,ub=fbasl$obj)
       nil=capture.output(suppressMessages(fv <- fluxVar(model, bact@medium)))
-      mflmat[bact@medium,"max"] = mflmat[bact@medium,"max"] + round(minSol(fv,lp_obj),rnd)
-      mflmat[bact@medium,"min"] = mflmat[bact@medium,"min"] + round(maxSol(fv,lp_obj),rnd)
+      
+      flmat_max[bact@medium,j] = round(minSol(fv,lp_obj),rnd)
+      flmat_min[bact@medium,j] = round(maxSol(fv,lp_obj),rnd)
+      #mflmat[bact@medium,"max"] = mflmat[bact@medium,"max"] + round(minSol(fv,lp_obj),rnd)
+      #mflmat[bact@medium,"min"] = mflmat[bact@medium,"min"] + round(maxSol(fv,lp_obj),rnd)
     }
+    mflmat[rownames(flmat_max),"max"] = apply(flmat_max,1,function(x){return(mean(x,na.rm=T))})
+    mflmat[rownames(flmat_max),"min"] = apply(flmat_min,1,function(x){return(mean(x,na.rm=T))})
     mflist[[i]] = mflmat
   }
   return(mflist)

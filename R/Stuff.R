@@ -300,7 +300,7 @@ plotGrowthCurve <-function(simlist, time=c(NULL,NULL)){
     q2<-ggplot2::ggplot(all_df, ggplot2::aes_string(color="species", y="value", x="time")) +
       ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes_string(fill="species"), alpha=0.3) + 
       ggplot2::xlab("Time in h") + ggplot2::ylab("Number of individuals")
-    if(length(cap)!=0){q2 <- q2 + ggplot2::geom_vline(xintercept=min(cap))}
+    #if(length(cap)!=0){q2 <- q2 + ggplot2::geom_vline(xintercept=min(cap))}
     
     plot_list <- list(q1, q2)
   }
@@ -807,7 +807,10 @@ plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, re
 #'
 #' @param fvares results of FVA results to plot, obtained from function fluxVarSim
 #' @details Returns ggplot objects
-plotFVA = function(fvares){
+plotFVA = function(fvares, mediac){
+  for(i in 1:length(fvares)){
+    fvares[[i]] = fvares[[i]][mediac,]
+  }
   basedat = data.frame()
   for(i in 1:length(fvares)){
     basedat = rbind(basedat,
