@@ -1223,20 +1223,30 @@ setGeneric("findInArena", function(object, pattern, search_rea=TRUE, search_sub=
 setMethod("findInArena", "Arena", function(object, pattern, search_rea=TRUE, search_sub=TRUE){
   if(search_sub){
     res_id <- grep(x=object@mediac, pattern=pattern, ignore.case = TRUE)
-    print(object@mediac[res_id])
+    if(length(res_id)>0) print(object@mediac[res_id])
     res_name <- grep(x=names(object@mediac), pattern=pattern, ignore.case = TRUE)
-    print(object@mediac[res_name])
+    if(length(res_name)>0) print(object@mediac[res_name])
   }
   
   if(search_rea & length(object@models)>0){
     for(i in 1:length(object@models)){
       model = object@models[[i]]
-      cat(paste0("\n\n", i, ". ", model@mod_desc, model@mod_name))
+      cat(paste0("\n\n", i, ". ", model@mod_desc, model@mod_name, "\n"))
+      
+      res_met_id   <- grep(x=model@met_id,   pattern=pattern, ignore.case = TRUE)
+      if(length(res_met_id)>0) print(paste(model@met_id[res_met_id], model@met_name[res_met_id]))
+      res_met_name   <- grep(x=model@met_name,   pattern=pattern, ignore.case = TRUE)
+      if(length(res_met_name)>0) print(paste(model@met_id[res_met_name], model@met_name[res_met_name]))
+      
       res_rea_id   <- grep(x=model@react_id,   pattern=pattern, ignore.case = TRUE)
-      print(paste(model@react_id[res_rea_id], model@react_name[res_rea_id]))
+      if(length(res_rea_id)>0) {
+        print(paste(model@react_id[res_rea_id], model@react_name[res_rea_id]))
+        sybil::printReaction(model, react=model@react_id[res_rea_id])}
       
       res_rea_name <- grep(x=model@react_name, pattern=pattern, ignore.case = TRUE)
-      print(paste(model@react_id[res_rea_name], model@react_name[res_rea_name]))
+      if(length(res_rea_name)>0) {
+        print(paste(model@react_id[res_rea_name], model@react_name[res_rea_name]))
+        sybil::printReaction(model, react=model@react_id[res_rea_name])}
     }
   }
 })
