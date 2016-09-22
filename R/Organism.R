@@ -175,6 +175,7 @@ setMethod("model", "Organism", function(object){return(object@model)})
 #' @param object An object of class Organisms.
 #' @param reacts A character vector giving the names of reactions which should be constrained.
 #' @param lb A numeric vector giving the constraint values of lower bounds (e.g. avaible metabolite concentrations
+#' @param ub A numeric vector giving the constraint values of upper bounds.
 #' @param dryweight A number giving the current dryweight of the organism.
 #' @param time A number giving the time intervals for each simulation step.
 #' @param scale A numeric defining the scaling (units for linear programming has to be in certain range)
@@ -187,10 +188,10 @@ setMethod("model", "Organism", function(object){return(object@model)})
 #' org <- Organism(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize an organism
 #' lobnds <- constrain(org,org@medium,org@lbnd[org@medium],1,1)
-setGeneric("constrain", function(object, reacts, lb, dryweight, time, scale, j){standardGeneric("constrain")})
+setGeneric("constrain", function(object, reacts, lb, ub, dryweight, time, scale, j){standardGeneric("constrain")})
 #' @export
 #' @rdname constrain
-setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time, scale, j){
+setMethod("constrain", "Organism", function(object, reacts, lb, ub, dryweight, time, scale, j){
   reacts = unique(reacts)
   lb = lb[reacts]
   lobnd <- object@lbnd
@@ -208,7 +209,9 @@ setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, time,
       return(lnew)
     }))
   }
-  return(lobnd)
+  objective <- which(object@model@obj_coef!=0)
+  ub[objective] <- object@maxweight - dryweight
+  return(list(lobnd, ub))
 })
 
 
@@ -641,7 +644,7 @@ setMethod("growth", "Bac", function(object, population, j, occupyM, fbasol){
          stop("Growth type must be either linear or exponential"))
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
-  if(popvec$growth > object@maxweight){
+  if(popvec$growth >= object@maxweight){
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
               population@n, population@m, popvec$x, popvec$y)
     if(length(freenb) != 0){
@@ -765,9 +768,10 @@ setGeneric("simBac", function(object, arena, j, sublb, bacnum, sec_obj="none", c
 #' @export
 #' @rdname simBac
 setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6){
-  lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
+  const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, ub=object@ubnd*bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale, j)
-  optimization <- optimizeLP(object, lb=lobnd, j=j, sec_obj=sec_obj, cutoff=cutoff)
+  lobnd <- const[[1]]; upbnd <- const[[2]]
+  optimization <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff)
   fbasol <- optimization[[1]]
   
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol, cutoff) )) #scale consumption to the number of cells?
@@ -815,10 +819,10 @@ setGeneric("simBac_par", function(object, arena, j, sublb, bacnum, lpobject, sec
 #' @export
 #' @rdname simBac_par
 setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum, lpobject, sec_obj="none", cutoff=1e-6){
-  lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
+  const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, ub=object@ubnd*bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
-  
-  fbasol <- optimizeLP(object, lb=lobnd, j=j, sec_obj=sec_obj, cutoff=cutoff)
+  lobnd <- const[[1]]; upbnd <- const[[2]]
+  fbasol <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff)
 
   sublb[j,] <- consume(object, sublb=sublb[j,], bacnum=bacnum, fbasol=fbasol, cutoff=1e-6) #scale consumption to the number of cells?
   
@@ -955,7 +959,7 @@ setMethod("cellgrowth", "Human", function(object, population, j, occupyM, fbasol
          stop("Growth type must be either linear or exponential"))
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
-  if(popvec$growth > object@maxweight){
+  if(popvec$growth >= object@maxweight){
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
                         population@n, population@m, popvec$x, popvec$y)
     if(length(freenb) != 0){
