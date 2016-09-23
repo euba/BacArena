@@ -277,9 +277,10 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
          sybilGUROBI = {solve_ok <- fbasl$stat==2},
          stop("Solver not suported!"))
   if(is.na(solve_ok)){solve_ok = FALSE}
-  if(!solve_ok){fbasl$obj <- 0}
-  if(is.na(fbasl$obj)){fbasl$obj <- 0}
-  if(fbasl$obj<cutoff){fbasl$obj <- 0}
+  if(!solve_ok | is.na(fbasl$obj) | fbasl$obj<cutoff){
+    fbasl$obj <- 0
+    fbasl$fluxes <- rep(0, length(fbasl$fluxes))
+  }
   if(sec_obj!="none" && fbasl$obj!=0){
     switch(sec_obj,
            mtf =   {mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub);
