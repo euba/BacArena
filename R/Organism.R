@@ -209,7 +209,7 @@ setMethod("constrain", "Organism", function(object, reacts, lb, ub, dryweight, t
       return(lnew)
     }))
   }
-  ub[which(object@model@obj_coef!=0)] <- object@maxweight - dryweight
+  ub[which(object@model@obj_coef!=0)] <- (object@maxweight*1.5) - dryweight
   return(list(lobnd, ub))
 })
 
@@ -644,7 +644,7 @@ setMethod("growth", "Bac", function(object, population, j, occupyM, fbasol){
          stop("Growth type must be either linear or exponential"))
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
-  if(popvec$growth > (object@maxweight*0.75)){ #duplicate if cell is larger than a mean standard cell
+  if(popvec$growth > object@maxweight){ 
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
               population@n, population@m, popvec$x, popvec$y)
     if(length(freenb) != 0){
@@ -959,7 +959,7 @@ setMethod("cellgrowth", "Human", function(object, population, j, occupyM, fbasol
          stop("Growth type must be either linear or exponential"))
   dead <- F
   neworgdat[j,'growth'] <- popvec$growth
-  if(popvec$growth >= object@maxweight){
+  if(popvec$growth > object@maxweight){
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
                         population@n, population@m, popvec$x, popvec$y)
     if(length(freenb) != 0){
