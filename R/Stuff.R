@@ -121,7 +121,7 @@ estimate_lrw <- function(grid_n, grid_m){
 openArena <- function(){
   data(Ec_core, envir = environment())
   bac = Bac(model=Ec_core, type="E. coli")
-  arena <- Arena(n=50, m=50, stir=F, Lx=0.0125, Ly=0.0125)
+  arena <- Arena(n=50, m=50)
   arena <- addOrg(arena, bac, amount=50)
   arena <- addSubs(arena, smax=0.05, unit="mM", difspeed=6.7e-6,
             mediac = c("EX_glc(e)", "EX_o2(e)", "EX_h2o(e)", "EX_pi(e)", "EX_nh4(e)", "EX_h(e)"))
@@ -633,7 +633,7 @@ plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3, return_dat=F,
 
 #' @title Plot substance variations
 #'
-#' @description The function \code{plotSubVar} takes a list of simulations and return a barplot with most varying substances
+#' @description The function \code{plotSubVar} takes a list of simulations and returns a barplot with most varying substances
 #' @export
 #' @rdname plotSubVar
 #' 
@@ -793,7 +793,7 @@ plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, re
   
   q2 <- ggplot2::ggplot(df, ggplot2::aes_string("sub", "mflux")) + ggplot2::geom_boxplot(ggplot2::aes_string(color="sub", fill="sub"), alpha=0.2) + 
     ggplot2::theme(axis.text.x =ggplot2::element_blank()) + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
-  if(length(levels(df$spec)) > 2) q2 <- q2 + ggplot2::facet_wrap(~spec, scales="free_y")
+  if(length(levels(df$spec)) > 1) q2 <- q2 + ggplot2::facet_wrap(~spec, scales="free_y")
   
   if(ret_data) return(df) else return(list(q1, q2))
 }
