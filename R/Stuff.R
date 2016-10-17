@@ -254,8 +254,9 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL, unit
 #' 
 #' @param simlist A list of simulations (eval objects).
 #' @param time Vector with two entries defining start and end time
+#' @param ret_data Set true if data should be returned
 #'
-plotGrowthCurve <-function(simlist, time=c(NULL,NULL)){
+plotGrowthCurve <-function(simlist, time=c(NULL,NULL), ret_data=FALSE){
   if(is(simlist, "Eval")) simlist <- list(simlist)
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@simlist))) stop("Time interval not valid")
@@ -313,7 +314,7 @@ plotGrowthCurve <-function(simlist, time=c(NULL,NULL)){
   if(length(cap)!=0){q3 <- q3 + ggplot2::geom_vline(xintercept=min(cap))}
   if(length(plot_list)==0) plot_list <- list(q3,q4) else {plot_list[[length(plot_list)+1]] <- q3; plot_list[[length(plot_list)+2]] <- q4}
   
-  return(plot_list)
+  if(ret_data) return(all_df) else return(plot_list)
 }
 
 
@@ -423,7 +424,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
   p1 <- ggplot2::ggplot(all_df, ggplot2::aes(colour=all_df$Cphen, y=all_df$value, x=all_df$time)) + 
     ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes(fill=all_df$Cphen), alpha=0.3, size=1) + 
     ggplot2::scale_fill_manual(values=col) + ggplot2::scale_colour_manual(values=col) +
-    ggplot2::xlab("time [h]") + ggplot2::ylab("number organism") + ggplot2::ggtitle("Phenotyp growth curve with standard deviation") + 
+    ggplot2::xlab("time [h]") + ggplot2::ylab("number organism") + ggplot2::ggtitle("Phenotype growth curve with standard deviation") + 
     ggplot2::theme_bw(base_size = 30) +
     ggplot2::theme(#legend.position='none',
       legend.text= ggplot2::element_text(size=14),
@@ -455,6 +456,8 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       axis.ticks = ggplot2::element_line(size=1,color='black'),
       plot.title = ggplot2::element_text(size=20)) #15x5   
   
+#  sel_phen <- names(which(table(all_df$Cphen)>100))
+
   p3 <- ggplot2::ggplot(all_df, ggplot2::aes(color=all_df$replc, group=all_df$replc,y=all_df$value, x=all_df$time)) + ggplot2::geom_line(size=1) + ggplot2::geom_point(size=2, shape=3) +
     ggplot2::scale_colour_manual(values=col) + 
     ggplot2::facet_wrap(~Cphen, nrow=4) +
