@@ -420,7 +420,9 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
   
   all_df <- all_df[which(all_df$value!=0),] # important!
   all_df$time <- all_df$time * simlist[[1]]@tstep # adjust time to hours
-  sel_phen <- names(which(table(all_df$Cphen)>=min_occ))
+  avg_occ <- round(rowsum(all_df$value, group=all_df$Cphen) / (length(simlist) * simlist[[1]]@tstep * length(simlist[[1]]@simlist)),3)
+  print("average occurence of phenotypes"); print(avg_occ)
+  sel_phen <- rownames(avg_occ)[which(avg_occ >= min_occ)]
   all_df <- all_df[which(all_df$Cphen %in% sel_phen),]
   
   # 4) plotting
@@ -429,6 +431,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
     ggplot2::scale_fill_manual(values=col) + ggplot2::scale_colour_manual(values=col) +
     ggplot2::xlab("time [h]") + ggplot2::ylab("number organism") + ggplot2::ggtitle("Phenotype growth curve with standard deviation") + 
     ggplot2::theme_bw(base_size = 30) +
+    scale_y_log10()+
     ggplot2::theme(#legend.position='none',
       legend.text= ggplot2::element_text(size=14),
       legend.key=ggplot2::element_blank(),
@@ -442,10 +445,11 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       axis.ticks = ggplot2::element_line(size=1,color='black'),
       plot.title = ggplot2::element_text(size=20)) #15x5   
   
-  p2 <- ggplot2::ggplot(all_df, ggplot2::aes_string(color="Cphen", y="value", x="time")) + ggplot2::stat_summary(fun.y = mean, geom="line", size=1) +
+  p2 <- ggplot2::ggplot(all_df, ggplot2::aes_string(color="Cphen", y="value", x="time")) + ggplot2::stat_summary(fun.y = mean, geom="line", size=2) +
     ggplot2::stat_summary(fun.y = mean, geom="point", shape=3, size=2) + ggplot2::scale_colour_manual(values=col) + 
-    ggplot2::xlab("time [h]") + ggplot2::ylab("number organism") + ggplot2::ggtitle("Phenotyp growth curve with standard deviation") + 
+    ggplot2::xlab("time [h]") + ggplot2::ylab("number of organism") + ggplot2::ggtitle("Mean phenotype growth curve") + 
     ggplot2::theme_bw(base_size = 30) +
+    scale_y_log10()+
     ggplot2::theme(#legend.position='none',
       legend.text= ggplot2::element_text(size=14),
       legend.key=ggplot2::element_blank(),
@@ -459,10 +463,10 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
       axis.ticks = ggplot2::element_line(size=1,color='black'),
       plot.title = ggplot2::element_text(size=20)) #15x5   
   
-  p3 <- ggplot2::ggplot(all_df) + ggplot2::geom_line(aes_string( x="time", y="value", color="replc")) + 
+  p3 <- ggplot2::ggplot(all_df) + ggplot2::geom_line(size=1, aes_string( x="time", y="value", color="replc")) + 
     ggplot2::scale_colour_manual(values=col) + 
-    ggplot2::facet_wrap(~Cphen) +
-    ggplot2::xlab("time [h]") + ggplot2::ylab("number organism") + ggplot2::ggtitle("Comparison of phenotype growth curves") + 
+    ggplot2::facet_wrap(~Cphen, scales="free") +
+    ggplot2::xlab("time [h]") + ggplot2::ylab("number of organism") + ggplot2::ggtitle("Comparison of phenotype growth curves") + 
 #    theme_bw(base_size = 30) +
     ggplot2::theme_classic(base_size = 30) +
     ggplot2::theme(#legend.position='none',
@@ -481,7 +485,7 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), ret_phen
   p4 <- ggplot2::ggplot(all_df, ggplot2::aes_string(color="Cphen", group="Cphen",y="value", x="time")) + ggplot2::geom_line(size=1) + ggplot2::geom_point(size=2, shape=3) +
     ggplot2::scale_colour_manual(values=col) + 
     ggplot2::facet_wrap(~replc) +
-    ggplot2::xlab("time [h]") + ggplot2::ylab("number organism") + ggplot2::ggtitle("Comparison of replicate growth curves") + 
+    ggplot2::xlab("time [h]") + ggplot2::ylab("number of organism") + ggplot2::ggtitle("Comparison of replicate growth curves") + 
     ggplot2::theme_bw(base_size = 30) +
     ggplot2::theme(#legend.position='none',
       legend.text= ggplot2::element_text(size=14),
