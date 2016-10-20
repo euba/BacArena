@@ -281,15 +281,16 @@ plotGrowthCurve <-function(simlist, time=c(NULL,NULL), ret_data=FALSE){
   all_df$time <- all_df$time * simlist[[1]]@tstep # adjust time to hours
 
   # test if capacity is reached
-  cap <- unlist(lapply(simlist, function(sim){
+  cap <- sapply(seq_along(simlist), function(i){
+    sim <- simlist[[i]]
     capacity   <- sim@n*sim@m
     org_number <- lapply(sim@simlist, nrow)
     cap_reached<- which(org_number == capacity)
-    if(length(cap_reached)>0) min(cap_reached)
-    else NULL
-  }))
+    if(length(cap_reached)>0) min(cap_reached) else NA
+  })
   cap <- cap * simlist[[1]]@tstep - 1
   if(length(cap)!=0){dat_cap <- data.frame(replc=seq_along(simlist), cap=cap)}
+  dat_cap <- dat_cap[which(!is.na(dat_cap$cap)),]
   
   plot_list <- list()
   if(length(simlist) > 1){ # first two plots only possible if replicates are available
