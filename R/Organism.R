@@ -993,22 +993,31 @@ setMethod("cellgrowth", "Human", function(object, population, j, occupyM, fbasol
 #' @param arena An object of class Arena defining the environment.
 #' @param bacnum integer indicating the number of bacteria individuals per gridcell
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
+#' @param pcut A number giving the cutoff value by which value of objective function is considered greater than 0.
 #' @return Returns the updated enivironment of the \code{arena} parameter with all new positions of individuals on the grid and all new substrate concentrations.
 #' @details Human cell individuals undergo the step by step the following procedures: First the individuals are constrained with \code{constrain} to the substrate environment, then flux balance analysis is computed with \code{optimizeLP}, after this the substrate concentrations are updated with \code{consume}, then the cell growth is implemented with \code{cellgrowth}, the potential new phenotypes are added with \code{checkPhen}, finally the conditional function \code{lysis} is performed. Can be used as a wrapper for all important cell functions in a function similar to \code{simEnv}.
 #' @seealso \code{\link{Human-class}}, \code{\link{Arena-class}}, \code{\link{simEnv}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{cellgrowth}, \code{checkPhen} and \code{lysis}
 #' @examples
 #' NULL
-setGeneric("simHum", function(object, arena, j, sublb, bacnum){standardGeneric("simHum")})
+setGeneric("simHum", function(object, arena, j, sublb, bacnum,cutoff=1e-6, pcut=1e-6){standardGeneric("simHum")})
 #' @export
 #' @rdname simHum
-setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum){
-  lobnd <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
+setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum, cutoff=1e-6, pcut=1e-6){
+  const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, ub=object@ubnd*bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"growth"], time=arena@tstep, scale=arena@scale)
-  fbasol <- optimizeLP(object, lb=lobnd, j=j)[[1]]
+  
+  lobnd <- const[[1]]; upbnd <- const[[2]]
+  
+  optimization <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j)
+  fbasol <- optimization[[1]]
   if(is.null(fbasol$obj)){browser()}
-  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol))) #rescale from population size
+  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol, cutoff))) #rescale from population size
   dead <- cellgrowth(object, arena, j, arena@occupyM, fbasol=fbasol)
-  arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object, fbasol=fbasol))
+  arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object, fbasol=fbasol, cutoff=pcut))
+  type <- object@type
+  arena@mflux[[type]]  <- arena@mflux[[type]] + fbasol$fluxes # remember active fluxes
+  arena@shadow[[type]] <- arena@shadow[[type]]+ optimization[[2]]
+
   if(dead && object@lyse){
     eval.parent(substitute(sublb[j,] <- lysis(object, names(arena@media), sublb[j,])))
   }
