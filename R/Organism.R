@@ -28,6 +28,7 @@
 #' @slot cellweight_mean A numeric giving the mean of starting biomass 
 #' @slot cellweight_sd A numeric giving the standard derivation of starting biomass 
 #' @slot model Object of class sybil::modelorg containging the genome sclae metabolic model
+#' @slot algo Algorithm to be used during optimization (default fba)
 setClass("Organism",
          representation(
            lbnd="numeric",
@@ -47,7 +48,8 @@ setClass("Organism",
            cellweight_mean = "numeric",
            cellweight_sd = "numeric",
            speed="numeric",
-           model="modelorg"
+           model="modelorg",
+           algo="character"
          ),
          prototype(
            deathrate = 0.21,
@@ -126,7 +128,7 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
     lobnd[which(names(lobnd) %in% medc & lobnd==0)] <- -1000 
   }
   new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
-      fbasol=fbasol, feat=feat, lyse=lyse, model=model, ...)
+      fbasol=fbasol, feat=feat, lyse=lyse, model=model, algo=algo, ...)
 }
 
 ########################################################################################################

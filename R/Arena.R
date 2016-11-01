@@ -689,7 +689,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
-         stop("Please supply an object of class Arena."))
+         stop("Please supply an object of class Arena or Eval."))
   if(is.null(lrw)){lrw=estimate_lrw(arena@n,arena@m)}
   for(i in names(arena@specs)){
     phensel <- arena@phenotypes[which(names(arena@phenotypes)==i)]
@@ -1472,6 +1472,10 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
   
   arena <- Arena(n=object@n, m=object@m, Lx=object@Lx, Ly=object@Ly, tstep=object@tstep, specs=object@specs, mediac=object@mediac, mflux=object@mfluxlist[[time]],
                  phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, stir=object@stir, shadow=object@shadowlist[[time]])
+  # reinitialize lp objects
+  for(i in seq_along(arena@specs)){ 
+    algo <- ifelse(.hasSlot(arena@specs[[i]], "algo"), arena@specs[[i]]@algo, "fba")
+    arena@specs[[i]]@lpobj <- sybil::sysBiolAlg(arena@specs[[i]]@model, algorithm=algo)}
   return(arena)
 })
 
