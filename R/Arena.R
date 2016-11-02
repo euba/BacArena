@@ -293,17 +293,35 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   if(length(diffmat)>0 && !template) diffmat <- conv * diffmat
   
   # 2) create and add substances assuming that organisms are already added
-  newmedia <- object@media
-  for(i in 1:length(mediac)){
-    if(mediac[[i]] %in% object@mediac){ # add only if possible
-      old_diffmat <- object@media[[mediac[i]]]@diffmat
-      new_name <- ifelse( length(names(mediac[i]))==0, object@media[[mediac[i]]]@name, names(mediac[i]) )  # add substance names 
-      object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=new_name, gridgeometry=object@gridgeometry, difunc=difunc, pde=pde, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat, template=template, Dgrid=Dgrid, Vgrid=Vgrid)
-      if(add){
-        object@media[[mediac[i]]]@diffmat <- object@media[[mediac[i]]]@diffmat + old_diffmat
-      }
-    }
+  
+  if(class(object)=="Arena"){
+    newmedia <- object@media
+    for(i in 1:length(mediac)){
+      if(mediac[[i]] %in% object@mediac){ # add only if possible
+        old_diffmat <- object@media[[mediac[i]]]@diffmat
+        new_name <- ifelse( length(names(mediac[i]))==0, object@media[[mediac[i]]]@name, names(mediac[i]) )  # add substance names 
+        object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=new_name, gridgeometry=object@gridgeometry, difunc=difunc, pde=pde, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat, template=template, Dgrid=Dgrid, Vgrid=Vgrid)
+        if(add){
+          object@media[[mediac[i]]]@diffmat <- object@media[[mediac[i]]]@diffmat + old_diffmat}}}
+  }else if(class(object)=="Eval"){ # if eval class then add substance in last time step of medlist
+    time <- length(object@medlist)
+    media <- lapply(object@media[names(object@medlist[[time]])], function(x, meds, n, m){
+      x@diffmat <- Matrix::Matrix(meds[[x@id]],nrow=n,ncol=m,sparse=TRUE)
+      return(x)
+    },meds=extractMed(object,time), n=object@n, m=object@m)
+    for(i in 1:length(mediac)){
+      if(mediac[[i]] %in% object@mediac){ # add only if possible
+        old_diffmat <- media[[mediac[i]]]@diffmat
+        new_name <- ifelse( length(names(mediac[i]))==0, object@media[[mediac[i]]]@name, names(mediac[i]) )  # add substance names 
+        new_sub  <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=new_name, gridgeometry=object@gridgeometry, difunc=difunc, pde=pde, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat, template=template, Dgrid=Dgrid, Vgrid=Vgrid)
+        if(add){
+          object@medlist[[time]][[mediac[i]]] <- as.vector(new_sub@diffmat + old_diffmat)
+        }else{
+          object@medlist[[time]][[mediac[i]]] <- as.vector(new_sub@diffmat)
+        }
+        }}
   }
+  
   # 3) return changed arena object
   return(object)
 })
