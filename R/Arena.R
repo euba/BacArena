@@ -1491,8 +1491,8 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
   arena <- Arena(n=object@n, m=object@m, Lx=object@Lx, Ly=object@Ly, tstep=object@tstep, 
                  specs=object@specs, mediac=object@mediac, mflux=object@mfluxlist[[time]],
                  phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, stir=object@stir, 
-                 shadow=object@shadowlist[[time]], seed=object@seed, occupyM=object@occupyM,
-                 gridgeometry=object@gridgeometry, scale=object@scale)
+                 shadow=object@shadowlist[[time]], seed=object@seed)
+  arena@occupyM <- object@occupyM
   # reinitialize lp objects
   for(i in seq_along(arena@specs)){ 
     algo <- ifelse(.hasSlot(arena@specs[[i]], "algo"), arena@specs[[i]]@algo, "fba")
