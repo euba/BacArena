@@ -8,7 +8,7 @@
 \usage{
 addSubs(object, smax = 0, mediac = object@mediac, difunc = "pde",
   pde = "Diff2d", difspeed = 6.7e-06, unit = "mmol/cell", add = TRUE,
-  diffmat = NULL, template = FALSE, Dgrid = NLL, Vgrid = NULL)
+  diffmat = NULL, template = FALSE, Dgrid = NULL, Vgrid = NULL)
 
 \S4method{addSubs}{Arena}(object, smax = 0, mediac = object@mediac,
   difunc = "pde", pde = "Diff2d", difspeed = 6.7e-06,

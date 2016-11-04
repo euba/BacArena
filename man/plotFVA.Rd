@@ -4,7 +4,7 @@
 \alias{plotFVA}
 \title{Function to plot population level minimum and maximum flux from alternative optimal solutions obtained by FVA}
 \usage{
-plotFVA(fvares)
+plotFVA(fvares, mediac)
 }
 \arguments{
 \item{fvares}{results of FVA results to plot, obtained from function fluxVarSim}

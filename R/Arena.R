@@ -383,13 +383,22 @@ setMethod("changeSub", "Arena", function(object, smax, mediac, unit="mmol/cell")
 #'
 #' @param object An object of class Arena.
 #' @param org An object of class Organism
-setGeneric("addDefaultMed", function(object, org){standardGeneric("addDefaultMed")})
+#' @param unit A character used as chemical unit to set the amount of the substances to be added (valid values are: mmol/cell, mmol/cm2, mmol/arena, mM)
+setGeneric("addDefaultMed", function(object, org, unit="mM"){standardGeneric("addDefaultMed")})
 #' @rdname addDefaultMed
 #' @export
-setMethod("addDefaultMed", "Arena", function(object, org){
+setMethod("addDefaultMed", "Arena", function(object, org, unit="mM"){
   lb_ex <- org@model@lowbnd[which(org@model@react_id %in% unname(org@medium))]
   min_id  <-  unname(org@medium[which(lb_ex < 0)])
   min_val <-  -lb_ex[which(lb_ex < 0)]
+  switch(unit,
+         'mM'         = { conv <- 10^12 * 0.01 * object@scale}, # conversion of mMol in fmol/grid_cell
+         'mmol/cm2'   = { conv <- 10^12 * object@scale}, # conversion of mmol/arena in fmol/grid_cell
+         'mmol/arena' = { conv <- 10^12 / (object@n*object@m)}, # conversion of mmol/arena in fmol/grid_cell
+         'mmol/cell'  = { conv <- 10^12}, # conversion of mmol/cell in fmol/cell
+         'fmol/cell'  = { conv <- 1}, # already in fmol/cell
+         stop("Wrong unit for concentration."))
+  min_val <- conv * min_val
   for(id in min_id){
     object@media[[id]]@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@n, ncol=object@m, sparse=TRUE)}
   return(object)

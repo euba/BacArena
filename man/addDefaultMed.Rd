@@ -6,14 +6,16 @@
 \alias{addDefaultMed,Arena-method}
 \title{Add default medium of an organism to arena.}
 \usage{
-addDefaultMed(object, org)
+addDefaultMed(object, org, unit = "mM")
 
-\S4method{addDefaultMed}{Arena}(object, org)
+\S4method{addDefaultMed}{Arena}(object, org, unit = "mM")
 }
 \arguments{
 \item{object}{An object of class Arena.}
 
 \item{org}{An object of class Organism}
+
+\item{unit}{A character used as chemical unit to set the amount of the substances to be added (valid values are: mmol/cell, mmol/cm2, mmol/arena, mM)}
 }
 \description{
 The generic function \code{addDefaultMed} uses the lower bounds defined in an organism's model file to compose minimal medium.

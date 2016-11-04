@@ -12,6 +12,6 @@ plotSubVar(simlist, metsel)
 \item{metsel}{A vector with the name of exchange reactions of interest}
 }
 \description{
-The function \code{plotSubVar} takes a list of simulations and return a barplot with most varying substances
+The function \code{plotSubVar} takes a list of simulations and returns a barplot with most varying substances
 }
 

@@ -45,5 +45,7 @@ Structure of the S4 class \code{Organism} representing the organisms present in 
 \item{\code{cellweight_sd}}{A numeric giving the standard derivation of starting biomass}
 
 \item{\code{model}}{Object of class sybil::modelorg containging the genome sclae metabolic model}
+
+\item{\code{algo}}{Algorithm to be used during optimization (default fba)}
 }}
 

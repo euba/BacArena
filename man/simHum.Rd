@@ -6,9 +6,10 @@
 \alias{simHum,Human-method}
 \title{Function for one simulation iteration for objects of Human class}
 \usage{
-simHum(object, arena, j, sublb, bacnum)
+simHum(object, arena, j, sublb, bacnum, cutoff = 1e-06, pcut = 1e-06)
 
-\S4method{simHum}{Human}(object, arena, j, sublb, bacnum)
+\S4method{simHum}{Human}(object, arena, j, sublb, bacnum, cutoff = 1e-06,
+  pcut = 1e-06)
 }
 \arguments{
 \item{object}{An object of class Human.}
@@ -20,6 +21,8 @@ simHum(object, arena, j, sublb, bacnum)
 \item{sublb}{A vector containing the substance concentrations in the current position of the individual of interest.}
 
 \item{bacnum}{integer indicating the number of bacteria individuals per gridcell}
+
+\item{pcut}{A number giving the cutoff value by which value of objective function is considered greater than 0.}
 }
 \value{
 Returns the updated enivironment of the \code{arena} parameter with all new positions of individuals on the grid and all new substrate concentrations.

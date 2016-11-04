@@ -5,7 +5,8 @@
 \title{Plot growth curve for several simulations}
 \usage{
 plotPhenCurve(simlist, subs, phens = NULL, time = c(NULL, NULL),
-  ret_phengroups = FALSE, cluster = TRUE, col = colpal3)
+  cluster = TRUE, inAll = TRUE, col = colpal3, with_gc = FALSE,
+  return_dat = FALSE)
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}
@@ -16,11 +17,15 @@ plotPhenCurve(simlist, subs, phens = NULL, time = c(NULL, NULL),
 
 \item{time}{Vector with two entries defining start and end time}
 
-\item{ret_phengroups}{True if clustered phenotype groups should be returned.}
+\item{cluster}{True if phenotypes should be clustered/condensed.}
 
-\item{cluster}{True phenotypes should be clustered/condensed.}
+\item{inAll}{True if only phenotypes which occur in all replicates should be considered}
 
 \item{col}{Vector with color that should be used}
+
+\item{with_gc}{True if growth curve of organisms should be included}
+
+\item{return_dat}{Should data be returned? (default false)}
 }
 \description{
 The function \code{plotPhenCurve} takes a list of simulations and plots the time course of species with standard deviation.
