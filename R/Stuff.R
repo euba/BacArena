@@ -312,7 +312,7 @@ plotGrowthCurve <-function(simlist, time=c(NULL,NULL), ret_data=FALSE){
     ggplot2::xlab("Time in h") + ggplot2::ylab("Number of individuals")
   q4 <- ggplot2::ggplot(all_df, ggplot2::aes_string("time", "value")) +
     ggplot2::stat_summary(fun.y = mean, geom="bar", width=1, position="fill", ggplot2::aes_string(fill="species"))
-  if(length(cap)!=0){q3 <- q3 + ggplot2::geom_vline(xintercept=min(cap))}
+  if(length(cap)!=0 & !is.na(cap)){q3 <- q3 + ggplot2::geom_vline(xintercept=min(cap))}
   if(length(plot_list)==0){
     if(length(simlist[[1]]@specs)>1) plot_list <- list(q3,q4) else plot_list <- q3
   }else {plot_list[[length(plot_list)+1]] <- q3; plot_list[[length(plot_list)+2]] <- q4}     
