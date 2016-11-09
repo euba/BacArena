@@ -338,6 +338,7 @@ plotGrowthCurve <-function(simlist, time=c(NULL,NULL), ret_data=FALSE){
 #' @param return_dat Should data be returned? (default false)
 #'
 plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), cluster=TRUE, inAll=TRUE, col=colpal3, with_gc=FALSE, return_dat=FALSE){
+  if(is(simlist, "Eval")) simlist <- list(simlist)
   if(sum(subs %in% simlist[[1]]@mediac) != length(subs)) stop("Substances invalid.")
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   
