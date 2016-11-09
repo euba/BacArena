@@ -444,8 +444,8 @@ plotPhenCurve <- function(simlist, subs, phens=NULL, time=c(NULL,NULL), cluster=
   #sel_phen <- rownames(avg_occ)[which(avg_occ >= min_occ)]
   #all_df <- all_df[which(all_df$Cphen %in% sel_phen),]
   
-  p2 <- ggplot(all_df[which(all_df$value!=0),], aes_string(y="time", x="Cphen")) + geom_boxplot(aes_string(fill="Cphen")) + 
-    ggplot2::ylab("time [h]") + ggplot2::xlab("Phenotypes") + coord_flip() + ggplot2::scale_fill_manual(values=col)
+  p2 <- ggplot2::ggplot(all_df[which(all_df$value!=0),], ggplot2::aes_string(y="time", x="Cphen")) + ggplot2::geom_boxplot(aes_string(fill="Cphen")) + 
+    ggplot2::ylab("time [h]") + ggplot2::xlab("Phenotypes") + ggplot2::coord_flip() + ggplot2::scale_fill_manual(values=col)
   
   p1 <- ggplot2::ggplot(all_df[which(all_df$Cphen %in% phen_inall),], ggplot2::aes_string(colour="Cphen", y="value", x="time")) + 
     ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes_string(fill="Cphen"), alpha=0.3, size=1) + 
