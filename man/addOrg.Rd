@@ -23,7 +23,7 @@ addOrg(object, specI, amount, x = NULL, y = NULL, growth = NA,
 
 \item{y}{A numeric vector giving the y positions of individuals on the grid.}
 
-\item{growth}{A numeric vector giving the starting biomass of the individuals.}
+\item{growth}{A numeric vector giving the starting biomass of the individuals. (unit: fg)}
 
 \item{n0}{Start row of matrix to take free positions from (default 1)}
 

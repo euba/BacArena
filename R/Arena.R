@@ -146,7 +146,7 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #' @param m0 Start column of matrix to take free positions from (default 1)
 #' @param m End row of matrix to take free positions from (default arena@n)
 #' @param n End column of matrix to take free positions from (default arena@m)
-#' @param growth A numeric vector giving the starting biomass of the individuals.
+#' @param growth A numeric vector giving the starting biomass of the individuals. (unit: fg)
 #' @details The arguments \code{x} and \code{y} should be in the same length as the number of organisms added (given by the argument \code{amount}).
 #' @seealso \code{\link{Arena-class}} and \code{\link{Bac-class}} 
 #' @examples
