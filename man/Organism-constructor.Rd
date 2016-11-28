@@ -3,7 +3,7 @@
 \name{Organism-constructor}
 \alias{Organism}
 \alias{Organism-constructor}
-\title{Constructor of the S4 class \code{Organism}}
+\title{Constructor of the S4 class \code{\link{Organism-class}}}
 \usage{
 Organism(model, algo = "fba", ex = "EX_", ex_comp = NA,
   csuffix = "\\\\[c\\\\]", esuffix = "\\\\[e\\\\]", lyse = FALSE,
@@ -36,6 +36,6 @@ Organism(model, algo = "fba", ex = "EX_", ex_comp = NA,
 Object of class Organism
 }
 \description{
-The constructor to get a new object of class \code{Organism}
+Constructor of the S4 class \code{\link{Organism-class}}
 }
 

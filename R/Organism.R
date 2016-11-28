@@ -68,10 +68,9 @@ setClass("Organism",
 ###################################### CONSTRUCTOR #####################################################
 ########################################################################################################
 
-#' Constructor of the S4 class \code{Organism}
+#' Constructor of the S4 class \code{\link{Organism-class}}
 #' 
-#' The constructor to get a new object of class \code{Organism}
-#' @export
+#' @export Organism
 #' @name Organism-constructor
 #' 
 #' @param model Object of class sybil::modelorg containging the genome sclae metabolic model
