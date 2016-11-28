@@ -26,9 +26,9 @@ Structure of the S4 class \code{Organism} representing the organisms present in 
 
 \item{\code{feat}}{A list containing conditional features for the object (contains at the momement only biomass components for lysis).}
 
-\item{\code{deathrate}}{A numeric value giving the factor by which the growth should be reduced in every iteration (unit: fg)}
+\item{\code{deathrate}}{A numeric value giving the factor by which the growth should be reduced in every iteration (unit: pg)}
 
-\item{\code{minweight}}{A numeric value giving the growth limit at which the organism dies. (unit: fg)}
+\item{\code{minweight}}{A numeric value giving the growth limit at which the organism dies. (unit: pg)}
 
 \item{\code{growtype}}{A character vector giving the functional type for growth (linear or exponential).}
 
@@ -36,13 +36,13 @@ Structure of the S4 class \code{Organism} representing the organisms present in 
 
 \item{\code{speed}}{A integer vector representing the speed by which bacterium is moving (given by cell per iteration).}
 
-\item{\code{cellarea}}{A numeric value indicating the surface that one organism occupies (unit: mu cm^2)}
+\item{\code{cellarea}}{A numeric value indicating the surface that one organism occupies (unit: mu_m^2)}
 
-\item{\code{maxweight}}{A numeric value giving the maximal dry weight of single organism (unit: fg)}
+\item{\code{maxweight}}{A numeric value giving the maximal dry weight of single organism (unit: pg)}
 
-\item{\code{cellweight_mean}}{A numeric giving the mean of starting biomass (unit: fg)}
+\item{\code{cellweight_mean}}{A numeric giving the mean of starting biomass (unit: pg)}
 
-\item{\code{cellweight_sd}}{A numeric giving the standard derivation of starting biomass (unit: fg)}
+\item{\code{cellweight_sd}}{A numeric giving the standard derivation of starting biomass (unit: pg)}
 
 \item{\code{model}}{Object of class sybil::modelorg containging the genome sclae metabolic model}
 

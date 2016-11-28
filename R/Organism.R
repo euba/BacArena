@@ -18,15 +18,15 @@
 #' @slot fbasol A list with the solutions of the flux balance analysis.
 #' @slot lyse A boolean variable indicating if the organism should lyse after death.
 #' @slot feat A list containing conditional features for the object (contains at the momement only biomass components for lysis).
-#' @slot deathrate A numeric value giving the factor by which the growth should be reduced in every iteration (unit: fg)
-#' @slot minweight A numeric value giving the growth limit at which the organism dies. (unit: fg)
+#' @slot deathrate A numeric value giving the factor by which the growth should be reduced in every iteration (unit: pg)
+#' @slot minweight A numeric value giving the growth limit at which the organism dies. (unit: pg)
 #' @slot growtype A character vector giving the functional type for growth (linear or exponential).
 #' @slot kinetics A List containing Km and v_max values for each reactions.
 #' @slot speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
-#' @slot cellarea A numeric value indicating the surface that one organism occupies (unit: mu cm^2)
-#' @slot maxweight A numeric value giving the maximal dry weight of single organism (unit: fg)
-#' @slot cellweight_mean A numeric giving the mean of starting biomass (unit: fg)
-#' @slot cellweight_sd A numeric giving the standard derivation of starting biomass (unit: fg)
+#' @slot cellarea A numeric value indicating the surface that one organism occupies (unit: mu_m^2)
+#' @slot maxweight A numeric value giving the maximal dry weight of single organism (unit: pg)
+#' @slot cellweight_mean A numeric giving the mean of starting biomass (unit: pg)
+#' @slot cellweight_sd A numeric giving the standard derivation of starting biomass (unit: pg)
 #' @slot model Object of class sybil::modelorg containging the genome sclae metabolic model
 #' @slot algo Algorithm to be used during optimization (default fba)
 setClass("Organism",
