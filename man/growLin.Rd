@@ -6,9 +6,9 @@
 \alias{growLin,Organism-method}
 \title{Function for letting organisms grow linearly}
 \usage{
-growLin(object, growth, fbasol)
+growLin(object, growth, fbasol, tstep)
 
-\S4method{growLin}{Organism}(object, growth, fbasol)
+\S4method{growLin}{Organism}(object, growth, fbasol, tstep)
 }
 \arguments{
 \item{object}{An object of class Organisms.}
@@ -16,6 +16,8 @@ growLin(object, growth, fbasol)
 \item{growth}{A number indicating the current biomass, which has to be updated.}
 
 \item{fbasol}{Problem object according to the constraints and then solved with \code{optimizeProb}.}
+
+\item{tstep}{A number giving the time intervals for each simulation step.}
 }
 \value{
 Returns the updated biomass of the organisms of interest.

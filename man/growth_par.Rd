@@ -6,9 +6,9 @@
 \alias{growth_par,Bac-method}
 \title{Function implementing a growth model of a bacterium}
 \usage{
-growth_par(object, population, j, fbasol)
+growth_par(object, population, j, fbasol, tstep)
 
-\S4method{growth_par}{Bac}(object, population, j, fbasol)
+\S4method{growth_par}{Bac}(object, population, j, fbasol, tstep)
 }
 \arguments{
 \item{object}{An object of class Bac.}
@@ -18,6 +18,8 @@ growth_par(object, population, j, fbasol)
 \item{j}{The index of the organism of interest in orgdat.}
 
 \item{fbasol}{Problem object according to the constraints and then solved with \code{optimizeProb}.}
+
+\item{tstep}{A number giving the time intervals for each simulation step.}
 }
 \value{
 A list

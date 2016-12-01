@@ -6,9 +6,9 @@
 \alias{cellgrowth,Human-method}
 \title{Function implementing a growth model of a human cell}
 \usage{
-cellgrowth(object, population, j, occupyM, fbasol)
+cellgrowth(object, population, j, occupyM, fbasol, tstep)
 
-\S4method{cellgrowth}{Human}(object, population, j, occupyM, fbasol)
+\S4method{cellgrowth}{Human}(object, population, j, occupyM, fbasol, tstep)
 }
 \arguments{
 \item{object}{An object of class Human.}
@@ -20,6 +20,8 @@ cellgrowth(object, population, j, occupyM, fbasol)
 \item{occupyM}{A matrix indicating grid cells that are obstacles}
 
 \item{fbasol}{Problem object according to the constraints and then solved with \code{optimizeProb}.}
+
+\item{tstep}{A number giving the time intervals for each simulation step.}
 }
 \value{
 Boolean variable of the \code{j}th individual indicating if individual died.

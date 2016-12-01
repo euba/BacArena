@@ -6,9 +6,9 @@
 \alias{constrain,Organism-method}
 \title{Function for constraining the models based on metabolite concentrations}
 \usage{
-constrain(object, reacts, lb, ub, dryweight, time, scale, j)
+constrain(object, reacts, lb, ub, dryweight, tstep, scale, j)
 
-\S4method{constrain}{Organism}(object, reacts, lb, ub, dryweight, time, scale,
+\S4method{constrain}{Organism}(object, reacts, lb, ub, dryweight, tstep, scale,
   j)
 }
 \arguments{
@@ -22,7 +22,7 @@ constrain(object, reacts, lb, ub, dryweight, time, scale, j)
 
 \item{dryweight}{A number giving the current dryweight of the organism.}
 
-\item{time}{A number giving the time intervals for each simulation step.}
+\item{tstep}{A number giving the time intervals for each simulation step.}
 
 \item{scale}{A numeric defining the scaling (units for linear programming has to be in certain range)}
 
@@ -35,7 +35,7 @@ Returns the lower bounds, which carry the constraints and names of relevant reac
 The generic function \code{constrain} changes the constraints of the model representation of an organism.
 }
 \details{
-The constraints are calculated according to the flux definition as mmol/(gDW*hr) with the parameters \code{dryweight} and \code{time}.
+The constraints are calculated according to the flux definition as mmol/(gDW*hr) with the parameters \code{dryweight} and \code{tstep}.
 }
 \examples{
 data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
