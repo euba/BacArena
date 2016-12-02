@@ -696,6 +696,7 @@ plotSubUsage <- function(simlist, subs=list(), cutoff=1e-2, ret_data=FALSE){
     }
   }
   
+  if(nrow(df)==0) stop("None of the substances you provided are used by the community.")
   if(!ret_data) df <- df[which(abs(df$mflux) > cutoff),,drop = FALSE] # do not drop if date is used further
   
   q1 <- ggplot2::ggplot(df, ggplot2::aes_string(x="time", y="mflux")) + ggplot2::geom_line(ggplot2::aes_string(col="spec"), size=1) + ggplot2::facet_wrap(~sub, scales="free_y")+ ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
