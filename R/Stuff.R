@@ -176,12 +176,12 @@ lsd <- function(y){lb=mean(y)-stats::sd(y); ifelse(lb<0,0,lb)}
 #' @return list of three ggplot object for further formating
 #'
 plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL, unit="mmol", ret_data=FALSE, num_var=10){
-  mediac = intersect(mediac,simlist[[1]]@mediac)
   if(is(simlist, "Eval")) simlist <- list(simlist)
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   #if(sum(mediac %in% simlist[[1]]@mediac) != length(mediac)) stop("Substance does not exist in exchange reactions.")
-  if(length(mediac)==0) stop("Substance does not exist in exchange reactions.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@medlist))) stop("Time interval not valid")
+  mediac = intersect(mediac,simlist[[1]]@mediac)
+  if(length(mediac)==0) stop("Substance does not exist in exchange reactions.")
   
   if(length(mediac)==0) mediac <- names(getVarSubs(simlist[[1]]))[1:num_var] # get the most varying substances (from first sim)
   if(length(mediac) == 0) stop("All substance have a variance of zero.")
