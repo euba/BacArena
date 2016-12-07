@@ -52,7 +52,7 @@ openArena()
 
 ## Documentation
 
-A tutorial is available: [Introduction](https://github.com/euba/BacArena/raw/master/vignettes/BacArena-Introduction.pdf) 
+A tutorial is available: [Introduction](https://cran.r-project.org/web/packages/BacArena/vignettes/BacArena-Introduction.pdf) 
 
 
 ## Issues
