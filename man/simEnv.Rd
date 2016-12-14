@@ -8,11 +8,11 @@
 \usage{
 simEnv(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
   diffusion = TRUE, diff_par = FALSE, cl_size = 2, sec_obj = "none",
-  cutoff = 1e-06, pcut = 1e-06)
+  cutoff = 1e-06, pcut = 1e-06, verbose = TRUE)
 
 \S4method{simEnv}{Arena}(object, time, lrw = NULL, continue = FALSE,
   reduce = FALSE, diffusion = TRUE, diff_par = FALSE, cl_size = 2,
-  sec_obj = "none", cutoff = 1e-06, pcut = 1e-06)
+  sec_obj = "none", cutoff = 1e-06, pcut = 1e-06, verbose = TRUE)
 }
 \arguments{
 \item{object}{An object of class Arena or Eval.}
@@ -36,6 +36,8 @@ simEnv(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
 \item{cutoff}{value used to define numeric accuracy}
 
 \item{pcut}{A number giving the cutoff value by which value of objective function is considered greater than 0.}
+
+\item{verbose}{Set to false if no status messages should be printed.}
 }
 \value{
 Returns an object of class \code{Eval} which can be used for subsequent analysis steps.

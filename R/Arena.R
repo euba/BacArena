@@ -697,6 +697,7 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' @param sec_obj character giving the secondary objective for a bi-level LP if wanted.
 #' @param cutoff value used to define numeric accuracy
 #' @param pcut A number giving the cutoff value by which value of objective function is considered greater than 0.
+#' @param verbose Set to false if no status messages should be printed. 
 #' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
 #' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
 #' @seealso \code{\link{Arena-class}} and \code{\link{Eval-class}}
@@ -708,10 +709,10 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,5)
-setGeneric("simEnv", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, sec_obj="none", cutoff=1e-6, pcut=1e-6){standardGeneric("simEnv")})
+setGeneric("simEnv", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, sec_obj="none", cutoff=1e-6, pcut=1e-6, verbose=TRUE){standardGeneric("simEnv")})
 #' @export
 #' @rdname simEnv
-setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, sec_obj="none", cutoff=1e-6, pcut=1e-6){
+setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, sec_obj="none", cutoff=1e-6, pcut=1e-6, verbose=TRUE){
   if(length(object@media)==0) stop("No media present in Arena!")
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
@@ -742,12 +743,12 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       arena@orgdat = arena@orgdat[new_ind,]
       sublb = sublb[new_ind,] #apply shuffeling also to sublb to ensure same index as orgdat
     }
-    cat("\niteration:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "pg \n")
+    if(verbose) cat("\niteration:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "pg \n")
     org_stat <- sapply(seq_along(arena@specs), function(x){dim(arena@orgdat[which(arena@orgdat$type==x),])[1]})
     if(length(arena@specs) > 0){
       old_biomass<-biomass_stat; biomass_stat <- sapply(seq_along(arena@specs), function(x){sum(arena@orgdat$growth[which(arena@orgdat$type==x)])})
       org_stat <- cbind(org_stat, biomass_stat, 100*(biomass_stat-old_biomass)/old_biomass); rownames(org_stat) <- names(arena@specs); colnames(org_stat) <- c("count", "biomass", "%")
-      print(org_stat)}
+      if(verbose) print(org_stat)}
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
     arena@shadow <-lapply(arena@shadow, function(x){numeric(length(x))}) # empty shadow pool
       if(nrow(arena@orgdat) > 0){ # if there are organisms left
@@ -777,11 +778,11 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
     addEval(evaluation, arena)
     if(reduce && i<time){evaluation = redEval(evaluation)}
     if(nrow(arena@orgdat)==0 && !continue){
-      print("All organisms died!")
+      if(verbose) print("All organisms died!")
       break
     }
     step_t <- proc.time()[3] - init_t
-    cat("\ttime total: ", round(step_t,3), "\tdiffusion: ", round(diff_t,3), " (", 100*round(diff_t/step_t,3),"%)\n" )
+    if(verbose) cat("\ttime total: ", round(step_t,3), "\tdiffusion: ", round(diff_t,3), " (", 100*round(diff_t/step_t,3),"%)\n" )
   }
   return(evaluation)
 })
@@ -865,6 +866,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
 #' @param diffusion True if diffusion should be done (default on).
 #' @param sec_obj character giving the secondary objective for a bi-level LP if wanted.
 #' @param cutoff value used to define numeric accuracy
+#' @param verbose Set to false if no status messages should be printed. 
 #' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
 #' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
 #' @seealso \code{\link{Arena-class}} and \code{\link{Eval-class}}
@@ -876,10 +878,10 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,5)
-setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, cluster_size=NULL, diffusion=TRUE, sec_obj="none", cutoff=1e-6){standardGeneric("simEnv_par")})
+setGeneric("simEnv_par", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, cluster_size=NULL, diffusion=TRUE, sec_obj="none", cutoff=1e-6, verbose=TRUE){standardGeneric("simEnv_par")})
 #' @export
 #' @rdname simEnv_par
-setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, cluster_size=NULL, diffusion=TRUE, sec_obj="none", cutoff=1e-6){
+setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, cluster_size=NULL, diffusion=TRUE, sec_obj="none", cutoff=1e-6, verbose=TRUE){
   if(length(object@media)==0) stop("No media present in Arena!")
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
@@ -910,10 +912,10 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=FALSE
     
     init_t <- proc.time()[3]
     arena@orgdat["nr"] <- seq_len(dim(arena@orgdat)[1]) # dummy numbering
-    cat("\nparallel iteration:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "pg \n")
+    if(verbose) cat("\nparallel iteration:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "pg \n")
     org_stat <- table(arena@orgdat$type)
     names(org_stat) <- names(arena@specs)[as.numeric(names(org_stat))]
-    print(org_stat)
+    if(verbose) print(org_stat)
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
     arena@shadow <-lapply(arena@shadow, function(x){numeric(length(x))}) # empty shadow pool
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
@@ -1014,13 +1016,13 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=FALSE
     addEval(evaluation, arena)
     if(reduce && i<time){evaluation = redEval(evaluation)}
     if(nrow(arena@orgdat)==0 && !continue){
-      print("All organisms died!")
+      if(verbose) print("All organisms died!")
       break
     }
     step_t <- proc.time()[3] - init_t
     #cat("\ttime total: ", round(step_t,3), "\tdiffusion: ", round(diff_t,3), " (", 100*round(diff_t/step_t,3),"%)\n" )
-    cat("\ttime total: ", round(step_t,3), "\tdiffusion: ", round(diff_t,3), " (", 100*round(diff_t/step_t,3),"%)", "\tpar_fba: ", round(par_t,3), " (", 100*round(par_t/step_t,3),"%)", "\tpar_fba_post: ", round(par_post_t,3), " (", 100*round(par_post_t/step_t,3),"%)\n")
-    cat("\ttest:", round(test_t,3), " (", 100*round(test_t/step_t,3),"%)")
+    if(verbose) cat("\ttime total: ", round(step_t,3), "\tdiffusion: ", round(diff_t,3), " (", 100*round(diff_t/step_t,3),"%)", "\tpar_fba: ", round(par_t,3), " (", 100*round(par_t/step_t,3),"%)", "\tpar_fba_post: ", round(par_post_t,3), " (", 100*round(par_post_t/step_t,3),"%)\n")
+    if(verbose) cat("\ttest:", round(test_t,3), " (", 100*round(test_t/step_t,3),"%)")
   }
   #parallel::stopCluster(parallelCluster)
   return(evaluation)
