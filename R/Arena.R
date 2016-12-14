@@ -2514,6 +2514,7 @@ setMethod("findFeeding3", "Eval", function(object, time, mets){
     if(class(interact)=="character"){interact = t(as.matrix(interact))}
     if(nrow(interact)!=0){inter = rbind(inter,data.frame(prod=interact[,1],cons=interact[,2],met=i))}
   }
+  if(any(dim(inter)==0)) stop("No feeding found. Try other metaboites or time points.")
   g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE)
   l <- igraph::layout.kamada.kawai(g)
   plot(g,edge.color=grDevices::rainbow(length(levels(inter$met)))[as.numeric(inter$met)],
