@@ -87,6 +87,16 @@ setClass("Organism",
 #' @return Object of class Organism
 Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]", esuffix="\\[e\\]", lyse=FALSE, feat=list(), 
                      typename=NA, setExInf=TRUE, ...){
+  if(all(model@obj_coef==0)){
+    exchanges_pos <- sybil::findExchReact(model)@react_pos
+    pot_biomass_pos <- grep("biom", model@react_id, ignore.case = TRUE)
+    pot_biomass_pos <- setdiff(pot_biomass_pos, exchanges_pos) # exclude exchange reactions
+    if(length(pot_biomass_pos)==0) stop("No objection function set in model")
+    print("No objective function set, try set automatically ..")
+    print(paste("found:", model@react_id[pot_biomass_pos]))
+    print(paste("set new biomass function:", model@react_id[pot_biomass_pos[1]]))
+    model@obj_coef[pot_biomass_pos[1]] <- 1
+  }
   if(is.na(typename)) typename <- sybil::mod_desc(model)
   rxname = sybil::react_id(model)
   lpobject <- sybil::sysBiolAlg(model, algorithm=algo)
