@@ -290,7 +290,7 @@ plotGrowthCurve <-function(simlist, time=c(NULL,NULL), ret_data=FALSE){
     cap_reached<- which(org_number == capacity)
     if(length(cap_reached)>0) min(cap_reached) else NA
   })
-  cap <- cap * simlist[[1]]@tstep - 1
+  cap <- cap * simlist[[1]]@tstep
   if(length(cap)!=0){dat_cap <- data.frame(replc=seq_along(simlist), cap=cap)}
   dat_cap <- dat_cap[which(!is.na(dat_cap$cap)),]
   
