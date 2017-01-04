@@ -180,11 +180,11 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL, unit
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   #if(sum(mediac %in% simlist[[1]]@mediac) != length(mediac)) stop("Substance does not exist in exchange reactions.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@medlist))) stop("Time interval not valid")
+  if(length(mediac)==0) mediac <- names(getVarSubs(simlist[[1]]))[1:num_var] # get the most varying substances (from first sim)
+  if(length(mediac) == 0) stop("All substance have a variance of zero.")
   mediac = intersect(mediac,simlist[[1]]@mediac)
   if(length(mediac)==0) stop("Substance does not exist in exchange reactions.")
   
-  if(length(mediac)==0) mediac <- names(getVarSubs(simlist[[1]]))[1:num_var] # get the most varying substances (from first sim)
-  if(length(mediac) == 0) stop("All substance have a variance of zero.")
   all_df <- data.frame()
   for(i in seq_along(simlist)){
     object <- simlist[[i]]
