@@ -2716,6 +2716,56 @@ setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutof
   return(list(q1, q2))
   })
 
+#' @title Function to get all reactions fluxes that are associated with the metabolite of a given exchange reactions
+#'
+#' @description The generic function \code{findRxnFlux} returns a matrix with the flux for each organism and the reaction that is using the metabolite of the given exchange reaction
+#' @export
+#' @rdname findRxnFlux
+#'
+#' @param object An object of class Eval.
+#' @param ex An exchange reaction of which the metabolite should be shared for in all reactions
+#' @param time the time point of the simulation which should be considered
+#' @details Returns a list with the minimum and maximum substance usage for each time point.
+#' @seealso \code{\link{Eval-class}} and \code{\link{simEnv}}
+#' @examples
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(n=20,m=20) #initialize the environment
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
+#' eval <- simEnv(arena,5)
+#' fluxlist <- findRxnFlux(eval, "EX_h(e)", 5)
+setGeneric("findRxnFlux", function(object, ex, time){standardGeneric("findRxnFlux")})
+#' @export
+#' @rdname findRxnFlux
+setMethod("findRxnFlux", "Eval", function(object, ex, time){
+  sim=object
+  aff_rxn = vector()
+  for(i in 1:length(sim@specs)){
+    model = sim@specs[[i]]@model
+    if(ex %in% model@react_id){
+      reactind = which(model@react_id==ex) #find the index of the reaction
+      metind = which(model@S[,reactind]==-1) #find which metabolites this reaction is affecting
+      metcomp = gsub("\\[.\\]","",model@met_id) #strip off compartment id from metabolite
+      mets = which(metcomp %in% metcomp[metind]) #find which metabolites are there 
+      aff_rid = which(apply(abs(model@S[mets,]),2,sum)!=0) #get id of affected reactions
+      aff_rxn = union(aff_rxn,model@react_id[aff_rid]) #get the names of the afffected reactions
+    }
+  }
+  time=time+1
+  mtflux = sim@mfluxlist[[time]] #select right timestep from fluxlist
+  mtfmat = matrix(0,nrow=length(mtflux),ncol=length(aff_rxn),
+                  dimnames=list(names(sim@specs),aff_rxn)) #create matrix to store flux of each species
+  for(i in 1:length(mtflux)){ #iterate through each species
+    if(sum(aff_rxn %in% names(mtflux[[i]]))!=0){
+      mtfmat[i,aff_rxn] = mtflux[[i]][aff_rxn] #store flux of key reactions per species in matrix
+    }
+  }
+  sumflux = apply(abs(mtfmat),2,sum) #make the sum of the absolute flux for the reactions of each species
+  return(mtfmat[,names(sort(sumflux,decreasing=T))]) #return the sorted matrix based on the absolute flux
+})
+
 #' @title Function to compute flux variability analysis on an simulation object to get min/max of substance usage
 #'
 #' @description The generic function \code{fluxVarSim} returns a list with the minimum and maximum substance usage of all individuals for each simulation step.
@@ -2771,53 +2821,4 @@ setMethod("fluxVarSim", "Eval", function(object, rnd){
     mflist[[i]] = mflmat
   }
   return(mflist)
-})
-
-#' @title Function to get all reactions fluxes that are associated with the metabolite of a given exchange reactions
-#'
-#' @description The generic function \code{findRxnFlux} returns a matrix with the flux for each organism and the reaction that is using the metabolite of the given exchange reaction
-#' @export
-#' @rdname findRxnFlux
-#'
-#' @param object An object of class Eval.
-#' @param ex An exchange reaction of which the metabolite should be shared for in all reactions
-#' @param time the time point of the simulation which should be considered
-#' @details Returns a list with the minimum and maximum substance usage for each time point.
-#' @seealso \code{\link{Eval-class}} and \code{\link{simEnv}}
-#' @examples
-#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
-#' bac <- Bac(Ec_core,deathrate=0.05,
-#'            minweight=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(n=20,m=20) #initialize the environment
-#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
-#' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,5)
-#' fluxlist <- findRxnFlux(eval, "EX_h(e)", 5)
-setGeneric("findRxnFlux", function(object, ex, time){standardGeneric("findRxnFlux")})
-#' @export
-#' @rdname findRxnFlux
-setMethod("findRxnFlux", "Eval", function(object, ex, time){
-  sim=object
-  aff_rxn = vector()
-  for(i in 1:length(sim@specs)){
-    if(ex %in% sim@specs[[i]]@model@react_id){
-      reactind = which(model@react_id==ex) #find the index of the reaction
-      metind = which(model@S[,reactind]==-1) #find which metabolites this reaction is affecting
-      metcomp = gsub("\\[.\\]","",model@met_id) #strip off compartment id from metabolite
-      mets = which(metcomp %in% metcomp[metind]) #find which metabolites are there 
-      aff_rid = which(apply(abs(model@S[mets,]),2,sum)!=0) #get id of affected reactions
-      aff_rxn = union(aff_rxn,model@react_id[aff_rid]) #get the names of the afffected reactions
-    }
-  }
-  time=time+1
-  mtflux = sim@mfluxlist[[time]] #select right timestep from fluxlist
-  mtfmat = matrix(0,nrow=length(mtflux),ncol=length(aff_rxn),
-                  dimnames=list(names(sim@specs),aff_rxn)) #create matrix to store flux of each species
-  for(i in 1:length(mtflux)){ #iterate through each species
-    if(sum(aff_rxn %in% names(mtflux[[i]]))!=0){
-      mtfmat[i,aff_rxn] = mtflux[[i]][aff_rxn] #store flux of key reactions per species in matrix
-    }
-  }
-  sumflux = apply(abs(mtfmat),2,sum) #make the sum of the absolute flux for the reactions of each species
-  return(mtfmat[,names(sort(sumflux,decreasing=T))]) #return the sorted matrix based on the absolute flux
 })
