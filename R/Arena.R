@@ -2822,3 +2822,30 @@ setMethod("fluxVarSim", "Eval", function(object, rnd){
   }
   return(mflist)
 })
+
+#' @title Function to get all reactions fluxes that are associated with the metabolite of a given exchange reactions
+#'
+#' @description The generic function \code{findRxnFlux_test} returns a matrix with the flux for each organism and the reaction that is using the metabolite of the given exchange reaction
+#' @export
+#' @rdname findRxnFlux_test
+#'
+#' @param object An object of class Eval.
+#' @param ex An exchange reaction of which the metabolite should be shared for in all reactions
+#' @param time the time point of the simulation which should be considered
+#' @details Returns a list with the minimum and maximum substance usage for each time point.
+#' @seealso \code{\link{Eval-class}} and \code{\link{simEnv}}
+#' @examples
+#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
+#' bac <- Bac(Ec_core,deathrate=0.05,
+#'            minweight=0.05,growtype="exponential") #initialize a bacterium
+#' arena <- Arena(n=20,m=20) #initialize the environment
+#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+#' arena <- addSubs(arena,40) #add all possible substances
+#' eval <- simEnv(arena,5)
+#' findRxnFlux_test(eval,"test")
+setGeneric("findRxnFlux_test", function(object, string){standardGeneric("findRxnFlux_test")})
+#' @export
+#' @rdname findRxnFlux_test
+setMethod("findRxnFlux_test", "Eval", function(object, string){
+  print(string)
+})
