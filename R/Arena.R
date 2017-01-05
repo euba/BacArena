@@ -2777,7 +2777,7 @@ setMethod("fluxVarSim", "Eval", function(object, rnd){
 #'
 #' @description The generic function \code{findRxnFlux} returns a matrix with the flux for each organism and the reaction that is using the metabolite of the given exchange reaction
 #' @export
-#' @rdname fluxVarSim
+#' @rdname findRxnFlux
 #'
 #' @param object An object of class Eval.
 #' @param ex An exchange reaction of which the metabolite should be shared for in all reactions
