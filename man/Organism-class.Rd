@@ -26,9 +26,9 @@ Structure of the S4 class \code{Organism} representing the organisms present in 
 
 \item{\code{feat}}{A list containing conditional features for the object (contains at the momement only biomass components for lysis).}
 
-\item{\code{deathrate}}{A numeric value giving the factor by which the growth should be reduced in every iteration (unit: pg)}
+\item{\code{deathrate}}{A numeric value giving the factor by which the growth should be reduced in every iteration (default (E.coli): 0.21 pg)}
 
-\item{\code{minweight}}{A numeric value giving the growth limit at which the organism dies. (unit: pg)}
+\item{\code{minweight}}{A numeric value giving the growth limit at which the organism dies. (default (E.coli): 0.083 pg)}
 
 \item{\code{growtype}}{A character vector giving the functional type for growth (linear or exponential).}
 
@@ -36,13 +36,13 @@ Structure of the S4 class \code{Organism} representing the organisms present in 
 
 \item{\code{speed}}{A integer vector representing the speed by which bacterium is moving (given by cell per iteration).}
 
-\item{\code{cellarea}}{A numeric value indicating the surface that one organism occupies (unit: mu_m^2)}
+\item{\code{cellarea}}{A numeric value indicating the surface that one organism occupies (default (E.coli): 4.42 ??m^2)}
 
-\item{\code{maxweight}}{A numeric value giving the maximal dry weight of single organism (unit: pg)}
+\item{\code{maxweight}}{A numeric value giving the maximal dry weight of single organism (default (E.coli): 1.172 pg)}
 
-\item{\code{cellweight_mean}}{A numeric giving the mean of starting biomass (unit: pg)}
+\item{\code{cellweight_mean}}{A numeric giving the mean of starting biomass (default (E.coli): 0.489 pg)}
 
-\item{\code{cellweight_sd}}{A numeric giving the standard derivation of starting biomass (unit: pg)}
+\item{\code{cellweight_sd}}{A numeric giving the standard derivation of starting biomass (default (E.coli): 0.132 pg)}
 
 \item{\code{model}}{Object of class sybil::modelorg containging the genome sclae metabolic model}
 
