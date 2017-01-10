@@ -36,7 +36,7 @@ Structure of the S4 class \code{Organism} representing the organisms present in 
 
 \item{\code{speed}}{A integer vector representing the speed by which bacterium is moving (given by cell per iteration).}
 
-\item{\code{cellarea}}{A numeric value indicating the surface that one organism occupies (default (E.coli): 4.42 ??m^2)}
+\item{\code{cellarea}}{A numeric value indicating the surface that one organism occupies (default (E.coli): 4.42 mu_m^2)}
 
 \item{\code{maxweight}}{A numeric value giving the maximal dry weight of single organism (default (E.coli): 1.172 pg)}
 

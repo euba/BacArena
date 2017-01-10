@@ -23,7 +23,7 @@
 #' @slot growtype A character vector giving the functional type for growth (linear or exponential).
 #' @slot kinetics A List containing Km and v_max values for each reactions.
 #' @slot speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
-#' @slot cellarea A numeric value indicating the surface that one organism occupies (default (E.coli): 4.42 ??m^2)
+#' @slot cellarea A numeric value indicating the surface that one organism occupies (default (E.coli): 4.42 mu_m^2)
 #' @slot maxweight A numeric value giving the maximal dry weight of single organism (default (E.coli): 1.172 pg)
 #' @slot cellweight_mean A numeric giving the mean of starting biomass (default (E.coli): 0.489 pg)
 #' @slot cellweight_sd A numeric giving the standard derivation of starting biomass (default (E.coli): 0.132 pg)
