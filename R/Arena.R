@@ -2782,6 +2782,8 @@ setMethod("fluxVarSim", "Eval", function(object, rnd){
 #' @param object An object of class Eval.
 #' @param ex An exchange reaction of which the metabolite should be shared for in all reactions
 #' @param time the time point of the simulation which should be considered
+#' @param print_reactions If true the detailed definition of each reactions is printed
+#' @param drop_unused If true then inactive reactions will be excluded
 #' @details Returns a list with the minimum and maximum substance usage for each time point.
 #' @seealso \code{\link{Eval-class}} and \code{\link{simEnv}}
 #' @examples
@@ -2793,12 +2795,12 @@ setMethod("fluxVarSim", "Eval", function(object, rnd){
 #' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,5)
 #' fluxlist <- findRxnFlux(eval, "EX_h(e)", 5)
-setGeneric("findRxnFlux", function(object, ex, time){standardGeneric("findRxnFlux")})
+setGeneric("findRxnFlux", function(object, ex, time, print_reactions=FALSE, drop_unused=TRUE){standardGeneric("findRxnFlux")})
 #' @export
 #' @rdname findRxnFlux
-setMethod("findRxnFlux", "Eval", function(object, ex, time){
+setMethod("findRxnFlux", "Eval", function(object, ex, time, print_reactions=FALSE, drop_unused=TRUE){
   sim=object
-  aff_rxn = vector()
+  aff_rxn = vector(); aff_rxn_prod = vector(); aff_rxn_cons = vector(); aff_rxn_names = vector()
   for(i in 1:length(sim@specs)){
     model = sim@specs[[i]]@model
     if(ex %in% model@react_id){
@@ -2807,18 +2809,35 @@ setMethod("findRxnFlux", "Eval", function(object, ex, time){
       metcomp = gsub("\\[.\\]","",model@met_id) #strip off compartment id from metabolite
       mets = which(metcomp %in% metcomp[metind]) #find which metabolites are there 
       aff_rid = which(apply(abs(model@S[mets,]),2,sum)!=0) #get id of affected reactions
+      aff_rid_prod = unlist(apply(model@S[mets,],1,function(r){which(r==1)})) #get id of  affected producing reactions
+      aff_rid_cons = unlist(apply(model@S[mets,],1,function(r){which(r==-1)})) #get id of affected consuming reactions
+      
       aff_rxn = union(aff_rxn,model@react_id[aff_rid]) #get the names of the afffected reactions
-    }
+      aff_rxn_prod <- union(aff_rxn_prod, model@react_id[aff_rid_prod]) #get the names of the afffected producing reactions
+      aff_rxn_cons <- union(aff_rxn_cons, model@react_id[aff_rid_cons]) #get the names of the afffected consuming reactions
+      aff_rxn_names <-union(aff_rxn_names, sybil::printReaction(model, react=aff_rid, printOut=FALSE)) # save full reaction definitions
+    } 
   }
   time=time+1
   mtflux = sim@mfluxlist[[time]] #select right timestep from fluxlist
   mtfmat = matrix(0,nrow=length(mtflux),ncol=length(aff_rxn),
                   dimnames=list(names(sim@specs),aff_rxn)) #create matrix to store flux of each species
   for(i in 1:length(mtflux)){ #iterate through each species
-    if(sum(aff_rxn %in% names(mtflux[[i]]))!=0){
-      mtfmat[i,aff_rxn] = mtflux[[i]][aff_rxn] #store flux of key reactions per species in matrix
-    }
+    flux <- ifelse(aff_rxn %in% names(mtflux[[i]]), mtflux[[i]][aff_rxn], 0)
+    mtfmat[i,aff_rxn] = flux #store flux of key reactions per species in matrix}
   }
-  sumflux = apply(abs(mtfmat),2,sum) #make the sum of the absolute flux for the reactions of each species
-  return(mtfmat[,names(sort(sumflux,decreasing=T))]) #return the sorted matrix based on the absolute flux
+  if(print_reactions) cat(aff_rxn_names, "\n",  sep="\n") # print reaction strings if enabled
+  # append index to reaction names to identify if a substance is produced or consumed by iy 
+  colnames(mtfmat) <- ifelse(colnames(mtfmat) %in% aff_rxn_prod, paste0(colnames(mtfmat),"{P}"), paste0(colnames(mtfmat), "{C}"))
+  cand_transp <- intersect(aff_rxn_prod, aff_rxn_cons)
+  if(length(cand_transp)>0){ # identify possible transporters
+    pos_transp <- which(aff_rxn %in% cand_transp)
+    colnames(mtfmat)[pos_transp] <- paste0(aff_rxn[pos_transp],"{T}")}
+  cat("Legend:\t {P} Substance is produced in reactions\n\t {C} substance is consumed\n\t {T} possible transporter reactions\n\n")
+  
+  if(drop_unused) mtfmat <- mtfmat[,which(colSums(abs(mtfmat))>0), drop=F]
+  if(ncol(mtfmat)>0){
+    sumflux = apply(abs(mtfmat),2,sum) #make the sum of the absolute flux for the reactions of each species
+    return(mtfmat[,names(sort(sumflux,decreasing=T))]) #return the sorted matrix based on the absolute flux    
+  } else print("No active reactions found.")
 })
