@@ -2828,12 +2828,12 @@ setMethod("findRxnFlux", "Eval", function(object, ex, time, print_reactions=FALS
   }
   if(print_reactions) cat(aff_rxn_names, "\n",  sep="\n") # print reaction strings if enabled
   # append index to reaction names to identify if a substance is produced or consumed by iy 
-  colnames(mtfmat) <- ifelse(colnames(mtfmat) %in% aff_rxn_prod, paste0(colnames(mtfmat),"{P}"), paste0(colnames(mtfmat), "{C}"))
+  colnames(mtfmat) <- ifelse(colnames(mtfmat) %in% aff_rxn_prod, paste0(colnames(mtfmat),"{R}"), paste0(colnames(mtfmat), "{L}"))
   cand_transp <- intersect(aff_rxn_prod, aff_rxn_cons)
   if(length(cand_transp)>0){ # identify possible transporters
     pos_transp <- which(aff_rxn %in% cand_transp)
     colnames(mtfmat)[pos_transp] <- paste0(aff_rxn[pos_transp],"{T}")}
-  cat("Legend:\t {P} Substance is produced in reactions\n\t {C} substance is consumed\n\t {T} possible transporter reactions\n\n")
+  cat("Legend:\t {R} Substance is on the right site of the reaction definition (product)\n\t {L} Substance is on the left site (educt) {T} possible transporter reactions\n\n")
   
   if(drop_unused) mtfmat <- mtfmat[,which(colSums(abs(mtfmat))>0), drop=F]
   if(ncol(mtfmat)>0){
