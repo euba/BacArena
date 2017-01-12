@@ -830,16 +830,26 @@ plotReaActivity <- function(simlist, reactions=list(), spec_list=NULL, ret_data=
       }
     }
   }
-  
-  q1 <- ggplot2::ggplot(df, ggplot2::aes_string(x="time", y="mflux")) + ggplot2::geom_line(ggplot2::aes_string(col="rea"), size=1) + 
-    ggplot2::facet_wrap(~spec, scales="free_y") + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
-  
-  q2 <- ggplot2::ggplot(df, ggplot2::aes_string("rea", "mflux")) + ggplot2::geom_boxplot(ggplot2::aes_string(color="rea", fill="rea"), alpha=0.2) + 
-    ggplot2::theme(axis.text.x =ggplot2::element_blank()) + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
-  if(length(levels(df$spec)) > 2) q2 <- q2 + ggplot2::facet_wrap(~spec, scales="free_y")
-  
-  df2 <- plyr::ddply(df, c("time","rea"), function(tmp) c("mflux"=sum(tmp$mflux) ))
-  q3 <- ggplot2::ggplot(df2, ggplot2::aes_string("time", "rea")) + ggplot2::geom_tile(ggplot2::aes_string(fill = "mflux")) 
+  if(length(levels(df$sub))>=1){
+    q1 <- ggplot2::ggplot(df, ggplot2::aes_string(x="time", y="mflux")) + ggplot2::geom_line(ggplot2::aes_string(col="rea"), size=1) + 
+      ggplot2::facet_wrap(~spec, scales="free_y") + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
+    
+    q2 <- ggplot2::ggplot(df, ggplot2::aes_string("rea", "mflux")) + ggplot2::geom_boxplot(ggplot2::aes_string(color="rea", fill="rea"), alpha=0.2) + 
+      ggplot2::theme(axis.text.x =ggplot2::element_blank()) + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
+    if(length(levels(df$spec)) > 2) q2 <- q2 + ggplot2::facet_wrap(~spec, scales="free_y")
+    
+    df2 <- plyr::ddply(df, c("time","rea"), function(tmp) c("mflux"=sum(tmp$mflux) ))
+    q3 <- ggplot2::ggplot(df2, ggplot2::aes_string("time", "rea")) + ggplot2::geom_tile(ggplot2::aes_string(fill = "mflux")) 
+  }else{ # if less than 2 substances are found than do not use facet_wrap
+    q1 <- ggplot2::ggplot(df, ggplot2::aes_string(x="time", y="mflux")) + ggplot2::geom_line(ggplot2::aes_string(col="spec"), size=1) + 
+      ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
+    
+    q2 <- ggplot2::ggplot(df, ggplot2::aes_string("spec", "mflux")) + ggplot2::geom_boxplot(ggplot2::aes_string(color="spec", fill="spec"), alpha=0.2) + 
+      ggplot2::theme(legend.title=ggplot2::element_blank(), axis.text.x =ggplot2::element_blank()) + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
+    
+    df2 <- plyr::ddply(df, c("time","rea"), function(tmp) c("mflux"=sum(tmp$mflux) ))
+    q3 <- ggplot2::ggplot(df2, ggplot2::aes_string("time", "rea")) + ggplot2::geom_tile(ggplot2::aes_string(fill = "mflux"))
+  } 
 
   if(ret_data) return(df) else return(list(q1, q2, q3))
 }
