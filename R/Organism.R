@@ -114,6 +114,10 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
     medc <- exf@react_id[grep(ex, exf@react_id)]
     names(medc) <- model@met_name[exf@met_pos[grep(ex, exf@react_id)]]
   }
+  if(!all(duplicated(medc)==FALSE)){
+    warning("Model file contains duplicated reaction IDs. Attention, duplicated exchange reaction will be removed.")
+    print(medc[which(medc==medc[duplicated(medc)])])
+    medc <- unique(medc)}
   if(!is.na(ex_comp)){
     medc <- medc[grep(ex_comp, medc)]
   }
