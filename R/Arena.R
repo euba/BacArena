@@ -413,11 +413,12 @@ setMethod("addDefaultMed", "Arena", function(object, org, unit="mM"){
 #' @param object An object of class Arena.
 #' @param org An object of class Organism
 #' @param only_return Set true if essential metabolites should only be returned but not added to arena
-setGeneric("addEssentialMed", function(object, org, only_return=FALSE){standardGeneric("addEssentialMed")})
+#' @param limit A metabolite is considered as essential if its remove whould decrease biomass growth below limit (between 0,100; default 10%)
+setGeneric("addEssentialMed", function(object, org, only_return=FALSE, limit=10){standardGeneric("addEssentialMed")})
 #' @rdname addEssentialMed
 #' @export
-setMethod("addEssentialMed", "Arena", function(object, org, only_return=FALSE){
-  var_r <- sybil::fluxVar(org@model, percentage=0.5)
+setMethod("addEssentialMed", "Arena", function(object, org, only_return=FALSE, limit=10){
+  var_r <- sybil::fluxVar(org@model, percentage=limit)
   
   ex <- sybil::findExchReact(org@model)
   ex_max <- sybil::maxSol(var_r, "lp_obj")[ex@react_pos]
