@@ -2702,8 +2702,9 @@ setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutof
   variance <- apply(m,2,stats::var)
   sorted_var <- sort(variance, decreasing=T, index.return=T)
   
-  df <- df[,sorted_var$ix[1:sub_nr]]
+  df <- df[,sorted_var$ix[1:sub_nr], drop=FALSE]
   colmin <- apply(df, 2, min)
+  if(sum(colmin<cutoff)==0) stop("No shadow costs for substances found. Try different cutoff.")
   df <- df[,which(colmin<cutoff), drop=FALSE]
   df$time=seq_along(object@shadowlist)
   df <- reshape2::melt(df, id.vars="time")
