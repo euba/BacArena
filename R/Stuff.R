@@ -677,8 +677,9 @@ plotFluxVar <- function(simlist, metsel){
 #' @param cutoff Total values below cutoff will be dismissed
 #' @param ret_data Set true if data should be returned
 #' @details Returns ggplot objects
-plotSubUsage <- function(simlist, subs=list(), cutoff=1e-2, ret_data=FALSE){
+plotSubUsage <- function(simlist, subs=vector(), cutoff=1e-2, ret_data=FALSE){
   
+  subs = intersect(subs, simlist[[1]]@mediac)
   if(is(simlist, "Eval")) simlist <- list(simlist)
   if(length(subs)==0){ subs <- names(getVarSubs(simlist[[1]], size = 9))
   }else if(sum(subs %in% simlist[[1]]@mediac) != length(subs)) stop("Substance do not exist in arena")
