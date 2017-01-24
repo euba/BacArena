@@ -735,6 +735,10 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
   if(class(object)!="Eval"){addEval(evaluation, arena)}
   arena@sublb <- getSublb(arena)
   diff_t=0
+  if(arena@stir){ #create all possible positions on arena
+    allxy = expand.grid(1:arena@n,1:arena@m)
+    colnames(allxy) = c("x","y")
+  }
   if(length(arena@specs) > 0) biomass_stat <- sapply(seq_along(arena@specs), function(x){sum(arena@orgdat$growth[which(arena@orgdat$type==x)])})
   for(i in 1:time){
     init_t <- proc.time()[3]
@@ -752,7 +756,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       if(verbose) print(org_stat)}
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
     arena@shadow <-lapply(arena@shadow, function(x){numeric(length(x))}) # empty shadow pool
-      if(nrow(arena@orgdat) > 0){ # if there are organisms left
+    if(nrow(arena@orgdat) > 0){ # if there are organisms left
       for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
         org <- arena@specs[[arena@orgdat[j,'type']]]
         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
@@ -764,18 +768,26 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       test <- is.na(arena@orgdat$growth)
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       rm("test")
-      }
-    
-    #if(diffusion){
-    #  diff_t <- system.time(diff_res <- diffuse(arena, lrw=lrw, sublb=sublb) )[3]
-    #  arena <- diff_res[[1]]
-    #  sublb <- diff_res[[2]]}
-    #if(diffusion) diff_t <- system.time(arena <- diffuse(arena, lrw=lrw, sublb=sublb) )[3]
-    if(diffusion){
+    }
+    if(diffusion && !arena@stir){
       if(diff_par){
         diff_t <- system.time(arena <- diffuse_par(arena, cluster_size=cl_size, lrw=lrw, sublb=sublb) )[3]
-      }else diff_t <- system.time(arena <- diffuse(arena, lrw=lrw, sublb=sublb) )[3]}
-    
+      }else diff_t <- system.time(arena <- diffuse(arena, lrw=lrw, sublb=sublb) )[3]
+    }
+    if(arena@stir){ #stir environment -> random movement of bacteria + perfect diffusion
+      sublb_tmp = arena@orgdat[,c("x","y")]
+      for(sub in names(arena@media)){ #go through each metabolite in medium
+        sumc = sum(arena@media[[sub]]@diffmat) #sum of all concentrations
+        meanc = sumc/(arena@n*arena@m) #mean per grid cell
+        conc = ((sumc-(meanc*nrow(sublb)))+sum(sublb[,sub]))/(arena@n*arena@m) #remove concentrations where bacteria are sitting + add the current concentration in their position
+        arena@media[[sub]]@diffmat = Matrix::Matrix(conc,arena@n,arena@m,sparse=TRUE) #create matrix with homogen concentration
+        sublb_tmp[,sub] = conc #create a new sublb matrix
+      }
+      newpos = allxy[sample(1:nrow(allxy),nrow(arena@orgdat)),]
+      arena@orgdat[,c('x','y')] = newpos
+      sublb_tmp[,c('x','y')] = newpos
+      arena@sublb = as.matrix(sublb_tmp)
+    }
     addEval(evaluation, arena)
     if(reduce && i<time){evaluation = redEval(evaluation)}
     if(nrow(arena@orgdat)==0 && !continue){
@@ -805,46 +817,44 @@ setGeneric("diffuse", function(object, lrw, sublb){standardGeneric("diffuse")})
 setMethod("diffuse", "Arena", function(object, lrw, sublb){
   arena <- object
   diff_init_t <- proc.time()[3]
-  if(!arena@stir){
-    sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
-    #diff_pre_t <- system.time({
-    if(!all(is.na(sublb)) & dim(sublb)[1] > 0){ # if there are organisms
-      testdiff <- t(sublb[,-c(1,2)]) == unlist(lapply(arena@media,function(x,n,m){return(mean(x@diffmat))})) #check which mets in sublb have been changed by the microbes
-      changed_mets <- which(apply(testdiff,1,sum)/nrow(sublb) < 1) #find the metabolites which are changed by at least one microbe
-    } else changed_mets <- list()#})[3]
-    #diff_pde_t=0; diff_sublb_t=0
-    #diff_loop_t <- system.time({for(j in seq_along(arena@media)){
-    for(j in seq_along(arena@media)){
-      #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
-      if(length(changed_mets)>0) homogenous = !(j %in% changed_mets) else homogenous = FALSE
-      diffspeed  = arena@media[[j]]@difspeed>0
-      diff2d     = arena@media[[j]]@pde=="Diff2d"
-      if(diff2d&&!homogenous || !diff2d){
-        submat <- as.matrix(arena@media[[j]]@diffmat)
-        if(!all(is.na(sublb)) && dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
-          submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id]
-        }
-        #diff_pde_t <- diff_pde_t + system.time(switch(arena@media[[j]]@difunc,
-        if(diffspeed || !diff2d){
-          switch(arena@media[[j]]@difunc,
-                 "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
-                 "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
-                 "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
-                 "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
-                 stop("Diffusion function not defined yet."))#)[3]
-        }
-          arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
-      }else submat <- arena@media[[j]]@diffmat
-      sublb_tmp[,j] <- submat[cbind(arena@orgdat$x,arena@orgdat$y)]
-    }#})[3]
-    sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
-    colnames(sublb) <- c('x','y',arena@mediac)
-    arena@sublb <- sublb
-    
-    #diff_t <- proc.time()[3] - diff_init_t
-    #print(paste("diffusion time total", round(diff_t,3), "pre", round(diff_pre_t,3), "loop", round(diff_loop_t,3), "pde", round(diff_pde_t,3), "sublb", round(diff_sublb_t,3), "post", round(diff_post_t,3) ))
-    
-  }else sublb <- stirEnv(arena, sublb)
+  sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
+  #diff_pre_t <- system.time({
+  if(!all(is.na(sublb)) & dim(sublb)[1] > 0){ # if there are organisms
+    testdiff <- t(sublb[,-c(1,2)]) == unlist(lapply(arena@media,function(x,n,m){return(mean(x@diffmat))})) #check which mets in sublb have been changed by the microbes
+    changed_mets <- which(apply(testdiff,1,sum)/nrow(sublb) < 1) #find the metabolites which are changed by at least one microbe
+  } else changed_mets <- list()#})[3]
+  #diff_pde_t=0; diff_sublb_t=0
+  #diff_loop_t <- system.time({for(j in seq_along(arena@media)){
+  for(j in seq_along(arena@media)){
+    #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
+    if(length(changed_mets)>0) homogenous = !(j %in% changed_mets) else homogenous = FALSE
+    diffspeed  = arena@media[[j]]@difspeed>0
+    diff2d     = arena@media[[j]]@pde=="Diff2d"
+    if(diff2d&&!homogenous || !diff2d){
+      submat <- as.matrix(arena@media[[j]]@diffmat)
+      if(!all(is.na(sublb)) && dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
+        submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id]
+      }
+      #diff_pde_t <- diff_pde_t + system.time(switch(arena@media[[j]]@difunc,
+      if(diffspeed || !diff2d){
+        switch(arena@media[[j]]@difunc,
+               "pde"  = {submat <- diffusePDE(arena@media[[j]], submat, gridgeometry=arena@gridgeometry, lrw, tstep=object@tstep)},
+               "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
+               "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
+               "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
+               stop("Diffusion function not defined yet."))#)[3]
+      }
+        arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
+    }else submat <- arena@media[[j]]@diffmat
+    sublb_tmp[,j] <- submat[cbind(arena@orgdat$x,arena@orgdat$y)]
+  }#})[3]
+  sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
+  colnames(sublb) <- c('x','y',arena@mediac)
+  arena@sublb <- sublb
+  
+  #diff_t <- proc.time()[3] - diff_init_t
+  #print(paste("diffusion time total", round(diff_t,3), "pre", round(diff_pre_t,3), "loop", round(diff_loop_t,3), "pde", round(diff_pde_t,3), "sublb", round(diff_sublb_t,3), "post", round(diff_post_t,3) ))
+
   
   #return(list(arena, sublb))
   return(arena)
