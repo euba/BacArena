@@ -10,7 +10,7 @@ Structure of the S4 class \code{Arena} to represent the environment in which Org
 \section{Slots}{
 
 \describe{
-\item{\code{orgdat}}{A data frame collecting information about the accumulated growth, type, phenotype, x and y position for each individual in the environment.}
+\item{\code{orgdat}}{A data frame collecting information about the accumulated biomass, type, phenotype, x and y position for each individual in the environment.}
 
 \item{\code{specs}}{A list of organism types and their associated parameters.}
 

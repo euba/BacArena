@@ -11,7 +11,7 @@ globalVariables(c("diffuseNaiveCpp","diffuseSteveCpp"))
 #' @export Arena
 #' @exportClass Arena
 #'
-#' @slot orgdat A data frame collecting information about the accumulated growth, type, phenotype, x and y position for each individual in the environment.
+#' @slot orgdat A data frame collecting information about the accumulated biomass, type, phenotype, x and y position for each individual in the environment.
 #' @slot specs A list of organism types and their associated parameters.
 #' @slot media A list of objects of class \code{\link{Substance-class}} for each compound in the environment.
 #' @slot phenotypes A list of unique phenotypes (metabolites consumed and produced), which occurred in the environment.
@@ -53,7 +53,7 @@ setClass("Arena",
            sublb="matrix"
         ),
         prototype(
-          orgdat = data.frame(growth=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
+          orgdat = data.frame(biomass=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
           specs = list(),
           media = list(),
           phenotypes = character(),
@@ -146,7 +146,7 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #' @param m0 Start column of matrix to take free positions from (default 1)
 #' @param m End row of matrix to take free positions from (default arena@n)
 #' @param n End column of matrix to take free positions from (default arena@m)
-#' @param growth A numeric vector giving the starting biomass of the individuals. (unit: fg)
+#' @param biomass A numeric vector giving the starting biomass of the individuals. (unit: fg)
 #' @details The arguments \code{x} and \code{y} should be in the same length as the number of organisms added (given by the argument \code{amount}).
 #' @seealso \code{\link{Arena-class}} and \code{\link{Bac-class}} 
 #' @examples
@@ -155,10 +155,10 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
-setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, growth=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){standardGeneric("addOrg")})
+setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, biomass=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){standardGeneric("addOrg")})
 #' @export
 #' @rdname addOrg
-setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, growth=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){
+setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, biomass=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){
   if(length(n)==0) n <- object@n; if(length(m)==0) m <- object@m
   if(length(n0)==0) n0 <- 1; if(length(m0)==0) m0 <- 1
   if(amount+nrow(object@orgdat) > n*m-dim(which(object@occupyM[n0:n,m0:m]>0, arr.ind = TRUE))[1]){
@@ -201,15 +201,15 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, gro
     yp = cmbs[sel,2]
     neworgdat[(lastind+1):(amount+lastind),'x']=xp
     neworgdat[(lastind+1):(amount+lastind),'y']=yp
-    if(is.numeric(growth)) neworgdat[(lastind+1):(amount+lastind),'growth'] = rep(growth, amount)
-    else neworgdat[(lastind+1):(amount+lastind),'growth'] = abs(rnorm(amount, mean=specI@cellweight_mean, sd=specI@cellweight_sd))
+    if(is.numeric(biomass)) neworgdat[(lastind+1):(amount+lastind),'biomass'] = rep(biomass, amount)
+    else neworgdat[(lastind+1):(amount+lastind),'biomass'] = abs(rnorm(amount, mean=specI@cellweight_mean, sd=specI@cellweight_sd))
     neworgdat[(lastind+1):(amount+lastind),'type']=rep(type, amount)
     neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(NA, amount)
   }else{
     neworgdat[(lastind+1):(amount+lastind),'x']=x
     neworgdat[(lastind+1):(amount+lastind),'y']=y
-    if(is.numeric(growth)) neworgdat[(lastind+1):(amount+lastind),'growth'] = rep(growth, amount)
-    else neworgdat[(lastind+1):(amount+lastind),'growth'] = abs(rnorm(amount, mean=specI@cellweight_mean, sd=specI@cellweight_sd))
+    if(is.numeric(biomass)) neworgdat[(lastind+1):(amount+lastind),'biomass'] = rep(biomass, amount)
+    else neworgdat[(lastind+1):(amount+lastind),'biomass'] = abs(rnorm(amount, mean=specI@cellweight_mean, sd=specI@cellweight_sd))
     neworgdat[(lastind+1):(amount+lastind),'type']=rep(type, amount)
     neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(NA, amount)
   }
@@ -406,14 +406,14 @@ setMethod("addDefaultMed", "Arena", function(object, org, unit="mM"){
 
 #' @title Add minimal medium of an organism to arena.
 #'
-#' @description The generic function \code{addEssentialMed} uses flux variability analysis to determine a essential growth medium  components (eg. cofactors)
+#' @description The generic function \code{addEssentialMed} uses flux variability analysis to determine a essential growth medium  components.
 #' @export
 #' @rdname addEssentialMed
 #'
 #' @param object An object of class Arena.
 #' @param org An object of class Organism
 #' @param only_return Set true if essential metabolites should only be returned but not added to arena
-#' @param limit A metabolite is considered as essential if its remove whould decrease biomass growth below limit (between 0,100; default 10%)
+#' @param limit A metabolite is considered as essential if its remove whould decrease biomass growth below limit (between 0,100; default 10\%)
 setGeneric("addEssentialMed", function(object, org, only_return=FALSE, limit=10){standardGeneric("addEssentialMed")})
 #' @rdname addEssentialMed
 #' @export
@@ -573,7 +573,7 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
 #' @rdname changeOrg
 #'
 #' @param object An object of class Arena.
-#' @param neworgdat A data frame with new information about the accumulated growth, type, phenotype, x and y position for each individual in the environment.
+#' @param neworgdat A data frame with new information about the accumulated biomass, type, phenotype, x and y position for each individual in the environment.
 #' @details The argument \code{neworgdat} contains the same information as the \code{orgdat} slot of \code{\link{Arena-class}}. The \code{orgdat} slot of an \code{Arena} object can be used to create \code{neworgdat}.
 #' @seealso \code{\link{Arena-class}} and \code{\link{addOrg}}
 #' @examples
@@ -739,7 +739,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
     allxy = expand.grid(1:arena@n,1:arena@m)
     colnames(allxy) = c("x","y")
   }
-  if(length(arena@specs) > 0) biomass_stat <- sapply(seq_along(arena@specs), function(x){sum(arena@orgdat$growth[which(arena@orgdat$type==x)])})
+  if(length(arena@specs) > 0) biomass_stat <- sapply(seq_along(arena@specs), function(x){sum(arena@orgdat$biomass[which(arena@orgdat$type==x)])})
   for(i in 1:time){
     init_t <- proc.time()[3]
     sublb <- arena@sublb
@@ -748,10 +748,10 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       arena@orgdat = arena@orgdat[new_ind,]
       sublb = sublb[new_ind,] #apply shuffeling also to sublb to ensure same index as orgdat
     }
-    if(verbose) cat("\niteration:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "pg \n")
+    if(verbose) cat("\niteration:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$biomass), "pg \n")
     org_stat <- sapply(seq_along(arena@specs), function(x){dim(arena@orgdat[which(arena@orgdat$type==x),])[1]})
     if(length(arena@specs) > 0){
-      old_biomass<-biomass_stat; biomass_stat <- sapply(seq_along(arena@specs), function(x){sum(arena@orgdat$growth[which(arena@orgdat$type==x)])})
+      old_biomass<-biomass_stat; biomass_stat <- sapply(seq_along(arena@specs), function(x){sum(arena@orgdat$biomass[which(arena@orgdat$type==x)])})
       org_stat <- cbind(org_stat, biomass_stat, 100*(biomass_stat-old_biomass)/old_biomass); rownames(org_stat) <- names(arena@specs); colnames(org_stat) <- c("count", "biomass", "%")
       if(verbose) print(org_stat)}
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
@@ -765,7 +765,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
                "Human"= {arena = simHum(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
                stop("Simulation function for Organism object not defined yet."))
       }
-      test <- is.na(arena@orgdat$growth)
+      test <- is.na(arena@orgdat$biomass)
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       rm("test")
     }
@@ -923,7 +923,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=FALSE
     
     init_t <- proc.time()[3]
     arena@orgdat["nr"] <- seq_len(dim(arena@orgdat)[1]) # dummy numbering
-    if(verbose) cat("\nparallel iteration:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$growth), "pg \n")
+    if(verbose) cat("\nparallel iteration:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$biomass), "pg \n")
     org_stat <- table(arena@orgdat$type)
     names(org_stat) <- names(arena@specs)[as.numeric(names(org_stat))]
     if(verbose) print(org_stat)
@@ -1017,7 +1017,7 @@ setMethod("simEnv_par", "Arena", function(object, time, lrw=NULL, continue=FALSE
       #})[3]
       
       # delete dead organisms
-      test <- is.na(arena@orgdat$growth)
+      test <- is.na(arena@orgdat$biomass)
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       #rm("test")
     }

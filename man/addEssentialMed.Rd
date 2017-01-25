@@ -18,9 +18,9 @@ addEssentialMed(object, org, only_return = FALSE, limit = 10)
 
 \item{only_return}{Set true if essential metabolites should only be returned but not added to arena}
 
-\item{limit}{A metabolite is considered as essential if its remove whould decrease biomass growth below limit (between 0,100; default 10%)}
+\item{limit}{A metabolite is considered as essential if its remove whould decrease biomass growth below limit (between 0,100; default 10\%)}
 }
 \description{
-The generic function \code{addEssentialMed} uses flux variability analysis to determine a essential growth medium  components (eg. cofactors)
+The generic function \code{addEssentialMed} uses flux variability analysis to determine a essential growth medium  components.
 }
 

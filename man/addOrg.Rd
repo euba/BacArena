@@ -6,11 +6,11 @@
 \alias{addOrg,Arena-method}
 \title{Add individuals to the environment}
 \usage{
-addOrg(object, specI, amount, x = NULL, y = NULL, growth = NA,
+addOrg(object, specI, amount, x = NULL, y = NULL, biomass = NA,
   n0 = NULL, n = NULL, m0 = NULL, m = NULL)
 
 \S4method{addOrg}{Arena}(object, specI, amount, x = NULL, y = NULL,
-  growth = NA, n0 = NULL, n = NULL, m0 = NULL, m = NULL)
+  biomass = NA, n0 = NULL, n = NULL, m0 = NULL, m = NULL)
 }
 \arguments{
 \item{object}{An object of class Arena.}
@@ -23,7 +23,7 @@ addOrg(object, specI, amount, x = NULL, y = NULL, growth = NA,
 
 \item{y}{A numeric vector giving the y positions of individuals on the grid.}
 
-\item{growth}{A numeric vector giving the starting biomass of the individuals. (unit: fg)}
+\item{biomass}{A numeric vector giving the starting biomass of the individuals. (unit: fg)}
 
 \item{n0}{Start row of matrix to take free positions from (default 1)}
 

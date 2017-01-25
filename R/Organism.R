@@ -657,12 +657,12 @@ setMethod("growth", "Bac", function(object, population, j, occupyM, fbasol, tste
   neworgdat <- population@orgdat
   popvec <- neworgdat[j,]
   switch(object@growtype,
-         "linear"= {popvec$growth <- growLin(object, popvec$growth, fbasol, tstep)},
-         "exponential"= {popvec$growth <- growExp(object, popvec$growth, fbasol, tstep)},
+         "linear"= {popvec$biomass <- growLin(object, popvec$biomass, fbasol, tstep)},
+         "exponential"= {popvec$biomass <- growExp(object, popvec$biomass, fbasol, tstep)},
          stop("Growth type must be either linear or exponential"))
   dead <- F
-  neworgdat[j,'growth'] <- popvec$growth
-  if(popvec$growth > object@maxweight){ 
+  neworgdat[j,'biomass'] <- popvec$biomass
+  if(popvec$biomass > object@maxweight){ 
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
               population@n, population@m, popvec$x, popvec$y)
     if(length(freenb) != 0){
@@ -670,15 +670,15 @@ setMethod("growth", "Bac", function(object, population, j, occupyM, fbasol, tste
       npos = as.numeric(unlist(strsplit(npos,'_')))
       if(occupyM[npos[1], npos[2]] == 0){ # check if there is no obstacle
         daughter <- popvec
-        daughter$growth <- popvec$growth/2
+        daughter$biomass <- popvec$biomass/2
         daughter$x <- npos[1]
         daughter$y <- npos[2]
         neworgdat[nrow(neworgdat)+1,] <- daughter
-        neworgdat[j,'growth'] <- popvec$growth/2
+        neworgdat[j,'biomass'] <- popvec$biomass/2
       }
     }
-  }else if(popvec$growth < object@minweight){
-    neworgdat[j,'growth'] <- NA
+  }else if(popvec$biomass < object@minweight){
+    neworgdat[j,'biomass'] <- NA
     dead <- T
   }
   eval.parent(substitute(population@orgdat <- neworgdat))
@@ -705,13 +705,13 @@ setMethod("growth_par", "Bac", function(object, population, j, fbasol, tstep){
   neworgdat <- population@orgdat
   popvec <- neworgdat[j,]
   switch(object@growtype,
-         "linear"= {popvec$growth <- growLin(object, popvec$growth, fbasol, tstep)},
-         "exponential"= {popvec$growth <- growExp(object, popvec$growth, fbasol, tstep)},
+         "linear"= {popvec$biomass <- growLin(object, popvec$biomass, fbasol, tstep)},
+         "exponential"= {popvec$biomass <- growExp(object, popvec$biomass, fbasol, tstep)},
          stop("Growth type must be either linear or exponential"))
   dead <- F
-  neworgdat[j,'growth'] <- popvec$growth
-  if(popvec$growth < object@minweight){
-    neworgdat[j,'growth'] <- NA
+  neworgdat[j,'biomass'] <- popvec$biomass
+  if(popvec$biomass < object@minweight){
+    neworgdat[j,'biomass'] <- NA
     dead <- T
   }
   return(list(dead, neworgdat))
@@ -788,7 +788,7 @@ setGeneric("simBac", function(object, arena, j, sublb, bacnum, sec_obj="none", c
 #' @rdname simBac
 setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6){
   const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, ub=object@ubnd*bacnum, #scale to population size
-                     dryweight=arena@orgdat[j,"growth"], tstep=arena@tstep, scale=arena@scale, j)
+                     dryweight=arena@orgdat[j,"biomass"], tstep=arena@tstep, scale=arena@scale, j)
   lobnd <- const[[1]]; upbnd <- const[[2]]
   optimization <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff)
   fbasol <- optimization[[1]]
@@ -839,7 +839,7 @@ setGeneric("simBac_par", function(object, arena, j, sublb, bacnum, lpobject, sec
 #' @rdname simBac_par
 setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum, lpobject, sec_obj="none", cutoff=1e-6){
   const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, ub=object@ubnd*bacnum, #scale to population size
-                     dryweight=arena@orgdat[j,"growth"], tstep=arena@tstep, scale=arena@scale)
+                     dryweight=arena@orgdat[j,"biomass"], tstep=arena@tstep, scale=arena@scale)
   lobnd <- const[[1]]; upbnd <- const[[2]]
   fbasol <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff)
 
@@ -978,7 +978,7 @@ setMethod("cellgrowth", "Human", function(object, population, j, occupyM, fbasol
          "exponential"= {popvec$growth <- growExp(object, popvec$growth, fbasol, tstep)},
          stop("Growth type must be either linear or exponential"))
   dead <- F
-  neworgdat[j,'growth'] <- popvec$growth
+  neworgdat[j,'biomass'] <- popvec$growth
   if(popvec$growth > object@maxweight){
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
                         population@n, population@m, popvec$x, popvec$y)
@@ -991,11 +991,11 @@ setMethod("cellgrowth", "Human", function(object, population, j, occupyM, fbasol
         daughter$x <- npos[1]
         daughter$y <- npos[2]
         neworgdat[nrow(neworgdat)+1,] <- daughter
-        neworgdat[j,'growth'] <- popvec$growth/2
+        neworgdat[j,'biomass'] <- popvec$growth/2
       }
     }
   }else if(popvec$growth < object@minweight){
-    neworgdat[j,'growth'] <- NA
+    neworgdat[j,'biomass'] <- NA
     dead <- T
   }
   eval.parent(substitute(population@orgdat <- neworgdat))
@@ -1024,7 +1024,7 @@ setGeneric("simHum", function(object, arena, j, sublb, bacnum,cutoff=1e-6, pcut=
 #' @rdname simHum
 setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum, cutoff=1e-6, pcut=1e-6){
   const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, ub=object@ubnd*bacnum, #scale to population size
-                     dryweight=arena@orgdat[j,"growth"], tstep=arena@tstep, scale=arena@scale)
+                     dryweight=arena@orgdat[j,"biomass"], tstep=arena@tstep, scale=arena@scale)
   
   lobnd <- const[[1]]; upbnd <- const[[2]]
   
