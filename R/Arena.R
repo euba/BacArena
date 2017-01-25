@@ -1933,7 +1933,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
     
     # biomass
     list <- lapply(object@simlist, function(x){
-      sum(x$growth)
+      sum(x$biomass)
     })
     mat_biom  <- do.call(cbind, list)
     rownames(mat_biom) <- "biomass [fg]"
@@ -2767,7 +2767,7 @@ setMethod("fluxVarSim", "Eval", function(object, rnd){
       mconc = unlist(lapply(arenait@media,function(med,x,y){med@diffmat[x,y]},x=org$x,y=org$y))
       mconc = mconc[bact@medium]
       bacnum = round((arenait@scale/(bact@cellarea*10^(-8))))
-      lbs = constrain(bact,names(mconc),-mconc/bacnum,org$growth,arenait@tstep,arenait@scale,j)
+      lbs = constrain(bact,names(mconc),-mconc/bacnum,org$biomass,arenait@tstep,arenait@scale,j)
       fbasl <- optimizeProb(bact@lpobj, react=1:length(lbs), ub=bact@ubnd, lb=lbs)
       model = changeBounds(bact@model,names(lbs),lb=lbs)
       model = changeBounds(model,model@react_id[which(bact@model@obj_coef==1)],lb=fbasl$obj,ub=fbasl$obj)

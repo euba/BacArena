@@ -567,7 +567,7 @@ plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3, return_dat=F,
     if(all(!is.null(time))) time_seq <- seq(time[1],time[2]) else time_seq <- seq_along(object@simlist)
     if(use_biomass){
       list <- lapply(time_seq, function(i){
-        sapply(seq_along(object@specs), function(x){sum(object@simlist[[i]]$growth[which(object@simlist[[i]]$type==x)])})})
+        sapply(seq_along(object@specs), function(x){sum(object@simlist[[i]]$biomass[which(object@simlist[[i]]$type==x)])})})
     }else{
       list <- lapply(time_seq, function(i){
         occ <- table(object@simlist[[i]]$type)

@@ -974,12 +974,12 @@ setMethod("cellgrowth", "Human", function(object, population, j, occupyM, fbasol
   neworgdat <- population@orgdat
   popvec <- neworgdat[j,]
   switch(object@growtype,
-         "linear"= {popvec$growth <- growLin(object, popvec$growth, fbasol, tstep)},
-         "exponential"= {popvec$growth <- growExp(object, popvec$growth, fbasol, tstep)},
+         "linear"= {popvec$biomass <- growLin(object, popvec$biomass, fbasol, tstep)},
+         "exponential"= {popvec$biomass <- growExp(object, popvec$biomass, fbasol, tstep)},
          stop("Growth type must be either linear or exponential"))
   dead <- F
-  neworgdat[j,'biomass'] <- popvec$growth
-  if(popvec$growth > object@maxweight){
+  neworgdat[j,'biomass'] <- popvec$biomass
+  if(popvec$biomass > object@maxweight){
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
                         population@n, population@m, popvec$x, popvec$y)
     if(length(freenb) != 0){
@@ -987,14 +987,14 @@ setMethod("cellgrowth", "Human", function(object, population, j, occupyM, fbasol
       npos = as.numeric(unlist(strsplit(npos,'_')))
       if(occupyM[npos[1], npos[2]] == 0){ # check if there is no obstacle
         daughter <- popvec
-        daughter$growth <- popvec$growth/2
+        daughter$biomass <- popvec$biomass/2
         daughter$x <- npos[1]
         daughter$y <- npos[2]
         neworgdat[nrow(neworgdat)+1,] <- daughter
-        neworgdat[j,'biomass'] <- popvec$growth/2
+        neworgdat[j,'biomass'] <- popvec$biomass/2
       }
     }
-  }else if(popvec$growth < object@minweight){
+  }else if(popvec$biomass < object@minweight){
     neworgdat[j,'biomass'] <- NA
     dead <- T
   }
