@@ -270,8 +270,9 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' @param ub A numeric vector giving the constraint values of upper bounds.
 #' @param cutoff value used to define numeric accuracy while interpreting optimization results
 #' @param j debuging index to track cell
-#' @param sec_obj character giving the secondary objective for a bi-level LP if wanted.
+#' @param sec_obj character giving the secondary objective for a bi-level LP if wanted. Use "mtf" for minimizing total flux, "opt_rxn" for optimizing a random reaction, "opt_ex" for optimizing a random exchange reaction, and "sumex" for optimizing the sum of all exchange fluxes.
 #' @return Modified problem object according to the constraints and then solved with \code{optimizeProb}.
+#' @details The parameter for sec_obj can be used to optimize a bi-level LP with a secondary objective if wanted. This can be helpful to subselect the solution space and create less alternative optimal solution. The secondary objective can be set to "mtf" to minimize the total flux, to simulate minimal enzyme usage of an organisms. If set to "opt_rxn" or "opt_ex", the secondary objective is picked as a random reaction or exchange reaction respectively everytime a fba is performed. This means that every individual of a population will select a different secondary reaction to optimize. The "sumex" option maximizes the secretion of products.
 #' @seealso \code{\link{Organism-class}}, \code{\link{optimizeProb}} and \code{\link{sysBiolAlg}}
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
