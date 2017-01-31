@@ -254,6 +254,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, bio
 #' @param template True if diffmat matrix should be used as tempalte only (will be multiplied with smax to obtain cocentrations)
 #' @param Dgrid A matrix indicating the diffusion speed in x and y direction (given by cm^2/s).
 #' @param Vgrid A number indicating the advection speed in x direction (given by cm/s).
+#' @param addAnyway If true substance will be added even if there is no connection (i.e. exchanges) with organisms
 #' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub} can be used to modify the concentrations of specific substances.} 
 #' @seealso \code{\link{Arena-class}} and \code{\link{changeSub}} 
 #' @examples
@@ -263,18 +264,29 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, bio
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)")) #add glucose, o2, pi
-setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", pde="Diff2d", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, diffmat=NULL, template=FALSE, Dgrid=NULL, Vgrid=NULL){standardGeneric("addSubs")})
+setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde", pde="Diff2d", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, diffmat=NULL, template=FALSE, Dgrid=NULL, Vgrid=NULL, addAnyway=FALSE){standardGeneric("addSubs")})
 #' @rdname addSubs
 #' @export
-setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", pde="Diff2d", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, diffmat=NULL, template=FALSE, Dgrid=NULL, Vgrid=NULL){
+setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", pde="Diff2d", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, diffmat=NULL, template=FALSE, Dgrid=NULL, Vgrid=NULL, addAnyway=FALSE){
   if(length(smax) != length(mediac) && length(smax) != 1){
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
+  }
+  if(class(mediac)=="factor") mediac <- as.character(mediac)
+  newmet <- setdiff(mediac, object@mediac); names(newmet) <- gsub("EX_", "", newmet)
+  if(addAnyway & length(newmet) > 0){  # add substance even if there is no exchange reaction
+    newmedia = list()
+    for(i in 1:length(newmet)){
+      newmedia[[unname(newmet[i])]] <- Substance(object@n, object@m, smax=0, id=unname(newmet[i]), 
+                                                 name=names(newmet[i]), gridgeometry=object@gridgeometry, 
+                                                 occupyM=object@occupyM)}
+    object@media  <- c(object@media,newmedia)
+    object@mediac <- c(object@mediac, newmet)
   }
   if(sum(mediac %in% object@mediac) != length(mediac)){
     print(setdiff(mediac, object@mediac))
     warning("Substance does not exist in exchange reactions. It will not be added")
   }
-  if(length(object@media)==0){
+  if(length(object@media)==0 & !addAnyway){
     stop("Organisms need to be defined first to determine what substances can be exchanged.")
   }
   
