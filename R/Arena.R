@@ -315,7 +315,8 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
         if(length(Dgrid)  > 1) Dgrid_i <- Dgrid[[i]] else Dgrid_i <- Dgrid
         if(length(Vgrid)  > 1) Vgrid_i <- Vgrid[[i]] else Vgrid_i <- Vgrid
         if(length(difunc) > 1) difunc_i <- difunc[[i]] else difunc_i <- difunc
-        object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=new_name, gridgeometry=object@gridgeometry, difunc=difunc_i, pde=pde, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat, template=template, Dgrid=Dgrid_i, Vgrid=Vgrid_i)
+        if(length(pde) > 1) pde_i <- pde[[i]] else pde_i <- pde
+        object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=new_name, gridgeometry=object@gridgeometry, difunc=difunc_i, pde=pde_i, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat, template=template, Dgrid=Dgrid_i, Vgrid=Vgrid_i)
         if(add){
           object@media[[mediac[i]]]@diffmat <- object@media[[mediac[i]]]@diffmat + old_diffmat}}}
   }else if(class(object)=="Eval"){ # if eval class then add substance in last time step of medlist
@@ -330,8 +331,9 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
         if(length(Dgrid)  > 1) Dgrid_i <- Dgrid[[i]] else Dgrid_i <- Dgrid
         if(length(Vgrid)  > 1) Vgrid_i <- Vgrid[[i]] else Vgrid_i <- Vgrid
         if(length(difunc) > 1) difunc_i <- difunc[[i]] else difunc_i <- difunc
+        if(length(pde) > 1) pde_i <- pde[[i]] else pde_i <- pde
         new_name <- ifelse( length(names(mediac[i]))==0, object@media[[mediac[i]]]@name, names(mediac[i]) )  # add substance names 
-        new_sub  <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=new_name, gridgeometry=object@gridgeometry, difunc=difunc_i, pde=pde, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat, template=template, Dgrid=Dgrid_i, Vgrid=Vgrid_i)
+        new_sub  <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=new_name, gridgeometry=object@gridgeometry, difunc=difunc_i, pde=pde_i, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat, template=template, Dgrid=Dgrid_i, Vgrid=Vgrid_i)
         if(add){
           object@medlist[[time]][[mediac[i]]] <- as.vector(new_sub@diffmat + old_diffmat)
         }else{
@@ -860,9 +862,10 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
                "pde2" = {diffuseSteveCpp(submat, D=arena@media[[j]]@difspeed, h=1, tstep=arena@tstep)},
                "naive"= {diffuseNaiveCpp(submat, donut=FALSE)},
                "r"    = {for(k in 1:arena@media[[j]]@difspeed){diffuseR(arena@media[[j]])}},
-               stop("Diffusion function not defined yet."))#)[3]
+               stop("Diffusion function not defined yet.")
+        )
       }
-        arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
+      arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
     }else submat <- arena@media[[j]]@diffmat
     sublb_tmp[,j] <- submat[cbind(arena@orgdat$x,arena@orgdat$y)]
   }#})[3]
