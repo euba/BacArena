@@ -8,12 +8,13 @@
 \usage{
 addSubs(object, smax = 0, mediac = object@mediac, difunc = "pde",
   pde = "Diff2d", difspeed = 6.7e-06, unit = "mmol/cell", add = TRUE,
-  diffmat = NULL, template = FALSE, Dgrid = NULL, Vgrid = NULL)
+  diffmat = NULL, template = FALSE, Dgrid = NULL, Vgrid = NULL,
+  addAnyway = FALSE)
 
 \S4method{addSubs}{Arena}(object, smax = 0, mediac = object@mediac,
   difunc = "pde", pde = "Diff2d", difspeed = 6.7e-06,
   unit = "mmol/cell", add = TRUE, diffmat = NULL, template = FALSE,
-  Dgrid = NULL, Vgrid = NULL)
+  Dgrid = NULL, Vgrid = NULL, addAnyway = FALSE)
 }
 \arguments{
 \item{object}{An object of class Arena.}
@@ -39,6 +40,8 @@ addSubs(object, smax = 0, mediac = object@mediac, difunc = "pde",
 \item{Dgrid}{A matrix indicating the diffusion speed in x and y direction (given by cm^2/s).}
 
 \item{Vgrid}{A number indicating the advection speed in x direction (given by cm/s).}
+
+\item{addAnyway}{If true substance will be added even if there is no connection (i.e. exchanges) with organisms}
 }
 \description{
 The generic function \code{addSubs} adds specific substances to the environment.

@@ -276,9 +276,14 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
   if(addAnyway & length(newmet) > 0){  # add substance even if there is no exchange reaction
     newmedia = list()
     for(i in 1:length(newmet)){
+      if(length(Dgrid)  > 1) Dgrid_i <- Dgrid[[i]] else Dgrid_i <- Dgrid
+      if(length(Vgrid)  > 1) Vgrid_i <- Vgrid[[i]] else Vgrid_i <- Vgrid
+      if(length(difunc) > 1) difunc_i <- difunc[[i]] else difunc_i <- difunc
+      if(length(pde) > 1) pde_i <- pde[[i]] else pde_i <- pde
       newmedia[[unname(newmet[i])]] <- Substance(object@n, object@m, smax=0, id=unname(newmet[i]), 
                                                  name=names(newmet[i]), gridgeometry=object@gridgeometry, 
-                                                 occupyM=object@occupyM)}
+                                                 occupyM=object@occupyM, Dgrid=Dgrid_i, Vgrid=Vgrid_i,
+                                                 difunc=difunc_i, pde=pde_i)}
     object@media  <- c(object@media,newmedia)
     object@mediac <- c(object@mediac, newmet)
   }
@@ -2874,3 +2879,30 @@ setMethod("findRxnFlux", "Eval", function(object, ex, time, print_reactions=FALS
     return(mtfmat[,names(sort(sumflux,decreasing=T))]) #return the sorted matrix based on the absolute flux    
   } else print("No active reactions found.")
 })
+
+
+#' @title Function to overview the spatial distribution of a substance over time.
+#'
+#' @description The generic function \code{plotSubDist} returns a plot for every time step which shows the substance concentration in the environment.
+#' @export
+#' @rdname plotSubDist
+#'
+#' @param object An object of class Eval.
+#' @param sub Name of a substance.
+#' @details Returns a plot with 
+
+setGeneric("plotSubDist", function(object, sub, times=NULL){standardGeneric("plotSubDist")})
+#' @export
+#' @rdname plotSubDist
+setMethod("plotSubDist", "Eval", function(object, sub, times=NULL){
+  if(length(sub) != 1 | !all(sub %in% object@mediac)) stop("Please use exactly one substance.")
+  if(length(times)==0) times <- seq_along(object@medlist)
+  outa <- t(sapply(times, function(i){c(i, unlist(extractMed(sim, time=i, mediac=sub)))}))
+  colnames(outa) <- c("time", paste(1:(object@n*object@m)))
+  attributes(outa)$class <- c("deSolve", "matrix")
+  attributes(outa)$dimens <- c(object@n,object@m)
+  attributes(outa)$nspec <- 1
+  mfrow <- sqrt(max(times))
+  image(outa, ask = FALSE, mfrow = c(floor(mfrow), ceiling(mfrow)), main = paste("time", times))
+})
+  
