@@ -22,7 +22,7 @@ Structure of the S4 class \code{Arena} to represent the environment in which Org
 
 \item{\code{tstep}}{A number giving the time (in h) per iteration.}
 
-\item{\code{stir}}{A boolean variable indicating if environment should be stirred.}
+\item{\code{stir}}{A boolean variable indicating if environment should be stirred. If true, bacteria move to random positions within the environment and substances have a uniform concentration value.}
 
 \item{\code{mflux}}{A vector containing highly used metabolic reactions within the arena}
 

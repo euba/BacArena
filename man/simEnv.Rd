@@ -31,7 +31,7 @@ simEnv(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
 
 \item{cl_size}{If diff_par is true then cl_size defines the number of cores to be used in parallelized diffusion.}
 
-\item{sec_obj}{character giving the secondary objective for a bi-level LP if wanted.}
+\item{sec_obj}{character giving the secondary objective for a bi-level LP if wanted. Use "mtf" for minimizing total flux, "opt_rxn" for optimizing a random reaction, "opt_ex" for optimizing a random exchange reaction, and "sumex" for optimizing the sum of all exchange fluxes.}
 
 \item{cutoff}{value used to define numeric accuracy}
 
@@ -46,7 +46,7 @@ Returns an object of class \code{Eval} which can be used for subsequent analysis
 The generic function \code{simEnv} for a simple simulation of the environment.
 }
 \details{
-The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
+The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}. The parameter for sec_obj can be used to optimize a bi-level LP with a secondary objective if wanted. This can be helpful to subselect the solution space and create less alternative optimal solution. The secondary objective can be set to "mtf" to minimize the total flux, to simulate minimal enzyme usage of an organisms. If set to "opt_rxn" or "opt_ex", the secondary objective is picked as a random reaction or exchange reaction respectively everytime a fba is performed. This means that every individual of a population will select a different secondary reaction to optimize. The "sumex" option maximizes the secretion of products.
 }
 \examples{
 data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model

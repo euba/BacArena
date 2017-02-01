@@ -17,7 +17,7 @@ globalVariables(c("diffuseNaiveCpp","diffuseSteveCpp"))
 #' @slot phenotypes A list of unique phenotypes (metabolites consumed and produced), which occurred in the environment.
 #' @slot mediac A character vector containing the names of all substances in the environment.
 #' @slot tstep A number giving the time (in h) per iteration.
-#' @slot stir A boolean variable indicating if environment should be stirred.
+#' @slot stir A boolean variable indicating if environment should be stirred. If true, bacteria move to random positions within the environment and substances have a uniform concentration value.
 #' @slot mflux A vector containing highly used metabolic reactions within the arena
 #' @slot shadow A vector containing shadow prices of metabolites present in the arena
 #' @slot n A number giving the horizontal size of the environment.
@@ -720,12 +720,12 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' @param diffusion True if diffusion should be done (default on).
 #' @param diff_par True if diffusion should be run in parallel (default off).
 #' @param cl_size If diff_par is true then cl_size defines the number of cores to be used in parallelized diffusion.
-#' @param sec_obj character giving the secondary objective for a bi-level LP if wanted.
+#' @param sec_obj character giving the secondary objective for a bi-level LP if wanted. Use "mtf" for minimizing total flux, "opt_rxn" for optimizing a random reaction, "opt_ex" for optimizing a random exchange reaction, and "sumex" for optimizing the sum of all exchange fluxes.
 #' @param cutoff value used to define numeric accuracy
 #' @param pcut A number giving the cutoff value by which value of objective function is considered greater than 0.
 #' @param verbose Set to false if no status messages should be printed. 
 #' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
-#' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}.
+#' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}. The parameter for sec_obj can be used to optimize a bi-level LP with a secondary objective if wanted. This can be helpful to subselect the solution space and create less alternative optimal solution. The secondary objective can be set to "mtf" to minimize the total flux, to simulate minimal enzyme usage of an organisms. If set to "opt_rxn" or "opt_ex", the secondary objective is picked as a random reaction or exchange reaction respectively everytime a fba is performed. This means that every individual of a population will select a different secondary reaction to optimize. The "sumex" option maximizes the secretion of products.
 #' @seealso \code{\link{Arena-class}} and \code{\link{Eval-class}}
 #' @examples
 #' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
