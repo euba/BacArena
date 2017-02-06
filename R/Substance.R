@@ -68,7 +68,7 @@ setClass("Substance",
 Substance <- function(n, m, smax, gridgeometry, difspeed=6.7e-6, advspeed=0, occupyM, Dgrid=NULL, Vgrid=NULL, diffmat=NULL, template=FALSE, ...){
   if(length(diffmat)==0) diffmat <- Matrix::Matrix(smax, nrow=n, ncol=m, sparse=TRUE)
     else if(template) diffmat <- Matrix::Matrix(smax * diffmat, sparse=T) else diffmat <- Matrix::Matrix(diffmat, sparse=T)
-  if(ncol(diffmat)!=n && nrow(diffmat)!=m) Stop("Dimension of diffmat is invalid")
+  if(ncol(diffmat)!=n && nrow(diffmat)!=m) stop("Dimension of diffmat is invalid")
   
   new_occupyM <- apply(occupyM, 1, function(x)ifelse(x==0, 1, 0)) # switch 0 and zero for better processing
   if(length(Dgrid)==0) {
