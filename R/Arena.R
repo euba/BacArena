@@ -81,14 +81,14 @@ setClass("Arena",
 #' @param Ly A number giving the vertical grid size in cm.
 #' @param ... Arguments of \code{\link{Arena-class}}
 Arena <- function(Lx=NULL, Ly=NULL, n=100, m=100, seed=sample(1:10000,1), ...){
-  if(is.null(Lx)) Lx <- 0.025/100 * n
-  if(is.null(Ly)) Ly <- 0.025/100 * m
+  if(is.null(Lx)) Lx <- 0.025/100 * m
+  if(is.null(Ly)) Ly <- 0.025/100 * n
   
   set.seed(seed) # remember random seed
-  gridgeometry = list(grid2D=ReacTran::setup.grid.2D(ReacTran::setup.grid.1D(x.up = 0, L = Lx, N = n), 
-                                                     ReacTran::setup.grid.1D(x.up = 0, L = Ly, N = m)))
+  gridgeometry = list(grid2D=ReacTran::setup.grid.2D(ReacTran::setup.grid.1D(x.up = 0, L = Lx, N = m), 
+                                                     ReacTran::setup.grid.1D(x.up = 0, L = Ly, N = n)))
   scale   <- (Lx*Ly)/(n*m)
-  occupyM <- matrix(0, nrow=n, ncol=m)
+  occupyM <- matrix(0, ncol=n, nrow=m)
   new("Arena", Lx=Lx, Ly=Ly, n=n, m=m, scale=scale, gridgeometry=gridgeometry, occupyM=occupyM, seed=seed, ...)
 }
 
