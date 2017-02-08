@@ -425,7 +425,7 @@ setMethod("addDefaultMed", "Arena", function(object, org, unit="mM"){
          stop("Wrong unit for concentration."))
   min_val <- conv * min_val
   for(id in min_id){
-    object@media[[id]]@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@n, ncol=object@m, sparse=TRUE)}
+    object@media[[id]]@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@m, ncol=object@n, sparse=TRUE)}
   return(object)
 })
 
@@ -572,14 +572,14 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
          'mmol/arena'={smax <- 10^12 * smax / (object@n*object@m)}, # conversion of mmol/arena in fmol/grid_cell
          'mmol/cell'={smax <- 10^12 * smax}, # conversion of mmol/cell in fmol/cell
          stop("Wrong unit for concentration."))
-  newdiffmat <- matrix(0,nrow=object@n,ncol=object@m)
+  newdiffmat <- matrix(0,nrow=object@m,ncol=object@n)
   gradn = floor(object@n*steep)
   gradm = floor(object@m*steep)
   switch(position,
-         'top'={for(i in 1:object@m){newdiffmat[0:gradm+1,i]=rev(seq(0,smax,length.out=gradm+1))}},
-         'bottom'={for(i in 1:object@m){newdiffmat[object@m:(object@m-gradm),i]=rev(seq(0,smax,length.out=gradm+1))}},
-         'right'={for(i in 1:object@n){newdiffmat[i,gradn:object@n]=seq(0,smax,length.out=gradn+1)}},
-         'left'={for(i in 1:object@n){newdiffmat[i,0:gradn+1]=seq(smax,0,length.out=gradn+1)}},
+         'top'={for(i in 1:object@n){newdiffmat[0:gradm+1,i]=rev(seq(0,smax,length.out=gradm+1))}},
+         'bottom'={for(i in 1:object@n){newdiffmat[object@n:(object@n-gradm),i]=rev(seq(0,smax,length.out=gradm+1))}},
+         'right'={for(i in 1:object@m){newdiffmat[i,gradn:object@m]=seq(0,smax,length.out=gradn+1)}},
+         'left'={for(i in 1:object@m){newdiffmat[i,0:gradn+1]=seq(smax,0,length.out=gradn+1)}},
          stop("Positions must be top, bottom, right, or left."))
   for(i in 1:length(mediac)){
     if(add){
@@ -798,6 +798,14 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       if(diff_par){
         diff_t <- system.time(arena <- diffuse_par(arena, cluster_size=cl_size, lrw=lrw, sublb=sublb) )[3]
       }else diff_t <- system.time(arena <- diffuse(arena, lrw=lrw, sublb=sublb) )[3]
+    }
+    if(!diffusion){
+      for(k in 1:length(arena@media)){
+        for(l in 1:nrow(sublb)){
+          arena@media[[k]]@diffmat[sublb[l,"y"],sublb[l,"x"]] = sublb[l,k]
+        }
+      }
+      arena@sublb <- getSublb(arena)
     }
     if(arena@stir){ #stir environment -> random movement of bacteria + perfect diffusion
       sublb_tmp = arena@orgdat[,c("x","y")]
@@ -1176,7 +1184,7 @@ setMethod("getSublb", "Arena", function(object){
     },sub=submat)
   }
   sublb <- cbind(as.matrix(object@orgdat[,c(5,4)]),sublb)
-  colnames(sublb) <- c('x','y',object@mediac)
+  colnames(sublb) <- c('y','x',object@mediac)
   return(sublb)
 })
 
@@ -1666,9 +1674,9 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
       if(length(inds)!=0){
         for(j in 1:length(inds)){
           if(retdata){
-            retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
+            retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],ncol=object@n,nrow=object@m)
           }
-          image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=paste(subnam[inds[j]], ": #", i),
+          image(matrix(meds[[subnam[inds[j]]]],ncol=object@n,nrow=object@m),axes=F,main=paste(subnam[inds[j]], ": #", i),
                 zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
         }
       }
@@ -1676,18 +1684,18 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
       par(mfrow=c(2,ceiling(length(plot_items)/2)))
       for(j in 1:length(inds)){
         if(retdata){
-          retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
+          retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],ncol=object@n,nrow=object@m)
         }
-        image(matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m),axes=F,main=paste(subnam[inds[j]], ": #", i),
+        image(matrix(meds[[subnam[inds[j]]]],ncol=object@n,nrow=object@m),axes=F,main=paste(subnam[inds[j]], ": #", i),
               zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
       }
     }else{
       par(mfrow=c(3,ceiling(length(plot_items)/3)))
       for(j in 1:length(inds)){
         if(retdata){
-          retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],nrow=object@n,ncol=object@m)
+          retlist[[subnam[inds[j]]]][[paste0("time",(i-1))]] = matrix(meds[[subnam[inds[j]]]],ncol=object@n,nrow=object@m)
         }
-        image(matrix(meds[[inds[j]]],nrow=object@n,ncol=object@m),axes=F,main=paste(subnam[inds[j]], ": #", i),
+        image(matrix(meds[[inds[j]]],ncol=object@n,nrow=object@m),axes=F,main=paste(subnam[inds[j]], ": #", i),
               zlim=c(0,max(unlist(lapply(object@medlist,function(x, snam){return(x[[snam]])},snam=subnam[inds[j]])))))
       }
     }

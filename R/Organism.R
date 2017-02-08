@@ -669,7 +669,7 @@ setMethod("growth", "Bac", function(object, population, j, occupyM, fbasol, tste
     if(length(freenb) != 0){
       npos = freenb[sample(length(freenb),1)]
       npos = as.numeric(unlist(strsplit(npos,'_')))
-      if(occupyM[npos[1], npos[2]] == 0){ # check if there is no obstacle
+      if(occupyM[npos[2], npos[1]] == 0){ # check if there is no obstacle
         daughter <- popvec
         daughter$biomass <- popvec$biomass/2
         daughter$x <- npos[1]
