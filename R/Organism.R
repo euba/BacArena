@@ -568,7 +568,7 @@ setMethod("move", "Organism", function(object, pos, n, m, j, occupyM){
   if(length(freenb) != 0){
     npos = freenb[sample(length(freenb),1)]
     npos = as.numeric(unlist(strsplit(npos,'_')))
-    if(occupyM[npos[1], npos[2]] == 0){ # check if there is no obstacle
+    if(occupyM[npos[2], npos[1]] == 0){ # check if there is no obstacle
       pos[j,] = npos
     }
   }

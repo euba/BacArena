@@ -81,12 +81,12 @@ setClass("Arena",
 #' @param Ly A number giving the vertical grid size in cm.
 #' @param ... Arguments of \code{\link{Arena-class}}
 Arena <- function(Lx=NULL, Ly=NULL, n=100, m=100, seed=sample(1:10000,1), ...){
-  if(is.null(Lx)) Lx <- 0.025/100 * m
-  if(is.null(Ly)) Ly <- 0.025/100 * n
+  if(is.null(Lx)) Lx <- 0.025/100 * n
+  if(is.null(Ly)) Ly <- 0.025/100 * m
   
   set.seed(seed) # remember random seed
-  gridgeometry = list(grid2D=ReacTran::setup.grid.2D(ReacTran::setup.grid.1D(x.up = 0, L = Lx, N = m), 
-                                                     ReacTran::setup.grid.1D(x.up = 0, L = Ly, N = n)))
+  gridgeometry = list(grid2D=ReacTran::setup.grid.2D(ReacTran::setup.grid.1D(x.up = 0, L = Ly, N = m), 
+                                                     ReacTran::setup.grid.1D(x.up = 0, L = Lx, N = n)))
   scale   <- (Lx*Ly)/(n*m)
   occupyM <- matrix(0, ncol=n, nrow=m)
   new("Arena", Lx=Lx, Ly=Ly, n=n, m=m, scale=scale, gridgeometry=gridgeometry, occupyM=occupyM, seed=seed, ...)
@@ -858,7 +858,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
     if(diff2d&&!homogenous || !diff2d){
       submat <- as.matrix(arena@media[[j]]@diffmat)
       if(!all(is.na(sublb)) && dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
-        submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id]
+        submat[sublb[,c("y","x")]] <- sublb[,arena@media[[j]]@id]
       }
       #diff_pde_t <- diff_pde_t + system.time(switch(arena@media[[j]]@difunc,
       if(diffspeed || !diff2d){
@@ -872,7 +872,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
       }
       arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
     }else submat <- arena@media[[j]]@diffmat
-    sublb_tmp[,j] <- submat[cbind(arena@orgdat$x,arena@orgdat$y)]
+    sublb_tmp[,j] <- submat[cbind(arena@orgdat$y,arena@orgdat$x)]
   }#})[3]
   sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
   colnames(sublb) <- c('x','y',arena@mediac)
@@ -1103,8 +1103,8 @@ setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
     if(diff2d&&!homogenous || !diff2d){
       submat <- as.matrix(arena@media[[j]]@diffmat)
       if(!all(is.na(sublb)) && dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
-        #diff_sublb_t <<- diff_sublb_t + system.time(submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id])[3]}
-        submat[sublb[,c("x","y")]] <- sublb[,arena@media[[j]]@id]}
+        #diff_sublb_t <<- diff_sublb_t + system.time(submat[sublb[,c("y","x")]] <- sublb[,arena@media[[j]]@id])[3]}
+        submat[sublb[,c("y","x")]] <- sublb[,arena@media[[j]]@id]}
       #browser()
       #diff_pde_t <<- diff_pde_t + system.time(switch(arena@media[[j]]@difunc,
       if(diffspeed || !diff2d){
@@ -1120,7 +1120,7 @@ setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
       diffmat_tmp <- arena@media[[j]]@diffmat
       submat <- as.matrix(arena@media[[j]]@diffmat)
     }
-    sublb_tmp  <- submat[cbind(arena@orgdat$x,arena@orgdat$y)]
+    sublb_tmp  <- submat[cbind(arena@orgdat$y,arena@orgdat$x)]
     list("diffmat"=diffmat_tmp, "sublb"=sublb_tmp)
   #})#)[3]
   #}, mc.cores=cluster_size)#)[3]
@@ -1168,14 +1168,14 @@ setMethod("getSublb", "Arena", function(object){
   for(j in seq_along(object@media)){
     submat <- as.matrix(object@media[[j]]@diffmat)
     sublb[,j] <- apply(object@orgdat, 1, function(x,sub){
-      tryCatch({return(sub[as.numeric(x[4]),as.numeric(x[5])])
+      tryCatch({return(sub[as.numeric(x[5]),as.numeric(x[4])])
       }, error=function(cond){
         print(cond)
         browser()}
       )
     },sub=submat)
   }
-  sublb <- cbind(as.matrix(object@orgdat[,c(4,5)]),sublb)
+  sublb <- cbind(as.matrix(object@orgdat[,c(5,4)]),sublb)
   colnames(sublb) <- c('x','y',object@mediac)
   return(sublb)
 })
@@ -1339,7 +1339,7 @@ setMethod(show, "Arena", function(object){
   # 2) general arena info
   print(paste("arena grid cells:",object@n,"x",object@m))
   print(paste("arena grid size [cm]:",object@Lx,"x",object@Ly))
-  print(paste("dimension of one grid cell [cm]:",object@Lx/object@m,"x",object@Ly/object@n))
+  print(paste("dimension of one grid cell [cm]:",object@Lx/object@n,"x",object@Ly/object@m))
   print(paste("area of one grid cell [cm^2]:", (object@Lx*object@Ly)/(object@n*object@m)))  
   print(paste("flux unit:","mmol/(h*g_dw)"))
   print(paste("1 mM in arena correspons to mmol/grid_cell:", 1/100 * (object@Lx*object@Ly)/(object@n*object@m) ))
