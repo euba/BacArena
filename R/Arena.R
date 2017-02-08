@@ -1344,7 +1344,7 @@ setMethod(show, "Arena", function(object){
   print(paste("flux unit:","mmol/(h*g_dw)"))
   print(paste("1 mM in arena correspons to mmol/grid_cell:", 1/100 * (object@Lx*object@Ly)/(object@n*object@m) ))
   #print(paste("1mM in arena correspons to mmol/grid_cell:", 1/1000 * (object@Lx*object@Ly*sqrt(object@Lx*object@Ly))/(object@n*object@m) ))
-  print(paste('Arena of size ',object@n,'x',object@m,' with ',nrow(object@orgdat),
+  print(paste('Arena of size ',object@n,' x ',object@m,' with ',nrow(object@orgdat),
               ' organisms of ',length(object@specs),' species.',sep=''))
 })
 
