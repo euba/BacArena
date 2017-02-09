@@ -414,6 +414,7 @@ setGeneric("addDefaultMed", function(object, org, unit="mM"){standardGeneric("ad
 #' @export
 setMethod("addDefaultMed", "Arena", function(object, org, unit="mM"){
   lb_ex <- org@model@lowbnd[which(org@model@react_id %in% unname(org@medium))]
+  lb_ex <- ifelse(lb_ex==-Inf,-1000,lb_ex) # change concentration if it is infinite
   min_id  <-  unname(org@medium[which(lb_ex < 0)])
   min_val <-  -lb_ex[which(lb_ex < 0)]
   switch(unit,
