@@ -788,7 +788,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
         switch(class(org),
                "Bac"= {arena = simBac(org, arena, j, sublb, bacnum, sec_obj=sec_obj, cutoff=cutoff, pcut=pcut)}, #the sublb matrix will be modified within this function
-               "Human"= {arena = simHum(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
+               "Human"= {arena = simHum(org, arena, j, sublb, bacnum, sec_obj=sec_obj, cutoff=cutoff, pcut=pcut)}, #the sublb matrix will be modified within this function
                stop("Simulation function for Organism object not defined yet."))
       }
       test <- is.na(arena@orgdat$biomass)

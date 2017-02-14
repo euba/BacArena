@@ -986,7 +986,7 @@ setMethod("cellgrowth", "Human", function(object, population, j, occupyM, fbasol
     if(length(freenb) != 0){
       npos = freenb[sample(length(freenb),1)]
       npos = as.numeric(unlist(strsplit(npos,'_')))
-      if(occupyM[npos[1], npos[2]] == 0){ # check if there is no obstacle
+      if(occupyM[npos[2], npos[1]] == 0){ # check if there is no obstacle
         daughter <- popvec
         daughter$biomass <- popvec$biomass/2
         daughter$x <- npos[1]
@@ -1020,19 +1020,18 @@ setMethod("cellgrowth", "Human", function(object, population, j, occupyM, fbasol
 #' @seealso \code{\link{Human-class}}, \code{\link{Arena-class}}, \code{\link{simEnv}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{cellgrowth}, \code{checkPhen} and \code{lysis}
 #' @examples
 #' NULL
-setGeneric("simHum", function(object, arena, j, sublb, bacnum,cutoff=1e-6, pcut=1e-6){standardGeneric("simHum")})
+setGeneric("simHum", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6){standardGeneric("simHum")})
 #' @export
 #' @rdname simHum
-setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum, cutoff=1e-6, pcut=1e-6){
+setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6){
   const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, ub=object@ubnd*bacnum, #scale to population size
-                     dryweight=arena@orgdat[j,"biomass"], tstep=arena@tstep, scale=arena@scale)
-  
+                     dryweight=arena@orgdat[j,"biomass"], tstep=arena@tstep, scale=arena@scale, j)
   lobnd <- const[[1]]; upbnd <- const[[2]]
-  
-  optimization <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j)
+  optimization <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff)
   fbasol <- optimization[[1]]
-  if(is.null(fbasol$obj)){browser()}
-  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol, cutoff))) #rescale from population size
+  
+  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol, cutoff) )) #scale consumption to the number of cells?
+  
   dead <- cellgrowth(object, arena, j, arena@occupyM, fbasol=fbasol, tstep=arena@tstep)
   arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, object, fbasol=fbasol, cutoff=pcut))
   type <- object@type
@@ -1041,6 +1040,16 @@ setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum, cutoff=1e
 
   if(dead && object@lyse){
     eval.parent(substitute(sublb[j,] <- lysis(object, names(arena@media), sublb[j,])))
+  }
+  pos <- arena@orgdat[,c('x','y')]
+  if(!dead && !arena@stir && object@speed != 0){
+    if(object@chem == ''){
+      mov_pos <- move(object, pos, arena@n, arena@m, j, arena@occupyM)
+      arena@orgdat[,c('x','y')] <- mov_pos
+    }else{
+      chemo_pos <- chemotaxis(object, arena, j)
+      arena@orgdat[j,c('x','y')] <- chemo_pos
+    }
   }
   return(arena)
 })
