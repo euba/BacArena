@@ -58,4 +58,3 @@ plotCurves2(eval)
 \seealso{
 \code{\link{Eval-class}} and \code{\link{Arena-class}}
 }
-

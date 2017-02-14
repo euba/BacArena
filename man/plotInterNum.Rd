@@ -17,4 +17,3 @@ plotInterNum(simlist, title = "Variation in number of interactions",
 \description{
 The function \code{plotInterNum} takes a list of simulations and plots the time course of the number of metabolic interactions with standard deviation.
 }
-

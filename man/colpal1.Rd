@@ -15,4 +15,3 @@ colpal1
 color dictionary of 269 maximally distinct colors from all previous colors
 }
 \keyword{datasets}
-

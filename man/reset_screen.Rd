@@ -9,4 +9,3 @@ reset_screen()
 \description{
 The function \code{reset_screen} set plotting window to default
 }
-

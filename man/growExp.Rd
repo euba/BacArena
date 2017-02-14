@@ -31,4 +31,3 @@ Exponential growth of organisms is implemented by adding the calculated growthra
 \seealso{
 \code{\link{Organism-class}} and \code{\link{optimizeLP}}
 }
-

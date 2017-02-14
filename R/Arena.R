@@ -161,7 +161,7 @@ setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, biomass=NA,
 setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, biomass=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){
   if(length(n)==0) n <- object@n; if(length(m)==0) m <- object@m
   if(length(n0)==0) n0 <- 1; if(length(m0)==0) m0 <- 1
-  if(amount+nrow(object@orgdat) > n*m-dim(which(object@occupyM[m0:m,n0:n]>0, arr.ind = TRUE))[1]){
+  if(amount+nrow(object@orgdat) > n*m){
     stop("More individuals than space on the grid")
   }
   bacnum <- round(object@scale/(specI@cellarea*10^(-8)))
@@ -206,6 +206,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, bio
     neworgdat[(lastind+1):(amount+lastind),'type']=rep(type, amount)
     neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(NA, amount)
   }else{
+    if(x<1 || x>n || y<1 || y>m){stop("The positions of the individuals are beyond the dimensions of the environment.")}
     neworgdat[(lastind+1):(amount+lastind),'x']=x
     neworgdat[(lastind+1):(amount+lastind),'y']=y
     if(is.numeric(biomass)) neworgdat[(lastind+1):(amount+lastind),'biomass'] = rep(biomass, amount)
@@ -419,6 +420,7 @@ setGeneric("addDefaultMed", function(object, org, unit="mM"){standardGeneric("ad
 #' @export
 setMethod("addDefaultMed", "Arena", function(object, org, unit="mM"){
   lb_ex <- org@model@lowbnd[which(org@model@react_id %in% unname(org@medium))]
+  lb_ex <- ifelse(lb_ex==-Inf,-1000,lb_ex) # change concentration if it is infinite
   min_id  <-  unname(org@medium[which(lb_ex < 0)])
   min_val <-  -lb_ex[which(lb_ex < 0)]
   switch(unit,
@@ -792,7 +794,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
         switch(class(org),
                "Bac"= {arena = simBac(org, arena, j, sublb, bacnum, sec_obj=sec_obj, cutoff=cutoff, pcut=pcut)}, #the sublb matrix will be modified within this function
-               "Human"= {arena = simHum(org, arena, j, sublb, bacnum)}, #the sublb matrix will be modified within this function
+               "Human"= {arena = simHum(org, arena, j, sublb, bacnum, sec_obj=sec_obj, cutoff=cutoff, pcut=pcut)}, #the sublb matrix will be modified within this function
                stop("Simulation function for Organism object not defined yet."))
       }
       test <- is.na(arena@orgdat$biomass)

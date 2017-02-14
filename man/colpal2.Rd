@@ -15,4 +15,3 @@ colpal2
 20 optimally distinct colors
 }
 \keyword{datasets}
-

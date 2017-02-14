@@ -41,4 +41,3 @@ fluxlist <- findRxnFlux(eval, "EX_h(e)", 5)
 \seealso{
 \code{\link{Eval-class}} and \code{\link{simEnv}}
 }
-

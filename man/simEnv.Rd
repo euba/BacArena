@@ -60,4 +60,3 @@ eval <- simEnv(arena,5)
 \seealso{
 \code{\link{Arena-class}} and \code{\link{Eval-class}}
 }
-

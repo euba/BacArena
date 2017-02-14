@@ -14,4 +14,3 @@ plotFluxVar(simlist, metsel)
 \description{
 The function \code{plotFluxVar} takes a list of simulations and metabolites, returning a plot with metabolite fluxes for each species
 }
-

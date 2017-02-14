@@ -42,4 +42,3 @@ minePheno(eval)
 \seealso{
 \code{\link{Eval-class}} and \code{\link{getPhenoMat}}
 }
-

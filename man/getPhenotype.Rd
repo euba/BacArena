@@ -32,4 +32,3 @@ The phenotypes are defined by flux through exchange reactions, which indicate po
 \seealso{
 \code{\link{Organism-class}}, \code{\link{checkPhen}} and \code{\link{minePheno}}
 }
-

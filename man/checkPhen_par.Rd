@@ -22,4 +22,3 @@ checkPhen_par(object, org, cutoff = 1e-06, fbasol)
 \description{
 The generic function \code{checkPhen_par} checks and adds the phenotypes of organisms in the environment.
 }
-

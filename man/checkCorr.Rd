@@ -36,4 +36,3 @@ checkCorr(eval, tocheck="o2")
 \seealso{
 \code{\link{Eval-class}} and \code{\link{getCorrM}}
 }
-

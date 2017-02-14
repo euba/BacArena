@@ -37,4 +37,3 @@ arena5 <- getArena(eval,5)
 \seealso{
 \code{\link{Eval-class}} and \code{\link{Arena-class}}
 }
-

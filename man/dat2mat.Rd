@@ -31,4 +31,3 @@ image(occmat)
 \seealso{
 \code{\link{Arena-class}} and \code{\link{getSublb}}
 }
-

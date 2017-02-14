@@ -30,4 +30,3 @@ arena <- flushSubs(arena) #remove all created substance concentrations
 \seealso{
 \code{\link{Arena-class}} and \code{\link{addSubs}}
 }
-

@@ -31,4 +31,3 @@ The phenotypes are defined by flux through exchange reactions, which indicate po
 \seealso{
 \code{\link{Arena-class}} and \code{\link{getPhenotype}}
 }
-

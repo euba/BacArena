@@ -34,4 +34,3 @@ fluxlist <- fluxVarSim(eval, 6)
 \seealso{
 \code{\link{Eval-class}} and \code{\link{simEnv}}
 }
-

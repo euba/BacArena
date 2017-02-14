@@ -34,4 +34,3 @@ arena <- changeOrg(arena,neworgdat)
 \seealso{
 \code{\link{Arena-class}} and \code{\link{addOrg}}
 }
-

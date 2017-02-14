@@ -35,4 +35,3 @@ chemotaxis(bac,arena,1)
 \seealso{
 \code{\link{Bac-class}} and \code{\link{emptyHood}}
 }
-

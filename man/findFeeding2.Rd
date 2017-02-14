@@ -31,4 +31,3 @@ Graph (igraph)
 \description{
 The generic function \code{findFeeding2}
 }
-

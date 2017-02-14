@@ -30,4 +30,3 @@ arena <- addSubs(arena,40) #add all possible substances
 eval <- simEnv(arena,5)
 plotTotFlux(eval)
 }
-

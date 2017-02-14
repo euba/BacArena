@@ -28,4 +28,3 @@ list of three ggplot object for further formating
 \description{
 The function \code{plotSubCurve} takes a list of simulations and plots the time course of substances with standard deviation.
 }
-

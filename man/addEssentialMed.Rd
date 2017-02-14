@@ -23,4 +23,3 @@ addEssentialMed(object, org, only_return = FALSE, limit = 10)
 \description{
 The generic function \code{addEssentialMed} uses flux variability analysis to determine a essential growth medium  components.
 }
-

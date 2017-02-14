@@ -39,4 +39,3 @@ diffusePDE(sub, init_mat=as.matrix(sub@diffmat),
 \seealso{
 \code{\link{Substance-class}} and \code{\link{diffuseR}}
 }
-

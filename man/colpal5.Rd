@@ -15,4 +15,3 @@ colpal5
 64 destinct colors
 }
 \keyword{datasets}
-

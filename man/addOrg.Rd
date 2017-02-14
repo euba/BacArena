@@ -49,4 +49,3 @@ arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 \seealso{
 \code{\link{Arena-class}} and \code{\link{Bac-class}}
 }
-

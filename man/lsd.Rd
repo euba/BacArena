@@ -12,4 +12,3 @@ lsd(y)
 \description{
 Helper function to get lower error bounds in plotting
 }
-

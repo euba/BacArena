@@ -20,4 +20,3 @@ diffuse(object, lrw, sublb)
 \description{
 The generic function \code{diffuse} computes the media distribution via diffusion
 }
-

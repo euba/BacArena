@@ -26,4 +26,3 @@ getVarSubs(object, show_products = TRUE, show_substrates = TRUE,
 \description{
 The generic function \code{getVarSubs} returns ordered list of substances that showed variance during simulation
 }
-

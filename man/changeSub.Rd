@@ -38,4 +38,3 @@ arena <- changeSub(arena,20,c("EX_glc(e)","EX_o2(e)","EX_pi(e)"))
 \seealso{
 \code{\link{Arena-class}} and \code{\link{addSubs}}
 }
-

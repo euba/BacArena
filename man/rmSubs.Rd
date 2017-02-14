@@ -18,4 +18,3 @@ rmSubs(object, mediac)
 \description{
 The generic function \code{rmSubs} removes all amounts of substances available in the arena for given compounds.
 }
-

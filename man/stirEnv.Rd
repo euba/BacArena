@@ -37,4 +37,3 @@ stirEnv(arena,sublb)
 \seealso{
 \code{\link{Arena-class}} and \code{\link{getSublb}}
 }
-
