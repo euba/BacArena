@@ -22,4 +22,3 @@ The generic function \code{plotReaActivity} displays the usage of reactions for 
 \details{
 Returns ggplot objects
 }
-

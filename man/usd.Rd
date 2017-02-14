@@ -12,4 +12,3 @@ usd(y)
 \description{
 Helper function to get upper error bounds in plotting
 }
-

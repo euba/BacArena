@@ -15,4 +15,3 @@ colpal3
 K. Kelly (1965): Twenty-two colors of maximum contrast. // Color Eng., 3(6), 1965
 }
 \keyword{datasets}
-

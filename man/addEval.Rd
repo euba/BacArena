@@ -36,4 +36,3 @@ addEval(eval,arena)
 \seealso{
 \code{\link{Eval-class}} and \code{\link{Arena-class}}
 }
-

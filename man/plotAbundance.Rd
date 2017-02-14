@@ -21,4 +21,3 @@ plotAbundance(simlist, time = c(NULL, NULL), col = colpal3,
 \description{
 The function \code{plotAbundance} takes a list of simulations and return a boxplot with species abundances
 }
-

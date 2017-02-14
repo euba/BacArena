@@ -39,4 +39,3 @@ phenmat <- getPhenoMat(eval)
 \seealso{
 \code{\link{Eval-class}} and \code{\link{getPhenotype}}
 }
-

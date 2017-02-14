@@ -46,4 +46,3 @@ lobnds <- constrain(org,org@medium,org@lbnd[org@medium],1,1)
 \seealso{
 \code{\link{Organism-class}}
 }
-

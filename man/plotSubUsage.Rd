@@ -21,4 +21,3 @@ The generic function \code{plotSubUsage} displays for given substances the quant
 \details{
 Returns ggplot objects
 }
-

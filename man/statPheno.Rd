@@ -38,4 +38,3 @@ statPheno(eval, type_nr=1, phenotype_nr=2)
 \seealso{
 \code{\link{Eval-class}}
 }
-

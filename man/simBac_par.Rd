@@ -35,4 +35,3 @@ Returns the updated enivironment of the \code{population} parameter with all new
 \description{
 The generic function \code{simBac_par} implements all neccessary functions for the individuals to update the complete environment.
 }
-

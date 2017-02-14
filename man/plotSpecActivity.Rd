@@ -24,4 +24,3 @@ The generic function \code{plotSpecActivity} displays the input/output substance
 \details{
 Returns ggplot objects
 }
-

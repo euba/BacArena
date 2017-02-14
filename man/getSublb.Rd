@@ -31,4 +31,3 @@ sublb <- getSublb(arena)
 \seealso{
 \code{\link{Arena-class}}
 }
-

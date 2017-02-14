@@ -20,9 +20,9 @@ Structure of the S4 class \code{Substance} representing substances in the enviro
 
 \item{\code{difunc}}{A character vector ("pde","cpp" or "r") describing the function for diffusion.}
 
-\item{\code{difspeed}}{A number indicating the diffusion speed (given by cm^2/s).}
+\item{\code{difspeed}}{A number indicating the diffusion rate (given by cm^2/s). Default is set to glucose diffusion in a aqueous solution (6.7e-6 cm^2/s).}
 
-\item{\code{advspeed}}{A number indicating the advection speed in x direction (given by cm/s).}
+\item{\code{advspeed}}{A number indicating the advection rate in x direction (given by cm/s).}
 
 \item{\code{diffgeometry}}{Diffusion coefficient defined on all grid cells (initially set by constructor).}
 

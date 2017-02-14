@@ -16,4 +16,3 @@ plotGrowthCurve(simlist, time = c(NULL, NULL), ret_data = FALSE)
 \description{
 The function \code{plotGrowthCurve} takes a list of simulations and plots the time course of species with standard deviation.
 }
-

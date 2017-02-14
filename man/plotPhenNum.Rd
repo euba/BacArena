@@ -16,4 +16,3 @@ plotPhenNum(simlist, title = "Phenotype number variation", size = 1)
 \description{
 The function \code{plotPhenNum} takes a list of simulations and plots the time course of the number of phenotypes with standard deviation.
 }
-

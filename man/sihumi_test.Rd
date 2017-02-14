@@ -12,4 +12,3 @@ data(sihumi_test)
 Data contains results of a simulation with 8 gut bacteria for 10 time steps
 }
 \keyword{datasets}
-

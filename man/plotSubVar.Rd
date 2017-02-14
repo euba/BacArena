@@ -14,4 +14,3 @@ plotSubVar(simlist, metsel)
 \description{
 The function \code{plotSubVar} takes a list of simulations and returns a barplot with most varying substances
 }
-

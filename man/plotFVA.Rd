@@ -15,4 +15,3 @@ The generic function \code{plotFVA} plots population level flux results obtained
 \details{
 Returns ggplot objects
 }
-

@@ -30,4 +30,3 @@ plotPhenCurve(simlist, subs, phens = NULL, time = c(NULL, NULL),
 \description{
 The function \code{plotPhenCurve} takes a list of simulations and plots the time course of species with standard deviation.
 }
-

@@ -22,4 +22,3 @@ setKinetics(object, exchangeR, Km, vmax)
 \description{
 The generic function \code{setKinetics} provides kinetics for exchange reactions.
 }
-

@@ -15,4 +15,3 @@ colpal4
 26 distinct colors (Zeileis(2009): Escaping RGBland: Selecting Colors for Statistical Graphics)
 }
 \keyword{datasets}
-

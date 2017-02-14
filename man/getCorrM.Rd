@@ -42,4 +42,3 @@ getCorrM(eval)
 \seealso{
 \code{\link{Eval-class}}
 }
-

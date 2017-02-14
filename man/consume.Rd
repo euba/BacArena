@@ -36,4 +36,3 @@ NULL
 \seealso{
 \code{\link{Organism-class}}
 }
-

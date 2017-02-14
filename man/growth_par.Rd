@@ -27,4 +27,3 @@ A list
 \description{
 The generic function \code{growth_par} implements different growth models for an object of class Bac.
 }
-

@@ -41,4 +41,3 @@ selPheno(eval,time=5,type='ecoli_core_model',reduce=TRUE)
 \seealso{
 \code{\link{Eval-class}} and \code{\link{getPhenoMat}}
 }
-

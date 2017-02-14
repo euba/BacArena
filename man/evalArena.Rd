@@ -56,4 +56,3 @@ saveVideo({evalArena(eval)},video.name="Ecoli_sim.mp4")
 \seealso{
 \code{\link{Eval-class}} and \code{\link{Arena-class}}
 }
-

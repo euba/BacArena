@@ -30,4 +30,3 @@ arena <- Arena(n=20,m=20)
 arena <- addOrg(arena,bac,amount=10)
 findInArena(arena, "acetate")
 }
-

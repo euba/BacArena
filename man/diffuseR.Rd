@@ -28,4 +28,3 @@ diffuseR(sub)
 \seealso{
 \code{\link{Substance-class}} and \code{\link{diffusePDE}}
 }
-

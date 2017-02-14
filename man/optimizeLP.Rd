@@ -46,4 +46,3 @@ org@fbasol <- optimizeLP(org)
 \seealso{
 \code{\link{Organism-class}}, \code{\link{optimizeProb}} and \code{\link{sysBiolAlg}}
 }
-

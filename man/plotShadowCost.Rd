@@ -26,4 +26,3 @@ The generic function \code{plotShadowCost} plots substances have the highest imp
 \details{
 Returns ggplot objects
 }
-

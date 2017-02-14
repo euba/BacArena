@@ -17,8 +17,8 @@
 #' @slot name A character vector representing the name of the substance.
 #' @slot id A character vector representing the identifier of the substance.
 #' @slot difunc A character vector ("pde","cpp" or "r") describing the function for diffusion.
-#' @slot difspeed A number indicating the diffusion speed (given by cm^2/s).
-#' @slot advspeed A number indicating the advection speed in x direction (given by cm/s).
+#' @slot difspeed A number indicating the diffusion rate (given by cm^2/s). Default is set to glucose diffusion in a aqueous solution (6.7e-6 cm^2/s).
+#' @slot advspeed A number indicating the advection rate in x direction (given by cm/s).
 #' @slot diffgeometry Diffusion coefficient defined on all grid cells (initially set by constructor).
 #' @slot pde Choose diffusion transport reaction to be used (default is diffusion only)
 #' @slot boundS A number defining the attached amount of substance at the boundary (Warning: boundary-function must be set in pde!)

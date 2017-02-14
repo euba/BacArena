@@ -18,4 +18,3 @@ getSubHist(object, sub)
 \description{
 The generic function \code{getSubHist} returns list with amount of substance for each timestep
 }
-

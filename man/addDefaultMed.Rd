@@ -20,4 +20,3 @@ addDefaultMed(object, org, unit = "mM")
 \description{
 The generic function \code{addDefaultMed} uses the lower bounds defined in an organism's model file to compose minimal medium.
 }
-

@@ -22,4 +22,3 @@ diffuse_par(object, lrw, cluster_size, sublb)
 \description{
 The generic function \code{diffuse_par} computes the media distribution via diffusion in parallel
 }
-

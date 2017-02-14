@@ -34,4 +34,3 @@ changeFobj(human,'EX_glc(e)',Ec_core)
 \seealso{
 \code{\link{Human-class}} and \code{\link{optimizeLP}}
 }
-
