@@ -66,8 +66,15 @@ setClass("Substance",
 #' @param ... Arguments of \code{\link{Substance-class}}
 #' @return Object of class \code{Substance}
 Substance <- function(n, m, smax, gridgeometry, difspeed=6.7e-6, advspeed=0, occupyM, Dgrid=NULL, Vgrid=NULL, diffmat=NULL, template=FALSE, ...){
-  if(length(diffmat)==0) diffmat <- Matrix::Matrix(smax, ncol=n, nrow=m, sparse=TRUE)
-    else if(template) diffmat <- Matrix::Matrix(smax * diffmat, sparse=T) else diffmat <- Matrix::Matrix(diffmat, sparse=T)
+  if(length(diffmat)==0){
+    diffmat <- Matrix::Matrix(smax, ncol=n, nrow=m, sparse=TRUE)
+  }else{
+      if(template){
+        diffmat <- Matrix::Matrix(smax * diffmat, sparse=T)
+      }else{
+        diffmat <- Matrix::Matrix(diffmat, sparse=T)
+      }
+  }
   if(ncol(diffmat)!=n && nrow(diffmat)!=m){
     print(paste("arena dimensions  :", arena@n, arena@m))
     print(paste("diffmat dimentsion:", ncol(diffmat), nrow(diffmat)))
@@ -75,6 +82,7 @@ Substance <- function(n, m, smax, gridgeometry, difspeed=6.7e-6, advspeed=0, occ
   } 
   
   new_occupyM <- apply(occupyM, 2, function(x)ifelse(x==0, 1, 0)) # switch 0 and zero for better processing
+  if(is.vector(new_occupyM)){new_occupyM=t(as.matrix(new_occupyM))} #conversion to matrix is important if n=1, because otherwise previous apply will output a vector
   if(length(Dgrid)==0) {
     Dgrid <- ReacTran::setup.prop.2D(value=difspeed, grid = gridgeometry$grid2D)
     Dgrid <- lapply(Dgrid, # set obstacle cells to zero
