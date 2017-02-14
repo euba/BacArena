@@ -206,6 +206,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, bio
     neworgdat[(lastind+1):(amount+lastind),'type']=rep(type, amount)
     neworgdat[(lastind+1):(amount+lastind),'phenotype']=rep(NA, amount)
   }else{
+    if(x<1 || x>n || y<1 || y>m){stop("The positions of the individuals are beyond the dimensions of the environment.")}
     neworgdat[(lastind+1):(amount+lastind),'x']=x
     neworgdat[(lastind+1):(amount+lastind),'y']=y
     if(is.numeric(biomass)) neworgdat[(lastind+1):(amount+lastind),'biomass'] = rep(biomass, amount)
