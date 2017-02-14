@@ -161,7 +161,7 @@ setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, biomass=NA,
 setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, biomass=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){
   if(length(n)==0) n <- object@n; if(length(m)==0) m <- object@m
   if(length(n0)==0) n0 <- 1; if(length(m0)==0) m0 <- 1
-  if(amount+nrow(object@orgdat) > n*m-dim(which(object@occupyM[m0:m,n0:n]>0, arr.ind = TRUE))[1]){
+  if(amount+nrow(object@orgdat) > n*m){
     stop("More individuals than space on the grid")
   }
   bacnum <- round(object@scale/(specI@cellarea*10^(-8)))
