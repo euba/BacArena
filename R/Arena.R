@@ -307,7 +307,8 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
          'fmol/cell'  = { conv <- 1}, # already in fmol/cell
          stop("Wrong unit for concentration."))
   smax <- conv * smax
-  if(length(diffmat)>0 && !template) diffmat <- conv * diffmat
+  if(is.numeric(diffmat) && !template) diffmat <- conv * diffmat
+  if(is(diffmat, "list") && !template)  diffmat <- lapply(diffmat, function(x){conv*x})
   
   # 2) create and add substances assuming that organisms are already added
   
@@ -317,28 +318,32 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
       if(mediac[[i]] %in% object@mediac){ # add only if possible
         old_diffmat <- object@media[[mediac[i]]]@diffmat
         new_name <- ifelse( length(names(mediac[i]))==0, object@media[[mediac[i]]]@name, names(mediac[i]) )  # add substance names 
-        if(length(Dgrid)  > 1) Dgrid_i <- Dgrid[[i]] else Dgrid_i <- Dgrid
-        if(length(Vgrid)  > 1) Vgrid_i <- Vgrid[[i]] else Vgrid_i <- Vgrid
-        if(length(difunc) > 1) difunc_i <- difunc[[i]] else difunc_i <- difunc
-        if(length(pde) > 1) pde_i <- pde[[i]] else pde_i <- pde
-        object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=new_name, gridgeometry=object@gridgeometry, difunc=difunc_i, pde=pde_i, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat, template=template, Dgrid=Dgrid_i, Vgrid=Vgrid_i)
+        if(is(Dgrid, "list")) Dgrid_i  <- Dgrid[[i]] else Dgrid_i <- Dgrid
+        if(is(Vgrid, "list")) Vgrid_i  <- Vgrid[[i]] else Vgrid_i <- Vgrid
+        if(is(difunc, "list")) difunc_i <- difunc[[i]] else difunc_i <- difunc
+        if(is(pde, "list"))    pde_i    <- pde[[i]] else pde_i <- pde
+        if(is(diffmat, "list"))  diffmat_i<- diffmat[[i]] else diffmat_i <- diffmat
+        if(is(template, "list")) template_i<- template[[i]] else template_i <- template
+        object@media[[mediac[i]]] <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=new_name, gridgeometry=object@gridgeometry, difunc=difunc_i, pde=pde_i, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat_i, template=template_i, Dgrid=Dgrid_i, Vgrid=Vgrid_i)
         if(add){
           object@media[[mediac[i]]]@diffmat <- object@media[[mediac[i]]]@diffmat + old_diffmat}}}
   }else if(class(object)=="Eval"){ # if eval class then add substance in last time step of medlist
     time <- length(object@medlist)
     media <- lapply(object@media[names(object@medlist[[time]])], function(x, meds, n, m){
-      x@diffmat <- Matrix::Matrix(meds[[x@id]],nrow=n,ncol=m,sparse=TRUE)
+      x@diffmat <- Matrix::Matrix(meds[[x@id]],ncol=n,nrow=m,sparse=TRUE)
       return(x)
     },meds=extractMed(object,time), n=object@n, m=object@m)
     for(i in 1:length(mediac)){
       if(mediac[[i]] %in% object@mediac){ # add only if possible
         old_diffmat <- media[[mediac[i]]]@diffmat
-        if(length(Dgrid)  > 1) Dgrid_i <- Dgrid[[i]] else Dgrid_i <- Dgrid
-        if(length(Vgrid)  > 1) Vgrid_i <- Vgrid[[i]] else Vgrid_i <- Vgrid
-        if(length(difunc) > 1) difunc_i <- difunc[[i]] else difunc_i <- difunc
-        if(length(pde) > 1) pde_i <- pde[[i]] else pde_i <- pde
+        if(is(Dgrid, "list")) Dgrid_i <- Dgrid[[i]] else Dgrid_i <- Dgrid
+        if(is(Vgrid, "list")) Vgrid_i <- Vgrid[[i]] else Vgrid_i <- Vgrid
+        if(is(difunc, "list")) difunc_i <- difunc[[i]] else difunc_i <- difunc
+        if(is(pde, "list")) pde_i <- pde[[i]] else pde_i <- pde
+        if(is(diffmat, "list"))  diffmat_i<- diffmat[[i]] else diffmat_i <- diffmat
+        if(is(template, "list")) template_i<- template[[i]] else template_i <- template
         new_name <- ifelse( length(names(mediac[i]))==0, object@media[[mediac[i]]]@name, names(mediac[i]) )  # add substance names 
-        new_sub  <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=new_name, gridgeometry=object@gridgeometry, difunc=difunc_i, pde=pde_i, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat, template=template, Dgrid=Dgrid_i, Vgrid=Vgrid_i)
+        new_sub  <- Substance(object@n, object@m, smax=smax[i], id=unname(mediac[i]), name=new_name, gridgeometry=object@gridgeometry, difunc=difunc_i, pde=pde_i, difspeed = difspeed[i], occupyM=object@occupyM, diffmat=diffmat_i, template=template_i, Dgrid=Dgrid_i, Vgrid=Vgrid_i)
         if(add){
           object@medlist[[time]][[mediac[i]]] <- as.vector(new_sub@diffmat + old_diffmat)
         }else{

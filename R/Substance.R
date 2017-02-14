@@ -70,7 +70,7 @@ Substance <- function(n, m, smax, gridgeometry, difspeed=6.7e-6, advspeed=0, occ
     else if(template) diffmat <- Matrix::Matrix(smax * diffmat, sparse=T) else diffmat <- Matrix::Matrix(diffmat, sparse=T)
   if(ncol(diffmat)!=n && nrow(diffmat)!=m){
     print(paste("arena dimensions  :", arena@n, arena@m))
-    print(paste("diffmat dimentsion:", ncol(diffmat), nrow(diffmat)))
+    print(paste("diffmat dimension:", ncol(diffmat), nrow(diffmat)))
     stop("Dimension of diffmat is invalid")
   } 
   
