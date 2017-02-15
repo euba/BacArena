@@ -712,6 +712,28 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 })
 
 
+#' @title Function for unit conversion
+#'
+#' @description The generic function \code{unit_conversion} converts units for e.g. substance concentratins
+#' @export
+#' @rdname unit_conversion
+#'
+#' @param unit Unit to be converted to fmol/cell
+#' @return Conversion factor
+setGeneric("unit_conversion", function(object, unit){standardGeneric("unit_conversion")})
+#' @export
+#' @rdname unit_conversion
+setMethod("unit_conversion", "Arena", function(object, unit){
+  switch(unit,
+         'mM'         = { conv <- 10^12 * 0.01 * object@scale}, # conversion of mMol in fmol/grid_cell
+         'mmol/cm2'   = { conv <- 10^12 * object@scale}, # conversion of mmol/arena in fmol/grid_cell
+         'mmol/arena' = { conv <- 10^12 / (object@n*object@m)}, # conversion of mmol/arena in fmol/grid_cell
+         'mmol/cell'  = { conv <- 10^12}, # conversion of mmol/cell in fmol/cell
+         'fmol/cell'  = { conv <- 1}, # already in fmol/cell
+         stop("Wrong unit for concentration."))
+  return(conv)
+})
+
 
 #' @title Main function for simulating all processes in the environment
 #'
@@ -1872,15 +1894,17 @@ setMethod("getVarSubs", "Eval", function(object, show_products=FALSE, show_subst
 #' 
 #' @param object An object of class Eval.
 #' @param sub Name of a substance.
-setGeneric("getSubHist", function(object, sub){standardGeneric("getSubHist")})
+#' @param unit Unit to be used
+setGeneric("getSubHist", function(object, sub, unit="fmol/cell"){standardGeneric("getSubHist")})
 #' @export
 #' @rdname getSubHist
-setMethod("getSubHist", "Eval", function(object, sub){
+setMethod("getSubHist", "Eval", function(object, sub, unit="fmol/cell"){
   if(!(sub %in% names(object@media))) sub <- paste0("EX_", sub, "(e)")
   if(!(sub %in% names(object@media))){
     stop(paste(sub, "does not exist in medium"))
   }
-  timeline <- unlist(lapply(object@medlist, function(m){sum(m[[sub]])}))
+  conv <- 1/unit_conversion(object, unit)
+  timeline <- unlist(lapply(seq_along(object@medlist), function(t){conv*sum(unlist(extractMed(object, time=t, mediac=sub)))}))
   names(timeline) <- seq_along(object@medlist)
   return(timeline)
 })
