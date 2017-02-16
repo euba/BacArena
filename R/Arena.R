@@ -142,8 +142,8 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #' @param amount A numeric number giving the number of individuals to add.
 #' @param x A numeric vector giving the x positions of individuals on the grid.
 #' @param y A numeric vector giving the y positions of individuals on the grid.
-#' @param n0 Start row of matrix to take free positions from (default 1)
-#' @param m0 Start column of matrix to take free positions from (default 1)
+#' @param n0 Start column of matrix to take free positions from (default 1)
+#' @param m0 Start row of matrix to take free positions from (default 1)
 #' @param m End row of matrix to take free positions from (default arena@n)
 #' @param n End column of matrix to take free positions from (default arena@m)
 #' @param biomass A numeric vector giving the starting biomass of the individuals. (unit: fg)
