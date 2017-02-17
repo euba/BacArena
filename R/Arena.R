@@ -161,6 +161,7 @@ setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, biomass=NA,
 setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, biomass=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){
   if(length(n)==0) n <- object@n; if(length(m)==0) m <- object@m
   if(length(n0)==0) n0 <- 1; if(length(m0)==0) m0 <- 1
+  if(n0>n | m0>m) stop("Infeasible n0>n or m0>m set")
   if(amount+nrow(object@orgdat) > n*m){
     stop("More individuals than space on the grid")
   }
@@ -1208,6 +1209,7 @@ setMethod("getSublb", "Arena", function(object){
       tryCatch({return(sub[as.numeric(x[5]),as.numeric(x[4])])
       }, error=function(cond){
         print(cond)
+        print(x)
         browser()}
       )
     },sub=submat)

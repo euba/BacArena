@@ -25,11 +25,11 @@ addOrg(object, specI, amount, x = NULL, y = NULL, biomass = NA,
 
 \item{biomass}{A numeric vector giving the starting biomass of the individuals. (unit: fg)}
 
-\item{n0}{Start row of matrix to take free positions from (default 1)}
+\item{n0}{Start column of matrix to take free positions from (default 1)}
 
 \item{n}{End column of matrix to take free positions from (default arena@m)}
 
-\item{m0}{Start column of matrix to take free positions from (default 1)}
+\item{m0}{Start row of matrix to take free positions from (default 1)}
 
 \item{m}{End row of matrix to take free positions from (default arena@n)}
 }
