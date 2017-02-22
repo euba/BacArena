@@ -2941,7 +2941,7 @@ setMethod("plotSubDist", "Eval", function(object, sub, times=NULL){
   outa <- t(sapply(times, function(i){c(i, unlist(extractMed(sim, time=i, mediac=sub)))}))
   colnames(outa) <- c("time", paste(1:(object@n*object@m)))
   attributes(outa)$class <- c("deSolve", "matrix")
-  attributes(outa)$dimens <- c(object@n,object@m)
+  attributes(outa)$dimens <- c(object@m,object@n)
   attributes(outa)$nspec <- 1
   mfrow <- sqrt(max(times))
   image(outa, ask = FALSE, mfrow = c(floor(mfrow), ceiling(mfrow)), main = paste("time", times))
