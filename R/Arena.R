@@ -293,10 +293,10 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
     print(setdiff(mediac, object@mediac))
     warning("Substance does not exist in exchange reactions. It will not be added")
   }
-  if(length(object@media)==0 & !addAnyway){
-    stop("Organisms need to be defined first to determine what substances can be exchanged.")
+  if(length(object@media)==0){
+    stop("Organisms need to be defined first to determine what substances can be exchanged. In case you want to add substances without links to exchanges (addAnyway=TRUE) then please provide parameter mediac")
   }
-  
+
   if(length(smax) != length(mediac))    {smax = rep(as.numeric(smax),length(mediac))}
   if(length(difspeed) != length(mediac)){difspeed = rep(difspeed,length(mediac))}
   
