@@ -33,7 +33,7 @@ arena <- Arena(n=100, m=100, stir=FALSE, Lx=0.025, Ly=0.025)
 sub <- Substance(n=100,m=100,smax=0,name='test', difspeed=0.1, 
                  gridgeometry=arena@gridgeometry) #initialize test substance
 sub@diffmat[ceiling(100/2),ceiling(100/2)] <- 40
-diffusePDE(sub, init_mat=as.matrix(sub@diffmat),
+diffusePDE(sub, init_mat=matrix(sub@diffmat, nrow=arena@m, ncol=arena@n),
            gridgeometry=arena@gridgeometry, tstep=arena@tstep)
 }
 \seealso{

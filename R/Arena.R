@@ -462,7 +462,7 @@ setMethod("addEssentialMed", "Arena", function(object, org, only_return=FALSE, l
   
   if(only_return) return(min_id)
   for(id in intersect(min_id, object@mediac)){
-    object@media[[id]]@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@n, ncol=object@m, sparse=TRUE)}
+    object@media[[id]]@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@m, ncol=object@n, sparse=TRUE)}
   return(object)
 })
 
@@ -536,7 +536,7 @@ setGeneric("changeDiff", function(object, newdiffmat, mediac){standardGeneric("c
 #' @export
 #' @rdname changeDiff
 setMethod("changeDiff", "Arena", function(object, newdiffmat, mediac){
-  if(nrow(newdiffmat)==object@n && ncol(newdiffmat)==object@m){
+  if(nrow(newdiffmat)==object@m && ncol(newdiffmat)==object@n){
     for(i in 1:length(mediac)){
       object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(newdiffmat, sparse=TRUE)
       return(object)
@@ -591,7 +591,7 @@ setMethod("createGradient", "Arena", function(object, mediac, position, smax, st
          stop("Positions must be top, bottom, right, or left."))
   for(i in 1:length(mediac)){
     if(add){
-      object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(as.matrix(object@media[[mediac[i]]]@diffmat)+newdiffmat, sparse=TRUE)
+      object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(matrix(object@media[[mediac[i]]]@diffmat, nrow=object@m, ncol=object@n)+newdiffmat, sparse=TRUE)
     }else{
       object@media[[mediac[i]]]@diffmat <- Matrix::Matrix(newdiffmat, sparse=TRUE)
     }
@@ -843,7 +843,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
         sumc = sum(arena@media[[sub]]@diffmat) #sum of all concentrations
         meanc = sumc/(arena@n*arena@m) #mean per grid cell
         conc = ((sumc-(meanc*nrow(sublb)))+sum(sublb[,sub]))/(arena@n*arena@m) #remove concentrations where bacteria are sitting + add the current concentration in their position
-        arena@media[[sub]]@diffmat = Matrix::Matrix(conc,arena@n,arena@m,sparse=TRUE) #create matrix with homogen concentration
+        arena@media[[sub]]@diffmat = Matrix::Matrix(conc,nrow=arena@m,ncol=arena@n,sparse=TRUE) #create matrix with homogen concentration
         sublb_tmp[,sub] = conc #create a new sublb matrix
       }
       newpos = allxy[sample(1:nrow(allxy),nrow(arena@orgdat)),]
@@ -894,7 +894,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
     diffspeed  = arena@media[[j]]@difspeed>0
     diff2d     = arena@media[[j]]@pde=="Diff2d"
     if(diff2d&&!homogenous || !diff2d){
-      submat <- as.matrix(arena@media[[j]]@diffmat)
+      submat <- matrix(arena@media[[j]]@diffmat, nrow=object@m, ncol=object@n)
       if(!all(is.na(sublb)) && dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
         submat[sublb[,c("y","x")]] <- sublb[,arena@media[[j]]@id]
       }
@@ -910,10 +910,15 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
       }
       arena@media[[j]]@diffmat <- Matrix::Matrix(submat, sparse=TRUE)
     }else submat <- arena@media[[j]]@diffmat
-    sublb_tmp[,j] <- submat[cbind(arena@orgdat$y,arena@orgdat$x)]
+    tryCatch({
+      sublb_tmp[,j] <- submat[cbind(arena@orgdat$y,arena@orgdat$x)]
+    }, error=function(cond){
+      print(cond)
+      browser()
+    })
   }#})[3]
-  sublb <- cbind(as.matrix(arena@orgdat[,c(4,5)]),sublb_tmp)
-  colnames(sublb) <- c('x','y',arena@mediac)
+  sublb <- cbind(as.matrix(arena@orgdat[,c("y","x")]),sublb_tmp)
+  colnames(sublb) <- c('y','x',arena@mediac)
   arena@sublb <- sublb
   
   #diff_t <- proc.time()[3] - diff_init_t
@@ -1139,7 +1144,7 @@ setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
     diffspeed  = arena@media[[j]]@difspeed>0
     diff2d     = arena@media[[j]]@pde=="Diff2d"
     if(diff2d&&!homogenous || !diff2d){
-      submat <- as.matrix(arena@media[[j]]@diffmat)
+      submat <- matrix(arena@media[[j]]@diffmat, nrow=arena@m, ncol=arena@n)
       if(!all(is.na(sublb)) && dim(sublb)[1] > 0 && (nrow(sublb) != sum(sublb[,j+2]==mean(submat)))){
         #diff_sublb_t <<- diff_sublb_t + system.time(submat[sublb[,c("y","x")]] <- sublb[,arena@media[[j]]@id])[3]}
         submat[sublb[,c("y","x")]] <- sublb[,arena@media[[j]]@id]}
@@ -1156,7 +1161,7 @@ setMethod("diffuse_par", "Arena", function(object, lrw, cluster_size, sublb){
         diffmat_tmp <- Matrix::Matrix(submat, sparse=TRUE)
     }else{
       diffmat_tmp <- arena@media[[j]]@diffmat
-      submat <- as.matrix(arena@media[[j]]@diffmat)
+      submat <- matrix(arena@media[[j]]@diffmat, nrow=arena@m, ncol=arena@n)
     }
     sublb_tmp  <- submat[cbind(arena@orgdat$y,arena@orgdat$x)]
     list("diffmat"=diffmat_tmp, "sublb"=sublb_tmp)
@@ -1204,7 +1209,7 @@ setGeneric("getSublb", function(object){standardGeneric("getSublb")})
 setMethod("getSublb", "Arena", function(object){
   sublb <- matrix(0,nrow=nrow(object@orgdat),ncol=(length(object@mediac)))
   for(j in seq_along(object@media)){
-    submat <- as.matrix(object@media[[j]]@diffmat)
+    submat <- matrix(object@media[[j]]@diffmat, nrow=object@m, ncol=object@n)
     sublb[,j] <- apply(object@orgdat, 1, function(x,sub){
       tryCatch({return(sub[as.numeric(x[5]),as.numeric(x[4])])
       }, error=function(cond){
@@ -1214,7 +1219,7 @@ setMethod("getSublb", "Arena", function(object){
       )
     },sub=submat)
   }
-  sublb <- cbind(as.matrix(object@orgdat[,c(5,4)]),sublb)
+  sublb <- cbind(as.matrix(object@orgdat[,c("y","x")]),sublb)
   colnames(sublb) <- c('y','x',object@mediac)
   return(sublb)
 })
@@ -1570,7 +1575,7 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
   time = time+1 #index in R start at 1, but the first state is 0
   
   newmedia <- lapply(object@media[names(object@medlist[[time]])], function(x, meds, n, m){
-    x@diffmat <- Matrix::Matrix(meds[[x@id]],nrow=n,ncol=m,sparse=TRUE)
+    x@diffmat <- Matrix::Matrix(meds[[x@id]],nrow=m,ncol=n,sparse=TRUE)
     return(x)
   },meds=extractMed(object,time), n=object@n, m=object@m)
   occdat <- object@simlist[[time]]

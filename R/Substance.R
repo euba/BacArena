@@ -134,7 +134,7 @@ setGeneric("diffuseR", function(object){standardGeneric("diffuseR")})
 #' @export
 #' @rdname diffuseR
 setMethod("diffuseR", "Substance", function(object){
-  smat <- as(object@diffmat, "matrix")
+  smat <- matrix(object@diffmat, nrow=nrow(object@diffmat), ncol=ncol(object@diffmat))
   smatn <- matrix(NA, nrow=dim(smat)[1]+2, ncol=dim(smat)[2]+2) #define environment with boundary conditions
   smatn[2:(dim(smat)[1]+1), 2:(dim(smat)[2]+1)] <- smat #put the values into the environment
   i <- sample(1:dim(smat)[1], dim(smat)[1])
@@ -188,13 +188,12 @@ setMethod("diffuseR", "Substance", function(object){
 #' sub <- Substance(n=100,m=100,smax=0,name='test', difspeed=0.1, 
 #'                  gridgeometry=arena@gridgeometry) #initialize test substance
 #' sub@diffmat[ceiling(100/2),ceiling(100/2)] <- 40
-#' diffusePDE(sub, init_mat=as.matrix(sub@diffmat),
+#' diffusePDE(sub, init_mat=matrix(sub@diffmat, nrow=arena@m, ncol=arena@n),
 #'            gridgeometry=arena@gridgeometry, tstep=arena@tstep)
 setGeneric("diffusePDE", function(object, init_mat, gridgeometry, lrw=NULL, tstep){standardGeneric("diffusePDE")})
 #' @export
 #' @rdname diffusePDE
 setMethod("diffusePDE", "Substance", function(object, init_mat, gridgeometry, lrw=NULL, tstep){
-  #init_mat <- as.matrix(object@diffmat)
   if(is.null(lrw)){
     lrw=estimate_lrw(gridgeometry$grid2D$x.N, gridgeometry$grid2D$y.N)}
   solution <- deSolve::ode.2D(y = init_mat, func = get(object@pde), times=c(1,1+tstep), parms = c(gridgeometry=gridgeometry, diffgeometry=object@diffgeometry, boundS=object@boundS),
