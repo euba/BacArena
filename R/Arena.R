@@ -2951,6 +2951,36 @@ setMethod("plotSubDist", "Eval", function(object, sub, times=NULL){
   attributes(outa)$dimens <- c(object@m,object@n)
   attributes(outa)$nspec <- 1
   mfrow <- sqrt(max(times))
-  image(outa, ask = FALSE, mfrow = c(floor(mfrow), ceiling(mfrow)), main = paste("time", times))
+  image(outa, ask = FALSE, mfrow = c(floor(mfrow), ceiling(mfrow)), main = paste(sub, times))
 })
   
+
+#' @title Function to overview the spatial distribution of a substance over time.
+#'
+#' @description The generic function \code{plotSubDist2} returns a plot for every time step which shows the substance concentration in the environment.
+#' @export
+#' @rdname plotSubDist2
+#'
+#' @param object An object of class Eval.
+#' @param sub Name of a substance.
+#' @details Returns a plot with 
+
+setGeneric("plotSubDist2", function(object, sub, times=NULL){standardGeneric("plotSubDist2")})
+#' @export
+#' @rdname plotSubDist2
+setMethod("plotSubDist2", "Eval", function(object, sub, times=NULL){
+  if(length(sub) != 1 | !all(sub %in% object@mediac)) stop("Please use exactly one substance.")
+  if(length(times)==0) times <- seq_along(object@medlist)
+  all_df <- data.frame()
+  for(t in seq_along(object@simlist)){
+    m <- matrix(unlist(extractMed(object, time=t, mediac=sub)), nrow = object@m, ncol=object@n)
+    df <- melt(m, varnames = c("x","y"))
+    df$time = t
+    all_df <- rbind(all_df, df)
+  }
+  q <- ggplot(all_df, aes(x, y)) + geom_tile(aes(fill = value)) + 
+    scale_fill_gradient(low = "white", high = "steelblue") + 
+    facet_wrap(~time, labeller = "label_both")+ theme_void() + ggtitle(sub) + 
+    theme(plot.title = element_text(hjust = 0.5))
+  return(q)
+})
