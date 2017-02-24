@@ -2374,7 +2374,7 @@ setGeneric("findFeeding", function(object, dict=NULL, tcut=5, scut=NULL, org_dic
 #' @export
 #' @rdname findFeeding
 setMethod("findFeeding", "Eval", function(object, dict=NULL, tcut=5, scut=NULL, org_dict=NULL, legendpos="topleft", lwd=1){
-
+  
   # possible problem inactive phenotype is not mentioned in object@phenotypes...
 
   # 1) Time: get occupation matrix for all phenotypes (occ_phen)
@@ -2500,6 +2500,7 @@ setGeneric("findFeeding2", function(object, time, mets, rm_own=T, ind_threshold=
 #' @export
 #' @rdname findFeeding2
 setMethod("findFeeding2", "Eval", function(object, time, mets, rm_own=T, ind_threshold=0, collapse=F){
+  mets = intersect(object@mediac,as.character(mets))
   pmat = as.matrix(getPhenoMat(object,time=time)[,mets])
   colnames(pmat) = mets
   time = time+1
@@ -2582,6 +2583,7 @@ setGeneric("findFeeding3", function(object, time, mets){standardGeneric("findFee
 #' @export
 #' @rdname findFeeding3
 setMethod("findFeeding3", "Eval", function(object, time, mets){
+  mets = intersect(object@mediac,as.character(mets))
   time = time+1
   mflux = object@mfluxlist[[time]]
   mfluxmat = do.call(cbind,lapply(mflux,function(x){return(ifelse(is.na(x[mets]),0,x[mets]))}))
