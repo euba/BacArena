@@ -2943,7 +2943,7 @@ setGeneric("plotSubDist", function(object, sub, times=NULL){standardGeneric("plo
 setMethod("plotSubDist", "Eval", function(object, sub, times=NULL){
   if(length(sub) != 1 | !all(sub %in% object@mediac)) stop("Please use exactly one substance.")
   if(length(times)==0) times <- seq_along(object@medlist)
-  outa <- t(sapply(times, function(i){c(i, unlist(extractMed(sim, time=i, mediac=sub)))}))
+  outa <- t(sapply(times, function(i){c(i, unlist(extractMed(object, time=i, mediac=sub)))}))
   colnames(outa) <- c("time", paste(1:(object@n*object@m)))
   attributes(outa)$class <- c("deSolve", "matrix")
   attributes(outa)$dimens <- c(object@m,object@n)
