@@ -812,7 +812,7 @@ plotFVA = function(fvares, mediac){
 #' @rdname plotReaActivity
 #'
 #' @param simlist An object of class Eval or a list with objects of class Eval.
-#' @param reactions List of substance names
+#' @param reactions List of reaction names
 #' @param spec_list List of species names to be considered (default all)
 #' @param ret_data Set true if data should be returned
 #' @details Returns ggplot objects
@@ -836,7 +836,7 @@ plotReaActivity <- function(simlist, reactions=list(), spec_list=NULL, ret_data=
       }
     }
   }
-  if(length(levels(df$sub))>=1){
+  if(length(levels(df$rea))>=1){
     q1 <- ggplot2::ggplot(df, ggplot2::aes_string(x="time", y="mflux")) + ggplot2::geom_line(ggplot2::aes_string(col="rea"), size=1) + 
       ggplot2::facet_wrap(~spec, scales="free_y") + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
     
