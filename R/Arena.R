@@ -2974,13 +2974,13 @@ setMethod("plotSubDist2", "Eval", function(object, sub, times=NULL){
   all_df <- data.frame()
   for(t in seq_along(object@simlist)){
     m <- matrix(unlist(extractMed(object, time=t, mediac=sub)), nrow = object@m, ncol=object@n)
-    df <- melt(m, varnames = c("x","y"))
+    df <- reshape2::melt(m, varnames = c("x","y"))
     df$time = t
     all_df <- rbind(all_df, df)
   }
-  q <- ggplot(all_df, aes(x, y)) + geom_tile(aes(fill = value)) + 
-    scale_fill_gradient(low = "white", high = "steelblue") + 
-    facet_wrap(~time, labeller = "label_both")+ theme_void() + ggtitle(sub) + 
-    theme(plot.title = element_text(hjust = 0.5))
+  q <- ggplot2::ggplot(all_df, ggplot2::aes(x, y)) + ggplot2::geom_tile(ggplot2::aes(fill = value)) + 
+    ggplot2::scale_fill_gradient(low = "white", high = "steelblue") + 
+    ggplot2::facet_wrap(~time, labeller = "label_both")+ ggplot2::theme_void() + ggplot2::ggtitle(sub) + 
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
   return(q)
 })
