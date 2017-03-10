@@ -911,8 +911,8 @@ setClass("Human",
 #' @param speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
 #' @param ... Arguments of \code{\link{Organism-class}}
 #' @return Object of class \code{\link{Human-class}}
-Human <- function(model, objective=model@react_id[which(model@obj_coef==1)], speed=0, ...){
-  model <- sybil::changeObjFunc(model, objective)
+Human <- function(model, objective=model@react_id[which(model@obj_coef!=0)], speed=0, ...){
+  model <- sybil::changeObjFunc(model, objective, obj_coef=model@obj_coef[which(model@obj_coef!=0)])
   new("Human", Organism(model=model, speed=speed, ...), objective=objective)
 }
 
