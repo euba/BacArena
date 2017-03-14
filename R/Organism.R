@@ -149,32 +149,49 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
 ########################################################################################################
 
 setGeneric("lbnd", function(object){standardGeneric("lbnd")})
+#' @export
 setMethod("lbnd", "Organism", function(object){return(object@lbnd)})
 setGeneric("ubnd", function(object){standardGeneric("ubnd")})
+#' @export
 setMethod("ubnd", "Organism", function(object){return(object@ubnd)})
+#' @export
 setGeneric("type", function(object){standardGeneric("type")})
+#' @export
 setMethod("type", "Organism", function(object){return(object@type)})
+#' @export
 setGeneric("medium", function(object){standardGeneric("medium")})
+#' @export
 setMethod("medium", "Organism", function(object){return(object@medium)})
+#' @export
 setGeneric("lpobj", function(object){standardGeneric("lpobj")})
+#' @export
 setMethod("lpobj", "Organism", function(object){return(object@lpobj)})
 setGeneric("fbasol", function(object){standardGeneric("fbasol")})
+#' @export
 setMethod("fbasol", "Organism", function(object){return(object@fbasol)})
 setGeneric("lyse", function(object){standardGeneric("lyse")})
+#' @export
 setMethod("lyse", "Organism", function(object){return(object@lyse)})
 setGeneric("feat", function(object){standardGeneric("feat")})
+#' @export
 setMethod("feat", "Organism", function(object){return(object@feat)})
 setGeneric("deathrate", function(object){standardGeneric("deathrate")})
+#' @export
 setMethod("deathrate", "Organism", function(object){return(object@deathrate)})
 setGeneric("minweight", function(object){standardGeneric("minweight")})
+#' @export
 setMethod("minweight", "Organism", function(object){return(object@minweight)})
 setGeneric("growtype", function(object){standardGeneric("growtype")})
+#' @export
 setMethod("growtype", "Organism", function(object){return(object@feat)})
 setGeneric("kinetics", function(object){standardGeneric("kinetics")})
+#' @export
 setMethod("kinetics", "Organism", function(object){return(object@kinetics)})
 setGeneric("speed", function(object){standardGeneric("speed")})
+#' @export
 setMethod("speed", "Organism", function(object){return(object@speed)})
 setGeneric("model", function(object){standardGeneric("model")})
+#' @export
 setMethod("model", "Organism", function(object){return(object@model)})
 
 ########################################################################################################
