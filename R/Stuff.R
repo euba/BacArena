@@ -557,7 +557,7 @@ plotInterNum <-function(simlist, title="Variation in number of interactions", si
 #' @param time A vector with start and end time to be considered (default: total time)
 #' @param col Vector with color that should be used
 #' @param mean_dat Should plain text mean abundances be returned? (default false)
-#' @param raw_dat Should raw data of abundances be returned? (default false)  
+#' @param raw_dat Should raw data of abundances be returned? (default false; HINT: mean_dat=T overrides raw_dat=T)  
 #' @param use_biomass If enabled then biomass is used instead of cell number
 #'
 plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3, mean_dat=F, raw_dat=F, use_biomass=F){
