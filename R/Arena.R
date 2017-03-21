@@ -2584,38 +2584,37 @@ setGeneric("findFeeding3", function(object, time, mets,print=FALSE){standardGene
 #' @export
 #' @rdname findFeeding3
 setMethod("findFeeding3", "Eval", function(object, time, mets,print=FALSE){
-  mets = intersect(object@mediac,as.character(mets))
-  times<-time
-  times = times+1
-  for (time in times) {
-  mflux = object@mfluxlist[[time]]
-  mfluxmat = do.call(cbind,lapply(mflux,function(x){return(ifelse(is.na(x[mets]),0,x[mets]))}))
-  rownames(mfluxmat) = mets
-  inter = data.frame()
+  mets <- intersect(object@mediac,as.character(mets))
+  time <- time+1
+  for (step in time) {
+  mflux <- object@mfluxlist[[step]]
+  mfluxmat <- do.call(cbind,lapply(mflux,function(x){return(ifelse(is.na(x[mets]),0,x[mets]))}))
+  rownames(mfluxmat) <- mets
+  inter <- data.frame()
   for(i in rownames(mfluxmat)){
-    x = mfluxmat[i,]
-    interact = matrix(0,ncol=2,nrow=1)
+    x <- mfluxmat[i,]
+    interact <- matrix(0,ncol=2,nrow=1)
     for(j in names(which(x<0))){
-      if(length(which(x>0))!=0){interact = rbind(interact,cbind(names(which(x>0)),j))}
+      if(length(which(x>0))!=0){interact <- rbind(interact,cbind(names(which(x>0)),j))}
     }
-    interact = interact[-1,]
-    if(class(interact)=="character"){interact = t(as.matrix(interact))}
-    if(nrow(interact)!=0){inter = rbind(inter,data.frame(prod=interact[,1],cons=interact[,2],met=i))}
+    interact <- interact[-1,]
+    if(class(interact)=="character"){interact <- t(as.matrix(interact))
+    if(nrow(interact)!=0){inter <- rbind(inter,data.frame(prod=interact[,1],cons=interact[,2],met=i))}
   }
- if(any(dim(inter)==0)) {ifelse(test = (tail(times,n=1)==time),no= next, 
- yes = print(paste("No feeding found. Try other metaboites or time points.")))}
+ if(any(dim(inter)==0)) 
+ {if(tail(time,n=1)==step){cat(paste("No feeding found. Try other metaboites or time points."))}
  else{          
   g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE)
   l <- igraph::layout.kamada.kawai(g)
   plot(g,edge.color=grDevices::rainbow(length(levels(inter$met)))[as.numeric(inter$met)],
        edge.width=3,edge.arrow.size=0.8,vertex.color=1:length(igraph::V(g)),layout=l)
-  legend(title = paste("Simulation step",time-1,sep = " "),
+          legend(title = paste("Simulation step",step-1,sep = " "),
          "bottomright",legend=levels(inter$met),col=grDevices::rainbow(length(levels(inter$met))), pch=19, cex=0.7);
    g;        
-    if(print) {message("Simulation step ",time-1);print(inter);print(g);message("---")}}}})
-                          
-
-
+    if(print) {message("Simulation step ",step-1);print(inter);print(g);message("---")}
+    }
+    }
+  })                      
 
 setGeneric("statSpec", function(object, type_nr=1, dict=NULL,
                                 legend_show=TRUE, legend_pos="center", legend_cex=0.75){standardGeneric("statSpec")})
