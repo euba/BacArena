@@ -257,8 +257,9 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL, unit
 #' @param simlist A list of simulations (eval objects).
 #' @param time Vector with two entries defining start and end time
 #' @param ret_data Set true if data should be returned
+#' @param use_biomass If enabled then biomass is used instead of cell number
 #'
-plotGrowthCurve <-function(simlist, time=c(NULL,NULL), ret_data=FALSE){
+plotGrowthCurve <-function(simlist, time=c(NULL,NULL), ret_data=FALSE, use_biomass=F){
   if(is(simlist, "Eval")) simlist <- list(simlist)
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@simlist))) stop("Time interval not valid")
@@ -267,10 +268,14 @@ plotGrowthCurve <-function(simlist, time=c(NULL,NULL), ret_data=FALSE){
   for(i in seq_along(simlist)){
     object <- simlist[[i]]
     if(all(!is.null(time))) time_seq <- seq(time[1],time[2]) else time_seq <- seq_along(object@simlist)
-    list <- lapply(time_seq, function(i){
-      occ <- table(object@simlist[[i]]$type)
-      unlist(lapply(seq_along(object@specs), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)})) # ugly ;P
-    })
+    if(use_biomass){
+      list <- lapply(time_seq, function(i){
+        sapply(seq_along(object@specs), function(x){sum(object@simlist[[i]]$biomass[which(object@simlist[[i]]$type==x)])})})
+    }else{
+      list <- lapply(time_seq, function(i){
+        occ <- table(object@simlist[[i]]$type)
+        unlist(lapply(seq_along(object@specs), function(i){ifelse(i %in% names(occ),occ[paste(i)], 0)}))}
+      )}
     mat_bac  <- do.call(cbind, list)
     rownames(mat_bac) <- names(object@specs)
     colnames(mat_bac) <- time_seq
