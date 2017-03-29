@@ -561,10 +561,11 @@ plotInterNum <-function(simlist, title="Variation in number of interactions", si
 #' @param simlist A list of simulations (eval objects).
 #' @param time A vector with start and end time to be considered (default: total time)
 #' @param col Vector with color that should be used
-#' @param return_dat Should plain text mean abundances be returned? (default false)
+#' @param mean_dat Should plain text mean abundances be returned? (default false)
+#' @param raw_dat Should raw data of abundances be returned? (default false; HINT: mean_dat=T overrides raw_dat=T)  
 #' @param use_biomass If enabled then biomass is used instead of cell number
 #'
-plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3, return_dat=F, use_biomass=F){
+plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3, mean_dat=F, raw_dat=F, use_biomass=F){
   if(is(simlist, "Eval")) simlist <- list(simlist)
   all_df <- data.frame()
   for(i in seq_along(simlist)){
@@ -585,11 +586,12 @@ plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3, return_dat=F,
     mat_bac_m$replc <- as.character(i)
     all_df <- rbind(all_df, mat_bac_m)
   }
-  if(return_dat){
+  if(mean_dat){
     abundances<-unlist(lapply(levels(all_df$species), function(s){
       mean(all_df$value[which(all_df$species==s)])}))
     names(abundances) <- levels(all_df$species)
-    return(abundances)
+    return(abundances)}
+  else if(raw_dat){return(all_df)
   }else{
     q <- ggplot2::ggplot(all_df, ggplot2::aes_string("species", "value")) + ggplot2::geom_boxplot(ggplot2::aes_string(color="species", fill="species"), alpha = 0.2, outlier.size=1) + 
       ggplot2::scale_fill_manual(values=col) + ggplot2::scale_color_manual(values=col) + 
