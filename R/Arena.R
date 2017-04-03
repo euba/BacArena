@@ -2577,12 +2577,13 @@ setMethod("findFeeding2", "Eval", function(object, time, mets, rm_own=T, ind_thr
 #' @param object An object of class Eval.
 #' @param time A numeric vector giving the simulation steps which should be plotted. 
 #' @param mets Character vector of substance names which should be considered
+#' @param plot Should the graph also be plotted?
 #' @return Graph (igraph)
 #' 
-setGeneric("findFeeding3", function(object, time, mets){standardGeneric("findFeeding3")})
+setGeneric("findFeeding3", function(object, time, mets, plot=TRUE){standardGeneric("findFeeding3")})
 #' @export
 #' @rdname findFeeding3
-setMethod("findFeeding3", "Eval", function(object, time, mets){
+setMethod("findFeeding3", "Eval", function(object, time, mets, plot=TRUE){
   mets = intersect(object@mediac,as.character(mets))
   time = time+1
   mflux = object@mfluxlist[[time]]
@@ -2599,11 +2600,15 @@ setMethod("findFeeding3", "Eval", function(object, time, mets){
     if(class(interact)=="character"){interact = t(as.matrix(interact))}
     if(nrow(interact)!=0){inter = rbind(inter,data.frame(prod=interact[,1],cons=interact[,2],met=i))}
   }
-  if(any(dim(inter)==0)) stop("No feeding found. Try other metaboites or time points.")
+  if(any(dim(inter)==0)) {
+    warning("No feeding found. Try other metaboites or time points.")
+    g <- igraph::make_empty_graph()
+    return(list(inter,g))
+  }
   g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE)
   l <- igraph::layout.kamada.kawai(g)
   plot(g,edge.color=grDevices::rainbow(length(levels(inter$met)))[as.numeric(inter$met)],
-       edge.width=3,edge.arrow.size=0.8,vertex.color=1:length(V(g)),layout=l)
+       edge.width=3,edge.arrow.size=0.8,vertex.color=1:length(igraph::V(g)),layout=l)
   legend("bottomright",legend=levels(inter$met),col=grDevices::rainbow(length(levels(inter$met))), pch=19, cex=0.7)
   return(list(inter,g))
 })
