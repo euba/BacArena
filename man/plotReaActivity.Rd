@@ -10,7 +10,7 @@ plotReaActivity(simlist, reactions = list(), spec_list = NULL,
 \arguments{
 \item{simlist}{An object of class Eval or a list with objects of class Eval.}
 
-\item{reactions}{List of substance names}
+\item{reactions}{List of reaction names}
 
 \item{spec_list}{List of species names to be considered (default all)}
 

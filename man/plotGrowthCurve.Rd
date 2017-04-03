@@ -4,7 +4,8 @@
 \alias{plotGrowthCurve}
 \title{Plot growth curve for several simulations}
 \usage{
-plotGrowthCurve(simlist, time = c(NULL, NULL), ret_data = FALSE)
+plotGrowthCurve(simlist, time = c(NULL, NULL), ret_data = FALSE,
+  use_biomass = F)
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}
@@ -12,6 +13,8 @@ plotGrowthCurve(simlist, time = c(NULL, NULL), ret_data = FALSE)
 \item{time}{Vector with two entries defining start and end time}
 
 \item{ret_data}{Set true if data should be returned}
+
+\item{use_biomass}{If enabled then biomass is used instead of cell number}
 }
 \description{
 The function \code{plotGrowthCurve} takes a list of simulations and plots the time course of species with standard deviation.

@@ -1,3 +1,26 @@
+BacArena v.1.6 (Release date: 2017-03-21)
+==============
+Changes: 
+- redefined growth model 
+   * max cell weight value is used as upper bound for biomass reaction to avoid biomass accumulation in case of overcrowding
+   * deathrate is now scaled according to time steps
+- fixed several issues related to grid geometry (relevant for non-square grids)
+- handling of alternative solutions with flux variability analysis
+- diffusion and advection can be blocked for occupied cells
+- corrected bugs related to continuing of simulations
+- expanded tutorial
+- renamed growth to biomass in arena@orgdat
+- fast stiring 
+- vectorized addOrg
+
+- new reactions
+   * plotReaActivity (plot reaction activity)
+   * findRxnFlux (find usage of metabolite in reactions)
+   * plotSubDist, plotSubDist2 (plot spatial distribution for substances)
+
+* github reference: https://github.com/euba/BacArena/tree/v1.6
+
+
 BacArena v1.5.1 (Release date: 2016-07-20)
 ===============
 Changes:
