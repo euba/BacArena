@@ -1900,19 +1900,27 @@ setMethod("getVarSubs", "Eval", function(object, show_products=FALSE, show_subst
 #' @rdname getSubHist
 #' 
 #' @param object An object of class Eval.
-#' @param sub Name of a substance.
+#' @param sub Vector with substances.
 #' @param unit Unit to be used
 setGeneric("getSubHist", function(object, sub, unit="fmol/cell"){standardGeneric("getSubHist")})
 #' @export
 #' @rdname getSubHist
 setMethod("getSubHist", "Eval", function(object, sub, unit="fmol/cell"){
-  if(!(sub %in% names(object@media))) sub <- paste0("EX_", sub, "(e)")
-  if(!(sub %in% names(object@media))){
-    stop(paste(sub, "does not exist in medium"))
+  sub <- ifelse(!(sub %in% names(object@media)), paste0("EX_", sub, "(e)"), sub)
+  in_arena <- sub %in% names(object@media)
+  if(!all((in_arena))){
+    warning(paste(sub[!in_arena], "does not exist in medium"))
   }
   conv <- 1/unit_conversion(object, unit)
-  timeline <- unlist(lapply(seq_along(object@medlist), function(t){conv*sum(unlist(extractMed(object, time=t, mediac=sub)))}))
-  names(timeline) <- seq_along(object@medlist)
+  timeline <- sapply(seq_along(sub), function(i){
+    s <- sub[i]
+    if(in_arena[i]){
+      unlist(lapply(seq_along(object@medlist), function(t){conv*sum(unlist(extractMed(object, time=t, mediac=s)))}))  
+    }else{
+      rep(NA, length(object@medlist))
+    }
+  })
+  rownames(timeline) <- seq_along(object@medlist)
   return(timeline)
 })
 
