@@ -2983,9 +2983,11 @@ setGeneric("plotSubDist2", function(object, sub, times=NULL){standardGeneric("pl
 #' @rdname plotSubDist2
 setMethod("plotSubDist2", "Eval", function(object, sub, times=NULL){
   if(length(sub) != 1 | !all(sub %in% object@mediac)) stop("Please use exactly one substance.")
+  if(max(times) > max(seq_along(object@medlist))) stop("Please use another maximum value in the «times» argument. Your input was out of bounds.")
+  if(min(times) < min(seq_along(object@medlist))) stop("Please use another minimum value in the «times» argument. Your input was out of bounds.")
   if(length(times)==0) times <- seq_along(object@medlist)
   all_df <- data.frame()
-  for(t in seq_along(object@simlist)){
+  for(t in times){
     m <- matrix(unlist(extractMed(object, time=t, mediac=sub)), nrow = object@m, ncol=object@n)
     df <- reshape2::melt(m, varnames = c("x","y"))
     df$time = t
