@@ -768,7 +768,7 @@ plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, re
     mflux_var <- sort(mflux_var, decreasing = TRUE)
     df <- df[which(df$sub %in% names(mflux_var)[1:var_nr]),]
   }
-
+  df$time = df$time-1
   q1 <- ggplot2::ggplot(df, ggplot2::aes_string(x="time", y="mflux")) + ggplot2::geom_line(ggplot2::aes_string(col="sub"), size=1) + 
         ggplot2::facet_wrap(~spec, scales="free_y") + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
   # q1_5 is the same as q2 but contains "+ ggplot2::facet_wrap(~spec, scales="free_y")" to plot the variance for each spec.   
