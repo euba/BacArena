@@ -6,9 +6,9 @@
 \alias{findFeeding3,Eval-method}
 \title{Function for investigation of feeding between phenotypes}
 \usage{
-findFeeding3(object, time, mets)
+findFeeding3(object, time, mets, plot = TRUE)
 
-\S4method{findFeeding3}{Eval}(object, time, mets)
+\S4method{findFeeding3}{Eval}(object, time, mets, plot = TRUE)
 }
 \arguments{
 \item{object}{An object of class Eval.}
@@ -16,6 +16,8 @@ findFeeding3(object, time, mets)
 \item{time}{A numeric vector giving the simulation steps which should be plotted.}
 
 \item{mets}{Character vector of substance names which should be considered}
+
+\item{plot}{Should the graph also be plotted?}
 }
 \value{
 Graph (igraph)

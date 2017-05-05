@@ -1666,7 +1666,7 @@ setMethod("extractMed", "Eval", function(object, time=length(object@medlist), me
 #' @rdname evalArena
 #'
 #' @param object An object of class Eval.
-#' @param plot_items A character vector giving the items, which should be plotted.
+#' @param plot_items A character vector giving the name of the items which should be plotted such as the population structure and several metabolites.
 #' @param phencol A boolean variable indicating if the phenotypes of the organisms in the environment should be integrated as different colors in the population plot.
 #' @param retdata A boolean variable indicating if the data used to generate the plots should be returned.
 #' @param time A numeric vector giving the simulation steps which should be plotted.

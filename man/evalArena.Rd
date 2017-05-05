@@ -17,7 +17,7 @@ evalArena(object, plot_items = "Population", phencol = F, retdata = F,
 \arguments{
 \item{object}{An object of class Eval.}
 
-\item{plot_items}{A character vector giving the items, which should be plotted.}
+\item{plot_items}{A character vector giving the name of the items which should be plotted such as the population structure and several metabolites.}
 
 \item{phencol}{A boolean variable indicating if the phenotypes of the organisms in the environment should be integrated as different colors in the population plot.}
 
