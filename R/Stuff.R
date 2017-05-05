@@ -864,3 +864,53 @@ plotReaActivity <- function(simlist, reactions=list(), spec_list=NULL, ret_data=
 
   if(ret_data) return(df) else return(list(q1, q2, q3))
 }
+
+#' @title Function for investigation of cross feeding patterns of replicate simulations
+#'
+#' @description The generic function \code{findFeeding3rep} investigates the cross feeding patterns of replicate simulations
+#' @export
+#' @rdname findFeeding3rep
+#' @importFrom igraph V E graph.data.frame layout.circle
+#' 
+#' @param simlist A list with objects of class Eval.
+#' @param time A numeric vector giving the simulation steps which should be plotted. 
+#' @param mets Character vector of substance names which should be considered
+#' @param plot Should the graph also be plotted?
+#' @param mfunction Function by which the replicate simulations should be combined e.g. "mean" or "median"
+#' @return Graph (igraph)
+findFeeding3rep <- function(simlist, time, mets, plot=TRUE, mfunction="mean"){
+  time = time+1
+  mfluxmatrep = list()
+  for(i in 1:length(simlist)){
+    mets = intersect(simlist[[i]]@mediac,as.character(mets))
+    mflux = simlist[[i]]@mfluxlist[[time]]
+    mfluxmat = do.call(cbind,lapply(mflux,function(x){return(ifelse(is.na(x[mets]),0,x[mets]))}))
+    rownames(mfluxmat) = mets
+    mfluxmatrep[[i]] = mfluxmat
+  }
+  mfluxmat = matrix(apply(do.call(cbind,lapply(mfluxmatrep,as.vector)),1,mfunction),
+                    nrow=nrow(mfluxmat),ncol=ncol(mfluxmat),
+                    dimnames=list(rownames(mfluxmat),colnames(mfluxmat)))
+  inter = data.frame()
+  for(i in rownames(mfluxmat)){
+    x = mfluxmat[i,]
+    interact = matrix(0,ncol=2,nrow=1)
+    for(j in names(which(x<0))){
+      if(length(which(x>0))!=0){interact = rbind(interact,cbind(names(which(x>0)),j))}
+    }
+    interact = interact[-1,]
+    if(class(interact)=="character"){interact = t(as.matrix(interact))}
+    if(nrow(interact)!=0){inter = rbind(inter,data.frame(prod=interact[,1],cons=interact[,2],met=i))}
+  }
+  if(any(dim(inter)==0)) {
+    warning("No crossfeeding found. Try other metaboites or time points.")
+    g <- igraph::make_empty_graph()
+    return(list(inter,g))
+  }
+  g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE)
+  l <- igraph::layout.kamada.kawai(g)
+  plot(g,edge.color=grDevices::rainbow(length(levels(inter$met)))[as.numeric(inter$met)],
+       edge.width=3,edge.arrow.size=0.8,vertex.color=1:length(igraph::V(g)),layout=l)
+  legend("bottomright",legend=levels(inter$met),col=grDevices::rainbow(length(levels(inter$met))), pch=19, cex=0.7)
+  return(list(inter,g))
+}

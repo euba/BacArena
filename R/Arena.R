@@ -2609,7 +2609,7 @@ setMethod("findFeeding3", "Eval", function(object, time, mets, plot=TRUE){
     if(nrow(interact)!=0){inter = rbind(inter,data.frame(prod=interact[,1],cons=interact[,2],met=i))}
   }
   if(any(dim(inter)==0)) {
-    warning("No feeding found. Try other metaboites or time points.")
+    warning("No crossfeeding found. Try other metaboites or time points.")
     g <- igraph::make_empty_graph()
     return(list(inter,g))
   }
