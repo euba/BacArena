@@ -8,6 +8,8 @@ plotFVA(fvares, mediac)
 }
 \arguments{
 \item{fvares}{results of FVA results to plot, obtained from function fluxVarSim}
+
+\item{mediac}{List with substances.}
 }
 \description{
 The generic function \code{plotFVA} plots population level flux results obtained from function fluxVarSim

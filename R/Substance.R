@@ -30,6 +30,7 @@ setClass("Substance",
            id = "character",
            difunc = "character",
            difspeed = "numeric",
+           advspeed = "numeric",
            diffgeometry = "list",
            pde = "character",
            boundS = "numeric"
@@ -76,7 +77,7 @@ Substance <- function(n, m, smax, gridgeometry, difspeed=6.7e-6, advspeed=0, occ
       }
   }
   if(ncol(diffmat)!=n && nrow(diffmat)!=m){
-    print(paste("arena dimensions  :", arena@n, arena@m))
+    print(paste("arena dimensions  :", n, m))
     print(paste("diffmat dimension:", ncol(diffmat), nrow(diffmat)))
     stop("Dimension of diffmat is invalid")
   } 
@@ -125,11 +126,6 @@ setMethod("difspeed", "Substance", function(object){return(object@difspeed)})
 #' @param object An object of class Substance.
 #' @details The diffusion is implemented by iterating through each cell in the grid and taking the cell with the lowest concentration in the Moore neighbourhood to update the concentration of both by their mean.
 #' @seealso \code{\link{Substance-class}} and \code{\link{diffusePDE}}
-#' @examples
-#' arena <- Arena(n=100, m=100, stir=FALSE, Lx=0.025, Ly=0.025)
-#' sub <- Substance(n=20,m=20,smax=40,name='test',difunc='r', 
-#'                  gridgeometry=arena@gridgeometry) #initialize test substance
-#' diffuseR(sub)
 setGeneric("diffuseR", function(object){standardGeneric("diffuseR")})
 #' @export
 #' @rdname diffuseR
@@ -183,13 +179,6 @@ setMethod("diffuseR", "Substance", function(object){
 #' @param lrw A numeric value needed by solver to estimate array size (by default lwr is estimated in simEnv() by the function estimate_lrw())
 #' @details Partial differential equation is solved to model 2d diffusion process in the arena.
 #' @seealso \code{\link{Substance-class}} and \code{\link{diffuseR}}
-#' @examples
-#' arena <- Arena(n=100, m=100, stir=FALSE, Lx=0.025, Ly=0.025)
-#' sub <- Substance(n=100,m=100,smax=0,name='test', difspeed=0.1, occupyM=arena@occupyM 
-#'                  gridgeometry=arena@gridgeometry) #initialize test substance
-#' sub@diffmat[ceiling(100/2),ceiling(100/2)] <- 40
-#' diffusePDE(sub, init_mat=matrix(sub@diffmat, nrow=arena@m, ncol=arena@n),
-#'            gridgeometry=arena@gridgeometry, tstep=arena@tstep)
 setGeneric("diffusePDE", function(object, init_mat, gridgeometry, lrw=NULL, tstep){standardGeneric("diffusePDE")})
 #' @export
 #' @rdname diffusePDE

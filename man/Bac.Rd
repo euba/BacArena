@@ -10,6 +10,14 @@ Structure of the S4 class \code{Bac} inheriting from class \code{\link{Organism-
 \section{Slots}{
 
 \describe{
+\item{\code{deathrate}}{A numeric value giving the factor by which the growth should be reduced in every iteration (default (E.coli): 0.21 pg)}
+
+\item{\code{minweight}}{A numeric value giving the growth limit at which the organism dies. (default (E.coli): 0.083 pg)}
+
+\item{\code{cellarea}}{A numeric value indicating the surface that one organism occupies (default (E.coli): 4.42 mu_m^2)}
+
+\item{\code{maxweight}}{A numeric value giving the maximal dry weight of single organism (default (E.coli): 1.172 pg)}
+
 \item{\code{chem}}{A character vector indicating name of substance which is the chemotaxis attractant. Empty character vector if no chemotaxis.}
 }}
 

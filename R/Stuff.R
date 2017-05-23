@@ -790,6 +790,7 @@ plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, re
 #' @rdname plotFVA
 #'
 #' @param fvares results of FVA results to plot, obtained from function fluxVarSim
+#' @param mediac List with substances.
 #' @details Returns ggplot objects
 plotFVA = function(fvares, mediac){
   for(i in 1:length(fvares)){
@@ -803,8 +804,8 @@ plotFVA = function(fvares, mediac){
                                rep(i,nrow(fvares[[i]]))))
   }
   colnames(basedat) = c("met","min","max","time")
-  fvag = ggplot2::ggplot(basedat, ggplot2::aes(x=time, y=min)) +
-    geom_ribbon(aes(ymin=min,ymax=max,color=met,fill=met),alpha=0.2) +
+  fvag = ggplot2::ggplot(basedat, ggplot2::aes_string(x="time", y="min")) +
+    ggplot2::geom_ribbon(ggplot2::aes_string(ymin="min",ymax="max",color="met",fill="met"),alpha=0.2) +
     ggplot2::xlab("Time in h") + ggplot2::ylab("Population flux")
   return(fvag)
 }

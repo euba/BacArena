@@ -99,3 +99,19 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+
+static const R_CallMethodDef CallEntries[] = {
+    {"BacArena_addBacCpp", (DL_FUNC) &BacArena_addBacCpp, 6},
+    {"BacArena_diffuseGrajdeanuCpp", (DL_FUNC) &BacArena_diffuseGrajdeanuCpp, 3},
+    {"BacArena_diffuseNaiveCpp", (DL_FUNC) &BacArena_diffuseNaiveCpp, 2},
+    {"BacArena_diffuseSteveCpp", (DL_FUNC) &BacArena_diffuseSteveCpp, 4},
+    {"BacArena_updateSubmat", (DL_FUNC) &BacArena_updateSubmat, 2},
+    {"BacArena_duplicateCpp", (DL_FUNC) &BacArena_duplicateCpp, 5},
+    {"BacArena_movementCpp", (DL_FUNC) &BacArena_movementCpp, 4},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_BacArena(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}

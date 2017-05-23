@@ -23,6 +23,10 @@ simHum(object, arena, j, sublb, bacnum, sec_obj = "none", cutoff = 1e-06,
 
 \item{bacnum}{integer indicating the number of bacteria individuals per gridcell}
 
+\item{sec_obj}{character giving the secondary objective for a bi-level LP if wanted.}
+
+\item{cutoff}{value used to define numeric accuracy.}
+
 \item{pcut}{A number giving the cutoff value by which value of objective function is considered greater than 0.}
 }
 \value{

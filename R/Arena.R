@@ -79,6 +79,7 @@ setClass("Arena",
 #' @param m A number giving the vertical size of the environment.
 #' @param Lx A number giving the horizontal grid size in cm.
 #' @param Ly A number giving the vertical grid size in cm.
+#' @param seed An integer refering to the random number seed used to be reproducible
 #' @param ... Arguments of \code{\link{Arena-class}}
 Arena <- function(Lx=NULL, Ly=NULL, n=100, m=100, seed=sample(1:10000,1), ...){
   if(is.null(Lx)) Lx <- 0.025/100 * n
@@ -719,6 +720,7 @@ setMethod("addPhen", "Arena", function(object, org, pvec){
 #' @export
 #' @rdname unit_conversion
 #'
+#' @param object An object of class Arena or Eval.
 #' @param unit Unit to be converted to fmol/cell
 #' @return Conversion factor
 setGeneric("unit_conversion", function(object, unit){standardGeneric("unit_conversion")})
@@ -1776,6 +1778,7 @@ setMethod("evalArena", "Eval", function(object, plot_items='Population', phencol
 #' @param retdata A boolean variable indicating if the data used to generate the plots should be returned.
 #' @param remove A boolean variable indicating if substances, which don't change in their concentration should be removed from the plot.
 #' @param legend Boolean variable indicating if legend should be plotted
+#' @param graph True if graphic should be plotted.
 #' @return Returns two graphs in one plot: the growth curves and the curves of concentration changes. Optional the data to generate the original plots can be returned.
 #' @details The parameter \code{retdata} can be used to access the data used for the returned plots to create own custom plots. 
 #' @seealso \code{\link{Eval-class}} and \code{\link{Arena-class}}
@@ -1991,7 +1994,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
       rownames(mat_nice) <- gsub("\\[e\\]","", gsub("\\(e\\)","", gsub("EX_","",object@mediac[subs_index])))
     }
     if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
-    matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
+    graphics::matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
             xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of substance in fmol',
             main='Strongly changing substances')
     if(length(dict) > 0){
@@ -2037,7 +2040,7 @@ setMethod("plotCurves2", "Eval", function(object, legendpos="topright", ignore=c
   
     len <- dim(mat_with_phen)[1]
     if(len>length(colpal3)) cols <- colpal1[1:len] else cols <- colpal3[1:len]
-    matplot(t(mat_with_phen), type='b', col=cols, pch=1, lty=1, lwd=5,
+    graphics::matplot(t(mat_with_phen), type='b', col=cols, pch=1, lty=1, lwd=5,
             xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of organisms',
             main='Growth curve')
     legend(legendpos, rownames(mat_with_phen), col=cols, cex=0.7, fill=cols)
@@ -2076,7 +2079,7 @@ setMethod("plotTotFlux", "Eval", function(object, legendpos="topright", num=20){
   mat_nice <- tail(mat[order(mat_var),], num)
   
   if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
-  matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=3,
+  graphics::matplot(t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=3,
           xlab='time in h', ylab='reaction activity in mmol/(h * g_DW)',
           main='Highly active reactions')
   legend(legendpos, rownames(mat_nice), col=cols, cex=0.6, fill=cols)
@@ -2346,7 +2349,7 @@ setMethod("statPheno", "Eval", function(object, type_nr=1, phenotype_nr, dict=NU
     mat_nice <- mat_sub[names(high_corr)[names(high_corr)!="phenotype"],][,t_lb:t_ub]
     num <- dim(mat_nice)[1]
     if(num>length(colpal3)) cols <- colpal1[1:num] else cols <- colpal3[1:num]
-    matplot(x=seq(t_lb, t_ub), y=t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
+    graphics::matplot(x=seq(t_lb, t_ub), y=t(mat_nice), type='l', col=cols, pch=1, lty=1, lwd=5,
             xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of substance in mmol',
             main='correlated substances')
     legend("topleft", rownames(mat_nice), col=cols, cex=0.4, fill=cols)
@@ -2659,7 +2662,7 @@ setMethod("statSpec", "Eval", function(object, type_nr=1, dict=NULL,
 
   # plot growth curve with all phenotypes
   mat_phen  <- do.call(cbind, occ)
-  matplot(t(mat_phen), type='b', col=cols, pch=1, lty=1, lwd=5,
+  graphics::matplot(t(mat_phen), type='b', col=cols, pch=1, lty=1, lwd=5,
           xlab=paste0('time in ', ifelse(object@tstep==1, "", object@tstep), 'h'), ylab='amount of organisms',
           main='Growth curve')
   legend(legend_pos, rownames(mat_phen), col=cols, cex=legend_cex, fill=cols)  
@@ -2825,15 +2828,6 @@ setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutof
 #' @param rnd An integer giving the decimal place to which min/max flux should be rounded.
 #' @details Returns a list with the minimum and maximum substance usage for each time point.
 #' @seealso \code{\link{Eval-class}} and \code{\link{simEnv}}
-#' @examples
-#' data(Ec_core, envir = environment()) #get Escherichia coli core metabolic model
-#' bac <- Bac(Ec_core,deathrate=0.05,
-#'            minweight=0.05,growtype="exponential") #initialize a bacterium
-#' arena <- Arena(n=20,m=20) #initialize the environment
-#' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
-#' arena <- addSubs(arena,40) #add all possible substances
-#' eval <- simEnv(arena,5)
-#' fluxlist <- fluxVarSim(eval, 6)
 setGeneric("fluxVarSim", function(object, rnd){standardGeneric("fluxVarSim")})
 #' @export
 #' @rdname fluxVarSim
@@ -2854,11 +2848,11 @@ setMethod("fluxVarSim", "Eval", function(object, rnd){
       mconc = unlist(lapply(arenait@media,function(med,x,y){med@diffmat[x,y]},x=org$x,y=org$y))
       mconc = mconc[bact@medium]
       bacnum = round((arenait@scale/(bact@cellarea*10^(-8))))
-      lbs = constrain(bact,names(mconc),-mconc/bacnum,org$biomass,arenait@tstep,arenait@scale,j)
+      lbs = constrain(bact,names(mconc),-mconc/bacnum,org$biomass,arenait@tstep,arenait@scale,j)[[1]]
       fbasl <- optimizeProb(bact@lpobj, react=1:length(lbs), ub=bact@ubnd, lb=lbs)
       model = changeBounds(bact@model,names(lbs),lb=lbs)
       model = changeBounds(model,model@react_id[which(bact@model@obj_coef==1)],lb=fbasl$obj,ub=fbasl$obj)
-      nil=capture.output(suppressMessages(fv <- fluxVar(model, bact@medium)))
+      nil=utils::capture.output(suppressMessages(fv <- fluxVar(model, bact@medium)))
       
       flmat_max[bact@medium,j] = round(minSol(fv,lp_obj),rnd)
       flmat_min[bact@medium,j] = round(maxSol(fv,lp_obj),rnd)
@@ -2950,6 +2944,7 @@ setMethod("findRxnFlux", "Eval", function(object, ex, time, print_reactions=FALS
 #'
 #' @param object An object of class Eval.
 #' @param sub Name of a substance.
+#' @param times Time points to be considered.
 #' @details Returns a plot with 
 
 setGeneric("plotSubDist", function(object, sub, times=NULL){standardGeneric("plotSubDist")})
@@ -2976,6 +2971,7 @@ setMethod("plotSubDist", "Eval", function(object, sub, times=NULL){
 #'
 #' @param object An object of class Eval.
 #' @param sub Name of a substance.
+#' @param times Time points to be considered.
 #' @details Returns a plot with 
 
 setGeneric("plotSubDist2", function(object, sub, times=NULL){standardGeneric("plotSubDist2")})
@@ -2983,8 +2979,8 @@ setGeneric("plotSubDist2", function(object, sub, times=NULL){standardGeneric("pl
 #' @rdname plotSubDist2
 setMethod("plotSubDist2", "Eval", function(object, sub, times=NULL){
   if(length(sub) != 1 | !all(sub %in% object@mediac)) stop("Please use exactly one substance.")
-  if(max(times) > max(seq_along(object@medlist))) stop("Please use another maximum value in the «times» argument. Your input was out of bounds.")
-  if(min(times) < min(seq_along(object@medlist))) stop("Please use another minimum value in the «times» argument. Your input was out of bounds.")
+  if(max(times) > max(seq_along(object@medlist))) stop("Please use another maximum value in 'times' argument. Your input was out of bounds.")
+  if(min(times) < min(seq_along(object@medlist))) stop("Please use another minimum value in 'times argument. Your input was out of bounds.")
   if(length(times)==0) times <- seq_along(object@medlist)
   all_df <- data.frame()
   for(t in times){
@@ -2993,7 +2989,7 @@ setMethod("plotSubDist2", "Eval", function(object, sub, times=NULL){
     df$time = t
     all_df <- rbind(all_df, df)
   }
-  q <- ggplot2::ggplot(all_df, ggplot2::aes(x, y)) + ggplot2::geom_tile(ggplot2::aes(fill = value)) + 
+  q <- ggplot2::ggplot(all_df, ggplot2::aes_string("x", "y")) + ggplot2::geom_tile(ggplot2::aes_string(fill = "value")) + 
     ggplot2::scale_fill_gradient(low = "white", high = "steelblue") + 
     ggplot2::facet_wrap(~time, labeller = "label_both")+ ggplot2::theme_void() + ggplot2::ggtitle(sub) + 
     ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))

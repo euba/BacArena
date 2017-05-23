@@ -19,12 +19,6 @@ The generic function \code{diffuseR} implements the diffusion in the Moore neigh
 \details{
 The diffusion is implemented by iterating through each cell in the grid and taking the cell with the lowest concentration in the Moore neighbourhood to update the concentration of both by their mean.
 }
-\examples{
-arena <- Arena(n=100, m=100, stir=FALSE, Lx=0.025, Ly=0.025)
-sub <- Substance(n=20,m=20,smax=40,name='test',difunc='r', 
-                 gridgeometry=arena@gridgeometry) #initialize test substance
-diffuseR(sub)
-}
 \seealso{
 \code{\link{Substance-class}} and \code{\link{diffusePDE}}
 }

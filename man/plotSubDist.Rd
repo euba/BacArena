@@ -14,6 +14,8 @@ plotSubDist(object, sub, times = NULL)
 \item{object}{An object of class Eval.}
 
 \item{sub}{Name of a substance.}
+
+\item{times}{Time points to be considered.}
 }
 \description{
 The generic function \code{plotSubDist} returns a plot for every time step which shows the substance concentration in the environment.

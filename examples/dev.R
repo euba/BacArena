@@ -53,7 +53,7 @@ setwd("~/uni/bacarena")
 #setwd("~/uni/test/testpkg/")
 devtools::document()
 #roxygen2::roxygenise() 
-check_doc()
+devtools::check_doc()
 check()
 run_examples()
 

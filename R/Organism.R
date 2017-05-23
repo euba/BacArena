@@ -9,6 +9,7 @@
 #' @exportClass Organism
 #' @import sybil
 #' @importFrom stats na.omit
+#' @rdname Organism
 #'
 #' @slot lbnd A numeric vector containing the lower bounds of the model structure.
 #' @slot ubnd A numeric vector containing the upper bounds of the model structure.
@@ -70,7 +71,7 @@ setClass("Organism",
 
 #' Constructor of the S4 class \code{\link{Organism-class}}
 #' 
-#' @export Organism
+#' @export
 #' @name Organism-constructor
 #' 
 #' @param model Object of class sybil::modelorg containging the genome sclae metabolic model
@@ -149,50 +150,42 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
 ########################################################################################################
 
 setGeneric("lbnd", function(object){standardGeneric("lbnd")})
-#' @export
 setMethod("lbnd", "Organism", function(object){return(object@lbnd)})
 setGeneric("ubnd", function(object){standardGeneric("ubnd")})
-#' @export
 setMethod("ubnd", "Organism", function(object){return(object@ubnd)})
-#' @export
 setGeneric("type", function(object){standardGeneric("type")})
-#' @export
 setMethod("type", "Organism", function(object){return(object@type)})
-#' @export
 setGeneric("medium", function(object){standardGeneric("medium")})
-#' @export
 setMethod("medium", "Organism", function(object){return(object@medium)})
-#' @export
 setGeneric("lpobj", function(object){standardGeneric("lpobj")})
-#' @export
 setMethod("lpobj", "Organism", function(object){return(object@lpobj)})
 setGeneric("fbasol", function(object){standardGeneric("fbasol")})
-#' @export
 setMethod("fbasol", "Organism", function(object){return(object@fbasol)})
 setGeneric("lyse", function(object){standardGeneric("lyse")})
-#' @export
 setMethod("lyse", "Organism", function(object){return(object@lyse)})
 setGeneric("feat", function(object){standardGeneric("feat")})
-#' @export
 setMethod("feat", "Organism", function(object){return(object@feat)})
 setGeneric("deathrate", function(object){standardGeneric("deathrate")})
-#' @export
 setMethod("deathrate", "Organism", function(object){return(object@deathrate)})
 setGeneric("minweight", function(object){standardGeneric("minweight")})
-#' @export
 setMethod("minweight", "Organism", function(object){return(object@minweight)})
 setGeneric("growtype", function(object){standardGeneric("growtype")})
-#' @export
 setMethod("growtype", "Organism", function(object){return(object@feat)})
 setGeneric("kinetics", function(object){standardGeneric("kinetics")})
-#' @export
 setMethod("kinetics", "Organism", function(object){return(object@kinetics)})
 setGeneric("speed", function(object){standardGeneric("speed")})
-#' @export
 setMethod("speed", "Organism", function(object){return(object@speed)})
 setGeneric("model", function(object){standardGeneric("model")})
-#' @export
 setMethod("model", "Organism", function(object){return(object@model)})
+setGeneric("maxweight", function(object){standardGeneric("maxweight")})
+setMethod("maxweight", "Organism", function(object){return(object@maxweight)})
+setGeneric("cellweight_mean", function(object){standardGeneric("cellweight_mean")})
+setMethod("cellweight_mean", "Organism", function(object){return(object@cellweight_mean)})
+setGeneric("cellarea", function(object){standardGeneric("cellarea")})
+setMethod("cellarea", "Organism", function(object){return(object@cellarea)})
+setGeneric("algo", function(object){standardGeneric("algo")})
+setMethod("algo", "Organism", function(object){return(object@algo)})
+
 
 ########################################################################################################
 ###################################### METHODS #########################################################
@@ -611,6 +604,10 @@ setMethod(show, signature(object="Organism"), function(object){
 #' @exportClass Bac
 #' @rdname Bac
 #'
+#' @slot deathrate A numeric value giving the factor by which the growth should be reduced in every iteration (default (E.coli): 0.21 pg)
+#' @slot minweight A numeric value giving the growth limit at which the organism dies. (default (E.coli): 0.083 pg)
+#' @slot cellarea A numeric value indicating the surface that one organism occupies (default (E.coli): 4.42 mu_m^2)
+#' @slot maxweight A numeric value giving the maximal dry weight of single organism (default (E.coli): 1.172 pg)
 #' @slot chem A character vector indicating name of substance which is the chemotaxis attractant. Empty character vector if no chemotaxis.
 setClass("Bac",
          contains="Organism",
@@ -1031,7 +1028,9 @@ setMethod("cellgrowth", "Human", function(object, population, j, occupyM, fbasol
 #' @param arena An object of class Arena defining the environment.
 #' @param bacnum integer indicating the number of bacteria individuals per gridcell
 #' @param sublb A vector containing the substance concentrations in the current position of the individual of interest.
+#' @param cutoff value used to define numeric accuracy.
 #' @param pcut A number giving the cutoff value by which value of objective function is considered greater than 0.
+#' @param sec_obj character giving the secondary objective for a bi-level LP if wanted.
 #' @return Returns the updated enivironment of the \code{arena} parameter with all new positions of individuals on the grid and all new substrate concentrations.
 #' @details Human cell individuals undergo the step by step the following procedures: First the individuals are constrained with \code{constrain} to the substrate environment, then flux balance analysis is computed with \code{optimizeLP}, after this the substrate concentrations are updated with \code{consume}, then the cell growth is implemented with \code{cellgrowth}, the potential new phenotypes are added with \code{checkPhen}, finally the conditional function \code{lysis} is performed. Can be used as a wrapper for all important cell functions in a function similar to \code{simEnv}.
 #' @seealso \code{\link{Human-class}}, \code{\link{Arena-class}}, \code{\link{simEnv}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{cellgrowth}, \code{checkPhen} and \code{lysis}

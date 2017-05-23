@@ -11,6 +11,8 @@ unit_conversion(object, unit)
 \S4method{unit_conversion}{Arena}(object, unit)
 }
 \arguments{
+\item{object}{An object of class Arena or Eval.}
+
 \item{unit}{Unit to be converted to fmol/cell}
 }
 \value{

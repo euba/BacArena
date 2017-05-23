@@ -17,6 +17,8 @@ Arena(Lx = NULL, Ly = NULL, n = 100, m = 100, seed = sample(1:10000,
 
 \item{m}{A number giving the vertical size of the environment.}
 
+\item{seed}{An integer refering to the random number seed used to be reproducible}
+
 \item{...}{Arguments of \code{\link{Arena-class}}}
 }
 \description{

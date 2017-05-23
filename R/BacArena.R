@@ -19,3 +19,8 @@ NULL
 
 #' @import methods
 NULL
+
+
+.onAttach <- function(libname, pkgname) {
+      packageStartupMessage("BacArena paper: https://doi.org/10.1371/journal.pcbi.1005544\n Tutorial: https://CRAN.R-project.org/package=BacArena/vignettes/BacArena-Introduction.pdf\n Development and help: https://github.com/euba/bacarena")
+}
