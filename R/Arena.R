@@ -2609,19 +2609,21 @@ setMethod("findFeeding3", "Eval", function(object, time, mets, plot=TRUE){
     }
     interact = interact[-1,]
     if(class(interact)=="character"){interact = t(as.matrix(interact))}
-    if(nrow(interact)!=0){inter = rbind(inter,data.frame(prod=interact[,1],cons=interact[,2],met=i))}
+    if(nrow(interact)!=0){inter = rbind(inter,data.frame(prod=interact[,1],cons=interact[,2],met=i, sim_step=time-1))}
   }
   if(any(dim(inter)==0)) {
-    warning("No crossfeeding found. Try other metaboites or time points.")
+    warning(paste("sim_step",(time-1),":","No crossfeeding found. Try other metaboites or time points."))
     g <- igraph::make_empty_graph()
     return(list(inter,g))
   }
+  if (plot) {
   g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE)
   l <- igraph::layout.kamada.kawai(g)
   plot(g,edge.color=grDevices::rainbow(length(levels(inter$met)))[as.numeric(inter$met)],
        edge.width=3,edge.arrow.size=0.8,vertex.color=1:length(igraph::V(g)),layout=l)
   legend("bottomright",legend=levels(inter$met),col=grDevices::rainbow(length(levels(inter$met))), pch=19, cex=0.7)
-  return(list(inter,g))
+  return(list(inter,g))}
+  else return(inter)
 })
                           
 
@@ -2995,3 +2997,61 @@ setMethod("plotSubDist2", "Eval", function(object, sub, times=NULL){
     ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
   return(q)
 })
+
+#' @title Function for plotting heatmaps of feeding between two selected cell models
+#'
+#' @description The generic function \code{HeatMapFeeding} returns heatmaps between two selected cell models. If there is feeding, heatmaps show only 
+#' the producer. The compounds are originated from the most varying substances of the cell model "speciesA".
+#' @export
+#' @rdname HeatMapFeeding
+#' 
+#' @param object An object of class Eval.
+#' @param speciesA The sequence number of the first cell model in names(object@specs)
+#' @param speciesB The sequence number of the second cell model in names(object@specs)
+#' @param var_nr The number of the most varying speciesA's substances following plotSpecActivity structure
+#' @return Heatmap (ggplot2)
+#' 
+#' @example 
+#' # Do Not Run
+#' # sim : simulation object
+#' # speciesA = 1 # E. Coli (wild): sequence number in names(sim@specs) => 1
+#' # speciesB = 3 # E. Coli (mutant): sequence number in names(sim@specs) => 3
+#' # var_nr = 30 # (manually selected)
+#' # HeatMapFeeding(object = sim, speciesA = 1, speciesB = 3, var_nr = 30)
+#' 
+setGeneric("HeatMapFeeding", function(object, speciesA, speciesB, var_nr){standardGeneric("HeatMapFeeding")})
+#' @export
+#' @rdname HeatMapFeeding
+setMethod("HeatMapFeeding", "Eval", function(object, speciesA, speciesB, var_nr){
+  A<-BacArena::plotSpecActivity(object,spec_list = speciesA, var_nr = var_nr, ret_data = T)
+  z<-data.frame()
+  chronos <- (seq_along(object@simlist)-1)
+  for (t in time) 
+  { a<-data.frame()
+  a <-BacArena::findFeeding3(object, time = t, mets = A$sub[1:var_nr], plot = F)
+  if (nrow(a)!=0) 
+  {z<-rbind.data.frame(z,a)
+  }
+  }
+  d <- data.frame()
+  # prod:speciesA cons:speciesB   -> 1                       
+  # prod:speciesB cons:speciesA   -> -1
+  # NA -> 0
+  for (h in 1:nrow(z))
+  {if (z[h,1] == names(sim@specs)[speciesA]) (d[h,1]=1)
+    if (z[h,1] == names(sim@specs)[speciesB]) (d[h,1]=-1)
+  }
+  colnames(d)[1] <- "status"
+  q <- cbind(z,d)
+  p <- reshape::cast(q, met ~ sim_step, value = "status")
+  p[is.na(p)] <- 0
+  # GGPLOT METHOD based on https://stackoverflow.com/questions/8406394/how-to-produce-a-heatmap-with-ggplot2
+  p2 <- p
+  p.m <- reshape::melt(p2)
+  p3 <- ggplot2::ggplot(p.m, aes(sim_step,met)) +
+    ggplot2::geom_tile(aes(fill = value), colour = "white") +
+    ggplot2::scale_fill_gradient2(name = "Producer", low = "red", mid = "green", high = "blue", breaks=seq(-1,1,by=1),
+                                  labels = c(names(sim@specs)[speciesB], "no feeding", names(sim@specs)[speciesA])) +
+    ggplot2::xlab("Simulation Step") + ggplot2::ylab("Exchange Reactions") 
+  return((p3)) })
+
