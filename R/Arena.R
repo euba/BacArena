@@ -2613,8 +2613,8 @@ setMethod("findFeeding3", "Eval", function(object, time, mets, plot=TRUE){
   }
   if(any(dim(inter)==0)) {
     warning(paste("sim_step",(time-1),":","No crossfeeding found. Try other metaboites or time points."))
-    g <- igraph::make_empty_graph()
-    return(list(inter,g))
+    #g <- igraph::make_empty_graph()
+    return(inter)
   }
   if (plot) {
   g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE)
