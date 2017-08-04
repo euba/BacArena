@@ -2998,26 +2998,26 @@ setMethod("plotSubDist2", "Eval", function(object, sub, times=NULL){
   return(q)
 })
 
-#' @title Function for plotting heatmaps of feeding between two selected cell models
+#' @title Function for plotting heatmap of feeding between two selected cell models
 #'
-#' @description The generic function \code{HeatMapFeeding} returns heatmaps between two selected cell models. If there is feeding, heatmaps show only 
-#' the producer. The compounds are originated from the most varying substances of the cell model "speciesA".
+#' @description The generic function \code{HeatMapFeeding} returns a heatmap between two selected cell models. If there is feeding, the heatmap show only 
+#' the producer. The compounds are originated from the most varying substances of the first cell model called "speciesA".
 #' @export
 #' @rdname HeatMapFeeding
-#' 
+#' @usage HeatMapFeeding(object, speciesA, speciesB, var_nr)
 #' @param object An object of class Eval.
 #' @param speciesA The sequence number of the first cell model in names(object@specs)
 #' @param speciesB The sequence number of the second cell model in names(object@specs)
 #' @param var_nr The number of the most varying speciesA's substances following plotSpecActivity structure
 #' @return Heatmap (ggplot2)
 #' 
-#' @example 
-#' # Do Not Run
-#' # sim : simulation object
-#' # speciesA = 1 # E. Coli (wild): sequence number in names(sim@specs) => 1
-#' # speciesB = 3 # E. Coli (mutant): sequence number in names(sim@specs) => 3
-#' # var_nr = 30 # (manually selected)
-#' # HeatMapFeeding(object = sim, speciesA = 1, speciesB = 3, var_nr = 30)
+#' @examples 
+#'  Do Not Run
+#'  sim : simulation object
+#'  speciesA = 1 # E. Coli (wild): sequence number in names(sim@specs) => 1
+#'  speciesB = 3 # E. Coli (mutant): sequence number in names(sim@specs) => 3
+#'  var_nr = 30 # (manually selected)
+#'  HeatMapFeeding(object = sim, speciesA = 1, speciesB = 3, var_nr = 30)
 #' 
 setGeneric("HeatMapFeeding", function(object, speciesA, speciesB, var_nr){standardGeneric("HeatMapFeeding")})
 #' @export
@@ -3026,7 +3026,7 @@ setMethod("HeatMapFeeding", "Eval", function(object, speciesA, speciesB, var_nr)
   A<-BacArena::plotSpecActivity(object,spec_list = speciesA, var_nr = var_nr, ret_data = T)
   z<-data.frame()
   chronos <- (seq_along(object@simlist)-1)
-  for (t in time) 
+  for (t in chronos) 
   { a<-data.frame()
   a <-BacArena::findFeeding3(object, time = t, mets = A$sub[1:var_nr], plot = F)
   if (nrow(a)!=0) 
@@ -3048,8 +3048,8 @@ setMethod("HeatMapFeeding", "Eval", function(object, speciesA, speciesB, var_nr)
   # GGPLOT METHOD based on https://stackoverflow.com/questions/8406394/how-to-produce-a-heatmap-with-ggplot2
   p2 <- p
   p.m <- reshape::melt(p2)
-  p3 <- ggplot2::ggplot(p.m, aes(sim_step,met)) +
-    ggplot2::geom_tile(aes(fill = value), colour = "white") +
+  p3 <- ggplot2::ggplot(p.m, ggplot2::aes(sim_step,met)) +
+    ggplot2::geom_tile(ggplot2::aes(fill = value), colour = "white") +
     ggplot2::scale_fill_gradient2(name = "Producer", low = "red", mid = "green", high = "blue", breaks=seq(-1,1,by=1),
                                   labels = c(names(sim@specs)[speciesB], "no feeding", names(sim@specs)[speciesA])) +
     ggplot2::xlab("Simulation Step") + ggplot2::ylab("Exchange Reactions") 
