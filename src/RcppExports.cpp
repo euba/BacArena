@@ -9,7 +9,7 @@ using namespace Rcpp;
 
 // addBacCpp
 List addBacCpp(arma::sp_mat occmat, DataFrame orgdat, int amount, double growth, int type, int ptype);
-RcppExport SEXP BacArena_addBacCpp(SEXP occmatSEXP, SEXP orgdatSEXP, SEXP amountSEXP, SEXP growthSEXP, SEXP typeSEXP, SEXP ptypeSEXP) {
+RcppExport SEXP _BacArena_addBacCpp(SEXP occmatSEXP, SEXP orgdatSEXP, SEXP amountSEXP, SEXP growthSEXP, SEXP typeSEXP, SEXP ptypeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -25,7 +25,7 @@ END_RCPP
 }
 // diffuseGrajdeanuCpp
 void diffuseGrajdeanuCpp(Rcpp::NumericMatrix y, double mu, bool donut);
-RcppExport SEXP BacArena_diffuseGrajdeanuCpp(SEXP ySEXP, SEXP muSEXP, SEXP donutSEXP) {
+RcppExport SEXP _BacArena_diffuseGrajdeanuCpp(SEXP ySEXP, SEXP muSEXP, SEXP donutSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type y(ySEXP);
@@ -37,7 +37,7 @@ END_RCPP
 }
 // diffuseNaiveCpp
 void diffuseNaiveCpp(Rcpp::NumericMatrix y, bool donut);
-RcppExport SEXP BacArena_diffuseNaiveCpp(SEXP ySEXP, SEXP donutSEXP) {
+RcppExport SEXP _BacArena_diffuseNaiveCpp(SEXP ySEXP, SEXP donutSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type y(ySEXP);
@@ -48,7 +48,7 @@ END_RCPP
 }
 // diffuseSteveCpp
 void diffuseSteveCpp(Rcpp::NumericMatrix y, double D, double h, double tstep);
-RcppExport SEXP BacArena_diffuseSteveCpp(SEXP ySEXP, SEXP DSEXP, SEXP hSEXP, SEXP tstepSEXP) {
+RcppExport SEXP _BacArena_diffuseSteveCpp(SEXP ySEXP, SEXP DSEXP, SEXP hSEXP, SEXP tstepSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type y(ySEXP);
@@ -61,7 +61,7 @@ END_RCPP
 }
 // updateSubmat
 NumericMatrix updateSubmat(NumericMatrix submat, NumericMatrix sublb_red);
-RcppExport SEXP BacArena_updateSubmat(SEXP submatSEXP, SEXP sublb_redSEXP) {
+RcppExport SEXP _BacArena_updateSubmat(SEXP submatSEXP, SEXP sublb_redSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -73,7 +73,7 @@ END_RCPP
 }
 // duplicateCpp
 DataFrame duplicateCpp(DataFrame orgdat, int n, int m, List cellweight, IntegerMatrix occupyM);
-RcppExport SEXP BacArena_duplicateCpp(SEXP orgdatSEXP, SEXP nSEXP, SEXP mSEXP, SEXP cellweightSEXP, SEXP occupyMSEXP) {
+RcppExport SEXP _BacArena_duplicateCpp(SEXP orgdatSEXP, SEXP nSEXP, SEXP mSEXP, SEXP cellweightSEXP, SEXP occupyMSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -88,7 +88,7 @@ END_RCPP
 }
 // movementCpp
 void movementCpp(DataFrame orgdat, int n, int m, IntegerMatrix occupyM);
-RcppExport SEXP BacArena_movementCpp(SEXP orgdatSEXP, SEXP nSEXP, SEXP mSEXP, SEXP occupyMSEXP) {
+RcppExport SEXP _BacArena_movementCpp(SEXP orgdatSEXP, SEXP nSEXP, SEXP mSEXP, SEXP occupyMSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< DataFrame >::type orgdat(orgdatSEXP);
@@ -101,13 +101,13 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"BacArena_addBacCpp", (DL_FUNC) &BacArena_addBacCpp, 6},
-    {"BacArena_diffuseGrajdeanuCpp", (DL_FUNC) &BacArena_diffuseGrajdeanuCpp, 3},
-    {"BacArena_diffuseNaiveCpp", (DL_FUNC) &BacArena_diffuseNaiveCpp, 2},
-    {"BacArena_diffuseSteveCpp", (DL_FUNC) &BacArena_diffuseSteveCpp, 4},
-    {"BacArena_updateSubmat", (DL_FUNC) &BacArena_updateSubmat, 2},
-    {"BacArena_duplicateCpp", (DL_FUNC) &BacArena_duplicateCpp, 5},
-    {"BacArena_movementCpp", (DL_FUNC) &BacArena_movementCpp, 4},
+    {"_BacArena_addBacCpp", (DL_FUNC) &_BacArena_addBacCpp, 6},
+    {"_BacArena_diffuseGrajdeanuCpp", (DL_FUNC) &_BacArena_diffuseGrajdeanuCpp, 3},
+    {"_BacArena_diffuseNaiveCpp", (DL_FUNC) &_BacArena_diffuseNaiveCpp, 2},
+    {"_BacArena_diffuseSteveCpp", (DL_FUNC) &_BacArena_diffuseSteveCpp, 4},
+    {"_BacArena_updateSubmat", (DL_FUNC) &_BacArena_updateSubmat, 2},
+    {"_BacArena_duplicateCpp", (DL_FUNC) &_BacArena_duplicateCpp, 5},
+    {"_BacArena_movementCpp", (DL_FUNC) &_BacArena_movementCpp, 4},
     {NULL, NULL, 0}
 };
 

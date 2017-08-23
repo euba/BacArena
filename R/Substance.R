@@ -17,8 +17,8 @@
 #' @slot name A character vector representing the name of the substance.
 #' @slot id A character vector representing the identifier of the substance.
 #' @slot difunc A character vector ("pde","cpp" or "r") describing the function for diffusion.
-#' @slot difspeed A number indicating the diffusion rate (given by cm^2/s). Default is set to glucose diffusion in a aqueous solution (6.7e-6 cm^2/s).
-#' @slot advspeed A number indicating the advection rate in x direction (given by cm/s).
+#' @slot difspeed A number indicating the diffusion rate (given by cm^2/h). Default is set to glucose diffusion in a aqueous solution (6.7e-6 cm^2/s * 3600 s/h = 0.02412 cm^2/h ).
+#' @slot advspeed A number indicating the advection rate in x direction (given by cm/h).
 #' @slot diffgeometry Diffusion coefficient defined on all grid cells (initially set by constructor).
 #' @slot pde Choose diffusion transport reaction to be used (default is diffusion only)
 #' @slot boundS A number defining the attached amount of substance at the boundary (Warning: boundary-function must be set in pde!)
@@ -54,19 +54,19 @@ setClass("Substance",
 #' @name Substance-constructor
 #' 
 #' @param smax A number representing the start concentration of the substance for each grid cell in the environment. 
-#' @param difspeed A number indicating the diffusion speed in x and y direction (given by cm^2/s). For more complex setup define Dgrid.
-#' @param advspeed A number indicating the advection speed in x direction (given by cm/s). For more complex setup define Vgrid.
+#' @param difspeed A number indicating the diffusion speed in x and y direction (given by cm^2/h). For more complex setup define Dgrid.
+#' @param advspeed A number indicating the advection speed in x direction (given by cm/h). For more complex setup define Vgrid.
 #' @param n A number giving the horizontal size of the environment.
 #' @param m A number giving the vertical size of the environment.
 #' @param gridgeometry A list containing grid geometry parameter 
 #' @param occupyM A matrix indicating grid cells that are obstacles
 #' @param diffmat A matrix with spatial distributed initial concentrations (unit in fmol) (if not set, a homogenous matrix using smax is created)
 #' @param template True if diffmat matrix should be used as tempalte only (will be multiplied with smax to obtain cocentrations)
-#' @param Dgrid A matrix indicating the diffusion speed in x and y direction (given by cm^2/s).
-#' @param Vgrid A number indicating the advection speed in x direction (given by cm/s).
+#' @param Dgrid A matrix indicating the diffusion speed in x and y direction (given by cm^2/h).
+#' @param Vgrid A number indicating the advection speed in x direction (given by cm/h).
 #' @param ... Arguments of \code{\link{Substance-class}}
 #' @return Object of class \code{Substance}
-Substance <- function(n, m, smax, gridgeometry, difspeed=6.7e-6, advspeed=0, occupyM, Dgrid=NULL, Vgrid=NULL, diffmat=NULL, template=FALSE, ...){
+Substance <- function(n, m, smax, gridgeometry, difspeed=0.02412, advspeed=0, occupyM, Dgrid=NULL, Vgrid=NULL, diffmat=NULL, template=FALSE, ...){
   if(length(diffmat)==0){
     diffmat <- Matrix::Matrix(smax, ncol=n, nrow=m, sparse=TRUE)
   }else{

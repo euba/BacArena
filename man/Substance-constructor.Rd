@@ -5,7 +5,7 @@
 \alias{Substance}
 \title{Constructor of the S4 class \code{Substance}}
 \usage{
-Substance(n, m, smax, gridgeometry, difspeed = 6.7e-06, advspeed = 0,
+Substance(n, m, smax, gridgeometry, difspeed = 0.02412, advspeed = 0,
   occupyM, Dgrid = NULL, Vgrid = NULL, diffmat = NULL, template = FALSE,
   ...)
 }
@@ -18,15 +18,15 @@ Substance(n, m, smax, gridgeometry, difspeed = 6.7e-06, advspeed = 0,
 
 \item{gridgeometry}{A list containing grid geometry parameter}
 
-\item{difspeed}{A number indicating the diffusion speed in x and y direction (given by cm^2/s). For more complex setup define Dgrid.}
+\item{difspeed}{A number indicating the diffusion speed in x and y direction (given by cm^2/h). For more complex setup define Dgrid.}
 
-\item{advspeed}{A number indicating the advection speed in x direction (given by cm/s). For more complex setup define Vgrid.}
+\item{advspeed}{A number indicating the advection speed in x direction (given by cm/h). For more complex setup define Vgrid.}
 
 \item{occupyM}{A matrix indicating grid cells that are obstacles}
 
-\item{Dgrid}{A matrix indicating the diffusion speed in x and y direction (given by cm^2/s).}
+\item{Dgrid}{A matrix indicating the diffusion speed in x and y direction (given by cm^2/h).}
 
-\item{Vgrid}{A number indicating the advection speed in x direction (given by cm/s).}
+\item{Vgrid}{A number indicating the advection speed in x direction (given by cm/h).}
 
 \item{diffmat}{A matrix with spatial distributed initial concentrations (unit in fmol) (if not set, a homogenous matrix using smax is created)}
 

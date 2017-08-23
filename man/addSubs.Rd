@@ -37,9 +37,9 @@ addSubs(object, smax = 0, mediac = object@mediac, difunc = "pde",
 
 \item{template}{True if diffmat matrix should be used as tempalte only (will be multiplied with smax to obtain cocentrations)}
 
-\item{Dgrid}{A matrix indicating the diffusion speed in x and y direction (given by cm^2/s).}
+\item{Dgrid}{A matrix indicating the diffusion speed in x and y direction (given by cm^2/h).}
 
-\item{Vgrid}{A number indicating the advection speed in x direction (given by cm/s).}
+\item{Vgrid}{A number indicating the advection speed in x direction (given by cm/h).}
 
 \item{addAnyway}{If true substance will be added even if there is no connection (i.e. exchanges) with organisms}
 }

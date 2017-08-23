@@ -255,8 +255,8 @@ setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, bio
 #' @param add A boolean variable defining whether the amount of substance should be summed or replaced
 #' @param diffmat A matrix with spatial distributed initial concentrations (if not set, a homogenous matrix using smax is created)
 #' @param template True if diffmat matrix should be used as tempalte only (will be multiplied with smax to obtain cocentrations)
-#' @param Dgrid A matrix indicating the diffusion speed in x and y direction (given by cm^2/s).
-#' @param Vgrid A number indicating the advection speed in x direction (given by cm/s).
+#' @param Dgrid A matrix indicating the diffusion speed in x and y direction (given by cm^2/h).
+#' @param Vgrid A number indicating the advection speed in x direction (given by cm/h).
 #' @param addAnyway If true substance will be added even if there is no connection (i.e. exchanges) with organisms
 #' @details If nothing but \code{object} is given, then all possible substrates are initilized with a concentration of 0. Afterwards, \code{\link{changeSub} can be used to modify the concentrations of specific substances.} 
 #' @seealso \code{\link{Arena-class}} and \code{\link{changeSub}} 
