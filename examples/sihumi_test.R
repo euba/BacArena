@@ -10,6 +10,6 @@ for(i in seq_along(sihumi)){
 }
 arena <- addSubs(arena, smax=5, unit="mM")
 
-sim <- simEnv(arena, time=10)
+sihumi_test <- simEnv(arena, time=10)
 
-save(sim, file = "~/uni/bacarena/data/sihumi_test.rda")
+save(sihumi_test, file = "~/uni/bacarena/data/sihumi_test.rda")
