@@ -77,9 +77,9 @@ setClass("Organism",
 #' @param model Object of class sybil::modelorg containging the genome sclae metabolic model
 #' @param algo A single character string giving the name of the algorithm to use. See \link[sybil]{SYBIL_SETTINGS}
 #' @param ex Identifier for exchange reactions
-#' @param ex_comp ex_comp
-#' @param csuffix csuffix
-#' @param esuffix esuffix
+#' @param ex_comp Defining exchange reactions whose compounds should be added to the medium of the arena (default: all)
+#' @param csuffix suffix for intern metabolites used by lysis function.
+#' @param esuffix suffix for external metabolites used by lysis function.
 #' @param feat A list containing conditional features for the object (contains at the momement only biomass components for lysis).
 #' @param typename A string defining the name (set to model name in default case)
 #' @param lyse A boolean variable indicating if the organism should lyse after death.
