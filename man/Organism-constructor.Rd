@@ -16,11 +16,11 @@ Organism(model, algo = "fba", ex = "EX_", ex_comp = NA,
 
 \item{ex}{Identifier for exchange reactions}
 
-\item{ex_comp}{ex_comp}
+\item{ex_comp}{Defining exchange reactions whose compounds should be added to the medium of the arena (default: all)}
 
-\item{csuffix}{csuffix}
+\item{csuffix}{suffix for intern metabolites used by lysis function.}
 
-\item{esuffix}{esuffix}
+\item{esuffix}{suffix for external metabolites used by lysis function.}
 
 \item{lyse}{A boolean variable indicating if the organism should lyse after death.}
 

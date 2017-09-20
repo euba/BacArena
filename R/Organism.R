@@ -633,7 +633,7 @@ setClass("Bac",
 #' 
 #' @return Object of class \code{\link{Bac-class}}
 #' @param model model
-#' @param ... Arguments of \code{\link{Organism-class}}
+#' @param ... Arguments of \code{\link{Organism}}
 #' @param chem A character vector indicating name of substance which is the chemotaxis attractant. Empty character vector if no chemotaxis.
 Bac <- function(model, chem='', ...){
   new("Bac", Organism(model=model, ...), chem=chem)
@@ -923,7 +923,7 @@ setClass("Human",
 #' @param model model
 #' @param objective A character vector representing the current reaction which should be used as an objective function for the flux balance analysis.
 #' @param speed A integer vector representing the speed by which bacterium is moving (given by cell per iteration).
-#' @param ... Arguments of \code{\link{Organism-class}}
+#' @param ... Arguments of \code{\link{Organism}}
 #' @return Object of class \code{\link{Human-class}}
 Human <- function(model, objective=model@react_id[which(model@obj_coef!=0)], speed=0, ...){
   model <- sybil::changeObjFunc(model, objective, obj_coef=model@obj_coef[which(model@obj_coef!=0)])

@@ -15,7 +15,7 @@ Human(model, objective = model@react_id[which(model@obj_coef != 0)],
 
 \item{speed}{A integer vector representing the speed by which bacterium is moving (given by cell per iteration).}
 
-\item{...}{Arguments of \code{\link{Organism-class}}}
+\item{...}{Arguments of \code{\link{Organism}}}
 }
 \value{
 Object of class \code{\link{Human-class}}

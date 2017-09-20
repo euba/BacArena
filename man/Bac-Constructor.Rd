@@ -12,7 +12,7 @@ Bac(model, chem = "", ...)
 
 \item{chem}{A character vector indicating name of substance which is the chemotaxis attractant. Empty character vector if no chemotaxis.}
 
-\item{...}{Arguments of \code{\link{Organism-class}}}
+\item{...}{Arguments of \code{\link{Organism}}}
 }
 \value{
 Object of class \code{\link{Bac-class}}
