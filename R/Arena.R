@@ -169,11 +169,11 @@ setGeneric("addOrg", function(object, specI, amount=1, x=NULL, y=NULL, posmat=NU
 #' @rdname addOrg
 setMethod("addOrg", "Arena", function(object, specI, amount=1, x=NULL, y=NULL, posmat=NULL, biomass=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){
   if(length(posmat)>0){
-    if(nrow(posmat)!=object@n | nrow(posmat)!=object@m){
+    if(nrow(posmat)!=object@m | ncol(posmat)!=object@n){
       stop("Matrix posmat has invalid dimensions (should be equal to arena)")}
       idx <- which(posmat==1, arr.ind=TRUE)
-      x <- idx[,1]
-      y <- idx[,2]
+      x <- idx[,2]
+      y <- idx[,1]
       amount <- sum(posmat)
   }
   if(length(n)==0) n <- object@n; if(length(m)==0) m <- object@m
