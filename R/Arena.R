@@ -3071,3 +3071,54 @@ setMethod("HeatMapFeeding", "Eval", function(object, speciesA, speciesB, var_nr)
     ggplot2::xlab("Simulation Step") + ggplot2::ylab("Exchange Reactions") 
   return((p3)) })
 
+#' @title Add individuals to the environment by using a matrix
+#'
+#' @description The generic function \code{addOrgbyMatrix} adds individuals to the environment by using a matrix. This matrix contains the position of each cell model. It CANNOT be used in parallel with the original \code{\link{addOrg}} function, UNLESS \code{\link{addOrg}} is called first. 
+#' @export
+#' @rdname addOrgbyMatrix
+#'
+#' @param object An object of class Arena.
+#' @param orgbymatrix A matrix which contains the position of the cells.
+#' @param n0 Start column of matrix to take free positions from (default 1)
+#' @param m0 Start row of matrix to take free positions from (default 1)
+#' @param m End row of matrix to take free positions from (default arena@n)
+#' @param n End column of matrix to take free positions from (default arena@m)
+#' @param biomass A numeric vector giving the starting biomass of the individuals. (unit: fg)
+#' @seealso \code{\link{Arena-class}}, \code{\link{addOrg}} and \code{\link{Bac-class}} 
+#' @examples
+#' library(BacArena) # Call BacArena library
+#' data(Ec_core) # Call Ec_core data
+#' bac1 <- Bac(model = Ec_core, type = "red" ) # Artifical bacterium 1
+#' bac2 <- Bac(model = Ec_core, type = "blue" ) # Artifical bacterium 2
+#' bac3 <- Bac(model = Ec_core, type = "yellow" ) # Artifical bacterium 3
+#' arena <- Arena(n=5,m=3) # Arena conbstruction
+#' mm <- matrix(ncol = 5, nrow = 3) # Matrix construction
+#' mm[1]<-"bac1" # Addition of bac1 in the position 1 of the matrix
+#' mm[2]<-"bac2" # Addition of bac2 in the position 2 of the matrix
+#' mm[3]<-"bac3" # Addition of bac3 in the position 3 of the matrix
+#' arena <- addOrgbyMatrix(arena, mm) # Call the function
+setGeneric("addOrgbyMatrix", function(object, orgbymatrix, biomass=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){standardGeneric("addOrgbyMatrix")})
+#' @export
+#' @rdname addOrgbyMatrix
+setMethod("addOrgbyMatrix", "Arena", function(object, orgbymatrix, biomass=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){
+  options(warn = 2)
+  orgbymatrix <- as.matrix(orgbymatrix)
+  if (ncol(orgbymatrix) == object@n & nrow(orgbymatrix) == object@m)
+  {
+    matrixasdataframe <- reshape2::melt(orgbymatrix)
+    for (i in seq_along(rownames(matrixasdataframe)))
+    {
+      if (!is.na(matrixasdataframe$value[i])) 
+      {
+        mybac <- get(as.character(matrixasdataframe$value[i]))
+        xpos <- matrixasdataframe$Var2[i]
+        ypos <- matrixasdataframe$Var1[i]
+        object <- BacArena::addOrg(object, specI = mybac, amount = 1,
+                                   x = xpos, y = ypos, biomass = biomass, n0 = n0,
+                                   n = n, m0 = m0, m = m)
+      }
+    }
+  }
+  else 
+    stop("The dimensions of the matrix must comply with the dimensions of arena")
+})
