@@ -143,6 +143,7 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #' @param amount A numeric number giving the number of individuals to add.
 #' @param x A numeric vector giving the x positions of individuals on the grid.
 #' @param y A numeric vector giving the y positions of individuals on the grid.
+#' @param posmat A As an alternative to parameter x, y, a matrix with corrdinates an be specified
 #' @param n0 Start column of matrix to take free positions from (default 1)
 #' @param m0 Start row of matrix to take free positions from (default 1)
 #' @param m End row of matrix to take free positions from (default arena@n)
@@ -156,10 +157,25 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #'            minweight=0.05,growtype="exponential") #initialize a bacterium
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
-setGeneric("addOrg", function(object, specI, amount, x=NULL, y=NULL, biomass=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){standardGeneric("addOrg")})
+#' 
+#' # Alternative way: adding organisms by giving matrix with positions
+#' arena <- Arena(n=20,m=20)
+#' mat <- matrix(sample(c(0,1), 400, replace = TRUE), nrow = 20, ncol = 20)
+#' bac <- Bac(Ec_core)
+#' arena <- addOrg(arena, specI=bac, posmat = mat)
+#' 
+setGeneric("addOrg", function(object, specI, amount=1, x=NULL, y=NULL, posmat=NULL, biomass=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){standardGeneric("addOrg")})
 #' @export
 #' @rdname addOrg
-setMethod("addOrg", "Arena", function(object, specI, amount, x=NULL, y=NULL, biomass=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){
+setMethod("addOrg", "Arena", function(object, specI, amount=1, x=NULL, y=NULL, posmat=NULL, biomass=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){
+  if(length(posmat)>0){
+    if(nrow(posmat)!=object@n | nrow(posmat)!=object@m){
+      stop("Matrix posmat has invalid dimensions (should be equal to arena)")}
+      idx <- which(posmat==1, arr.ind=TRUE)
+      x <- idx[,1]
+      y <- idx[,2]
+      amount <- sum(posmat)
+  }
   if(length(n)==0) n <- object@n; if(length(m)==0) m <- object@m
   if(length(n0)==0) n0 <- 1; if(length(m0)==0) m0 <- 1
   if(n0>n | m0>m) stop("Infeasible n0>n or m0>m set")

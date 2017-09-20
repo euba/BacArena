@@ -6,11 +6,12 @@
 \alias{addOrg,Arena-method}
 \title{Add individuals to the environment}
 \usage{
-addOrg(object, specI, amount, x = NULL, y = NULL, biomass = NA,
-  n0 = NULL, n = NULL, m0 = NULL, m = NULL)
-
-\S4method{addOrg}{Arena}(object, specI, amount, x = NULL, y = NULL,
+addOrg(object, specI, amount = 1, x = NULL, y = NULL, posmat = NULL,
   biomass = NA, n0 = NULL, n = NULL, m0 = NULL, m = NULL)
+
+\S4method{addOrg}{Arena}(object, specI, amount = 1, x = NULL, y = NULL,
+  posmat = NULL, biomass = NA, n0 = NULL, n = NULL, m0 = NULL,
+  m = NULL)
 }
 \arguments{
 \item{object}{An object of class Arena.}
@@ -22,6 +23,8 @@ addOrg(object, specI, amount, x = NULL, y = NULL, biomass = NA,
 \item{x}{A numeric vector giving the x positions of individuals on the grid.}
 
 \item{y}{A numeric vector giving the y positions of individuals on the grid.}
+
+\item{posmat}{A As an alternative to parameter x, y, a matrix with corrdinates an be specified}
 
 \item{biomass}{A numeric vector giving the starting biomass of the individuals. (unit: fg)}
 
@@ -45,6 +48,13 @@ bac <- Bac(Ec_core,deathrate=0.05,
            minweight=0.05,growtype="exponential") #initialize a bacterium
 arena <- Arena(n=20,m=20) #initialize the environment
 arena <- addOrg(arena,bac,amount=10) #add 10 organisms
+
+# Alternative way: adding organisms by giving matrix with positions
+arena <- Arena(n=20,m=20)
+mat <- matrix(sample(c(0,1), 400, replace = TRUE), nrow = 20, ncol = 20)
+bac <- Bac(Ec_core)
+arena <- addOrg(arena, specI=bac, posmat = mat)
+
 }
 \seealso{
 \code{\link{Arena-class}} and \code{\link{Bac-class}}
