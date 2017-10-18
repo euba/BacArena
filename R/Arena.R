@@ -19,6 +19,7 @@ globalVariables(c("diffuseNaiveCpp","diffuseSteveCpp"))
 #' @slot tstep A number giving the time (in h) per iteration.
 #' @slot stir A boolean variable indicating if environment should be stirred. If true, bacteria move to random positions within the environment and substances have a uniform concentration value.
 #' @slot mflux A vector containing highly used metabolic reactions within the arena
+#' @slot exchanges A Matrix containing last exchanges of each organism.
 #' @slot shadow A vector containing shadow prices of metabolites present in the arena
 #' @slot n A number giving the horizontal size of the environment.
 #' @slot m A number giving the vertical size of the environment.
@@ -40,6 +41,7 @@ setClass("Arena",
            tstep="numeric",
            stir="logical",
            mflux="list",
+           exchanges="matrix",
            shadow="list",
            n="numeric",
            m="numeric",
@@ -807,6 +809,8 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
   }
   if(class(object)!="Eval"){addEval(evaluation, arena)}
   arena@sublb <- getSublb(arena)
+  arena@exchanges <- matrix(nrow=0, ncol=(length(arena@mediac)+1)) # remember exchanges
+  colnames(arena@exchanges) <- c("species", names(arena@mediac))
   diff_t=0
   if(arena@stir){ #create all possible positions on arena
     allxy = expand.grid(1:arena@n,1:arena@m)
@@ -1463,7 +1467,7 @@ Eval <- function(arena){
   subc = rep(0, length(arena@mediac))
   names(subc) <- arena@mediac
   new("Eval", n=arena@n, m=arena@m, Lx=arena@Lx, Ly=arena@Ly, tstep=arena@tstep, specs=arena@specs, mediac=arena@mediac, subchange=subc,
-      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir, mfluxlist=list(), shadowlist=list() )
+      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir, mfluxlist=list(), shadowlist=list(), exchanges=matrix() )
 }
 
 ########################################################################################################
@@ -1544,6 +1548,7 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
     eval.parent(substitute(object@models <- arena@models))
     eval.parent(substitute(object@scale <- arena@scale))
     eval.parent(substitute(object@sublb <- arena@sublb))
+    eval.parent(substitute(object@exchanges <- arena@exchanges)) 
     
   }else{
     eval.parent(substitute(object@medlist[[length(object@medlist)]] <- lapply(arena@media, function(x){
@@ -1562,6 +1567,7 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
     eval.parent(substitute(object@models <- arena@models))
     eval.parent(substitute(object@scale <- arena@scale))
     eval.parent(substitute(object@sublb <- arena@sublb))
+    eval.parent(substitute(object@exchanges <- arena@exchanges))
     
   }
 })
