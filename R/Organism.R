@@ -293,7 +293,8 @@ setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=
 #' @export
 #' @rdname optimizeLP
 setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j, sec_obj="none"){ 
-  fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb)
+  #fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb) # react makes problems with cplex shadow costs
+  fbasl <- sybil::optimizeProb(lpob, ub=ub, lb=lb)
   switch(lpob@problem@solver,
          glpkAPI = {solve_ok <- fbasl$stat==5},
          cplexAPI = {solve_ok <- fbasl$stat==1},
@@ -332,11 +333,16 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
                     fbasl$obj <- fbasl$fluxes[old_obj_coef]},
            stop("Secondary objective not suported!"))
   }
-  if(lpob@problem@solver=="glpkAPI"){ # get shadow cost from dual problem (only for gplkAPI yet implemented)
+  # get shadow cost from dual problem (only for glpk and cplex)
+  if(lpob@problem@solver=="glpkAPI"){
     ex <- findExchReact(object@model)
     shadow <- glpkAPI::getRowsDualGLPK(lpob@problem@oobj)[ex@met_pos]
     names(shadow) <- ex@met_id
-  } else shadow=NULL
+  }else if(lpob@problem@solver=="cplexAPI" & solve_ok){
+    ex <- findExchReact(object@model)
+    shadow <- cplexAPI::getPiCPLEX(lpob@problem@oobj@env, lpob@problem@oobj@lp, 0, lpob@nr-1)[ex@met_pos]
+    names(shadow) <- ex@met_id
+  }else shadow=NULL
   
   names(fbasl$fluxes) <- names(object@lbnd)
   return(list(fbasl, shadow))
