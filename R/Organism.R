@@ -30,6 +30,7 @@
 #' @slot cellweight_sd A numeric giving the standard derivation of starting biomass (default (E.coli): 0.132 pg)
 #' @slot model Object of class sybil::modelorg containging the genome sclae metabolic model
 #' @slot algo Algorithm to be used during optimization (default fba)
+#' @slot rbiomass Name of biomass reactions which is used for growth model (set automatically but needs input if objective is not biomass optimization)
 setClass("Organism",
          representation(
            lbnd="numeric",
@@ -50,7 +51,8 @@ setClass("Organism",
            cellweight_sd = "numeric",
            speed="numeric",
            model="modelorg",
-           algo="character"
+           algo="character",
+           rbiomass="character"
          ),
          prototype(
            deathrate = 0.21,
@@ -64,6 +66,28 @@ setClass("Organism",
            speed = 2       
          )
 )
+
+
+#' Find biomass reaction in model
+#' @description Helper function to search for biomass reaction in available reactions of a model
+#' 
+#' @param model Object of class sybil::modelorg containging the genome sclae metabolic model
+#' @param keys Vector with strings which are used to find biomass reaction in model
+#' @return Vector with reaction ids for biomass reaction(s)
+findrBiomass <- function(model, keys=c("biom")){
+  ex_pos <- sybil::findExchReact(model)@react_pos
+  rbio <- vector()
+  for(k in keys){
+    idx <- grep(k, sybil::react_id(model), ignore.case = TRUE)
+    if(length(idx)==0) idx <- grep(k, sybil::react_name(model), ignore.case = TRUE)
+    if(length(idx)>0) rbio <- c(rbio, idx)
+  }
+  if(length(rbio)==0) return(NULL)
+  rbio <- setdiff(rbio, ex_pos) # exclude exchange reactions
+  return(sybil::react_id(model)[rbio])
+}
+
+
 
 ########################################################################################################
 ###################################### CONSTRUCTOR #####################################################
@@ -88,15 +112,29 @@ setClass("Organism",
 #' @return Object of class Organism
 Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]", esuffix="\\[e\\]", lyse=FALSE, feat=list(), 
                      typename=NA, setExInf=TRUE, ...){
+  
+  pot_biomass <- findrBiomass(model)
   if(all(model@obj_coef==0)){
-    exchanges_pos <- sybil::findExchReact(model)@react_pos
-    pot_biomass_pos <- grep("biom", model@react_id, ignore.case = TRUE)
-    pot_biomass_pos <- setdiff(pot_biomass_pos, exchanges_pos) # exclude exchange reactions
-    if(length(pot_biomass_pos)==0) stop("No objection function set in model")
-    print("No objective function set, try set automatically ..")
-    print(paste("found:", model@react_id[pot_biomass_pos]))
-    print(paste("set new biomass function:", model@react_id[pot_biomass_pos[1]]))
-    model@obj_coef[pot_biomass_pos[1]] <- 1
+    if(length(pot_biomass)==0) stop("No objection function set in model")
+    print("No objective function set, try set automatically...")
+    print(paste("found:", pot_biomass))
+    print(paste("set new biomass function:", pot_biomas[1]))
+    sybil::obj_coef(model)[which(sybil::react_id(model)==pot_biomass[1])] <- 1
+    rbiomass <- pot_biomass[1]
+  }else{
+    idx_obj <- which(sybil::obj_coef(model)!=0)
+    idx_bio <- which(sybil::react_id(model) %in% pot_biomass)
+    if(any(idx_obj %in% idx_bio)) rbiomass <- sybil::react_id(model)[idx_obj[which(idx_obj %in% idx_bio)]] # easy case: objective is (also) optimiziation of biomass
+    else if(length(idx_bio)>0){ # if objective is not optimization of biomass
+      cat("Optimization of biomass seems to be not the objective. Even if not optimized, a biomass reactions is needed for the growth model.\n")
+      cat("Objective functions:", sybil::react_id(model)[idx_obj], "\n")
+      cat("Available biomass reactions:", sybil::react_id(model)[idx_bio], "\n")
+      cat("Biomass reaction used for growth model:", sybil::react_id(model)[idx_bio][1], "\n")
+      rbiomass <- sybil::react_id(model)[idx_bio][1]
+    }else{ # if no biomass recation is found
+      cat("Optimization of biomass seems to be not the objective. Even if not optimized, a biomass reactions is needed for the growth model.")
+      stop("No biomass reaction found in model.")
+    }
   }
   if(is.na(typename)) typename <- sybil::mod_desc(model)
   rxname = sybil::react_id(model)
@@ -142,7 +180,7 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
     lobnd[which(names(lobnd) %in% medc & lobnd==0)] <- -1000 
   }
   new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
-      fbasol=fbasol, feat=feat, lyse=lyse, model=model, algo=algo, ...)
+      fbasol=fbasol, feat=feat, lyse=lyse, model=model, algo=algo,rbiomass=rbiomass, ...)
 }
 
 ########################################################################################################
@@ -411,19 +449,20 @@ setMethod("getPhenotype", "Organism", function(object, cutoff=1e-6, fbasol, par=
 #' @rdname growLin
 #'
 #' @param object An object of class Organisms.
-#' @param growth A number indicating the current biomass, which has to be updated. 
+#' @param biomass A number indicating the current biomass, which has to be updated. 
 #' @param fbasol Problem object according to the constraints and then solved with \code{optimizeProb}.
 #' @param tstep A number giving the time intervals for each simulation step.
 #' @return Returns the updated biomass of the organisms of interest.
 #' @details Linear growth of organisms is implemented by adding the calculated growthrate by \code{optimizeLP} to the already present growth value.
 #' @seealso \code{\link{Organism-class}} and \code{\link{optimizeLP}}
-setGeneric("growLin", function(object, growth, fbasol, tstep){standardGeneric("growLin")})
+setGeneric("growLin", function(object, biomass, fbasol, tstep){standardGeneric("growLin")})
 #' @export
 #' @rdname growLin
-setMethod("growLin", "Organism", function(object, growth, fbasol, tstep){
-  if(fbasol$obj > 0){
-    grow_accum <- fbasol$obj + growth
-  } else grow_accum <- growth - object@deathrate*tstep
+setMethod("growLin", "Organism", function(object, biomass, fbasol, tstep){
+  growth <- fbasol$fluxes[object@rbiomass]
+  if(growth > 0){
+    grow_accum <- growth + biomass
+  } else grow_accum <- biomass - object@deathrate*tstep
   return(grow_accum)
 })
 
@@ -436,19 +475,20 @@ setMethod("growLin", "Organism", function(object, growth, fbasol, tstep){
 #' @rdname growExp
 #'
 #' @param object An object of class Organisms.
-#' @param growth A number indicating the current biomass, which has to be updated. 
+#' @param biomass A number indicating the current biomass, which has to be updated. 
 #' @param fbasol Problem object according to the constraints and then solved with \code{optimizeProb}.
 #' @param tstep A number giving the time intervals for each simulation step.
 #' @return Returns the updated biomass of the organisms of interest.
 #' @details Exponential growth of organisms is implemented by adding the calculated growthrate multiplied with the current growth calculated by \code{optimizeLP} plus to the already present growth value
 #' @seealso \code{\link{Organism-class}} and \code{\link{optimizeLP}}
-setGeneric("growExp", function(object, growth, fbasol, tstep){standardGeneric("growExp")})
+setGeneric("growExp", function(object, biomass, fbasol, tstep){standardGeneric("growExp")})
 #' @export
 #' @rdname growExp
-setMethod("growExp", "Organism", function(object, growth, fbasol, tstep){
-  if(fbasol$obj > 0){
-    grow_accum <- (fbasol$obj * growth + growth)
-  } else grow_accum <- growth - object@deathrate*growth*tstep
+setMethod("growExp", "Organism", function(object, biomass, fbasol, tstep){
+  growth <- fbasol$fluxes[object@rbiomass]
+  if(growth > 0){
+    grow_accum <- (growth * biomass + biomass)
+  } else grow_accum <- biomass - object@deathrate*biomass*tstep
   return(grow_accum)
 })
 
