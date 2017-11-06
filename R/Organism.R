@@ -112,7 +112,6 @@ findrBiomass <- function(model, keys=c("biom")){
 #' @return Object of class Organism
 Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]", esuffix="\\[e\\]", lyse=FALSE, feat=list(), 
                      typename=NA, setExInf=TRUE, ...){
-  
   pot_biomass <- findrBiomass(model)
   if(all(model@obj_coef==0)){
     if(length(pot_biomass)==0) stop("No objection function set in model")
@@ -136,15 +135,7 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
       stop("No biomass reaction found in model.")
     }
   }
-  if(is.na(typename)) typename <- sybil::mod_desc(model)
-  rxname = sybil::react_id(model)
-  lpobject <- sybil::sysBiolAlg(model, algorithm=algo)
-  fbasol <- sybil::optimizeProb(lpobject)
-  names(fbasol$fluxes) = rxname
-  lobnd = sybil::lowbnd(model)
-  names(lobnd) = rxname
-  upbnd = sybil::uppbnd(model)
-  names(upbnd) = rxname
+  
   if(is.na(ex)){
     medc <- sybil::react_id(sybil::findExchReact(model))
     names(medc) <- model@met_name[sybil::findExchReact(model)@met_pos]
@@ -160,6 +151,20 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
   if(!is.na(ex_comp)){
     medc <- medc[grep(ex_comp, medc)]
   }
+  
+  rxname = sybil::react_id(model)
+  lobnd = sybil::lowbnd(model)
+  names(lobnd) = rxname
+  if(setExInf){ # if setExInf is true then set lower bound of all exchange reactions which have zero values to -INF
+    lobnd[which(names(lobnd) %in% medc & lobnd==0)] <- -1000
+  }
+  if(is.na(typename)) typename <- sybil::mod_desc(model)
+  lpobject <- sybil::sysBiolAlg(model, algorithm=algo)
+  fbasol <- sybil::optimizeProb(lpobject, lb=lobnd)
+  names(fbasol$fluxes) = rxname
+  upbnd = sybil::uppbnd(model)
+  names(upbnd) = rxname
+  
   if(lyse){
     stochmat <- as.matrix(sybil::S(model))
     colnames(stochmat) <- rxname
@@ -175,10 +180,7 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
     names(biomets) <- extrans[names(biomets)]
     feat[["biomass"]] <- biomets
   }
-  # if setExInf is true then set lower bound of all exchange reactions which have zero values to -INF
-  if(setExInf){
-    lobnd[which(names(lobnd) %in% medc & lobnd==0)] <- -1000 
-  }
+
   new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
       fbasol=fbasol, feat=feat, lyse=lyse, model=model, algo=algo,rbiomass=rbiomass, ...)
 }
@@ -331,8 +333,8 @@ setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=
 #' @export
 #' @rdname optimizeLP
 setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j, sec_obj="none"){ 
-  #fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb) # react makes problems with cplex shadow costs
-  fbasl <- sybil::optimizeProb(lpob, ub=ub, lb=lb)
+  fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb) # react makes problems with cplex shadow costs
+  #fbasl <- sybil::optimizeProb(lpob, ub=ub, lb=lb) # without react parm, fba do not use all substrates??
   switch(lpob@problem@solver,
          glpkAPI = {solve_ok <- fbasl$stat==5},
          cplexAPI = {solve_ok <- fbasl$stat==1},
