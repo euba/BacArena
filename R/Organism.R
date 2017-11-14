@@ -152,15 +152,16 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
     medc <- medc[grep(ex_comp, medc)]
   }
   
-  rxname = sybil::react_id(model)
-  lobnd = sybil::lowbnd(model)
+  rxname<- sybil::react_id(model)
+  lobnd <- sybil::lowbnd(model)
+  upbnd <- sybil::uppbnd(model) 
   names(lobnd) = rxname
   if(setExInf){ # if setExInf is true then set lower bound of all exchange reactions which have zero values to -INF
     lobnd[which(names(lobnd) %in% medc & lobnd==0)] <- -1000
   }
   if(is.na(typename)) typename <- sybil::mod_desc(model)
   lpobject <- sybil::sysBiolAlg(model, algorithm=algo)
-  fbasol <- sybil::optimizeProb(lpobject, lb=lobnd)
+  fbasol <- sybil::optimizeProb(lpobject, react=1:length(lobnd), ub=upbnd, lb=lobnd)
   names(fbasol$fluxes) = rxname
   upbnd = sybil::uppbnd(model)
   names(upbnd) = rxname
