@@ -470,10 +470,10 @@ setGeneric("addEssentialMed", function(object, org, only_return=FALSE, limit=10)
 #' @rdname addEssentialMed
 #' @export
 setMethod("addEssentialMed", "Arena", function(object, org, only_return=FALSE, limit=10){
-  var_r <- sybil::fluxVar(org@model, percentage=limit)
+  ex <- sybil::findExchReact(org@model)  
+  var_r <- sybil::fluxVar(org@model, react=ex@react_id, percentage=limit)
   
-  ex <- sybil::findExchReact(org@model)
-  ex_max <- sybil::maxSol(var_r, "lp_obj")[ex@react_pos]
+  ex_max <- sybil::maxSol(var_r, "lp_obj")
   
   min_id  <- ex@react_id[which(ex_max<0)]
   min_val <- -ex@lowbnd[which(ex_max<0)]
