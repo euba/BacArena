@@ -2806,10 +2806,10 @@ setMethod("checkCorr", "Eval", function(object, corr=NULL, tocheck=list()){
 #' @param sub_nr Maximal number of substances to be show
 #' @param cutoff Shadow costs should be smaller than cutoff
 #' @details Returns ggplot objects
-setGeneric("plotShadowCost", function(object, spec_nr=1, sub_nr=10, cutoff=-1){standardGeneric("plotShadowCost")})
+setGeneric("plotShadowCost", function(object, spec_nr=1, sub_nr=10, cutoff=-1, noplot=FALSE){standardGeneric("plotShadowCost")})
 #' @export
 #' @rdname plotShadowCost
-setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutoff=-1){
+setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutoff=-1, noplot=FALSE){
 
   df <- data.frame(spec=as.character(), sub=as.character(), shadow=as.numeric(), time=as.integer())
   
@@ -2833,6 +2833,16 @@ setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutof
   df$time=seq_along(object@shadowlist)
   df <- reshape2::melt(df, id.vars="time")
   colnames(df)[2:3] <- c("sub", "shadow")
+  
+  # do not plot shadow costs but print statistics
+  if(noplot){
+    df2 <- data.frame()
+    for(s in levels(df$sub)){
+      df2 <- rbind(df2, summary(df[which(df$sub==s),]$shadow))}
+    rownames(df2) <- levels(df$sub)
+    colnames(df2) <- names(summary(df[which(df$sub==s),]$shadow))
+    return(df2)
+  }
   
   q1 <- ggplot2::ggplot(df, ggplot2::aes(x=df$time, y=df$shadow)) + ggplot2::geom_line(ggplot2::aes(col=df$sub), size=1)
   
