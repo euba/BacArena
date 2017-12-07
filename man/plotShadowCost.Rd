@@ -6,10 +6,11 @@
 \alias{plotShadowCost,Eval-method}
 \title{Function to plot substance shadow costs for a specie}
 \usage{
-plotShadowCost(object, spec_nr = 1, sub_nr = 10, cutoff = -1)
+plotShadowCost(object, spec_nr = 1, sub_nr = 10, cutoff = -1,
+  noplot = FALSE)
 
 \S4method{plotShadowCost}{Eval}(object, spec_nr = 1, sub_nr = 10,
-  cutoff = -1)
+  cutoff = -1, noplot = FALSE)
 }
 \arguments{
 \item{object}{An object of class Eval.}

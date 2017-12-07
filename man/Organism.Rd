@@ -26,7 +26,7 @@ Structure of the S4 class \code{Organism} representing the organisms present in 
 
 \item{\code{feat}}{A list containing conditional features for the object (contains at the momement only biomass components for lysis).}
 
-\item{\code{deathrate}}{A numeric value giving the factor by which the growth should be reduced in every iteration (default (E.coli): 0.21 pg)}
+\item{\code{deathrate}}{A numeric value giving the factor by which the biomass should be reduced in every iteration if no growth is possible (default (E.coli): 0.21 pg)}
 
 \item{\code{minweight}}{A numeric value giving the growth limit at which the organism dies. (default (E.coli): 0.083 pg)}
 
@@ -47,5 +47,7 @@ Structure of the S4 class \code{Organism} representing the organisms present in 
 \item{\code{model}}{Object of class sybil::modelorg containging the genome sclae metabolic model}
 
 \item{\code{algo}}{Algorithm to be used during optimization (default fba)}
+
+\item{\code{rbiomass}}{Name of biomass reactions which is used for growth model (set automatically but needs input if objective is not biomass optimization)}
 }}
 

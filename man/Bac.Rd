@@ -10,7 +10,7 @@ Structure of the S4 class \code{Bac} inheriting from class \code{\link{Organism-
 \section{Slots}{
 
 \describe{
-\item{\code{deathrate}}{A numeric value giving the factor by which the growth should be reduced in every iteration (default (E.coli): 0.21 pg)}
+\item{\code{deathrate}}{A numeric value giving the factor by which the biomass should be reduced in every iteration if no growth is possible (default (E.coli): 0.21 pg)}
 
 \item{\code{minweight}}{A numeric value giving the growth limit at which the organism dies. (default (E.coli): 0.083 pg)}
 

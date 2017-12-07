@@ -19,7 +19,7 @@
 #' @slot fbasol A list with the solutions of the flux balance analysis.
 #' @slot lyse A boolean variable indicating if the organism should lyse after death.
 #' @slot feat A list containing conditional features for the object (contains at the momement only biomass components for lysis).
-#' @slot deathrate A numeric value giving the factor by which the growth should be reduced in every iteration (default (E.coli): 0.21 pg)
+#' @slot deathrate A numeric value giving the factor by which the biomass should be reduced in every iteration if no growth is possible (default (E.coli): 0.21 pg)
 #' @slot minweight A numeric value giving the growth limit at which the organism dies. (default (E.coli): 0.083 pg)
 #' @slot growtype A character vector giving the functional type for growth (linear or exponential).
 #' @slot kinetics A List containing Km and v_max values for each reactions.
@@ -653,7 +653,7 @@ setMethod(show, signature(object="Organism"), function(object){
 #' @exportClass Bac
 #' @rdname Bac
 #'
-#' @slot deathrate A numeric value giving the factor by which the growth should be reduced in every iteration (default (E.coli): 0.21 pg)
+#' @slot deathrate A numeric value giving the factor by which the biomass should be reduced in every iteration if no growth is possible (default (E.coli): 0.21 pg)
 #' @slot minweight A numeric value giving the growth limit at which the organism dies. (default (E.coli): 0.083 pg)
 #' @slot cellarea A numeric value indicating the surface that one organism occupies (default (E.coli): 4.42 mu_m^2)
 #' @slot maxweight A numeric value giving the maximal dry weight of single organism (default (E.coli): 1.172 pg)

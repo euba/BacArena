@@ -6,14 +6,14 @@
 \alias{growExp,Organism-method}
 \title{Function for letting organisms grow exponentially}
 \usage{
-growExp(object, growth, fbasol, tstep)
+growExp(object, biomass, fbasol, tstep)
 
-\S4method{growExp}{Organism}(object, growth, fbasol, tstep)
+\S4method{growExp}{Organism}(object, biomass, fbasol, tstep)
 }
 \arguments{
 \item{object}{An object of class Organisms.}
 
-\item{growth}{A number indicating the current biomass, which has to be updated.}
+\item{biomass}{A number indicating the current biomass, which has to be updated.}
 
 \item{fbasol}{Problem object according to the constraints and then solved with \code{optimizeProb}.}
 
