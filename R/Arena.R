@@ -470,17 +470,25 @@ setGeneric("addEssentialMed", function(object, org, only_return=FALSE, limit=10)
 #' @rdname addEssentialMed
 #' @export
 setMethod("addEssentialMed", "Arena", function(object, org, only_return=FALSE, limit=10){
-  ex <- sybil::findExchReact(org@model)  
+  model <- org@model
+  ex <- sybil::findExchReact(model)
+  lowbnd(model)[ex@react_pos] <- -1000 # set all lower bounds to -1000
+  
   var_r <- sybil::fluxVar(org@model, react=ex@react_id, percentage=limit)
-  
   ex_max <- sybil::maxSol(var_r, "lp_obj")
-  
   min_id  <- ex@react_id[which(ex_max<0)]
-  min_val <- -ex@lowbnd[which(ex_max<0)]
+  
+  min_val <- -ex@lowbnd[which(ex_max<0)] # get lower bounds also for -INF cases
   min_val[min_val==Inf] <- 1000
   
-  if(only_return) return(min_id)
-  for(id in intersect(min_id, object@mediac)){
+  predefined <- sapply(arena@media, function(x){sum(x@diffmat)}) # only use compounds which are not already in present in the media
+  idx <- which(min_id %in% names(predefined)[which(predefined==0)])
+  
+  if(length(idx)==0) return(object)
+  
+  if(only_return) return(min_id[idx])
+  
+  for(id in intersect(min_id[idx], object@mediac)){
     object@media[[id]]@diffmat = Matrix::Matrix(min_val[[which(min_id==id)]], nrow=object@m, ncol=object@n, sparse=TRUE)}
   return(object)
 })
