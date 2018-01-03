@@ -3078,8 +3078,8 @@ setMethod("HeatMapFeeding", "Eval", function(object, speciesA, speciesB, var_nr)
   # prod:speciesB cons:speciesA   -> -1
   # NA -> 0
   for (h in 1:nrow(z))
-  {if (z[h,1] == names(sim@specs)[speciesA]) (d[h,1]=1)
-    if (z[h,1] == names(sim@specs)[speciesB]) (d[h,1]=-1)
+  {if (z[h,1] == names(object@specs)[speciesA]) (d[h,1]=1)
+    if (z[h,1] == names(object@specs)[speciesB]) (d[h,1]=-1)
   }
   colnames(d)[1] <- "status"
   q <- cbind(z,d)
@@ -3091,7 +3091,7 @@ setMethod("HeatMapFeeding", "Eval", function(object, speciesA, speciesB, var_nr)
   p3 <- ggplot2::ggplot(p.m, ggplot2::aes(sim_step,met)) +
     ggplot2::geom_tile(ggplot2::aes(fill = value), colour = "white") +
     ggplot2::scale_fill_gradient2(name = "Producer", low = "red", mid = "green", high = "blue", breaks=seq(-1,1,by=1),
-                                  labels = c(names(sim@specs)[speciesB], "no feeding", names(sim@specs)[speciesA])) +
+                                  labels = c(names(object@specs)[speciesB], "no feeding", names(object@specs)[speciesA])) +
     ggplot2::xlab("Simulation Step") + ggplot2::ylab("Exchange Reactions") 
   return((p3)) })
 
