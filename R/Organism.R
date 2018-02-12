@@ -379,11 +379,14 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
     ex <- findExchReact(object@model)
     shadow <- glpkAPI::getRowsDualGLPK(lpob@problem@oobj)[ex@met_pos]
     names(shadow) <- ex@met_id
-  }else if(lpob@problem@solver=="cplexAPI" & solve_ok){
-    ex <- findExchReact(object@model)
-    shadow <- cplexAPI::getPiCPLEX(lpob@problem@oobj@env, lpob@problem@oobj@lp, 0, lpob@nr-1)[ex@met_pos]
-    names(shadow) <- ex@met_id
-  }else shadow=NULL
+  }
+   # Interim Solution Only      
+   # else if(lpob@problem@solver=="cplexAPI" & solve_ok){
+   # ex <- findExchReact(object@model)
+   # shadow <- cplexAPI::getPiCPLEX(lpob@problem@oobj@env, lpob@problem@oobj@lp, 0, lpob@nr-1)[ex@met_pos]
+   # names(shadow) <- ex@met_id
+   #}
+  else shadow=NULL
   
   names(fbasl$fluxes) <- names(object@lbnd)
   return(list(fbasl, shadow))
