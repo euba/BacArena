@@ -8,11 +8,12 @@
 \usage{
 simEnv(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
   diffusion = TRUE, diff_par = FALSE, cl_size = 2, sec_obj = "none",
-  cutoff = 1e-06, pcut = 1e-06, verbose = TRUE)
+  cutoff = 1e-06, pcut = 1e-06, with_shadow = FALSE, verbose = TRUE)
 
 \S4method{simEnv}{Arena}(object, time, lrw = NULL, continue = FALSE,
   reduce = FALSE, diffusion = TRUE, diff_par = FALSE, cl_size = 2,
-  sec_obj = "none", cutoff = 1e-06, pcut = 1e-06, verbose = TRUE)
+  sec_obj = "none", cutoff = 1e-06, pcut = 1e-06, with_shadow = FALSE,
+  verbose = TRUE)
 }
 \arguments{
 \item{object}{An object of class Arena or Eval.}
@@ -36,6 +37,8 @@ simEnv(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
 \item{cutoff}{value used to define numeric accuracy}
 
 \item{pcut}{A number giving the cutoff value by which value of objective function is considered greater than 0.}
+
+\item{with_shadow}{True if shadow cost should be stores (default off).}
 
 \item{verbose}{Set to false if no status messages should be printed.}
 }

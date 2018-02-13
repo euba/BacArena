@@ -7,11 +7,12 @@
 \title{Function for computing the linear programming according to the model structure}
 \usage{
 optimizeLP(object, lpob = object@lpobj, lb = object@lbnd,
-  ub = object@ubnd, cutoff = 1e-06, j, sec_obj = "none")
+  ub = object@ubnd, cutoff = 1e-06, j, sec_obj = "none",
+  with_shadow = FALSE)
 
 \S4method{optimizeLP}{Organism}(object, lpob = object@lpobj,
   lb = object@lbnd, ub = object@ubnd, cutoff = 1e-06, j,
-  sec_obj = "none")
+  sec_obj = "none", with_shadow = FALSE)
 }
 \arguments{
 \item{object}{An object of class Organisms.}
@@ -27,6 +28,8 @@ optimizeLP(object, lpob = object@lpobj, lb = object@lbnd,
 \item{j}{debuging index to track cell}
 
 \item{sec_obj}{character giving the secondary objective for a bi-level LP if wanted. Use "mtf" for minimizing total flux, "opt_rxn" for optimizing a random reaction, "opt_ex" for optimizing a random exchange reaction, and "sumex" for optimizing the sum of all exchange fluxes.}
+
+\item{with_shadow}{True if shadow costs should be stored (default false).}
 }
 \value{
 Modified problem object according to the constraints and then solved with \code{optimizeProb}.

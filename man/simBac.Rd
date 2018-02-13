@@ -7,10 +7,10 @@
 \title{Function for one simulation iteration for objects of Bac class}
 \usage{
 simBac(object, arena, j, sublb, bacnum, sec_obj = "none", cutoff = 1e-06,
-  pcut = 1e-06)
+  pcut = 1e-06, with_shadow = FALSE)
 
 \S4method{simBac}{Bac}(object, arena, j, sublb, bacnum, sec_obj = "none",
-  cutoff = 1e-06, pcut = 1e-06)
+  cutoff = 1e-06, pcut = 1e-06, with_shadow = FALSE)
 }
 \arguments{
 \item{object}{An object of class Bac.}
@@ -28,6 +28,8 @@ simBac(object, arena, j, sublb, bacnum, sec_obj = "none", cutoff = 1e-06,
 \item{cutoff}{value used to define numeric accuracy.}
 
 \item{pcut}{A number giving the cutoff value by which value of objective function is considered greater than 0.}
+
+\item{with_shadow}{True if shadow cost should be stores (default off).}
 }
 \value{
 Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.

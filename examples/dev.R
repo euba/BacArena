@@ -1,4 +1,4 @@
-devtools::install_github("hadley/devtools")
+#devtools::install_github("hadley/devtools")
 
 library(devtools)
 library(knitr)

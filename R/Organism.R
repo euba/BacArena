@@ -322,6 +322,7 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' @param cutoff value used to define numeric accuracy while interpreting optimization results
 #' @param j debuging index to track cell
 #' @param sec_obj character giving the secondary objective for a bi-level LP if wanted. Use "mtf" for minimizing total flux, "opt_rxn" for optimizing a random reaction, "opt_ex" for optimizing a random exchange reaction, and "sumex" for optimizing the sum of all exchange fluxes.
+#' @param with_shadow True if shadow costs should be stored (default false).
 #' @return Modified problem object according to the constraints and then solved with \code{optimizeProb}.
 #' @details The parameter for sec_obj can be used to optimize a bi-level LP with a secondary objective if wanted. This can be helpful to subselect the solution space and create less alternative optimal solution. The secondary objective can be set to "mtf" to minimize the total flux, to simulate minimal enzyme usage of an organisms. If set to "opt_rxn" or "opt_ex", the secondary objective is picked as a random reaction or exchange reaction respectively everytime a fba is performed. This means that every individual of a population will select a different secondary reaction to optimize. The "sumex" option maximizes the secretion of products.
 #' @seealso \code{\link{Organism-class}}, \code{\link{optimizeProb}} and \code{\link{sysBiolAlg}}
@@ -330,10 +331,10 @@ setMethod("setKinetics", "Organism", function(object, exchangeR, Km, vmax){
 #' org <- Organism(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize a organism
 #' org@fbasol <- optimizeLP(org)
-setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j, sec_obj="none"){standardGeneric("optimizeLP")})
+setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j, sec_obj="none", with_shadow=FALSE){standardGeneric("optimizeLP")})
 #' @export
 #' @rdname optimizeLP
-setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j, sec_obj="none"){ 
+setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j, sec_obj="none", with_shadow=FALSE){ 
   fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb) # react makes problems with cplex shadow costs
   #fbasl <- sybil::optimizeProb(lpob, ub=ub, lb=lb) # without react parm, fba do not use all substrates??
   switch(lpob@problem@solver,
@@ -375,15 +376,17 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
            stop("Secondary objective not suported!"))
   }
   # get shadow cost from dual problem (only for glpk and cplex)
-  if(lpob@problem@solver=="glpkAPI"){
+  if(!with_shadow){
+    shadow=NULL
+  } else if(lpob@problem@solver=="glpkAPI"){
     ex <- findExchReact(object@model)
     shadow <- glpkAPI::getRowsDualGLPK(lpob@problem@oobj)[ex@met_pos]
     names(shadow) <- ex@met_id
-  }else if(lpob@problem@solver=="cplexAPI" & solve_ok){
+  }else if(lpob@problem@solver=="cplexAPI" & solve_ok){ # TODO: cplex shadow costs needs update of optimzeProb call in optimizeLP() which is having side effects ...
     ex <- findExchReact(object@model)
     shadow <- cplexAPI::getPiCPLEX(lpob@problem@oobj@env, lpob@problem@oobj@lp, 0, lpob@nr-1)[ex@met_pos]
     names(shadow) <- ex@met_id
-  }else shadow=NULL
+  }
   
   names(fbasl$fluxes) <- names(object@lbnd)
   return(list(fbasl, shadow))
@@ -842,19 +845,20 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 #' @param sec_obj character giving the secondary objective for a bi-level LP if wanted.
 #' @param cutoff value used to define numeric accuracy.
 #' @param pcut A number giving the cutoff value by which value of objective function is considered greater than 0.
+#' @param with_shadow True if shadow cost should be stores (default off).
 #' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.
 #' @details Bacterial individuals undergo step by step the following procedures: First the individuals are constrained with \code{constrain} to the substrate environment, then flux balance analysis is computed with \code{optimizeLP}, after this the substrate concentrations are updated with \code{consume}, then the bacterial growth is implemented with \code{growth}, the potential new phenotypes are added with \code{checkPhen}, finally the additional and conditional functions \code{lysis}, \code{move} or \code{chemotaxis} are performed. Can be used as a wrapper for all important bacterial functions in a function similar to \code{simEnv}.
 #' @seealso \code{\link{Bac-class}}, \code{\link{Arena-class}}, \code{\link{simEnv}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{growth}, \code{checkPhen}, \code{lysis}, \code{move} and \code{chemotaxis}
 #' @examples
 #' NULL
-setGeneric("simBac", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6){standardGeneric("simBac")})
+setGeneric("simBac", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6, with_shadow=FALSE){standardGeneric("simBac")})
 #' @export
 #' @rdname simBac
-setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6){
+setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6, with_shadow=FALSE){
   const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, ub=object@ubnd*bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"biomass"], tstep=arena@tstep, scale=arena@scale, j)
   lobnd <- const[[1]]; upbnd <- const[[2]]
-  optimization <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff)
+  optimization <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff, with_shadow=with_shadow)
   fbasol <- optimization[[1]]
   
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol, cutoff) )) #scale consumption to the number of cells?
@@ -908,7 +912,7 @@ setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum, lpobjec
   const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, ub=object@ubnd*bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"biomass"], tstep=arena@tstep, scale=arena@scale)
   lobnd <- const[[1]]; upbnd <- const[[2]]
-  fbasol <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff)
+  fbasol <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff, with_shadow=with_shadow)
 
   sublb[j,] <- consume(object, sublb=sublb[j,], bacnum=bacnum, fbasol=fbasol, cutoff=1e-6) #scale consumption to the number of cells?
   
@@ -1083,19 +1087,20 @@ setMethod("cellgrowth", "Human", function(object, population, j, occupyM, fbasol
 #' @param cutoff value used to define numeric accuracy.
 #' @param pcut A number giving the cutoff value by which value of objective function is considered greater than 0.
 #' @param sec_obj character giving the secondary objective for a bi-level LP if wanted.
+#' @param with_shadow True if shadow cost should be stores (default off).
 #' @return Returns the updated enivironment of the \code{arena} parameter with all new positions of individuals on the grid and all new substrate concentrations.
 #' @details Human cell individuals undergo the step by step the following procedures: First the individuals are constrained with \code{constrain} to the substrate environment, then flux balance analysis is computed with \code{optimizeLP}, after this the substrate concentrations are updated with \code{consume}, then the cell growth is implemented with \code{cellgrowth}, the potential new phenotypes are added with \code{checkPhen}, finally the conditional function \code{lysis} is performed. Can be used as a wrapper for all important cell functions in a function similar to \code{simEnv}.
 #' @seealso \code{\link{Human-class}}, \code{\link{Arena-class}}, \code{\link{simEnv}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{cellgrowth}, \code{checkPhen} and \code{lysis}
 #' @examples
 #' NULL
-setGeneric("simHum", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6){standardGeneric("simHum")})
+setGeneric("simHum", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6, with_shadow=FALSE){standardGeneric("simHum")})
 #' @export
 #' @rdname simHum
-setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6){
+setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6, with_shadow=FALSE){
   const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, ub=object@ubnd*bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"biomass"], tstep=arena@tstep, scale=arena@scale, j)
   lobnd <- const[[1]]; upbnd <- const[[2]]
-  optimization <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff)
+  optimization <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff, with_shadow=with_shadow)
   fbasol <- optimization[[1]]
   
   eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol, cutoff) )) #scale consumption to the number of cells?

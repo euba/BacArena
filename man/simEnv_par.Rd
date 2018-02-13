@@ -8,11 +8,11 @@
 \usage{
 simEnv_par(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
   cluster_size = NULL, diffusion = TRUE, sec_obj = "none",
-  cutoff = 1e-06, verbose = TRUE)
+  cutoff = 1e-06, with_shadow = FALSE, verbose = TRUE)
 
 \S4method{simEnv_par}{Arena}(object, time, lrw = NULL, continue = FALSE,
   reduce = FALSE, cluster_size = NULL, diffusion = TRUE,
-  sec_obj = "none", cutoff = 1e-06, verbose = TRUE)
+  sec_obj = "none", cutoff = 1e-06, with_shadow = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{object}{An object of class Arena or Eval.}
@@ -32,6 +32,8 @@ simEnv_par(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
 \item{sec_obj}{character giving the secondary objective for a bi-level LP if wanted.}
 
 \item{cutoff}{value used to define numeric accuracy}
+
+\item{with_shadow}{True if shadow cost should be stores (default off).}
 
 \item{verbose}{Set to false if no status messages should be printed.}
 }
