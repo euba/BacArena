@@ -883,7 +883,7 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="no
       arena@orgdat[,c('x','y')] <- mov_pos
     }else{
       chemo_pos <- chemotaxis(object, arena, j)
-      arena@orgdat[j,c('x','y')] <- chemo_pos
+      if(!is.null(chemo_pos)){arena@orgdat[j,c('x','y')] <- chemo_pos}
     }
   }
   return(arena)
