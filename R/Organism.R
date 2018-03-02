@@ -880,7 +880,7 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="no
   }
   pos <- arena@orgdat[,c('x','y')]
   if(!dead && !arena@stir && object@speed != 0){
-    if(is.null(object@chem)){
+    if(object@chem == ''){
       mov_pos <- move(object, pos, arena@n, arena@m, j, arena@occupyM)
       arena@orgdat[,c('x','y')] <- mov_pos
     }else{
