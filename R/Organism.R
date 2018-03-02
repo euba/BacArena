@@ -796,6 +796,8 @@ setMethod("growth_par", "Bac", function(object, population, j, fbasol, tstep){
 #' @param object An object of class Bac.
 #' @param population An object of class Arena.
 #' @param j The number of the iteration of interest.
+#' @param chemo The vector that contains the prefered substrate.
+
 #' @details Bacteria move to a position in the Moore neighbourhood which has the highest concentration of the prefered substrate, which is not occupied by other individuals. The prefered substance is given by slot \code{chem} in the \code{Bac} object. If there is no free space the individuals stays in the same position. If the concentration in the Moore neighbourhood has the same concentration in every position, then random movement is implemented.
 #' @seealso \code{\link{Bac-class}} and \code{\link{emptyHood}}
 #' @examples
@@ -806,12 +808,12 @@ setMethod("growth_par", "Bac", function(object, population, j, fbasol, tstep){
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
 #' chemotaxis(bac,arena,1)
-setGeneric("chemotaxis", function(object, population, j){standardGeneric("chemotaxis")})
+setGeneric("chemotaxis", function(object, population, j, chemo){standardGeneric("chemotaxis")})
 #' @export
 #' @rdname chemotaxis
-setMethod("chemotaxis", "Bac", function(object, population, j){
+setMethod("chemotaxis", "Bac", function(object, population, j, chemo){
   popvec <- population@orgdat[j,]
-  attract <- population@media[[object@chem]]@diffmat
+  attract <- population@media[[chemo]]@diffmat
   freenb <- emptyHood(object, population@orgdat[,c('x','y')],
                       population@n, population@m, popvec$x, popvec$y)
   if(length(freenb) != 0){
@@ -847,7 +849,7 @@ setMethod("chemotaxis", "Bac", function(object, population, j){
 #' @param pcut A number giving the cutoff value by which value of objective function is considered greater than 0.
 #' @param with_shadow True if shadow cost should be stores (default off).
 #' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.
-#' @details Bacterial individuals undergo step by step the following procedures: First the individuals are constrained with \code{constrain} to the substrate environment, then flux balance analysis is computed with \code{optimizeLP}, after this the substrate concentrations are updated with \code{consume}, then the bacterial growth is implemented with \code{growth}, the potential new phenotypes are added with \code{checkPhen}, finally the additional and conditional functions \code{lysis}, \code{move} or \code{chemotaxis} are performed. Can be used as a wrapper for all important bacterial functions in a function similar to \code{simEnv}.
+#' @details Bacterial individuals undergo step by step the following procedures: First the individuals are constrained with \code{constrain} to the substrate environment, then flux balance analysis is computed with \code{optimizeLP}, after this the substrate concentrations are updated with \code{consume}, then the bacterial growth is implemented with \code{growth}, the potential new phenotypes are added with \code{checkPhen}, finally the additional and conditional functions \code{lysis}, \code{move} or \code{chemotaxis} are performed. In case of many compounds in the vector of \code{chemotaxis}, the change of the position takes place by the order of the compounds in the vector of \code{chemotaxis}. Can be used as a wrapper for all important bacterial functions in a function similar to \code{simEnv}.
 #' @seealso \code{\link{Bac-class}}, \code{\link{Arena-class}}, \code{\link{simEnv}}, \code{constrain}, \code{optimizeLP}, \code{consume}, \code{growth}, \code{checkPhen}, \code{lysis}, \code{move} and \code{chemotaxis}
 #' @examples
 #' NULL
@@ -882,8 +884,11 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="no
       mov_pos <- move(object, pos, arena@n, arena@m, j, arena@occupyM)
       arena@orgdat[,c('x','y')] <- mov_pos
     }else{
-      chemo_pos <- chemotaxis(object, arena, j)
+      for (v in seq_along(object@chem)){
+      chemo <- object@chem[[v]]
+      chemo_pos <- chemotaxis(object, arena, j, chemo)
       if(!is.null(chemo_pos)){arena@orgdat[j,c('x','y')] <- chemo_pos}
+      }
     }
   }
   return(arena)
