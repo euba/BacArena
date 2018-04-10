@@ -1454,13 +1454,15 @@ setClass("Eval",
            simlist="list",
            mfluxlist="list",
            shadowlist="list",
+           exchangeslist="list",
            subchange="numeric"
          ),
          prototype(
            medlist = list(),
            simlist = list(),
            mfluxlist = list(),
-           shadowlist = list()
+           shadowlist = list(),
+           exchangeslist = list()
          )
 )
 
@@ -1477,7 +1479,7 @@ Eval <- function(arena){
   subc = rep(0, length(arena@mediac))
   names(subc) <- arena@mediac
   new("Eval", n=arena@n, m=arena@m, Lx=arena@Lx, Ly=arena@Ly, tstep=arena@tstep, specs=arena@specs, mediac=arena@mediac, subchange=subc,
-      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir, mfluxlist=list(), shadowlist=list(), exchanges=matrix() )
+      phenotypes=arena@phenotypes, media=arena@media, orgdat=arena@orgdat, medlist=list(), simlist=list(), stir=arena@stir, mfluxlist=list(), shadowlist=list(), exchangeslist=list() )
 }
 
 ########################################################################################################
@@ -1494,6 +1496,9 @@ setGeneric("shadowlist", function(object){standardGeneric("shadowlist")})
 setMethod("shadowlist", "Eval", function(object){return(object@shadowlist)})
 setGeneric("subchange", function(object){standardGeneric("subchange")})
 setMethod("subchange", "Eval", function(object){return(object@subchange)})
+setGeneric("exchangeslist", function(object){standardGeneric("exchangeslist")})
+setMethod("exchangeslist", "Eval", function(object){return(object@exchangeslist)})
+
 
 ########################################################################################################
 ###################################### METHODS #########################################################
@@ -1545,9 +1550,10 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
       })))
     }
     eval.parent(substitute(object@simlist[[length(object@simlist)+1]] <- arena@orgdat))
-    eval.parent(substitute(object@phenotypes <- arena@phenotypes))
     eval.parent(substitute(object@mfluxlist[[length(object@mfluxlist)+1]] <- arena@mflux))
     eval.parent(substitute(object@shadowlist[[length(object@shadowlist)+1]] <- arena@shadow))
+    eval.parent(substitute(object@exchangeslist[[length(object@exchangeslist)+1]] <- arena@exchanges))
+    eval.parent(substitute(object@phenotypes <- arena@phenotypes))
     eval.parent(substitute(object@specs <- arena@specs))
     eval.parent(substitute(object@mflux <- arena@mflux)) 
     eval.parent(substitute(object@mediac <- arena@mediac))
@@ -1558,14 +1564,17 @@ setMethod("addEval", "Eval", function(object, arena, replace=F){
     eval.parent(substitute(object@models <- arena@models))
     eval.parent(substitute(object@scale <- arena@scale))
     eval.parent(substitute(object@sublb <- arena@sublb))
-    eval.parent(substitute(object@exchanges <- arena@exchanges)) 
+    eval.parent(substitute(object@exchanges <- arena@exchanges))
+    
     
   }else{
     eval.parent(substitute(object@medlist[[length(object@medlist)]] <- lapply(arena@media, function(x){
       return(as.vector(x@diffmat))
     })))
     eval.parent(substitute(object@simlist[[length(object@simlist)]] <- arena@orgdat))
-    eval.parent(substitute(object@simlist[[length(object@shadowlist)]] <- arena@shadow))
+    eval.parent(substitute(object@mfluxlist[[length(object@mfluxlist)]] <- arena@mflux))
+    eval.parent(substitute(object@shadowlist[[length(object@shadowlist)]] <- arena@shadow))
+    eval.parent(substitute(object@exchangeslist[[length(object@exchangeslist)]] <- arena@exchanges))
     eval.parent(substitute(object@phenotypes <- arena@phenotypes))
     eval.parent(substitute(object@specs <- arena@specs)) 
     eval.parent(substitute(object@mflux <- arena@mflux)) 
@@ -1617,7 +1626,7 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
   arena <- Arena(n=object@n, m=object@m, Lx=object@Lx, Ly=object@Ly, tstep=object@tstep, 
                  specs=object@specs, mediac=object@mediac, mflux=object@mfluxlist[[time]],
                  phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, stir=object@stir, 
-                 shadow=object@shadowlist[[time]], seed=object@seed)
+                 shadow=object@shadowlist[[time]], seed=object@seed, exchanges=object@exchangeslist[[time]])
   arena@occupyM <- object@occupyM
   # reinitialize lp objects
   for(i in seq_along(arena@specs)){ 
