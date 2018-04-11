@@ -19,7 +19,7 @@ globalVariables(c("diffuseNaiveCpp","diffuseSteveCpp"))
 #' @slot tstep A number giving the time (in h) per iteration.
 #' @slot stir A boolean variable indicating if environment should be stirred. If true, bacteria move to random positions within the environment and substances have a uniform concentration value.
 #' @slot mflux A vector containing highly used metabolic reactions within the arena
-#' @slot exchanges A Matrix containing last exchanges of each organism.
+#' @slot exchanges A data.frame containing last exchanges of each organism.
 #' @slot shadow A vector containing shadow prices of metabolites present in the arena
 #' @slot n A number giving the horizontal size of the environment.
 #' @slot m A number giving the vertical size of the environment.
@@ -41,7 +41,7 @@ setClass("Arena",
            tstep="numeric",
            stir="logical",
            mflux="list",
-           exchanges="matrix",
+           exchanges="data.frame",
            shadow="list",
            n="numeric",
            m="numeric",
@@ -818,8 +818,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
   }
   if(class(object)!="Eval"){addEval(evaluation, arena)}
   arena@sublb <- getSublb(arena)
-  arena@exchanges <- matrix(nrow=0, ncol=(length(arena@mediac)+1)) # remember exchanges
-  colnames(arena@exchanges) <- c("species", names(arena@mediac))
+  arena@exchanges <- data.frame() # remember exchanges
   diff_t=0
   if(arena@stir){ #create all possible positions on arena
     allxy = expand.grid(1:arena@n,1:arena@m)

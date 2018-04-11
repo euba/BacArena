@@ -872,8 +872,9 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="no
   arena@mflux[[type]]  <- arena@mflux[[type]] + fbasol$fluxes # remember active fluxes
   arena@shadow[[type]] <- arena@shadow[[type]]+ optimization[[2]]
   idx <- match(arena@mediac, names(fbasol$fluxes))
-  idx2<- match(type, names(arena@specs))
-  arena@exchanges <- rbind(arena@exchanges, c(idx2,fbasol$fluxes[idx])) # remember exchanges
+  exchanges <- data.frame(type,t(fbasol$fluxes[idx]))
+  colnames(exchanges) <- c("species", names(arena@mediac))
+  arena@exchanges <- rbind(arena@exchanges, exchanges) # remember exchanges
   
   if(dead && object@lyse){
     eval.parent(substitute(sublb[j,] <- lysis(object, sublb[j,])))
