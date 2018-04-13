@@ -842,8 +842,9 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
     arena@shadow <-lapply(arena@shadow, function(x){numeric(length(x))}) # empty shadow pool
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
-      for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
-        cat("\rOrganims",j,"/",nrow(arena@orgdat))
+      org.count <- nrow(arena@orgdat)
+      for(j in 1:org.count){ # for each organism in arena
+        cat("\rOrganims",j,"/",org.count)
         org <- arena@specs[[arena@orgdat[j,'type']]]
         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
         switch(class(org),
