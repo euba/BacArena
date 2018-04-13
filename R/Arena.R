@@ -843,6 +843,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
     arena@shadow <-lapply(arena@shadow, function(x){numeric(length(x))}) # empty shadow pool
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
       for(j in 1:nrow(arena@orgdat)){ # for each organism in arena
+        cat("\rOrganims",j,"/",nrow(arena@orgdat))
         org <- arena@specs[[arena@orgdat[j,'type']]]
         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
         switch(class(org),
@@ -854,6 +855,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       rm("test")
     }
+    cat("\r")
     if(diffusion && !arena@stir){
       if(diff_par){
         diff_t <- system.time(arena <- diffuse_par(arena, cluster_size=cl_size, lrw=lrw, sublb=sublb) )[3]
@@ -921,6 +923,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
   #diff_pde_t=0; diff_sublb_t=0
   #diff_loop_t <- system.time({for(j in seq_along(arena@media)){
   for(j in seq_along(arena@media)){
+    cat("\rSubstances",j,"/",length(arena@media))
     #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
     if(length(changed_mets)>0) homogenous = !(j %in% changed_mets) else homogenous = FALSE
     diffspeed  = arena@media[[j]]@difspeed>0
@@ -949,6 +952,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
       browser()
     })
   }#})[3]
+  cat("\r")
   sublb <- cbind(as.matrix(arena@orgdat[,c("y","x")]),sublb_tmp)
   colnames(sublb) <- c('y','x',arena@mediac)
   arena@sublb <- sublb
