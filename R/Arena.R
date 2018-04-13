@@ -860,9 +860,11 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       }else diff_t <- system.time(arena <- diffuse(arena, lrw=lrw, sublb=sublb) )[3]
     }
     if(!diffusion){
-      for(k in 1:length(arena@media)){
-        for(l in 1:nrow(sublb)){
-          arena@media[[k]]@diffmat[sublb[l,"y"],sublb[l,"x"]] = sublb[l,k]
+      if(nrow(sublb)>0){
+        for(k in 1:length(arena@media)){
+          for(l in 1:nrow(sublb)){
+            arena@media[[k]]@diffmat[sublb[l,"y"],sublb[l,"x"]] = sublb[l,k]
+          }
         }
       }
       arena@sublb <- getSublb(arena)
