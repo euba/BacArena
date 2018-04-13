@@ -844,7 +844,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
       org.count <- nrow(arena@orgdat)
       for(j in 1:org.count){ # for each organism in arena
-        cat("\rOrganims",j,"/",org.count)
+        if(verbose) cat("\rOrganims",j,"/",org.count)
         org <- arena@specs[[arena@orgdat[j,'type']]]
         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
         switch(class(org),
@@ -856,11 +856,11 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       if(sum(test)!=0) arena@orgdat <- arena@orgdat[-which(test),]
       rm("test")
     }
-    cat("\r")
+    if(verbose) cat("\r")
     if(diffusion && !arena@stir){
       if(diff_par){
         diff_t <- system.time(arena <- diffuse_par(arena, cluster_size=cl_size, lrw=lrw, sublb=sublb) )[3]
-      }else diff_t <- system.time(arena <- diffuse(arena, lrw=lrw, sublb=sublb) )[3]
+      }else diff_t <- system.time(arena <- diffuse(arena, lrw=lrw, sublb=sublb, verbose=verbose) )[3]
     }
     if(!diffusion){
       if(nrow(sublb)>0){
@@ -909,10 +909,11 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
 #' @param object An object of class Arena.
 #' @param lrw A numeric value needed by solver to estimate array size (by default lwr is estimated in the simEnv() by the function estimate_lrw())
 #' @param sublb A matrix with the substrate concentration for every individual in the environment based on their x and y position.
-setGeneric("diffuse", function(object, lrw, sublb){standardGeneric("diffuse")})
+#' @param verbose Set to false if no status messages should be printed. 
+setGeneric("diffuse", function(object, lrw, sublb, verbose=TRUE){standardGeneric("diffuse")})
 #' @export
 #' @rdname diffuse
-setMethod("diffuse", "Arena", function(object, lrw, sublb){
+setMethod("diffuse", "Arena", function(object, lrw, sublb, verbose=TRUE){
   arena <- object
   diff_init_t <- proc.time()[3]
   sublb_tmp <- matrix(0,nrow=nrow(arena@orgdat),ncol=(length(arena@mediac)))
@@ -924,7 +925,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
   #diff_pde_t=0; diff_sublb_t=0
   #diff_loop_t <- system.time({for(j in seq_along(arena@media)){
   for(j in seq_along(arena@media)){
-    cat("\rSubstances",j,"/",length(arena@media))
+    if(verbose) cat("\rSubstances",j,"/",length(arena@media))
     #skip diffusion if already homogenous (attention in case of boundary/source influx in pde!)
     if(length(changed_mets)>0) homogenous = !(j %in% changed_mets) else homogenous = FALSE
     diffspeed  = arena@media[[j]]@difspeed>0
@@ -953,7 +954,7 @@ setMethod("diffuse", "Arena", function(object, lrw, sublb){
       browser()
     })
   }#})[3]
-  cat("\r")
+  if(verbose) cat("\r")
   sublb <- cbind(as.matrix(arena@orgdat[,c("y","x")]),sublb_tmp)
   colnames(sublb) <- c('y','x',arena@mediac)
   arena@sublb <- sublb
