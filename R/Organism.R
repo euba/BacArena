@@ -31,6 +31,7 @@
 #' @slot model Object of class sybil::modelorg containging the genome sclae metabolic model
 #' @slot algo Algorithm to be used during optimization (default fba)
 #' @slot rbiomass Name of biomass reactions which is used for growth model (set automatically but needs input if objective is not biomass optimization)
+#' @slot limit_growth If true then a upper bound on growth will be set, see maxweight (default: True).
 setClass("Organism",
          representation(
            lbnd="numeric",
@@ -52,7 +53,8 @@ setClass("Organism",
            speed="numeric",
            model="modelorg",
            algo="character",
-           rbiomass="character"
+           rbiomass="character",
+           limit_growth="logical"
          ),
          prototype(
            deathrate = 0.21,
@@ -63,7 +65,8 @@ setClass("Organism",
            maxweight = 1.172,
            cellweight_mean = 0.489,
            cellweight_sd = 0.132,
-           speed = 2       
+           speed = 2,
+           limit_growth = TRUE
          )
 )
 
@@ -275,7 +278,9 @@ setMethod("constrain", "Organism", function(object, reacts, lb, ub, dryweight, t
       return(lnew)
     }))
   }
-  ub[which(object@model@obj_coef!=0)] <- (object@maxweight*1.5) - dryweight
+  if( object@limit_growth & length(ub)==length(object@model@uppbnd)) # set upper bound for growth
+    ub[which(object@model@react_id == object@rbiomass)] <- (object@maxweight*1.5) - dryweight
+  
   return(list(lobnd, ub))
 })
 

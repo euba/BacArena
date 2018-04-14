@@ -803,6 +803,9 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
          "Arena"={arena <- object; evaluation <- Eval(arena)},
          "Eval"={arena <- getArena(object); evaluation <- object},
          stop("Please supply an object of class Arena or Eval."))
+  if( sec_obj=="none" & any(sapply(object@specs, function(s){s@limit_growth})))
+    warning("If growth is limitted by maximum weight for an organism (max_weight=TRUE) it is recommended to use minimize total flux (sec_obj='mtf').")
+  
   if(is.null(lrw)){lrw=estimate_lrw(arena@n,arena@m)}
   for(i in names(arena@specs)){
     phensel <- arena@phenotypes[which(names(arena@phenotypes)==i)]
