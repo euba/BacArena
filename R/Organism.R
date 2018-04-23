@@ -248,6 +248,7 @@ setMethod("algo", "Organism", function(object){return(object@algo)})
 #' @param tstep A number giving the time intervals for each simulation step.
 #' @param scale A numeric defining the scaling (units for linear programming has to be in certain range)
 #' @param j debuging index to track cell
+#' @param cutoff value used to define numeric accuracy while interpreting optimization results
 #' @return Returns the lower bounds, which carry the constraints and names of relevant reactions.
 #' @details The constraints are calculated according to the flux definition as mmol/(gDW*hr) with the parameters \code{dryweight} and \code{tstep}.
 #' @seealso \code{\link{Organism-class}}
@@ -256,10 +257,10 @@ setMethod("algo", "Organism", function(object){return(object@algo)})
 #' org <- Organism(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize an organism
 #' lobnds <- constrain(org,org@medium,org@lbnd[org@medium],1,1,1,1,1)
-setGeneric("constrain", function(object, reacts, lb, dryweight, tstep, scale, j){standardGeneric("constrain")})
+setGeneric("constrain", function(object, reacts, lb, dryweight, tstep, scale, j, cutoff=1e-6){standardGeneric("constrain")})
 #' @export
 #' @rdname constrain
-setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, tstep, scale, j){
+setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, tstep, scale, j, cutoff=1e-6){
   reacts = unique(reacts)
   lb = lb[reacts]
   lobnd <- object@lbnd
@@ -278,8 +279,11 @@ setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, tstep
       return(lnew)
     }))
   }
-  if( object@limit_growth ) # set upper bound for growth
-    upbnd[which(object@model@react_id == object@rbiomass)] <- (object@maxweight*1.5) - dryweight
+  if( object@limit_growth ){ # set upper bound for growth
+    growth_limit <- (object@maxweight*1.5) - dryweight
+    # if growth is too fast, then growth_limit could become negative (hight dryweight). Use low cutoff value so that dryweight can be decreased by cell division.
+    upbnd[which(object@model@react_id == object@rbiomass)] <- ifelse( growth_limit>0, growth_limit, cutoff )
+  }
   
   return(list(lobnd, upbnd))
 })
