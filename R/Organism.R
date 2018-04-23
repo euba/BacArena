@@ -244,7 +244,6 @@ setMethod("algo", "Organism", function(object){return(object@algo)})
 #' @param object An object of class Organisms.
 #' @param reacts A character vector giving the names of reactions which should be constrained.
 #' @param lb A numeric vector giving the constraint values of lower bounds (e.g. avaible metabolite concentrations
-#' @param ub A numeric vector giving the constraint values of upper bounds.
 #' @param dryweight A number giving the current dryweight of the organism.
 #' @param tstep A number giving the time intervals for each simulation step.
 #' @param scale A numeric defining the scaling (units for linear programming has to be in certain range)
@@ -257,13 +256,14 @@ setMethod("algo", "Organism", function(object){return(object@algo)})
 #' org <- Organism(Ec_core,deathrate=0.05,
 #'            minweight=0.05,growtype="exponential") #initialize an organism
 #' lobnds <- constrain(org,org@medium,org@lbnd[org@medium],1,1,1,1,1)
-setGeneric("constrain", function(object, reacts, lb, ub, dryweight, tstep, scale, j){standardGeneric("constrain")})
+setGeneric("constrain", function(object, reacts, lb, dryweight, tstep, scale, j){standardGeneric("constrain")})
 #' @export
 #' @rdname constrain
-setMethod("constrain", "Organism", function(object, reacts, lb, ub, dryweight, tstep, scale, j){
+setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, tstep, scale, j){
   reacts = unique(reacts)
   lb = lb[reacts]
   lobnd <- object@lbnd
+  upbnd <- object@ubnd
   if(dryweight<Inf){lobnd[reacts] <- object@lbnd[reacts]*(dryweight/object@cellweight_mean)*tstep} #costrain according to flux definition: mmol/(gDW*hr)
   #lobnd[reacts] <- ifelse(lb<=lobnd[reacts], ifelse(lobnd[reacts]==0, lb, lobnd[reacts]), lb) #check if lower bounds in biological relevant range
   lobnd[reacts] <- ifelse(lb<=lobnd[reacts], lobnd[reacts], lb) #check if lower bounds in biological relevant range
@@ -278,10 +278,10 @@ setMethod("constrain", "Organism", function(object, reacts, lb, ub, dryweight, t
       return(lnew)
     }))
   }
-  if( object@limit_growth & length(ub)==length(object@model@uppbnd)) # set upper bound for growth
-    ub[which(object@model@react_id == object@rbiomass)] <- (object@maxweight*1.5) - dryweight
+  if( object@limit_growth ) # set upper bound for growth
+    upbnd[which(object@model@react_id == object@rbiomass)] <- (object@maxweight*1.5) - dryweight
   
-  return(list(lobnd, ub))
+  return(list(lobnd, upbnd))
 })
 
 
@@ -474,6 +474,7 @@ setMethod("growLin", "Organism", function(object, biomass, fbasol, tstep){
   if(growth > 0){
     grow_accum <- growth + biomass
   } else grow_accum <- biomass - object@deathrate*tstep
+  #cat("\t", growth, biomass, grow_accum, "\n")
   return(grow_accum)
 })
 
@@ -500,6 +501,7 @@ setMethod("growExp", "Organism", function(object, biomass, fbasol, tstep){
   if(growth > 0){
     grow_accum <- (growth * biomass + biomass)
   } else grow_accum <- biomass - object@deathrate*biomass*tstep
+  #cat("\t", growth, biomass, grow_accum, "\n")
   return(grow_accum)
 })
 
@@ -862,7 +864,7 @@ setGeneric("simBac", function(object, arena, j, sublb, bacnum, sec_obj="none", c
 #' @export
 #' @rdname simBac
 setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6, with_shadow=FALSE){
-  const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, ub=object@ubnd*bacnum, #scale to population size
+  const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"biomass"], tstep=arena@tstep, scale=arena@scale, j)
   lobnd <- const[[1]]; upbnd <- const[[2]]
   optimization <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff, with_shadow=with_shadow)
@@ -1108,7 +1110,7 @@ setGeneric("simHum", function(object, arena, j, sublb, bacnum, sec_obj="none", c
 #' @export
 #' @rdname simHum
 setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6, with_shadow=FALSE){
-  const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, ub=object@ubnd*bacnum, #scale to population size
+  const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"biomass"], tstep=arena@tstep, scale=arena@scale, j)
   lobnd <- const[[1]]; upbnd <- const[[2]]
   optimization <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff, with_shadow=with_shadow)
