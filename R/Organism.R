@@ -280,7 +280,7 @@ setMethod("constrain", "Organism", function(object, reacts, lb, dryweight, tstep
     }))
   }
   if( object@limit_growth ){ # set upper bound for growth
-    growth_limit <- (object@maxweight*1.5) - dryweight
+    growth_limit <- (object@maxweight*1.5) - dryweight # 1.5 is factor to allow some room for the biomass to accumulate
     # if growth is too fast, then growth_limit could become negative (hight dryweight). Use low cutoff value so that dryweight can be decreased by cell division.
     upbnd[which(object@model@react_id == object@rbiomass)] <- ifelse( growth_limit>0, growth_limit, cutoff )
   }
