@@ -869,7 +869,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       if(nrow(sublb)>0){
         for(k in 1:length(arena@media)){
           for(l in 1:nrow(sublb)){
-            arena@media[[k]]@diffmat[sublb[l,"y"],sublb[l,"x"]] = sublb[l,k]
+            arena@media[[k]]@diffmat[sublb[l,"y"],sublb[l,"x"]] = sublb[l,k+2] # first two columns are coordinates
           }
         }
       }
