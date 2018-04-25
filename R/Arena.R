@@ -328,9 +328,20 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
          'fmol/cell'  = { conv <- 1}, # already in fmol/cell
          stop("Wrong unit for concentration."))
   smax <- conv * smax
-  if(is.numeric(diffmat) && !template) diffmat <- conv * diffmat
-  if(is(diffmat, "list") && !template)  diffmat <- lapply(diffmat, function(x){conv*x})
+  if( is.numeric(diffmat) ){
+    if( !template )
+      diffmat <- conv * diffmat
+    else
+      smax    <- smax * (arena@n * arena@m) / sum(diffmat!=0)
+  }
+  if( is(diffmat, "list") ){
+    if( !template )  
+      diffmat <- lapply(diffmat, function(x){conv*x})
+    else
+      smax    <- sapply(seq_along(smax), function(i){smax[i] * (arena@n * arena@m) / sum(diffmat[[i]]) })
+  }
   
+
   # 2) create and add substances assuming that organisms are already added
   
   if(class(object)=="Arena"){
