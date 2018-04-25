@@ -217,7 +217,7 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL, unit
          'nmol'={all_df$value <- all_df$value * 10^{-6}; ylabel=paste(ylabel,"nmol")},
          'pmol'={all_df$value <- all_df$value * 10^{-3}; ylabel=paste(ylabel,"pmol")},
          'fmol'={all_df$value <- all_df$value * 1; ylabel=paste(ylabel,"fmol")},
-         'mM'  ={all_df$value <- all_df$value * 10^{-12}/(simlist[[1]]@Lx*simlist[[1]]@Ly); ylabel=paste(ylabel,"mM")},
+         'mM'  ={all_df$value <- all_df$value * 10^{-12}*100/(simlist[[1]]@Lx*simlist[[1]]@Ly); ylabel=paste(ylabel,"mM")},
          stop("Wrong unit for concentration."))
   
   colnames(all_df)[1:2] <- c("sub", "time")
