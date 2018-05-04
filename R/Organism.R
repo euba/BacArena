@@ -740,22 +740,26 @@ setMethod("growth", "Bac", function(object, population, j, occupyM, fbasol, tste
          stop("Growth type must be either linear or exponential"))
   dead <- F
   neworgdat[j,'biomass'] <- popvec$biomass
-  if(popvec$biomass > object@maxweight){ 
-    freenb <- emptyHood(object, population@orgdat[,c('x','y')],
+  while( popvec$biomass > object@maxweight ){
+  #if(popvec$biomass > object@maxweight){ 
+    freenb <- emptyHood(object, neworgdat[,c('x','y')],
               population@n, population@m, popvec$x, popvec$y)
     if(length(freenb) != 0){
       npos = freenb[sample(length(freenb),1)]
       npos = as.numeric(unlist(strsplit(npos,'_')))
       if(occupyM[npos[2], npos[1]] == 0){ # check if there is no obstacle
+        popvec$biomass <- popvec$biomass/2
         daughter <- popvec
-        daughter$biomass <- popvec$biomass/2
+        daughter$biomass <- popvec$biomass
         daughter$x <- npos[1]
         daughter$y <- npos[2]
         neworgdat[nrow(neworgdat)+1,] <- daughter
-        neworgdat[j,'biomass'] <- popvec$biomass/2
+        neworgdat[j,'biomass'] <- popvec$biomass
       }
-    }
-  }else if(popvec$biomass < object@minweight){
+    }else
+      break
+  }
+  if(popvec$biomass < object@minweight){
     neworgdat[j,'biomass'] <- NA
     dead <- T
   }
