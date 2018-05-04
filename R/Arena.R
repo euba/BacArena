@@ -188,6 +188,9 @@ setMethod("addOrg", "Arena", function(object, specI, amount=1, x=NULL, y=NULL, p
   if(bacnum<1){
     stop("Physical arena size (Lx, Ly) too small. Maximal amount of cells in one grid cell would be zero.")
   }
+  if( specI@maxweight <= specI@minweight*2 )
+    stop("Maxweight needs to be bigger than two-times minweight otherwise cells will die immediately after duplication")
+  
  
   spectype <- specI@type
   neworgdat <- object@orgdat
