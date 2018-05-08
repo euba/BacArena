@@ -923,7 +923,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       if(verbose) print(org_stat)}
     if(verbose) cat("\r")
     if(verbose) cat("\ttime total: ", round(step_t,3), "\tdiffusion: ", round(diff_t,3), " (", 100*round(diff_t/step_t,3),"%)\n" )
-        cat("--------------------------------------------------------------------")
+    if(verbose) cat("--------------------------------------------------------------------")
     }
   return(evaluation)
 })
