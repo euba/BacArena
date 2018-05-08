@@ -852,12 +852,14 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       arena@orgdat = arena@orgdat[new_ind,]
       sublb = sublb[new_ind,] #apply shuffeling also to sublb to ensure same index as orgdat
     }
-    if(verbose) cat("\niteration:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$biomass), "pg \n")
+    if(verbose) cat("\niteration-start:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$biomass), "pg \n")
+    if(i==1){ 
     org_stat <- sapply(seq_along(arena@specs), function(x){dim(arena@orgdat[which(arena@orgdat$type==x),])[1]})
     if(length(arena@specs) > 0){
       old_biomass<-biomass_stat; biomass_stat <- sapply(seq_along(arena@specs), function(x){sum(arena@orgdat$biomass[which(arena@orgdat$type==x)])})
-      org_stat <- cbind(org_stat, biomass_stat, 100*(biomass_stat-old_biomass)/old_biomass); rownames(org_stat) <- names(arena@specs); colnames(org_stat) <- c("count", "biomass", "%")
-      if(verbose) print(org_stat)}
+      org_stat <- cbind(org_stat, biomass_stat); rownames(org_stat) <- names(arena@specs); colnames(org_stat) <- c("count", "biomass")
+      if(verbose) print(org_stat)}}
+    if(verbose & i!=1) print(org_stat)
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
     arena@shadow <-lapply(arena@shadow, function(x){numeric(length(x))}) # empty shadow pool
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
@@ -912,8 +914,17 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       break
     }
     step_t <- proc.time()[3] - init_t
+    if(verbose) cat("\niteration-end:", i, "\t organisms:",nrow(arena@orgdat), "\t biomass:", sum(arena@orgdat$biomass), "pg \n")
+    if(verbose) cat("\r")
+    org_stat <- sapply(seq_along(arena@specs), function(x){dim(arena@orgdat[which(arena@orgdat$type==x),])[1]})
+    if(length(arena@specs) > 0){
+      old_biomass<-biomass_stat; biomass_stat <- sapply(seq_along(arena@specs), function(x){sum(arena@orgdat$biomass[which(arena@orgdat$type==x)])})
+      org_stat <- cbind(org_stat, biomass_stat, 100*(biomass_stat-old_biomass)/old_biomass); rownames(org_stat) <- names(arena@specs); colnames(org_stat) <- c("count", "biomass", "%")
+      if(verbose) print(org_stat)}
+    if(verbose) cat("\r")
     if(verbose) cat("\ttime total: ", round(step_t,3), "\tdiffusion: ", round(diff_t,3), " (", 100*round(diff_t/step_t,3),"%)\n" )
-  }
+        cat("--------------------------------------------------------------------")
+    }
   return(evaluation)
 })
 
