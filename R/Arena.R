@@ -171,7 +171,7 @@ setGeneric("addOrg", function(object, specI, amount=1, x=NULL, y=NULL, posmat=NU
 #' @rdname addOrg
 setMethod("addOrg", "Arena", function(object, specI, amount=1, x=NULL, y=NULL, posmat=NULL, biomass=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){
   switch(class(object),"Arena"={object <- object}, "Eval"={object <- getArena(object)}, stop("Please supply an object of class Arena or Eval."))
-    if(length(posmat)>0){
+  if(length(posmat)>0){
     if(nrow(posmat)!=object@m | ncol(posmat)!=object@n){
       stop("Matrix posmat has invalid dimensions (should be equal to arena)")}
       idx <- which(posmat==1, arr.ind=TRUE)
@@ -294,7 +294,7 @@ setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde
 #' @export
 setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", pde="Diff2d", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, diffmat=NULL, template=FALSE, Dgrid=NULL, Vgrid=NULL, addAnyway=FALSE){
   switch(class(object),"Arena"={object <- object}, "Eval"={object <- getArena(object)}, stop("Please supply an object of class Arena or Eval."))
-    if(length(smax) != length(mediac) && length(smax) != 1){
+  if(length(smax) != length(mediac) && length(smax) != 1){
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
   if(class(mediac)=="factor") mediac <- as.character(mediac)
