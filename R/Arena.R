@@ -170,7 +170,8 @@ setGeneric("addOrg", function(object, specI, amount=1, x=NULL, y=NULL, posmat=NU
 #' @export
 #' @rdname addOrg
 setMethod("addOrg", "Arena", function(object, specI, amount=1, x=NULL, y=NULL, posmat=NULL, biomass=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){
-  if(length(posmat)>0){
+  switch(class(object),"Arena"={object <- object}, "Eval"={object <- getArena(object)}, stop("Please supply an object of class Arena or Eval."))
+    if(length(posmat)>0){
     if(nrow(posmat)!=object@m | ncol(posmat)!=object@n){
       stop("Matrix posmat has invalid dimensions (should be equal to arena)")}
       idx <- which(posmat==1, arr.ind=TRUE)
