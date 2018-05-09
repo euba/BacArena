@@ -49,5 +49,7 @@ Structure of the S4 class \code{Organism} representing the organisms present in 
 \item{\code{algo}}{Algorithm to be used during optimization (default fba)}
 
 \item{\code{rbiomass}}{Name of biomass reactions which is used for growth model (set automatically but needs input if objective is not biomass optimization)}
+
+\item{\code{limit_growth}}{If true then a upper bound on growth will be set, see maxweight (default: True).}
 }}
 

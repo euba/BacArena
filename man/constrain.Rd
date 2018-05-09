@@ -6,10 +6,10 @@
 \alias{constrain,Organism-method}
 \title{Function for constraining the models based on metabolite concentrations}
 \usage{
-constrain(object, reacts, lb, ub, dryweight, tstep, scale, j)
+constrain(object, reacts, lb, dryweight, tstep, scale, j, cutoff = 1e-06)
 
-\S4method{constrain}{Organism}(object, reacts, lb, ub, dryweight, tstep, scale,
-  j)
+\S4method{constrain}{Organism}(object, reacts, lb, dryweight, tstep, scale, j,
+  cutoff = 1e-06)
 }
 \arguments{
 \item{object}{An object of class Organisms.}
@@ -18,8 +18,6 @@ constrain(object, reacts, lb, ub, dryweight, tstep, scale, j)
 
 \item{lb}{A numeric vector giving the constraint values of lower bounds (e.g. avaible metabolite concentrations}
 
-\item{ub}{A numeric vector giving the constraint values of upper bounds.}
-
 \item{dryweight}{A number giving the current dryweight of the organism.}
 
 \item{tstep}{A number giving the time intervals for each simulation step.}
@@ -27,6 +25,8 @@ constrain(object, reacts, lb, ub, dryweight, tstep, scale, j)
 \item{scale}{A numeric defining the scaling (units for linear programming has to be in certain range)}
 
 \item{j}{debuging index to track cell}
+
+\item{cutoff}{value used to define numeric accuracy while interpreting optimization results}
 }
 \value{
 Returns the lower bounds, which carry the constraints and names of relevant reactions.

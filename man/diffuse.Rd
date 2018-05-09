@@ -6,9 +6,9 @@
 \alias{diffuse,Arena-method}
 \title{Function for diffusion}
 \usage{
-diffuse(object, lrw, sublb)
+diffuse(object, lrw, sublb, verbose = TRUE)
 
-\S4method{diffuse}{Arena}(object, lrw, sublb)
+\S4method{diffuse}{Arena}(object, lrw, sublb, verbose = TRUE)
 }
 \arguments{
 \item{object}{An object of class Arena.}
@@ -16,6 +16,8 @@ diffuse(object, lrw, sublb)
 \item{lrw}{A numeric value needed by solver to estimate array size (by default lwr is estimated in the simEnv() by the function estimate_lrw())}
 
 \item{sublb}{A matrix with the substrate concentration for every individual in the environment based on their x and y position.}
+
+\item{verbose}{Set to false if no status messages should be printed.}
 }
 \description{
 The generic function \code{diffuse} computes the media distribution via diffusion

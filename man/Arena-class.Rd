@@ -26,7 +26,7 @@ Structure of the S4 class \code{Arena} to represent the environment in which Org
 
 \item{\code{mflux}}{A vector containing highly used metabolic reactions within the arena}
 
-\item{\code{exchanges}}{A Matrix containing last exchanges of each organism.}
+\item{\code{exchanges}}{A data.frame containing last exchanges of each organism.}
 
 \item{\code{shadow}}{A vector containing shadow prices of metabolites present in the arena}
 
