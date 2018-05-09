@@ -859,7 +859,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       old_biomass<-biomass_stat; biomass_stat <- sapply(seq_along(arena@specs), function(x){sum(arena@orgdat$biomass[which(arena@orgdat$type==x)])})
       org_stat <- cbind(org_stat, biomass_stat); rownames(org_stat) <- names(arena@specs); colnames(org_stat) <- c("count", "biomass")
       if(verbose) print(org_stat)}}
-    if(verbose & i!=1) print(org_stat[,1:2])
+    if(verbose & i!=1) print(as.data.frame(org_stat)[,1:2])
     arena@mflux <- lapply(arena@mflux, function(x){numeric(length(x))}) # empty mflux pool
     arena@shadow <-lapply(arena@shadow, function(x){numeric(length(x))}) # empty shadow pool
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
@@ -920,7 +920,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
     if(length(arena@specs) > 0){
       old_biomass<-biomass_stat; biomass_stat <- sapply(seq_along(arena@specs), function(x){sum(arena@orgdat$biomass[which(arena@orgdat$type==x)])})
       org_stat <- cbind(org_stat, biomass_stat, 100*(biomass_stat-old_biomass)/old_biomass); rownames(org_stat) <- names(arena@specs); colnames(org_stat) <- c("count", "biomass", "%")
-      if(verbose) print(org_stat)}
+      if(verbose) print(as.data.frame(org_stat))}
     if(verbose) cat("\r")
     if(verbose) cat("\ttime total: ", round(step_t,3), "\tdiffusion: ", round(diff_t,3), " (", 100*round(diff_t/step_t,3),"%)\n" )
     if(verbose) cat("--------------------------------------------------------------------")
