@@ -120,7 +120,7 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
     if(length(pot_biomass)==0) stop("No objection function set in model")
     print("No objective function set, try set automatically...")
     print(paste("found:", pot_biomass))
-    print(paste("set new biomass function:", pot_biomas[1]))
+    print(paste("set new biomass function:", pot_biomass[1]))
     sybil::obj_coef(model)[which(sybil::react_id(model)==pot_biomass[1])] <- 1
     rbiomass <- pot_biomass[1]
   }else{
@@ -392,9 +392,10 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
     shadow <- glpkAPI::getRowsDualGLPK(lpob@problem@oobj)[ex@met_pos]
     names(shadow) <- ex@met_id
   }else if(lpob@problem@solver=="cplexAPI" & solve_ok){ # TODO: cplex shadow costs needs update of optimzeProb call in optimizeLP() which is having side effects ...
-    ex <- findExchReact(object@model)
-    shadow <- cplexAPI::getPiCPLEX(lpob@problem@oobj@env, lpob@problem@oobj@lp, 0, lpob@nr-1)[ex@met_pos]
-    names(shadow) <- ex@met_id
+    warning("cplex shadow costs are not supported yet")
+    #ex <- findExchReact(object@model)
+    #shadow <- cplexAPI::getPiCPLEX(lpob@problem@oobj@env, lpob@problem@oobj@lp, 0, lpob@nr-1)[ex@met_pos]
+    #names(shadow) <- ex@met_id
   }
   
   names(fbasl$fluxes) <- names(object@lbnd)
@@ -822,7 +823,7 @@ setMethod("growth_par", "Bac", function(object, population, j, fbasol, tstep){
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' chemotaxis(bac,arena,1)
+#' chemotaxis(bac,arena,1, "EX_glc(e)")
 setGeneric("chemotaxis", function(object, population, j, chemo){standardGeneric("chemotaxis")})
 #' @export
 #' @rdname chemotaxis
@@ -924,13 +925,14 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="no
 #' @param lpobject linar programming object (copy of organism@lpobj) that have to be a deep copy in parallel due to pointer use in sybil.
 #' @param sec_obj character giving the secondary objective for a bi-level LP if wanted.
 #' @param cutoff value used to define numeric accuracy
+#' @param with_shadow True if shadow cost should be stores (default off).
 #' @return Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.
 #'
-setGeneric("simBac_par", function(object, arena, j, sublb, bacnum, lpobject, sec_obj="none", cutoff=1e-6){standardGeneric("simBac_par")})
+setGeneric("simBac_par", function(object, arena, j, sublb, bacnum, lpobject, sec_obj="none", cutoff=1e-6, with_shadow=FALSE){standardGeneric("simBac_par")})
 #' @export
 #' @rdname simBac_par
-setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum, lpobject, sec_obj="none", cutoff=1e-6){
-  const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, ub=object@ubnd*bacnum, #scale to population size
+setMethod("simBac_par", "Bac", function(object, arena, j, sublb, bacnum, lpobject, sec_obj="none", cutoff=1e-6, with_shadow=FALSE){
+  const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
                      dryweight=arena@orgdat[j,"biomass"], tstep=arena@tstep, scale=arena@scale)
   lobnd <- const[[1]]; upbnd <- const[[2]]
   fbasol <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff, with_shadow=with_shadow)

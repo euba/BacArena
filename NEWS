@@ -1,3 +1,17 @@
+BacArena v.1.7 (Release date: 2018-03-21)
+==============
+Changes: 
+- fine-tuning on growth model
+   * several duplications per time step
+   * fixed no growth bug for very high accumulated biomass
+- improved handling of non-biomass objectives
+- better status printing
+- more then one compound in chemotaxis
+- wrong unit of diffusion constant
+- several small updated in plotting methods
+
+
+
 BacArena v.1.6 (Release date: 2017-03-21)
 ==============
 Changes: 

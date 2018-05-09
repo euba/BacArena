@@ -20,6 +20,8 @@ plotShadowCost(object, spec_nr = 1, sub_nr = 10, cutoff = -1,
 \item{sub_nr}{Maximal number of substances to be show}
 
 \item{cutoff}{Shadow costs should be smaller than cutoff}
+
+\item{noplot}{Do not plot}
 }
 \description{
 The generic function \code{plotShadowCost} plots substances have the highest impact on further growth (shadow cost < 0)

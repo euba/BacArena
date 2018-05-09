@@ -337,13 +337,13 @@ setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, dif
     if( !template )
       diffmat <- conv * diffmat
     else
-      smax    <- smax * (arena@n * arena@m) / sum(diffmat!=0)
+      smax    <- smax * (object@n * object@m) / sum(diffmat!=0)
   }
   if( is(diffmat, "list") ){
     if( !template )  
       diffmat <- lapply(diffmat, function(x){conv*x})
     else
-      smax    <- sapply(seq_along(smax), function(i){smax[i] * (arena@n * arena@m) / sum(diffmat[[i]]) })
+      smax    <- sapply(seq_along(smax), function(i){smax[i] * (object@n * object@m) / sum(diffmat[[i]]) })
   }
   
 
@@ -497,7 +497,7 @@ setMethod("addEssentialMed", "Arena", function(object, org, only_return=FALSE, l
   min_val <- -ex@lowbnd[which(ex_max<0)] # get lower bounds also for -INF cases
   min_val[min_val==Inf] <- 1000
   
-  predefined <- sapply(arena@media, function(x){sum(x@diffmat)}) # only use compounds which are not already in present in the media
+  predefined <- sapply(object@media, function(x){sum(x@diffmat)}) # only use compounds which are not already in present in the media
   idx <- which(min_id %in% names(predefined)[which(predefined==0)])
   
   if(length(idx)==0) return(object)
@@ -1473,6 +1473,7 @@ setMethod(show, "Arena", function(object){
 #' @slot mfluxlist A list of containing highly used metabolic reactions per time step. 
 #' @slot shadowlist A list of containing shadow prices per time step. 
 #' @slot subchange A vector of all substrates with numbers indicating the degree of change in the overall simulation.
+#' @slot exchangeslist A list of containing exchanges per time step. 
 setClass("Eval",
          contains="Arena",
          representation(
@@ -2850,6 +2851,7 @@ setMethod("checkCorr", "Eval", function(object, corr=NULL, tocheck=list()){
 #' @param spec_nr Number of the specie
 #' @param sub_nr Maximal number of substances to be show
 #' @param cutoff Shadow costs should be smaller than cutoff
+#' @param noplot Do not plot
 #' @details Returns ggplot objects
 setGeneric("plotShadowCost", function(object, spec_nr=1, sub_nr=10, cutoff=-1, noplot=FALSE){standardGeneric("plotShadowCost")})
 #' @export
@@ -3089,46 +3091,42 @@ setMethod("plotSubDist2", "Eval", function(object, sub, times=NULL){
 #' @return Heatmap (ggplot2)
 #' 
 #' @examples 
-#'  Do Not Run
-#'  sim : simulation object
-#'  speciesA = 1 # E. Coli (wild): sequence number in names(sim@specs) => 1
-#'  speciesB = 3 # E. Coli (mutant): sequence number in names(sim@specs) => 3
-#'  var_nr = 30 # (manually selected)
-#'  HeatMapFeeding(object = sim, speciesA = 1, speciesB = 3, var_nr = 30)
+#' sim <- sihumi_test
+#' HeatMapFeeding(object = sim, speciesA = 1, speciesB = 2, var_nr = 78)
 #' 
 setGeneric("HeatMapFeeding", function(object, speciesA, speciesB, var_nr){standardGeneric("HeatMapFeeding")})
 #' @export
 #' @rdname HeatMapFeeding
 setMethod("HeatMapFeeding", "Eval", function(object, speciesA, speciesB, var_nr){
-  A<-BacArena::plotSpecActivity(object,spec_list = speciesA, var_nr = var_nr, ret_data = T)
-  z<-data.frame()
-  chronos <- (seq_along(object@simlist)-1)
-  for (t in chronos) 
-  { a<-data.frame()
-  a <-BacArena::findFeeding3(object, time = t, mets = A$sub[1:var_nr], plot = F)
-  if (nrow(a)!=0) 
-  {z<-rbind.data.frame(z,a)
-  }
+  A <- BacArena::plotSpecActivity(object,spec_list = speciesA, var_nr = var_nr, ret_data = T)
+  z <- data.frame()
+  chronos <- 1:(length(object@simlist)-1)
+  for (t in chronos) { 
+    a<-data.frame()
+    a <-BacArena::findFeeding3(object, time = t, mets = A$sub[1:var_nr], plot = F)
+    if (nrow(a)!=0)
+      z <- rbind.data.frame(z,a)
   }
   d <- data.frame()
   # prod:speciesA cons:speciesB   -> 1                       
   # prod:speciesB cons:speciesA   -> -1
   # NA -> 0
-  for (h in 1:nrow(z))
-  {if (z[h,1] == names(object@specs)[speciesA]) (d[h,1]=1)
-    if (z[h,1] == names(object@specs)[speciesB]) (d[h,1]=-1)
+  for (h in 1:nrow(z)){
+    if (z[h,1] == names(object@specs)[speciesA]) 
+      d[h,1] <- 1
+    else if (z[h,1] == names(object@specs)[speciesB]) 
+      d[h,1] <- -1
+    else
+      d[h,1] <- NA
   }
   colnames(d)[1] <- "status"
   q <- cbind(z,d)
-  p <- reshape::cast(q, met ~ sim_step, value = "status")
-  p[is.na(p)] <- 0
-  # GGPLOT METHOD based on https://stackoverflow.com/questions/8406394/how-to-produce-a-heatmap-with-ggplot2
-  p2 <- p
-  p.m <- reshape::melt(p2)
-  p3 <- ggplot2::ggplot(p.m, ggplot2::aes(sim_step,met)) +
-    ggplot2::geom_tile(ggplot2::aes(fill = value), colour = "white") +
+  q$status[is.na(q$status)] <- 0
+  p3 <- ggplot2::ggplot(q, ggplot2::aes_string("sim_step","met")) +
+    ggplot2::geom_tile(ggplot2::aes_string(fill = "status"), colour = "white") +
     ggplot2::scale_fill_gradient2(name = "Producer", low = "red", mid = "green", high = "blue", breaks=seq(-1,1,by=1),
                                   labels = c(names(object@specs)[speciesB], "no feeding", names(object@specs)[speciesA])) +
     ggplot2::xlab("Simulation Step") + ggplot2::ylab("Exchange Reactions") 
-  return((p3)) })
+  return((p3)) 
+})
 

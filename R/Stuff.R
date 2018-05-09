@@ -172,6 +172,7 @@ lsd <- function(y){lb=mean(y)-stats::sd(y); ifelse(lb<0,0,lb)}
 #' @param ret_data Set true if data should be returned
 #' @param num_var Number of varying substances to be shown (if mediac is not specified)
 #' @param unit Unit for the substances which should be used for plotting (default: mmol)
+#' @param useNames Use substance names instead of ids
 #' 
 #' @return list of three ggplot object for further formating
 #'

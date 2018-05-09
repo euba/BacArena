@@ -7,10 +7,10 @@
 \title{Function for one simulation iteration for objects of Bac class}
 \usage{
 simBac_par(object, arena, j, sublb, bacnum, lpobject, sec_obj = "none",
-  cutoff = 1e-06)
+  cutoff = 1e-06, with_shadow = FALSE)
 
 \S4method{simBac_par}{Bac}(object, arena, j, sublb, bacnum, lpobject,
-  sec_obj = "none", cutoff = 1e-06)
+  sec_obj = "none", cutoff = 1e-06, with_shadow = FALSE)
 }
 \arguments{
 \item{object}{An object of class Bac.}
@@ -28,6 +28,8 @@ simBac_par(object, arena, j, sublb, bacnum, lpobject, sec_obj = "none",
 \item{sec_obj}{character giving the secondary objective for a bi-level LP if wanted.}
 
 \item{cutoff}{value used to define numeric accuracy}
+
+\item{with_shadow}{True if shadow cost should be stores (default off).}
 }
 \value{
 Returns the updated enivironment of the \code{population} parameter with all new positions of individuals on the grid and all new substrate concentrations.

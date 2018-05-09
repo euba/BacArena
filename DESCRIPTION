@@ -1,6 +1,6 @@
 Package: BacArena
 Title: Modeling Framework for Cellular Communities in their Environments
-Version: 1.6
+Version: 1.7
 Authors@R: c( person("Eugen", "Bauer", , "eugen.bauer@uni.lu", role = c("aut")), 
               person("Johannes", "Zimmermann", , "j.zimmermann@iem.uni-kiel.de", role = c("aut", "cre")))
 Author: Eugen Bauer [aut],
@@ -11,7 +11,7 @@ Description: Can be used for simulation of organisms living in
     metabolic models determine the uptake and release of compounds. Biological
     processes such as movement, diffusion, chemotaxis and kinetics are available
     along with data analysis techniques.
-URL: https://github.com/euba/BacArena
+URL: https://BacArena.github.io/
 BugReports: https://github.com/euba/BacArena/issues
 Depends:
     R (>= 3.0.0),
@@ -31,7 +31,6 @@ Imports:
     plyr,
     Rcpp
 Suggests:
-    sybilSBML,
     parallel,
     knitr,
     rmarkdown

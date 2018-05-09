@@ -27,11 +27,7 @@ The generic function \code{HeatMapFeeding} returns a heatmap between two selecte
 the producer. The compounds are originated from the most varying substances of the first cell model called "speciesA".
 }
 \examples{
- Do Not Run
- sim : simulation object
- speciesA = 1 # E. Coli (wild): sequence number in names(sim@specs) => 1
- speciesB = 3 # E. Coli (mutant): sequence number in names(sim@specs) => 3
- var_nr = 30 # (manually selected)
- HeatMapFeeding(object = sim, speciesA = 1, speciesB = 3, var_nr = 30)
+sim <- sihumi_test
+HeatMapFeeding(object = sim, speciesA = 1, speciesB = 2, var_nr = 78)
 
 }

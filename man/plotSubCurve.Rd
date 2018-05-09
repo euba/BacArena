@@ -21,6 +21,8 @@ plotSubCurve(simlist, mediac = NULL, time = c(NULL, NULL), scol = NULL,
 \item{ret_data}{Set true if data should be returned}
 
 \item{num_var}{Number of varying substances to be shown (if mediac is not specified)}
+
+\item{useNames}{Use substance names instead of ids}
 }
 \value{
 list of three ggplot object for further formating
