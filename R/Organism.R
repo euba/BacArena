@@ -548,14 +548,18 @@ setMethod("lysis", "Organism", function(object, sublb, factor=object@minweight){
 #' @param n A number giving the horizontal size of the environment.
 #' @param m A number giving the vertical size of the environment.
 #' @param pos A dataframe with all occupied x and y positions 
+#' @param occupyM A matrix indicating grid cells that are obstacles
 #' @return Returns the free position in the Moore neighbourhood, which is not occupied by other individuals. If there is no free space \code{NULL} is returned.
 #' @seealso \code{\link{Organism-class}}
 #' @examples
 #' NULL
-setGeneric("emptyHood", function(object, pos, n, m, x, y){standardGeneric("emptyHood")})
+setGeneric("emptyHood", function(object, pos, n, m, x, y, occupyM){standardGeneric("emptyHood")})
 #' @export
 #' @rdname emptyHood
-setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y){
+setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y, occupyM){
+  occ <- which(occupyM!=0, arr.ind = T)[,c(2,1)]
+  colnames(occ) <- c("x","y")
+  pos <- rbind(pos, occ) # block also occupied areas
   xp = c(x-1,x,x+1)
   yp = c(y-1,y,y+1)
   xp=ifelse(xp<=0,NA,xp)
@@ -744,7 +748,7 @@ setMethod("growth", "Bac", function(object, population, j, occupyM, fbasol, tste
   while( popvec$biomass > object@maxweight ){
   #if(popvec$biomass > object@maxweight){ 
     freenb <- emptyHood(object, neworgdat[,c('x','y')],
-              population@n, population@m, popvec$x, popvec$y)
+              population@n, population@m, popvec$x, popvec$y, occupyM)
     if(length(freenb) != 0){
       npos = freenb[sample(length(freenb),1)]
       npos = as.numeric(unlist(strsplit(npos,'_')))
