@@ -38,9 +38,10 @@ data("Ec_core")
 The model is already integrated in the sybil R package by default. Alternatively you can also load your own model of interest with commands of the sybil and libSBML. After we loaded the model, we convert it into an object of class Bac by calling its constructor
 
 ```{r}
-bac <- Bac(Ec_core)
+bac <- Bac(Ec_core, limit_growth=FALSE)
 ```
 
+(The parameter limit_growth=FALSE is set to disable growth limitation. This is important when space is limitting because bacteria can either to stop growing or accumulate a lot of biomass.)
 Now we have to set up an environment in which the organisms can interact
 
 ```{r}
@@ -56,30 +57,30 @@ arena
 Next we want to put our created organism in its environment by
 
 ```{r}
-arena <- addOrg(arena,bac,amount=20)
+arena <- addOrg(arena,bac,amount=5)
 ```
 
 With this command we added 20 individuals of our bacterium. Now we can add the substances to the environment
 
 ```{r}
-arena <- addDefaultMed(arena, bac) 
 arena <- addSubs(arena, smax=0.5, mediac="EX_glc(e)", unit="mM")
+arena <- addSubs(arena, smax=1, mediac=c("EX_pi(e)", "EX_h2o(e)", "EX_o2(e)", "EX_nh4(e)"), unit="mM")
 ```
 
-We added the default medium which was preset in the model together with 0.5 mM glucose. We can check which substances were added at which amount by calling the *arena* object again
+Here we added a minimal medium with 0.5 mM glucose. It is possible to check which substances were added at which amount by calling the *arena* object again
 
 ```{r}
 arena
 ```
 
-Finally, we can start *in silico* experiment simulating 10 hours of *E. coli* growth with
+Finally, we can start *in silico* experiment simulating 12 hours of *E. coli* growth with
 
 ```{r results='hide', message=FALSE, warning=FALSE}
 eval <- simEnv(arena,time=12)
 ```
 
 During simulation, some basic statistics about growth will be printed.
-The object eval stores all 10 simulation steps. After we retrieve the eval object we can start analyzing the data.
+The object eval stores all 12 simulation steps. After we retrieve the eval object we can start analyzing the data.
 To get a simple overview about what happened we can look at substances having high variation
 
 ```{r}
@@ -96,17 +97,17 @@ To start with graphical analysis let's investigate the growth curve in combinati
 
 ```{r}
 par(mfrow=c(1,2))
-plotCurves2(eval, legendpos = "topleft")
+plotCurves2(eval, legendpos = "right")
 ```
 
 Spatial and temporal changes can be shown via 
 
 ```{r}
-par(mfrow=c(2,5))
-evalArena(eval, show_legend = FALSE, time=1:10)
+par(mfrow=c(2,3))
+evalArena(eval, show_legend = FALSE, time=seq(1,12,2))
 ```
 
-This will produce multiple plots one by one for each simulation step with the spatial structure of the population (black dots represent individuals).
+This will produce multiple plots for each second simulation step with the spatial structure of the population (black dots represent individuals).
 
 
 ### Simulation of multiple organisms
@@ -127,29 +128,31 @@ bac2 <- Bac(ecore_aux,type="ecoli_aux", setExInf=FALSE)
 Again we set up an environment and insert organisms and substances
 
 ```{r results='hide', message=FALSE, warning=FALSE}
-arena <- Arena(n=30, m=30)
-arena <- addOrg(arena,bac1,amount=20)
-arena <- addOrg(arena,bac2,amount=20)
-arena <- addDefaultMed(arena, bac1)
+arena <- Arena(n=20, m=20)
+arena <- addOrg(arena,bac1,amount=5)
+arena <- addOrg(arena,bac2,amount=5)
 arena <- addSubs(arena, smax=0.5, mediac="EX_glc(e)", unit="mM")
+arena <- addSubs(arena, smax=1, mediac=c("EX_pi(e)", "EX_h2o(e)", "EX_o2(e)", "EX_nh4(e)"), unit="mM")
 eval <- simEnv(arena,time=10)
 ```
 
 Here we put the both organism types we created next to each other (given by their x position) in the environment and then started the simulation for 10 time steps. Next we perform again all evaluation steps
 
 ```{r}
+par(mfrow=c(1,2))
 plotCurves2(eval)
 ```
 
-And the spatial pattern of the community with the substances glucose, acetate and oxygen:
+And the spatial pattern of the community with the substances glucose, oxygen, and ethanol plotted by different ways:
 
 ```{r}
-par(mar=c(1,1,1,1))
-evalArena(eval,c("Population","EX_glc(e)","EX_ac(e)","EX_o2(e)"),
-          time=7)
+par(mfrow=c(1,4))
+evalArena(eval,c("Population","EX_glc(e)","EX_o2(e)","EX_etoh(e)"), time=10)
+plotSubDist2(eval, sub = c("EX_etoh(e)"), times = c(1,5,10))
+
 ```
 
-Here different point colors indicate the two different organism types.
+Here different point colors in this first figure indicate the two different organism types.
 Finally we can have a look on phenotypes.
 The command will create a PCA plot with the similarity of the different phenotypes. If we are interested in the definition of the phenotypes we can also retrieve the original phenotype matrix
 
@@ -181,7 +184,8 @@ simlist <- parLapply(cl, 1:replicates, function(i){
   bac   <- BacArena::Bac(model=Ec_core)
   arena <- BacArena::Arena(n=20, m=20)
   arena <- BacArena::addOrg(arena, bac, amount=10)
-  arena <- BacArena::addDefaultMed(arena, bac)
+  arena <- BacArena::addSubs(arena, smax=0.5, mediac="EX_glc(e)", unit="mM")
+  arena <- BacArena::addSubs(arena, smax=1, mediac=c("EX_pi(e)", "EX_h2o(e)", "EX_o2(e)", "EX_nh4(e)"), unit="mM")
   sim   <- BacArena::simEnv(arena, time=5)
 })
 ```
@@ -217,7 +221,7 @@ To get a summary of the growth, we start analysis by looking on the abundances o
 
 ```{r}
 p <- plotAbundance(eval)
-p + ggplot2::scale_color_manual(values=colpal3)
+p + ggplot2::scale_fill_manual(values=colpal2) + ggplot2::scale_color_manual(values=colpal2)
 ```
 The methods *plotAbundances()* returns a ggplot object which can be modified, e.g., to use different colors.
 
@@ -225,17 +229,16 @@ It is quite to investigate the metabolic activity of all organisms.
 We obtain a figure with uptake (negative values) and production (positive values) patterns of substances which changed most during simulation by
 
 ```{r}
-p <- plotSpecActivity(eval)
-p[[2]]
+plotSpecActivity(eval)[[2]]
 ```
 
 
-We see for example that acetaldehyde is produced by *B. producta*, *C. ramosum*, and L. *plantarum* and is used by all other species except *B. thetaiotaomicron*. Furthermore, the concentration of lactate is increased by *Lactobacillus plantarum* and again lactate supports growth of other species such as *B. thetaiotaomicon*. Moreover, we can identify *B. producta* and *E. coli* as formate producers which is a short chain fatty acid (SCFA).
+We see for example that succinate is produced by *B. producta*, *C. ramosum*, and *B. thetaiotaomicron* and is used by all other species except *B. longum*. Furthermore, the concentration of lactate is increased by for example *Lactobacillus plantarum* and again lactate supports growth of other species such as *B. thetaiotaomicon*. Moreover, we can identify *A. caccae* and *C. butyricum* as butyrate producers which is a short chain fatty acid (SCFA).
 
 We can also try to find cross feeding relationship automatically
 
 ```{r}
-g <- findFeeding3(eval, time = 10, mets = c("EX_acald(e)", "EX_lac_D(e)") )
+g <- findFeeding3(eval, time = 10, mets = c("EX_but(e)", "EX_succ(e)") )
 ```
 
 This graph can be interpreted as an ecological food web.
@@ -244,18 +247,8 @@ The main components of the diet are protein, starch, sucrose, oil, cellulose.
 Afterwards, we study the consumption of diet components (without amino acids) per species
 
 ```{r}
-p <- plotSubUsage(eval, subs = c("EX_sucr(e)", "EX_amylose300(e)", "EX_amylopect900(e)", 
-                                 "EX_cellb(e)", "EX_hdca(e)", "EX_ocdca(e)"))
-p[[2]]
+plotSubUsage(eval, subs = c("EX_sucr(e)", "EX_amylose300(e)", "EX_amylopect900(e)", 
+                                 "EX_cellb(e)", "EX_hdca(e)", "EX_ocdca(e)"))[[2]]
 ```
 
-Whereby sucrose can be used by all species, starch is only metabolized by *B. thetaiotaomicron* and fatty acids additionally by *B. producta* and to a minor part also by *C. butyricum*. On the other hand, in case of cellulose all species except *B. thetaiotaomicron* and *B. longum* show absorption.
-
-Due to the underlying method, it is possible to compute substances whose increased availability would contribute most to growth.
-We can use this to detect possible substrate or cofactor shortage
-```{r}
-p <- plotShadowCost(eval, 6)
-p[[2]]
-```
-
-In case of *E. coli*, we find that a lack of cobalt is limiting its growth.
+Whereby sucrose can be used by only by *B. longum* and fatty acids additionally by *B. producta*.
