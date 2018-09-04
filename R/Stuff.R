@@ -744,12 +744,11 @@ plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, re
   if(is(simlist, "Eval")) simlist <- list(simlist)
   if(length(subs)==0) {subs_tocheck <- names(getVarSubs(simlist[[1]]))
   }else subs_tocheck <- subs
-  if(length(spec_list)>0) #If spec list is provided, then the system takes the index numbers and replaces them with their real names like in line 742
+  if(length(spec_list)>1) #If spec list is provided, then the system takes the index numbers and replaces them with their real names like in line 742
   {for (i in (spec_list)) {spec_list[which(spec_list==i)]<-names(simlist[[1]]@specs)[i]}}
   if(length(spec_list)==0) spec_list <- names(simlist[[1]]@specs)
-  
   df <- data.frame(spec=as.character(), sub=as.character(), mflux=as.numeric(), time=as.integer())
-  
+  #browser()
   for(i in seq_along(simlist)){
     object <- simlist[[i]]  
     for(t in seq_along(object@mfluxlist)){
@@ -771,6 +770,7 @@ plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, re
     df <- df[which(df$sub %in% names(mflux_var)[1:var_nr]),]
   }
   df$time = df$time-1
+  
   q1 <- ggplot2::ggplot(df, ggplot2::aes_string(x="time", y="mflux")) + ggplot2::geom_line(ggplot2::aes_string(col="sub"), size=1) + 
         ggplot2::facet_wrap(~spec, scales="free_y") + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
   # q1_5 is the same as q2 but contains "+ ggplot2::facet_wrap(~spec, scales="free_y")" to plot the variance for each spec.   
