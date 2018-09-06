@@ -797,7 +797,7 @@ setMethod("unit_conversion", "Arena", function(object, unit){
 #' @param sec_obj character giving the secondary objective for a bi-level LP if wanted. Use "mtf" for minimizing total flux, "opt_rxn" for optimizing a random reaction, "opt_ex" for optimizing a random exchange reaction, and "sumex" for optimizing the sum of all exchange fluxes.
 #' @param cutoff value used to define numeric accuracy
 #' @param pcut A number giving the cutoff value by which value of objective function is considered greater than 0.
-#' @param with_shadow True if shadow cost should be stores (default off).
+#' @param with_shadow True if shadow cost should be stored (default off).
 #' @param verbose Set to false if no status messages should be printed. 
 #' @return Returns an object of class \code{Eval} which can be used for subsequent analysis steps.
 #' @details The returned object itself can be used for a subsequent simulation, due to the inheritance between \code{Eval} and \code{Arena}. The parameter for sec_obj can be used to optimize a bi-level LP with a secondary objective if wanted. This can be helpful to subselect the solution space and create less alternative optimal solution. The secondary objective can be set to "mtf" to minimize the total flux, to simulate minimal enzyme usage of an organisms. If set to "opt_rxn" or "opt_ex", the secondary objective is picked as a random reaction or exchange reaction respectively everytime a fba is performed. This means that every individual of a population will select a different secondary reaction to optimize. The "sumex" option maximizes the secretion of products.
@@ -2868,7 +2868,11 @@ setGeneric("plotShadowCost", function(object, spec_nr=1, sub_nr=10, cutoff=-1, n
 #' @export
 #' @rdname plotShadowCost
 setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutoff=-1, noplot=FALSE){
-
+  
+  if( length(object@shadowlist[[2]][[spec_nr]]) == 0){
+    stop("No shadow costs were calculated during simulation. Try to enable it with simEnv(..., with_shadow=TRUE)")
+  }
+  
   df <- data.frame(spec=as.character(), sub=as.character(), shadow=as.numeric(), time=as.integer())
   
   m <- matrix(0, ncol=length(object@shadowlist[[1]][[spec_nr]]), nrow=length(object@shadowlist))
