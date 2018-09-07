@@ -587,14 +587,18 @@ setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y, occupyM){
 #' @param n A number giving the horizontal size of the environment.
 #' @param m A number giving the vertical size of the environment.
 #' @param pos A dataframe with all occupied x and y positions 
+#' @param occupyM A matrix indicating grid cells that are obstacles
 #' @return Returns the free position in the Moore neighbourhood, which is not occupied by other individuals. If there is no free space \code{NULL} is returned.
 #' @seealso \code{\link{Organism-class}}
 #' @examples
 #' NULL
-setGeneric("NemptyHood", function(object, pos, n, m, x, y){standardGeneric("NemptyHood")})
+setGeneric("NemptyHood", function(object, pos, n, m, x, y, occupyM){standardGeneric("NemptyHood")})
 #' @export
 #' @rdname NemptyHood
-setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y){
+setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y, occupyM){
+  occ <- which(occupyM!=0, arr.ind = T)[,c(2,1)]
+  colnames(occ) <- c("x","y")
+  pos <- rbind(pos, occ) # block also occupied areas
   xp = c(x-1,x,x+1)
   yp = c(y-1,y,y+1)
   for(i in 2:object@speed){
@@ -639,9 +643,9 @@ setGeneric("move", function(object, pos, n, m, j, occupyM){standardGeneric("move
 #' @rdname move
 setMethod("move", "Organism", function(object, pos, n, m, j, occupyM){
   if(object@speed == 1){
-    freenb <- emptyHood(object, pos, n, m, pos[j,1], pos[j,2])
+    freenb <- emptyHood(object, pos, n, m, pos[j,1], pos[j,2], occupyM)
   }else{
-    freenb <- NemptyHood(object, pos, n, m, pos[j,1], pos[j,2])
+    freenb <- NemptyHood(object, pos, n, m, pos[j,1], pos[j,2], occupyM)
   }
   if(length(freenb) != 0){
     npos = freenb[sample(length(freenb),1)]
@@ -827,15 +831,15 @@ setMethod("growth_par", "Bac", function(object, population, j, fbasol, tstep){
 #' arena <- Arena(n=20,m=20) #initialize the environment
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
-#' chemotaxis(bac,arena,1, "EX_glc(e)")
-setGeneric("chemotaxis", function(object, population, j, chemo){standardGeneric("chemotaxis")})
+#' chemotaxis(bac,arena,1, "EX_glc(e)", arena@occupyM)
+setGeneric("chemotaxis", function(object, population, j, chemo, occupyM){standardGeneric("chemotaxis")})
 #' @export
 #' @rdname chemotaxis
-setMethod("chemotaxis", "Bac", function(object, population, j, chemo){
+setMethod("chemotaxis", "Bac", function(object, population, j, chemo, occupyM){
   popvec <- population@orgdat[j,]
   attract <- population@media[[chemo]]@diffmat
   freenb <- emptyHood(object, population@orgdat[,c('x','y')],
-                      population@n, population@m, popvec$x, popvec$y)
+                      population@n, population@m, popvec$x, popvec$y, occupyM)
   if(length(freenb) != 0){
     conc <- sapply(freenb, function(x, attract){
       npos = as.numeric(unlist(strsplit(x,'_')))
@@ -907,7 +911,7 @@ setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="no
     }else{
       for (v in seq_along(object@chem)){
       chemo <- object@chem[[v]]
-      chemo_pos <- chemotaxis(object, arena, j, chemo)
+      chemo_pos <- chemotaxis(object, arena, j, chemo, arena@occupyM)
       if(!is.null(chemo_pos)){arena@orgdat[j,c('x','y')] <- chemo_pos}
       }
     }
@@ -1079,7 +1083,7 @@ setMethod("cellgrowth", "Human", function(object, population, j, occupyM, fbasol
   neworgdat[j,'biomass'] <- popvec$biomass
   if(popvec$biomass > object@maxweight){
     freenb <- emptyHood(object, population@orgdat[,c('x','y')],
-                        population@n, population@m, popvec$x, popvec$y)
+                        population@n, population@m, popvec$x, popvec$y, occupyM)
     if(length(freenb) != 0){
       npos = freenb[sample(length(freenb),1)]
       npos = as.numeric(unlist(strsplit(npos,'_')))
@@ -1147,7 +1151,7 @@ setMethod("simHum", "Human", function(object, arena, j, sublb, bacnum, sec_obj="
       mov_pos <- move(object, pos, arena@n, arena@m, j, arena@occupyM)
       arena@orgdat[,c('x','y')] <- mov_pos
     }else{
-      chemo_pos <- chemotaxis(object, arena, j)
+      chemo_pos <- chemotaxis(object, arena, j, arena@occupyM)
       arena@orgdat[j,c('x','y')] <- chemo_pos
     }
   }

@@ -633,6 +633,8 @@ plotSubVar <- function(simlist, metsel){
 #' @param metsel A vector with the name of exchange reactions of interest
 #'
 plotFluxVar <- function(simlist, metsel){
+  if(is(simlist, "Eval")) simlist <- list(simlist)
+  
   concdat=data.frame()
   concmean=data.frame()
   for(i in 1:length(metsel)){
