@@ -293,7 +293,8 @@ setGeneric("addSubs", function(object, smax=0, mediac=object@mediac, difunc="pde
 #' @rdname addSubs
 #' @export
 setMethod("addSubs", "Arena", function(object, smax=0, mediac=object@mediac, difunc="pde", pde="Diff2d", difspeed=6.7e-6, unit="mmol/cell", add=TRUE, diffmat=NULL, template=FALSE, Dgrid=NULL, Vgrid=NULL, addAnyway=FALSE){
-  switch(class(object),"Arena"={object <- object}, "Eval"={object <- getArena(object)}, stop("Please supply an object of class Arena or Eval."))
+  #switch(class(object),"Arena"={object <- object}, "Eval"={arenalast <- getArena(object)}, stop("Please supply an object of class Arena or Eval."))
+  if(!(class(object)=="Arena" || class(object)=="Eval")){stop("Please supply an object of class Arena or Eval.")}
   if(length(smax) != length(mediac) && length(smax) != 1){
     stop("The parameter smax should be of the same size of mediac or equal to 1.")
   }
