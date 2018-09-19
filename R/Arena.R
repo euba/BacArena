@@ -2681,28 +2681,34 @@ setMethod("findFeeding3", "Eval", function(object, time, mets, plot=TRUE){
   mfluxmat = do.call(cbind,lapply(mflux,function(x){return(ifelse(is.na(x[mets]),0,x[mets]))}))
   rownames(mfluxmat) = mets
   inter = data.frame()
-  for(i in rownames(mfluxmat)){
+  for( i in seq_along(rownames(mfluxmat)) ){
     x = mfluxmat[i,]
     interact = matrix(0,ncol=2,nrow=1)
     for(j in names(which(x<0))){
       if(length(which(x>0))!=0){interact = rbind(interact,cbind(names(which(x>0)),j))}
     }
-    interact = interact[-1,]
+    interact = interact[-1,] # remove zero row
+    flux <- sapply(1:nrow(interact), function(k){
+      idx.flux <- match(interact[k,], colnames(mfluxmat))
+      mfluxmat[i, idx.flux]
+    })
     if(class(interact)=="character"){interact = t(as.matrix(interact))}
-    if(nrow(interact)!=0){inter = rbind(inter,data.frame(prod=interact[,1],cons=interact[,2],met=i, sim_step=time-1))}
+    if(nrow(interact)!=0){inter = rbind(inter,data.frame(prod=interact[,1],cons=interact[,2],met=rownames(mfluxmat)[i], sim_step=time-1, prod.flux=flux[1,], cons.flux=flux[2,]))}
   }
   if(any(dim(inter)==0)) {
     warning(paste("sim_step",(time-1),":","No crossfeeding found. Try other metaboites or time points."))
     #g <- igraph::make_empty_graph()
     return(inter)
   }
+  inter$met <- factor(inter$met)
   if (plot) {
   g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE)
   l <- igraph::layout.kamada.kawai(g)
   plot(g,edge.color=grDevices::rainbow(length(levels(inter$met)))[as.numeric(inter$met)],
+       edge.label=round(apply(abs(inter[,c("prod.flux", "cons.flux")]),1,min),1),
        edge.width=3,edge.arrow.size=0.8,vertex.color=1:length(igraph::V(g)),layout=l)
   legend("bottomright",legend=levels(inter$met),col=grDevices::rainbow(length(levels(inter$met))), pch=19, cex=0.7)
-  return(list(inter,g))}
+  return(invisible(list(inter,g)))}
   else return(inter)
 })
                           
