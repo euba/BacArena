@@ -385,17 +385,14 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
            stop("Secondary objective not suported!"))
   }
   # get shadow cost from dual problem (only for glpk and cplex)
-  if(!with_shadow){
+  if(!with_shadow | !solve_ok){
     shadow=NULL
-  } else if(lpob@problem@solver=="glpkAPI"){
+  } else{
     ex <- findExchReact(object@model)
-    shadow <- glpkAPI::getRowsDualGLPK(lpob@problem@oobj)[ex@met_pos]
-    names(shadow) <- ex@met_id
-  }else if(lpob@problem@solver=="cplexAPI" & solve_ok){ # TODO: cplex shadow costs needs update of optimzeProb call in optimizeLP() which is having side effects ...
-    warning("cplex shadow costs are not supported yet")
-    #ex <- findExchReact(object@model)
+    shadow <- sybil::getRedCosts(lpob@problem)[ex@react_pos] # use reduced costs, shadow costs are not supported by sybil and direct access is causing problems with cplex
+    #shadow <- glpkAPI::getRowsDualGLPK(lpob@problem@oobj)[ex@met_pos] 
     #shadow <- cplexAPI::getPiCPLEX(lpob@problem@oobj@env, lpob@problem@oobj@lp, 0, lpob@nr-1)[ex@met_pos]
-    #names(shadow) <- ex@met_id
+    names(shadow) <- ex@react_id
   }
   
   names(fbasl$fluxes) <- names(object@lbnd)
