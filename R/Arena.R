@@ -2670,11 +2670,12 @@ setMethod("findFeeding2", "Eval", function(object, time, mets, rm_own=T, ind_thr
 #' @param mets Character vector of substance names which should be considered
 #' @param plot Should the graph also be plotted?
 #' @return Graph (igraph)
+#' @cutoff Accuracy of crossfeeding interaction (minimal flux to be considered)
 #' 
-setGeneric("findFeeding3", function(object, time, mets, plot=TRUE){standardGeneric("findFeeding3")})
+setGeneric("findFeeding3", function(object, time, mets, plot=TRUE, cutoff=1e-6){standardGeneric("findFeeding3")})
 #' @export
 #' @rdname findFeeding3
-setMethod("findFeeding3", "Eval", function(object, time, mets, plot=TRUE){
+setMethod("findFeeding3", "Eval", function(object, time, mets, plot=TRUE, cutoff=1e-6){
   mets = intersect(object@mediac,as.character(mets))
   time = time+1
   mflux = object@mfluxlist[[time]]
@@ -2684,16 +2685,18 @@ setMethod("findFeeding3", "Eval", function(object, time, mets, plot=TRUE){
   for( i in seq_along(rownames(mfluxmat)) ){
     x = mfluxmat[i,]
     interact = matrix(0,ncol=2,nrow=1)
-    for(j in names(which(x<0))){
-      if(length(which(x>0))!=0){interact = rbind(interact,cbind(names(which(x>0)),j))}
+    for(j in names(which(x < -cutoff))){
+      if(length(which(x > cutoff))!=0){interact = rbind(interact,cbind(names(which(x > cutoff)),j))}
     }
     interact = interact[-1,] # remove zero row
-    flux <- sapply(1:nrow(interact), function(k){
-      idx.flux <- match(interact[k,], colnames(mfluxmat))
-      mfluxmat[i, idx.flux]
-    })
-    if(class(interact)=="character"){interact = t(as.matrix(interact))}
-    if(nrow(interact)!=0){inter = rbind(inter,data.frame(prod=interact[,1],cons=interact[,2],met=rownames(mfluxmat)[i], sim_step=time-1, prod.flux=flux[1,], cons.flux=flux[2,]))}
+    if( nrow(interact) > 0){
+      flux <- sapply(1:nrow(interact), function(k){
+        idx.flux <- match(interact[k,], colnames(mfluxmat))
+        mfluxmat[i, idx.flux]
+      })
+      if(class(interact)=="character"){interact = t(as.matrix(interact))}
+      inter = rbind(inter,data.frame(prod=interact[,1],cons=interact[,2],met=rownames(mfluxmat)[i], sim_step=time-1, prod.flux=flux[1,], cons.flux=flux[2,]))
+    }
   }
   if(any(dim(inter)==0)) {
     warning(paste("sim_step",(time-1),":","No crossfeeding found. Try other metaboites or time points."))
