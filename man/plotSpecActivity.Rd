@@ -4,8 +4,8 @@
 \alias{plotSpecActivity}
 \title{Function to plot substance usage for every species}
 \usage{
-plotSpecActivity(simlist, subs = list(), var_nr = 10, spec_list = NULL,
-  ret_data = FALSE)
+plotSpecActivity(simlist, subs = list(), var_nr = 10,
+  spec_list = NULL, ret_data = FALSE)
 }
 \arguments{
 \item{simlist}{An object of class Eval or a list with objects of class Eval.}

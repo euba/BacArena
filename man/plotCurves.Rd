@@ -9,8 +9,8 @@
 plotCurves(object, medplot = object@mediac, retdata = F, remove = F,
   legend = F, graph = T)
 
-\S4method{plotCurves}{Eval}(object, medplot = object@mediac, retdata = F,
-  remove = F, legend = F, graph = T)
+\S4method{plotCurves}{Eval}(object, medplot = object@mediac,
+  retdata = F, remove = F, legend = F, graph = T)
 }
 \arguments{
 \item{object}{An object of class Eval.}

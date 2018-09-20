@@ -14,9 +14,8 @@ devtools::document()
 devtools::check() # includes document()
 
 install_local(path="~/uni/bacarena", quick=TRUE, threads=2, quiet=F)
+#install_github(repo="euba/bacarena", quick=TRUE)
 
-install_github(repo="euba/bacarena", quick=TRUE)
-install_local(path="~/uni/bacarena", quick=FALSE)
 
 Rcpp::sourceCpp("src/duplicate.cpp")
 
@@ -25,8 +24,13 @@ build_win() # builds a package using win-builder
 # add data to package
 devtools::use_data()
 
+# vignette
+build_vignettes() #pdf is saved here: bacarena/inst/doc/BacArena-Introduction.pdf
+
+
+
 run_examples()
-build_vignettes()
+
 test()
 devtools::build()
 check_doc()

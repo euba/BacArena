@@ -6,11 +6,11 @@
 \alias{findFeeding,Eval-method}
 \title{Function for investigation of feeding between phenotypes}
 \usage{
-findFeeding(object, dict = NULL, tcut = 5, scut = NULL, org_dict = NULL,
-  legendpos = "topleft", lwd = 1)
-
-\S4method{findFeeding}{Eval}(object, dict = NULL, tcut = 5, scut = NULL,
+findFeeding(object, dict = NULL, tcut = 5, scut = NULL,
   org_dict = NULL, legendpos = "topleft", lwd = 1)
+
+\S4method{findFeeding}{Eval}(object, dict = NULL, tcut = 5,
+  scut = NULL, org_dict = NULL, legendpos = "topleft", lwd = 1)
 }
 \arguments{
 \item{object}{An object of class Eval.}

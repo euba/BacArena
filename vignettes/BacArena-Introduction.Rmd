@@ -214,13 +214,12 @@ The test data is called *sihumi_test*
 
 ```{r}
 data("sihumi_test")
-eval <- sihumi_test
 ```
 
 To get a summary of the growth, we start analysis by looking on the abundances of each species over time
 
 ```{r}
-p <- plotAbundance(eval)
+p <- plotAbundance(sihumi_test)
 p + ggplot2::scale_fill_manual(values=colpal2) + ggplot2::scale_color_manual(values=colpal2)
 ```
 The methods *plotAbundances()* returns a ggplot object which can be modified, e.g., to use different colors.
@@ -229,7 +228,7 @@ It is quite to investigate the metabolic activity of all organisms.
 We obtain a figure with uptake (negative values) and production (positive values) patterns of substances which changed most during simulation by
 
 ```{r}
-plotSpecActivity(eval)[[2]]
+plotSpecActivity(sihumi_test)[[2]]
 ```
 
 
@@ -238,7 +237,7 @@ We see for example that succinate is produced by *B. producta*, *C. ramosum*, an
 We can also try to find cross feeding relationship automatically
 
 ```{r}
-g <- findFeeding3(eval, time = 10, mets = c("EX_but(e)", "EX_succ(e)") )
+g <- findFeeding3(sihumi_test, time = 5, mets = c("EX_lac_D(e)", "EX_etoh(e)") )
 ```
 
 This graph can be interpreted as an ecological food web.
@@ -247,8 +246,12 @@ The main components of the diet are protein, starch, sucrose, oil, cellulose.
 Afterwards, we study the consumption of diet components (without amino acids) per species
 
 ```{r}
-plotSubUsage(eval, subs = c("EX_sucr(e)", "EX_amylose300(e)", "EX_amylopect900(e)", 
-                                 "EX_cellb(e)", "EX_hdca(e)", "EX_ocdca(e)"))[[2]]
+plotSubUsage(sihumi_test, subs = c("EX_sucr(e)", "EX_cellb(e)", "EX_ocdca(e)"))[[2]]
 ```
 
-Whereby sucrose can be used by only by *B. longum* and fatty acids additionally by *B. producta*.
+Whereby sucrose is used by all organisms but the the stearic acid only by *B. thetaiotaomicron* and *B. longum*.
+
+We can also have a look at components which are missing in the diet and which could contribute to growth when added in higher amounts:
+```{r}
+plotShadowCost(sihumi_test, spec_nr=7)[[2]]
+```

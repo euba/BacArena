@@ -6,12 +6,13 @@
 \alias{addOrg,Arena-method}
 \title{Add individuals to the environment}
 \usage{
-addOrg(object, specI, amount = 1, x = NULL, y = NULL, posmat = NULL,
-  biomass = NA, n0 = NULL, n = NULL, m0 = NULL, m = NULL)
-
-\S4method{addOrg}{Arena}(object, specI, amount = 1, x = NULL, y = NULL,
+addOrg(object, specI, amount = 1, x = NULL, y = NULL,
   posmat = NULL, biomass = NA, n0 = NULL, n = NULL, m0 = NULL,
   m = NULL)
+
+\S4method{addOrg}{Arena}(object, specI, amount = 1, x = NULL,
+  y = NULL, posmat = NULL, biomass = NA, n0 = NULL, n = NULL,
+  m0 = NULL, m = NULL)
 }
 \arguments{
 \item{object}{An object of class Arena.}

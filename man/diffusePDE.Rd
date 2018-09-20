@@ -8,8 +8,8 @@
 \usage{
 diffusePDE(object, init_mat, gridgeometry, lrw = NULL, tstep)
 
-\S4method{diffusePDE}{Substance}(object, init_mat, gridgeometry, lrw = NULL,
-  tstep)
+\S4method{diffusePDE}{Substance}(object, init_mat, gridgeometry,
+  lrw = NULL, tstep)
 }
 \arguments{
 \item{object}{An object of class Substance.}

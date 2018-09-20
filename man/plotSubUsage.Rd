@@ -4,7 +4,8 @@
 \alias{plotSubUsage}
 \title{Function to plot usage of substances species wise}
 \usage{
-plotSubUsage(simlist, subs = vector(), cutoff = 0.01, ret_data = FALSE)
+plotSubUsage(simlist, subs = vector(), cutoff = 0.01,
+  ret_data = FALSE)
 }
 \arguments{
 \item{simlist}{An object of class Eval or a list with objects of class Eval.}

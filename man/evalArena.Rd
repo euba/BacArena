@@ -6,13 +6,13 @@
 \alias{evalArena,Eval-method}
 \title{Function for plotting spatial and temporal change of populations and/or concentrations}
 \usage{
-evalArena(object, plot_items = "Population", phencol = F, retdata = F,
-  time = (seq_along(object@simlist) - 1), show_legend = TRUE,
-  legend_pos = "left")
+evalArena(object, plot_items = "Population", phencol = F,
+  retdata = F, time = (seq_along(object@simlist) - 1),
+  show_legend = TRUE, legend_pos = "left")
 
-\S4method{evalArena}{Eval}(object, plot_items = "Population", phencol = F,
-  retdata = F, time = (seq_along(object@simlist) - 1), show_legend = TRUE,
-  legend_pos = "left")
+\S4method{evalArena}{Eval}(object, plot_items = "Population",
+  phencol = F, retdata = F, time = (seq_along(object@simlist) - 1),
+  show_legend = TRUE, legend_pos = "left")
 }
 \arguments{
 \item{object}{An object of class Eval.}

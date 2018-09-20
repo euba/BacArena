@@ -6,13 +6,15 @@
 \alias{simEnv_par,Arena-method}
 \title{Main function for simulating in parallel all processes in the environment}
 \usage{
-simEnv_par(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
-  cluster_size = NULL, diffusion = TRUE, sec_obj = "none",
-  cutoff = 1e-06, with_shadow = FALSE, verbose = TRUE)
-
-\S4method{simEnv_par}{Arena}(object, time, lrw = NULL, continue = FALSE,
+simEnv_par(object, time, lrw = NULL, continue = FALSE,
   reduce = FALSE, cluster_size = NULL, diffusion = TRUE,
-  sec_obj = "none", cutoff = 1e-06, with_shadow = FALSE, verbose = TRUE)
+  sec_obj = "none", cutoff = 1e-06, with_shadow = FALSE,
+  verbose = TRUE)
+
+\S4method{simEnv_par}{Arena}(object, time, lrw = NULL,
+  continue = FALSE, reduce = FALSE, cluster_size = NULL,
+  diffusion = TRUE, sec_obj = "none", cutoff = 1e-06,
+  with_shadow = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{object}{An object of class Arena or Eval.}

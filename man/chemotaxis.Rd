@@ -6,9 +6,9 @@
 \alias{chemotaxis,Bac-method}
 \title{Function for chemotaxis of bacteria to their prefered substrate}
 \usage{
-chemotaxis(object, population, j, chemo)
+chemotaxis(object, population, j, chemo, occupyM)
 
-\S4method{chemotaxis}{Bac}(object, population, j, chemo)
+\S4method{chemotaxis}{Bac}(object, population, j, chemo, occupyM)
 }
 \arguments{
 \item{object}{An object of class Bac.}
@@ -32,7 +32,7 @@ bac <- Bac(Ec_core,deathrate=0.05, chem = "EX_o2(e)",
 arena <- Arena(n=20,m=20) #initialize the environment
 arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 arena <- addSubs(arena,40) #add all possible substances
-chemotaxis(bac,arena,1, "EX_glc(e)")
+chemotaxis(bac,arena,1, "EX_glc(e)", arena@occupyM)
 }
 \seealso{
 \code{\link{Bac-class}} and \code{\link{emptyHood}}

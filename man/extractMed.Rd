@@ -6,7 +6,8 @@
 \alias{extractMed,Eval-method}
 \title{Function for re-constructing a medium concentrations from simulations}
 \usage{
-extractMed(object, time = length(object@medlist), mediac = object@mediac)
+extractMed(object, time = length(object@medlist),
+  mediac = object@mediac)
 
 \S4method{extractMed}{Eval}(object, time = length(object@medlist),
   mediac = object@mediac)

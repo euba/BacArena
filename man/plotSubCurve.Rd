@@ -4,8 +4,9 @@
 \alias{plotSubCurve}
 \title{Plot substance curve for several simulations}
 \usage{
-plotSubCurve(simlist, mediac = NULL, time = c(NULL, NULL), scol = NULL,
-  unit = "mmol", ret_data = FALSE, num_var = 10, useNames = FALSE)
+plotSubCurve(simlist, mediac = NULL, time = c(NULL, NULL),
+  scol = NULL, unit = "mmol", ret_data = FALSE, num_var = 10,
+  useNames = FALSE)
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}

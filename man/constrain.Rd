@@ -8,8 +8,8 @@
 \usage{
 constrain(object, reacts, lb, dryweight, tstep, scale, j, cutoff = 1e-06)
 
-\S4method{constrain}{Organism}(object, reacts, lb, dryweight, tstep, scale, j,
-  cutoff = 1e-06)
+\S4method{constrain}{Organism}(object, reacts, lb, dryweight, tstep, scale,
+  j, cutoff = 1e-06)
 }
 \arguments{
 \item{object}{An object of class Organisms.}

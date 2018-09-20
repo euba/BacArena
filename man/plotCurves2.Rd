@@ -6,9 +6,10 @@
 \alias{plotCurves2,Eval-method}
 \title{Function for plotting the overall change as curves with maximally distinct colors}
 \usage{
-plotCurves2(object, legendpos = "topleft", ignore = c("EX_h(e)", "EX_pi(e)",
-  "EX_h2o(e)"), num = 10, phencol = FALSE, biomcol = FALSE, dict = NULL,
-  subs = list(), growthCurve = TRUE, subCurve = TRUE)
+plotCurves2(object, legendpos = "topleft", ignore = c("EX_h(e)",
+  "EX_pi(e)", "EX_h2o(e)"), num = 10, phencol = FALSE,
+  biomcol = FALSE, dict = NULL, subs = list(), growthCurve = TRUE,
+  subCurve = TRUE)
 
 \S4method{plotCurves2}{Eval}(object, legendpos = "topright",
   ignore = c("EX_h(e)", "EX_pi(e)", "EX_h2o(e)"), num = 10,

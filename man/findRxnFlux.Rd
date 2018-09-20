@@ -6,7 +6,8 @@
 \alias{findRxnFlux,Eval-method}
 \title{Function to get all reactions fluxes that are associated with the metabolite of a given exchange reactions}
 \usage{
-findRxnFlux(object, ex, time, print_reactions = FALSE, drop_unused = TRUE)
+findRxnFlux(object, ex, time, print_reactions = FALSE,
+  drop_unused = TRUE)
 
 \S4method{findRxnFlux}{Eval}(object, ex, time, print_reactions = FALSE,
   drop_unused = TRUE)

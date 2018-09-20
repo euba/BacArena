@@ -6,8 +6,8 @@
 \title{Constructor of the S4 class \code{Substance}}
 \usage{
 Substance(n, m, smax, gridgeometry, difspeed = 0.02412, advspeed = 0,
-  occupyM, Dgrid = NULL, Vgrid = NULL, diffmat = NULL, template = FALSE,
-  ...)
+  occupyM, Dgrid = NULL, Vgrid = NULL, diffmat = NULL,
+  template = FALSE, ...)
 }
 \arguments{
 \item{n}{A number giving the horizontal size of the environment.}

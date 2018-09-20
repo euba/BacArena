@@ -6,11 +6,12 @@
 \alias{simHum,Human-method}
 \title{Function for one simulation iteration for objects of Human class}
 \usage{
-simHum(object, arena, j, sublb, bacnum, sec_obj = "none", cutoff = 1e-06,
-  pcut = 1e-06, with_shadow = FALSE)
-
-\S4method{simHum}{Human}(object, arena, j, sublb, bacnum, sec_obj = "none",
+simHum(object, arena, j, sublb, bacnum, sec_obj = "none",
   cutoff = 1e-06, pcut = 1e-06, with_shadow = FALSE)
+
+\S4method{simHum}{Human}(object, arena, j, sublb, bacnum,
+  sec_obj = "none", cutoff = 1e-06, pcut = 1e-06,
+  with_shadow = FALSE)
 }
 \arguments{
 \item{object}{An object of class Human.}

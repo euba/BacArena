@@ -7,13 +7,14 @@
 \title{Main function for simulating all processes in the environment}
 \usage{
 simEnv(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
-  diffusion = TRUE, diff_par = FALSE, cl_size = 2, sec_obj = "none",
-  cutoff = 1e-06, pcut = 1e-06, with_shadow = FALSE, verbose = TRUE)
+  diffusion = TRUE, diff_par = FALSE, cl_size = 2,
+  sec_obj = "none", cutoff = 1e-06, pcut = 1e-06,
+  with_shadow = TRUE, verbose = TRUE)
 
 \S4method{simEnv}{Arena}(object, time, lrw = NULL, continue = FALSE,
   reduce = FALSE, diffusion = TRUE, diff_par = FALSE, cl_size = 2,
-  sec_obj = "none", cutoff = 1e-06, pcut = 1e-06, with_shadow = FALSE,
-  verbose = TRUE)
+  sec_obj = "none", cutoff = 1e-06, pcut = 1e-06,
+  with_shadow = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{object}{An object of class Arena or Eval.}
@@ -38,7 +39,7 @@ simEnv(object, time, lrw = NULL, continue = FALSE, reduce = FALSE,
 
 \item{pcut}{A number giving the cutoff value by which value of objective function is considered greater than 0.}
 
-\item{with_shadow}{True if shadow cost should be stores (default off).}
+\item{with_shadow}{True if shadow cost should be stored.}
 
 \item{verbose}{Set to false if no status messages should be printed.}
 }

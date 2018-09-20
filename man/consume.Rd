@@ -8,7 +8,8 @@
 \usage{
 consume(object, sublb, cutoff = 1e-06, bacnum, fbasol)
 
-\S4method{consume}{Organism}(object, sublb, cutoff = 1e-06, bacnum, fbasol)
+\S4method{consume}{Organism}(object, sublb, cutoff = 1e-06, bacnum,
+  fbasol)
 }
 \arguments{
 \item{object}{An object of class Organisms.}

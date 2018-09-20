@@ -6,8 +6,8 @@
 \alias{simBac,Bac-method}
 \title{Function for one simulation iteration for objects of Bac class}
 \usage{
-simBac(object, arena, j, sublb, bacnum, sec_obj = "none", cutoff = 1e-06,
-  pcut = 1e-06, with_shadow = FALSE)
+simBac(object, arena, j, sublb, bacnum, sec_obj = "none",
+  cutoff = 1e-06, pcut = 1e-06, with_shadow = FALSE)
 
 \S4method{simBac}{Bac}(object, arena, j, sublb, bacnum, sec_obj = "none",
   cutoff = 1e-06, pcut = 1e-06, with_shadow = FALSE)

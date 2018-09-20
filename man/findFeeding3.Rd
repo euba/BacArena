@@ -6,9 +6,10 @@
 \alias{findFeeding3,Eval-method}
 \title{Function for investigation of feeding between phenotypes}
 \usage{
-findFeeding3(object, time, mets, plot = TRUE)
+findFeeding3(object, time, mets, plot = TRUE, cutoff = 1e-06)
 
-\S4method{findFeeding3}{Eval}(object, time, mets, plot = TRUE)
+\S4method{findFeeding3}{Eval}(object, time, mets, plot = TRUE,
+  cutoff = 1e-06)
 }
 \arguments{
 \item{object}{An object of class Eval.}
@@ -18,6 +19,8 @@ findFeeding3(object, time, mets, plot = TRUE)
 \item{mets}{Character vector of substance names which should be considered}
 
 \item{plot}{Should the graph also be plotted?}
+
+\item{cutoff}{Accuracy of crossfeeding interaction (minimal flux to be considered)}
 }
 \value{
 Graph (igraph)

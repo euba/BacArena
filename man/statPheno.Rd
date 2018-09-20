@@ -8,7 +8,8 @@
 \usage{
 statPheno(object, type_nr = 1, phenotype_nr, dict = NULL)
 
-\S4method{statPheno}{Eval}(object, type_nr = 1, phenotype_nr, dict = NULL)
+\S4method{statPheno}{Eval}(object, type_nr = 1, phenotype_nr,
+  dict = NULL)
 }
 \arguments{
 \item{object}{An object of class Eval.}
