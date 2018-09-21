@@ -25,19 +25,19 @@ Features:
 
 ## Installation
 
-- Install the latest release: 
-  ```r
+- Install the latest CRAN release: 
+```r
 install.packages("BacArena")
 ```
 
 - Install the development version:
-  ```r
+```r
 library(devtools)
 install_github("euba/bacarena")
 ```
 
 - Special hints for linux user:
-  - glpk header files needed, e.g. for debian install package: libglpk-dev
+  - glpk header files needed, e.g. for debian install package: ``libglpk-dev``
 
 - Special hints for windows user:
   - Besides [R](https://cran.r-project.org/bin/windows/base/) you need to install [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
@@ -49,10 +49,20 @@ library("BacArena")
 openArena()
 ```
 
+## SBML support
+- sybilSBML is needed for SBML input
+- currently sybilSBML is not available on CRAN because the CRAN test server do not have the latest version of libsbml yet
+- manual installation of sybilSBML (for linux):
+```
+wget https://www.cs.hhu.de/fileadmin/redaktion/Oeffentliche_Medien/Fakultaeten/Mathematisch-Naturwissenschaftliche_Fakultaet/Informatik/Bioinformatik/sybilSBML_3.0.5.tar.gz
+R CMD INSTALL  sybilSBML_3.0.5.tar.gz
+```
+
 
 ## Documentation
 
-A tutorial is available: [Introduction](https://CRAN.R-project.org/package=BacArena/vignettes/BacArena-Introduction.pdf) 
+- A tutorial is available: [Introduction](https://CRAN.R-project.org/package=BacArena/vignettes/BacArena-Introduction.pdf) 
+- Short tutorials are on [github gist](https://gist.github.com/jotech)
 
 
 ## Issues
