@@ -2688,8 +2688,8 @@ setMethod("findFeeding3", "Eval", function(object, time, mets, plot=TRUE, cutoff
     for(j in names(which(x < -cutoff))){
       if(length(which(x > cutoff))!=0){interact = rbind(interact,cbind(names(which(x > cutoff)),j))}
     }
-    interact = interact[-1,] # remove zero row
-    if( nrow(interact) > 0){
+    if( !is.null(interact) & nrow(interact) > 1){
+      interact = interact[-1,] # remove zero row
       flux <- sapply(1:nrow(interact), function(k){
         idx.flux <- match(interact[k,], colnames(mfluxmat))
         mfluxmat[i, idx.flux]

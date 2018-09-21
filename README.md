@@ -51,7 +51,7 @@ openArena()
 
 ## SBML support
 - sybilSBML is needed for SBML input
-- currently sybilSBML is not available on CRAN because the CRAN test server do not have the latest version of libsbml yet
+- currently sybilSBML is not available on CRAN because the CRAN test servers do not have the latest version of libsbml yet
 - manual installation of sybilSBML (for linux):
 ```
 wget https://www.cs.hhu.de/fileadmin/redaktion/Oeffentliche_Medien/Fakultaeten/Mathematisch-Naturwissenschaftliche_Fakultaet/Informatik/Bioinformatik/sybilSBML_3.0.5.tar.gz
