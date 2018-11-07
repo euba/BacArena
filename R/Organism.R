@@ -77,15 +77,23 @@ setClass("Organism",
 #' @param model Object of class sybil::modelorg containging the genome sclae metabolic model
 #' @param keys Vector with strings which are used to find biomass reaction in model
 #' @return Vector with reaction ids for biomass reaction(s)
-findrBiomass <- function(model, keys=c("biom")){
-  ex_pos <- sybil::findExchReact(model)@react_pos
+findrBiomass <- function(model, keys=c("biom", "cpd11416")){
+  ex     <- sybil::findExchReact(model)
+  ex_pos <- ex@react_pos
+  ex_biom<- c(grep(paste0(keys, collapse = "|"), ex@met_id, ignore.case = TRUE),
+              grep(paste0(keys, collapse = "|"), met_name(model)[ex@met_pos], ignore.case = TRUE))
   rbio <- vector()
   for(k in keys){
     idx <- grep(k, sybil::react_id(model), ignore.case = TRUE)
     if(length(idx)==0) idx <- grep(k, sybil::react_name(model), ignore.case = TRUE)
     if(length(idx)>0) rbio <- c(rbio, idx)
   }
+  if( length(ex_biom) > 0 ){ # take care of biomass metabolite
+    rbio   <- c(rbio, ex@react_pos[ex_biom])
+    ex_pos <- setdiff(ex_pos, ex@react_pos[ex_biom]) 
+  } 
   if(length(rbio)==0) return(NULL)
+  
   rbio <- setdiff(rbio, ex_pos) # exclude exchange reactions
   return(sybil::react_id(model)[rbio])
 }
@@ -133,9 +141,11 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
       cat("Available biomass reactions:", sybil::react_id(model)[idx_bio], "\n")
       cat("Biomass reaction used for growth model:", sybil::react_id(model)[idx_bio][1], "\n")
       rbiomass <- sybil::react_id(model)[idx_bio][1]
-    }else{ # if no biomass recation is found
+    }else{ # if no biomass reaction is found
       cat("Optimization of biomass seems to be not the objective. Even if not optimized, a biomass reactions is needed for the growth model.")
-      stop("No biomass reaction found in model.")
+      cat("Objective functions ID:", sybil::react_id(model)[idx_obj], "\n")
+      cat("Objective functions name:", sybil::react_name(model)[idx_obj], "\n")
+      stop("No biomass reaction found in model. Please check that current objective makes sense.")
     }
   }
   
@@ -389,7 +399,12 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
     shadow=NULL
   } else{
     ex <- findExchReact(object@model)
-    shadow <- sybil::getRedCosts(lpob@problem)[ex@react_pos] # use reduced costs, shadow costs are not supported by sybil and direct access is causing problems with cplex
+    #browser()
+    #View(fbasl$fluxes[ex@react_pos])
+    switch(lpob@problem@solver, # use reduced costs, shadow costs are not supported by sybil and direct access is causing problems with cplex
+           glpkAPI = {shadow <- sybil::getRedCosts(lpob@problem)[ex@react_pos]},
+           cplexAPI = {shadow <- sybil::getRedCosts(lpob@problem)[ex@react_pos]},
+           shadow=NULL)
     #shadow <- glpkAPI::getRowsDualGLPK(lpob@problem@oobj)[ex@met_pos] 
     #shadow <- cplexAPI::getPiCPLEX(lpob@problem@oobj@env, lpob@problem@oobj@lp, 0, lpob@nr-1)[ex@met_pos]
     names(shadow) <- ex@react_id
