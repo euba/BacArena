@@ -142,10 +142,13 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
       cat("Biomass reaction used for growth model:", sybil::react_id(model)[idx_bio][1], "\n")
       rbiomass <- sybil::react_id(model)[idx_bio][1]
     }else{ # if no biomass reaction is found
-      cat("Optimization of biomass seems to be not the objective. Even if not optimized, a biomass reactions is needed for the growth model.")
-      cat("Objective functions ID:", sybil::react_id(model)[idx_obj], "\n")
-      cat("Objective functions name:", sybil::react_name(model)[idx_obj], "\n")
-      stop("No biomass reaction found in model. Please check that current objective makes sense.")
+      cat("Optimization of biomass seems to be not the objective. Even if not optimized, a biomass reactions is needed for the growth model.\n")
+      cat("Objective functions ID:", sybil::react_id(model)[idx_obj], "\t", "Objective functions name:", sybil::react_name(model)[idx_obj], "\n")
+      if(length(idx_obj) == 0){
+        stop("No objective found for the model")  
+      }
+      rbiomass <- sybil::react_id(model)[idx_obj]
+      warning("No biomass objective set. Please check that current objective makes sense.")
     }
   }
   
@@ -172,7 +175,7 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
   if(setExInf){ # if setExInf is true then set lower bound of all exchange reactions which have zero values to -INF
     lobnd[which(names(lobnd) %in% medc & lobnd==0)] <- -1000
   }
-  if(is.na(typename)) typename <- sybil::mod_desc(model)
+  if(is.na(typename)) typename <- ifelse( length(sybil::mod_desc(model)) > 0, sybil::mod_desc(model), "test" )
   lpobject <- sybil::sysBiolAlg(model, algorithm=algo)
   fbasol <- sybil::optimizeProb(lpobject, react=1:length(lobnd), ub=upbnd, lb=lobnd)
   names(fbasol$fluxes) = rxname
