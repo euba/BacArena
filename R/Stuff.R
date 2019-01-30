@@ -260,8 +260,9 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL, unit
 #' @param time Vector with two entries defining start and end time
 #' @param ret_data Set true if data should be returned
 #' @param use_biomass If enabled then biomass is used instead of cell number
+#' @param specs List of species for which a growth curve should be shown (default: all)
 #'
-plotGrowthCurve <-function(simlist, time=c(NULL,NULL), ret_data=FALSE, use_biomass=F){
+plotGrowthCurve <-function(simlist, time=c(NULL,NULL), ret_data=FALSE, use_biomass=F, specs=NULL){
   if(is(simlist, "Eval")) simlist <- list(simlist)
   if(length(simlist) < 1 | !all(lapply(simlist, class) == "Eval") == TRUE) stop("Simlist is invalid.")
   if(all(!is.null(time)) && (!time[1]<time[2] || !time[2]<length(simlist[[1]]@simlist))) stop("Time interval not valid")
@@ -288,7 +289,8 @@ plotGrowthCurve <-function(simlist, time=c(NULL,NULL), ret_data=FALSE, use_bioma
   }
   
   all_df$time <- all_df$time * simlist[[1]]@tstep # adjust time to hours
-
+  if( length(specs)>0 ) all_df <- all_df[which(all_df$species %in% specs),]
+  
   # test if capacity is reached
   cap <- sapply(seq_along(simlist), function(i){
     sim <- simlist[[i]]
@@ -740,8 +742,9 @@ plotSubUsage <- function(simlist, subs=vector(), cutoff=1e-2, ret_data=FALSE){
 #' @param var_nr Number of most varying substances to be used (if subs is not specified)
 #' @param spec_list List of species names to be considered (default all)
 #' @param ret_data Set true if data should be returned
+#' @param useNames Use substance names instead of ids
 #' @details Returns ggplot objects
-plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, ret_data=FALSE){
+plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, ret_data=FALSE, useNames=FALSE){
   
   if(is(simlist, "Eval")) simlist <- list(simlist)
   if(length(subs)==0) {subs_tocheck <- names(getVarSubs(simlist[[1]]))
@@ -772,6 +775,8 @@ plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, re
     df <- df[which(df$sub %in% names(mflux_var)[1:var_nr]),]
   }
   df$time = df$time-1
+  
+  if( useNames ) df$sub <- names(simlist[[1]]@mediac)[match(df$sub, simlist[[1]]@mediac)]
   
   q1 <- ggplot2::ggplot(df, ggplot2::aes_string(x="time", y="mflux")) + ggplot2::geom_line(ggplot2::aes_string(col="sub"), size=1) + 
         ggplot2::facet_wrap(~spec, scales="free_y") + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
