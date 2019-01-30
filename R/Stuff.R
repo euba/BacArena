@@ -307,12 +307,12 @@ plotGrowthCurve <-function(simlist, time=c(NULL,NULL), ret_data=FALSE, use_bioma
   if(length(simlist) > 1){ # first two plots only possible if replicates are available
     q1<-ggplot2::ggplot(all_df, ggplot2::aes_string(color="species", y="value", x="time")) + 
       ggplot2::geom_line(size=1) + ggplot2::facet_wrap(~replc) +
-      ggplot2::xlab("Time in h") + ggplot2::ylab("Number of individuals")
+      ggplot2::xlab("Time in h") + ggplot2::ylab(if(use_biomass){"Biomass"} else {"Number of individuals"})
     if(length(cap)!=0){q1 <- q1 + ggplot2::geom_vline(data=dat_cap, ggplot2::aes(xintercept=cap))}
     
     q2<-ggplot2::ggplot(all_df, ggplot2::aes_string(color="species", y="value", x="time")) +
       ggplot2::stat_summary(geom="ribbon", fun.ymin="lsd", fun.ymax="usd", ggplot2::aes_string(fill="species"), alpha=0.3) + 
-      ggplot2::xlab("Time in h") + ggplot2::ylab("Number of individuals")
+      ggplot2::xlab("Time in h") + ggplot2::ylab(if(use_biomass){"Biomass"} else {"Number of individuals"})
     #if(length(cap)!=0){q2 <- q2 + ggplot2::geom_vline(xintercept=min(cap))}
     
     plot_list <- list(q1, q2)
@@ -320,7 +320,7 @@ plotGrowthCurve <-function(simlist, time=c(NULL,NULL), ret_data=FALSE, use_bioma
     
   q3<-ggplot2::ggplot(all_df, ggplot2::aes_string(color="species", y="value", x="time")) +
     ggplot2::stat_summary(fun.y = mean, geom="line", size=1) + 
-    ggplot2::xlab("Time in h") + ggplot2::ylab("Number of individuals")
+    ggplot2::xlab("Time in h") + ggplot2::ylab(if(use_biomass){"Biomass"} else {"Number of individuals"})
   q4 <- ggplot2::ggplot(all_df, ggplot2::aes_string("time", "value")) +
     ggplot2::stat_summary(fun.y = mean, geom="bar", width=1, position="fill", ggplot2::aes_string(fill="species"))
   if(length(cap)!=0 & all(!is.na(cap))){q3 <- q3 + ggplot2::geom_vline(xintercept=min(cap))}
