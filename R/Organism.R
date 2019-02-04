@@ -357,8 +357,7 @@ setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=
 #' @export
 #' @rdname optimizeLP
 setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j, sec_obj="none", with_shadow=FALSE){ 
-  fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb) # react makes problems with cplex shadow costs
-  #fbasl <- sybil::optimizeProb(lpob, ub=ub, lb=lb) # without react parm, fba do not use all substrates??
+  fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb, resetChanges = FALSE) # resetChanges needed for cplex reduced/shadow costs
   switch(lpob@problem@solver,
          glpkAPI = {solve_ok <- fbasl$stat==5},
          cplexAPI = {solve_ok <- fbasl$stat==1},
@@ -402,14 +401,11 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
     shadow=NULL
   } else{
     ex <- findExchReact(object@model)
-    #browser()
     #View(fbasl$fluxes[ex@react_pos])
     switch(lpob@problem@solver, # use reduced costs, shadow costs are not supported by sybil and direct access is causing problems with cplex
-           glpkAPI = {shadow <- sybil::getRedCosts(lpob@problem)[ex@react_pos]},
+           glpkAPI =  {shadow <- sybil::getRedCosts(lpob@problem)[ex@react_pos]},
            cplexAPI = {shadow <- sybil::getRedCosts(lpob@problem)[ex@react_pos]},
            shadow=NULL)
-    #shadow <- glpkAPI::getRowsDualGLPK(lpob@problem@oobj)[ex@met_pos] 
-    #shadow <- cplexAPI::getPiCPLEX(lpob@problem@oobj@env, lpob@problem@oobj@lp, 0, lpob@nr-1)[ex@met_pos]
     names(shadow) <- ex@react_id
   }
   

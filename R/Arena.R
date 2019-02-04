@@ -811,10 +811,10 @@ setMethod("unit_conversion", "Arena", function(object, unit){
 #' arena <- addOrg(arena,bac,amount=10) #add 10 organisms
 #' arena <- addSubs(arena,40) #add all possible substances
 #' eval <- simEnv(arena,5)
-setGeneric("simEnv", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, sec_obj="none", cutoff=1e-6, pcut=1e-6, with_shadow=FALSE, verbose=TRUE){standardGeneric("simEnv")})
+setGeneric("simEnv", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, sec_obj="none", cutoff=1e-6, pcut=1e-6, with_shadow=TRUE, verbose=TRUE){standardGeneric("simEnv")})
 #' @export
 #' @rdname simEnv
-setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, sec_obj="none", cutoff=1e-6, pcut=1e-6, with_shadow=FALSE, verbose=TRUE){
+setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, reduce=FALSE, diffusion=TRUE, diff_par=FALSE, cl_size=2, sec_obj="none", cutoff=1e-6, pcut=1e-6, with_shadow=TRUE, verbose=TRUE){
   if(length(object@media)==0) stop("No media present in Arena!")
   switch(class(object),
          "Arena"={arena <- object; evaluation <- Eval(arena)},
