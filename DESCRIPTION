@@ -1,6 +1,6 @@
 Package: BacArena
 Title: Modeling Framework for Cellular Communities in their Environments
-Version: 1.7
+Version: 1.8
 Authors@R: c( person("Eugen", "Bauer", , "eugen.bauer@uni.lu", role = c("aut")), 
               person("Johannes", "Zimmermann", , "j.zimmermann@iem.uni-kiel.de", role = c("aut", "cre")))
 Author: Eugen Bauer [aut],
@@ -37,7 +37,7 @@ Suggests:
 LinkingTo: Rcpp,
     RcppArmadillo,
     RcppEigen
-License: GPL-3
+License: GPL-3 | file LICENSE
 VignetteBuilder: knitr
 RoxygenNote: 6.1.0
 LazyData: true

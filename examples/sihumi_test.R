@@ -1,4 +1,5 @@
 library(BacArena)
+SYBIL_SETTINGS("SOLVER", "cplexAPI")
 
 #sihumi <- readRDS("~/uni/dat/mod/r/sihumi.RDS")
 #latest_agora <- readRDS("~/uni/dat/mod/r/agora1.01.western.SWcorr.RDS")
@@ -16,7 +17,8 @@ for(i in seq_along(sihumi)){
 }
 sihumi_test <- simEnv(arena, time=7, sec_obj = "mtf", with_shadow = T)
 
-save(sihumi_test, file = "~/uni/bacarena/data/sihumi_test.rda")
+#save(sihumi_test, file = "~/uni/bacarena/data/sihumi_test.rda")
+#load("~/uni/bacarena/data/sihumi_test.rda")
 
 plotGrowthCurve(sihumi_test)[[1]]
 plotSpecActivity(sihumi_test)[[2]]

@@ -13,7 +13,7 @@ devtools::document()
 
 devtools::check() # includes document()
 
-install_local(path="~/uni/bacarena", quick=TRUE, threads=2, quiet=F)
+install_local(path="~/uni/bacarena", quick=TRUE, threads=2, quiet=F, force=T)
 #install_github(repo="euba/bacarena", quick=TRUE)
 
 

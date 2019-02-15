@@ -1,3 +1,14 @@
+BacArena v.1.8 (Release data: 2019-02-15)
+Changes:
+- improved detection of limiting substances (shadow costs) 
+- shadow costs analysis now possible with cplex, too
+- support for non-default objective functions
+- fixed interaction finding in findfeeding3()
+- occupied arena cells valid also for human cells (bug in emptyHood)
+
+* github reference: https://github.com/euba/BacArena/releases/tag/v1.8
+
+
 BacArena v.1.7 (Release date: 2018-05-09)
 ==============
 Changes: 

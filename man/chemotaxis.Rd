@@ -18,6 +18,8 @@ chemotaxis(object, population, j, chemo, occupyM)
 \item{j}{The number of the iteration of interest.}
 
 \item{chemo}{The vector that contains the prefered substrate.}
+
+\item{occupyM}{A matrix indicating grid cells that are obstacles}
 }
 \description{
 The generic function \code{chemotaxis} implements a bacterial movement in the Moore neighbourhood to the highest substrate concentration.

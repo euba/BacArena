@@ -4,7 +4,7 @@
 \alias{findrBiomass}
 \title{Find biomass reaction in model}
 \usage{
-findrBiomass(model, keys = c("biom"))
+findrBiomass(model, keys = c("biom", "cpd11416"))
 }
 \arguments{
 \item{model}{Object of class sybil::modelorg containging the genome sclae metabolic model}

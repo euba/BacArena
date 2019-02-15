@@ -832,7 +832,7 @@ setMethod("growth_par", "Bac", function(object, population, j, fbasol, tstep){
 #' @param population An object of class Arena.
 #' @param j The number of the iteration of interest.
 #' @param chemo The vector that contains the prefered substrate.
-
+#' @param occupyM A matrix indicating grid cells that are obstacles
 #' @details Bacteria move to a position in the Moore neighbourhood which has the highest concentration of the prefered substrate, which is not occupied by other individuals. The prefered substance is given by slot \code{chem} in the \code{Bac} object. If there is no free space the individuals stays in the same position. If the concentration in the Moore neighbourhood has the same concentration in every position, then random movement is implemented.
 #' @seealso \code{\link{Bac-class}} and \code{\link{emptyHood}}
 #' @examples

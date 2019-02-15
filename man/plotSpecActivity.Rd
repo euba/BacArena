@@ -5,7 +5,7 @@
 \title{Function to plot substance usage for every species}
 \usage{
 plotSpecActivity(simlist, subs = list(), var_nr = 10,
-  spec_list = NULL, ret_data = FALSE)
+  spec_list = NULL, ret_data = FALSE, useNames = FALSE)
 }
 \arguments{
 \item{simlist}{An object of class Eval or a list with objects of class Eval.}
@@ -17,6 +17,8 @@ plotSpecActivity(simlist, subs = list(), var_nr = 10,
 \item{spec_list}{List of species names to be considered (default all)}
 
 \item{ret_data}{Set true if data should be returned}
+
+\item{useNames}{Use substance names instead of ids}
 }
 \description{
 The generic function \code{plotSpecActivity} displays the input/output substances with the highest variance (could also be defiened manually) for all species
