@@ -358,23 +358,22 @@ setGeneric("optimizeLP", function(object, lpob=object@lpobj, lb=object@lbnd, ub=
 #' @rdname optimizeLP
 setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=object@lbnd, ub=object@ubnd, cutoff=1e-6, j, sec_obj="none", with_shadow=FALSE){ 
   fbasl <- sybil::optimizeProb(lpob, react=1:length(lb), ub=ub, lb=lb, resetChanges = FALSE) # resetChanges needed for cplex reduced/shadow costs
-  switch(lpob@problem@solver,
-         glpkAPI = {solve_ok <- fbasl$stat==5},
-         cplexAPI = {solve_ok <- fbasl$stat==1},
-         clpAPI = {solve_ok <- fbasl$stat==0},
-         lpSolveAPI = {solve_ok <- fbasl$stat==0},
-         sybilGUROBI = {solve_ok <- fbasl$stat==2},
-         stop("Solver not suported!"))
+  #browser()
+  #cat("stat:",fbasl$stat, "\tobj:",fbasl$obj,"\n")
+  #summary(getRedCosts(lpob@problem)[ex@react_pos])
+  solve_ok <- getLPstat(opt_sol=fbasl, solver=lpob@problem@solver)
   if(is.na(solve_ok)){solve_ok = FALSE}
   if(!solve_ok | is.na(fbasl$obj) | fbasl$obj<cutoff){
     fbasl$obj <- 0
     fbasl$fluxes <- rep(0, length(fbasl$fluxes))
   }
+
   if(sec_obj!="none" && fbasl$obj!=0){
     switch(sec_obj,
            mtf =   {mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub);
-                    mtf_sol <- sybil::optimizeProb(mod, algorithm="mtf", wtobj=fbasl$obj);
-                    fbasl$fluxes = sybil::getFluxDist(mtf_sol)},
+                    mtf_sol <- sybil::optimizeProb(mod, algorithm="mtf", mtfobj=fbasl$obj, retOptSol=F);
+                    mtf_ok  <- getLPstat(opt_sol=mtf_sol, solver=lpob@problem@solver)
+                    if( mtf_ok ) fbasl$fluxes = mtf_sol$fluxes},
            opt_rxn={mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub);
                     mod = sybil::changeBounds(mod, mod@react_id[which(obj_coef(mod)==1)], lb=fbasl$obj, ub=fbasl$obj);
                     mod <- sybil::changeObjFunc(mod, sample(mod@react_id,1));
@@ -401,12 +400,13 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
     shadow=NULL
   } else{
     ex <- findExchReact(object@model)
-    #View(fbasl$fluxes[ex@react_pos])
+    idx <- c(ex@react_pos, grep(object@rbiomass, object@model@react_id))
     switch(lpob@problem@solver, # use reduced costs, shadow costs are not supported by sybil and direct access is causing problems with cplex
-           glpkAPI =  {shadow <- sybil::getRedCosts(lpob@problem)[ex@react_pos]},
-           cplexAPI = {shadow <- sybil::getRedCosts(lpob@problem)[ex@react_pos]},
+           glpkAPI =  {shadow <- sybil::getRedCosts(lpob@problem)[idx]},
+           cplexAPI = {shadow <- sybil::getRedCosts(lpob@problem)[idx]},
            shadow=NULL)
-    names(shadow) <- ex@react_id
+    names(shadow) <- object@model@react_id[idx]
+    #if(all(is.na(shadow))) browser()
   }
   
   names(fbasl$fluxes) <- names(object@lbnd)

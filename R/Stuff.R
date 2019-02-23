@@ -1,5 +1,17 @@
 globalVariables(c("colpal1", "colpal2", "colpal3", "Ec_core"))
 
+# status code of linear optimization depending on solver
+getLPstat <- function(opt_sol, solver){
+  switch(solver,
+         glpkAPI =     {solve_ok <- opt_sol$stat==5},
+         cplexAPI =    {solve_ok <- opt_sol$stat==1},
+         clpAPI =      {solve_ok <- opt_sol$stat==0},
+         lpSolveAPI =  {solve_ok <- opt_sol$stat==0},
+         sybilGUROBI = {solve_ok <- opt_sol$stat==2},
+         stop("Solver not suported!"))
+  return(solve_ok)
+}
+
 # Diffusion pde solver function
 Diff2d <- function (t, y, parms){
   # geometry values are in parms

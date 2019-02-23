@@ -206,8 +206,8 @@ setMethod("addOrg", "Arena", function(object, specI, amount=1, x=NULL, y=NULL, p
   names(newmflux[[spectype]]) <- names(specI@lbnd)
   #shadow
   ex=sybil::findExchReact(specI@model)
-  newshadow[[spectype]] <- numeric(length(ex))
-  names(newshadow[[spectype]]) <- ex@met_id
+  newshadow[[spectype]] <- numeric(length(ex)+1)
+  names(newshadow[[spectype]]) <- c(ex@met_id, specI@rbiomass)
 
   type <- which(names(newspecs)==spectype) 
   lastind <- nrow(object@orgdat)
@@ -2889,8 +2889,12 @@ setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutof
   for(t in seq_along(object@shadowlist)){
         m[t,] <- object@shadowlist[[t]][[spec_nr]]
   }
-  if(all(m==0)) {
+  if(all(m==0, na.rm = T)) {
     print("no shadow costs available")
+    return()}
+  rxn.last <- names(object@shadowlist[[1]][[spec_nr]])[length(object@shadowlist[[1]][[spec_nr]])]
+  if(rxn.last == object@specs[[spec_nr]]@rbiomass & all(m[,-ncol(m)]==0, na.rm = T)){ # last column is reduced cost of biomass
+    print("Growth seems to be only limited by duplication rate (check organism's maxweight)")
     return()}
   df <- as.data.frame(m)
   colnames(df) <- names(object@shadowlist[[1]][[spec_nr]])
@@ -2916,9 +2920,9 @@ setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutof
     return(df2)
   }
   
-  q1 <- ggplot2::ggplot(df, ggplot2::aes(x=df$time, y=df$shadow)) + ggplot2::geom_line(ggplot2::aes(col=df$sub), size=1)
+  q1 <- ggplot2::ggplot(df, ggplot2::aes(x=df$time, y=df$shadow)) + ggplot2::geom_line(ggplot2::aes(col=df$sub), size=1) + ggplot2::xlab("")
   
-  q2 <- ggplot2::ggplot(df, ggplot2::aes(factor(df$sub), df$shadow)) + ggplot2::geom_boxplot(ggplot2::aes(color=factor(df$sub), fill=factor(df$sub)), alpha=0.2) +  ggplot2::ggtitle(names(object@specs)[spec_nr]) +
+  q2 <- ggplot2::ggplot(df, ggplot2::aes(factor(df$sub), df$shadow)) + ggplot2::geom_boxplot(ggplot2::aes(color=factor(df$sub), fill=factor(df$sub)), alpha=0.2) +  ggplot2::ggtitle(names(object@specs)[spec_nr]) + ggplot2::xlab("") +
     ggplot2::theme(axis.text.x = ggplot2::element_blank())
 
   return(list(q1, q2))
