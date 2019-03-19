@@ -31,6 +31,7 @@ globalVariables(c("diffuseNaiveCpp","diffuseSteveCpp"))
 #' @slot models A list containing Objects of class sybil::modelorg which represent the genome scale metabolic models
 #' @slot occupyM A matrix indicating grid cells that are obstacles
 #' @slot sublb A data matrix containing positions with amounts of substance for all organism
+#' @slot removeM A matrix indicating grid cells from which organisms are removed (i.e. killed) after each time step
 setClass("Arena",
          representation(
            orgdat="data.frame",
@@ -52,7 +53,8 @@ setClass("Arena",
            scale="numeric",
            models="list",
            occupyM="matrix",
-           sublb="matrix"
+           sublb="matrix",
+           removeM="matrix"
         ),
         prototype(
           orgdat = data.frame(biomass=numeric(0),type=integer(0),phenotype=integer(0),x=integer(0),y=integer(0)),
@@ -92,7 +94,8 @@ Arena <- function(Lx=NULL, Ly=NULL, n=100, m=100, seed=sample(1:10000,1), ...){
                                                      ReacTran::setup.grid.1D(x.up = 0, L = Lx, N = n)))
   scale   <- (Lx*Ly)/(n*m)
   occupyM <- matrix(0, ncol=n, nrow=m)
-  new("Arena", Lx=Lx, Ly=Ly, n=n, m=m, scale=scale, gridgeometry=gridgeometry, occupyM=occupyM, seed=seed, ...)
+  removeM <- matrix(0, ncol=n, nrow=m)
+  new("Arena", Lx=Lx, Ly=Ly, n=n, m=m, scale=scale, gridgeometry=gridgeometry, occupyM=occupyM, removeM=removeM, seed=seed, ...)
 }
 
 
@@ -908,6 +911,17 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
       sublb_tmp[,c('x','y')] = newpos
       arena@sublb = as.matrix(sublb_tmp)
     }
+    idx.rm <- which(arena@removeM > 0, arr.ind=TRUE) # remove organisms given removal matrix
+    if( nrow(idx.rm) > 0 ){
+      idx.rm.str <- apply(idx.rm, 1, function(r){paste0(r,collapse=",")})
+      idx.orgdat.str <- apply(arena@orgdat[,c('x','y')], 1, function(r){paste0(r,collapse=",")})
+      rm.rows <- which(!is.na(match(idx.orgdat.str, idx.rm.str)))
+      if( length(rm.rows)> 0 ){
+        arena@orgdat <- arena@orgdat[-rm.rows,]
+        if(verbose) cat("removed", length(rm.rows), "organisms\n")
+      }
+    }
+    
     addEval(evaluation, arena)
     if(reduce && i<time){evaluation = redEval(evaluation)}
     if(nrow(arena@orgdat)==0 && !continue){
