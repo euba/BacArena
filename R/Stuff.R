@@ -929,10 +929,12 @@ findFeeding3rep <- function(simlist, time, mets, plot=TRUE, mfunction="mean"){
     g <- igraph::make_empty_graph()
     return(list(inter,g))
   }
+  if (plot) {
   g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE)
   l <- igraph::layout.kamada.kawai(g)
   plot(g,edge.color=grDevices::rainbow(length(levels(inter$met)))[as.numeric(inter$met)],
        edge.width=3,edge.arrow.size=0.8,vertex.color=1:length(igraph::V(g)),layout=l)
   legend("bottomright",legend=levels(inter$met),col=grDevices::rainbow(length(levels(inter$met))), pch=19, cex=0.7)
-  return(list(inter,g))
+  return(invisible(list(inter,g)))}
+  else return(inter)
 }
