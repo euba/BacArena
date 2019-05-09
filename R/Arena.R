@@ -195,8 +195,10 @@ setMethod("addOrg", "Arena", function(object, specI, amount=1, x=NULL, y=NULL, p
   if( specI@maxweight <= specI@minweight*2 )
     stop("Maxweight needs to be bigger than two-times minweight otherwise cells will die immediately after duplication")
   
- 
-  spectype <- specI@type
+  # check if name is already used by other organism
+  if( specI@type %in% names(object@specs) ) spectype <- paste0(specI@type, "_",length(grep(specI@type, names(object@specs))))
+  else spectype <- specI@type
+  
   neworgdat <- object@orgdat
   newspecs <- object@specs
   newspecs[[spectype]] <- specI
