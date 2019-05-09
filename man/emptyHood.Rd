@@ -6,9 +6,10 @@
 \alias{emptyHood,Organism-method}
 \title{Function to check if the there is a free place in the Moore neighbourhood}
 \usage{
-emptyHood(object, pos, n, m, x, y, occupyM)
+emptyHood(object, pos, n, m, x, y, occupyM, inverse = FALSE)
 
-\S4method{emptyHood}{Organism}(object, pos, n, m, x, y, occupyM)
+\S4method{emptyHood}{Organism}(object, pos, n, m, x, y, occupyM,
+  inverse = FALSE)
 }
 \arguments{
 \item{object}{An object of class Organisms.}
@@ -24,6 +25,8 @@ emptyHood(object, pos, n, m, x, y, occupyM)
 \item{y}{A number giving the y position of the individual of interest in its environment.}
 
 \item{occupyM}{A matrix indicating grid cells that are obstacles}
+
+\item{inverse}{Return occupied positions instead}
 }
 \value{
 Returns the free position in the Moore neighbourhood, which is not occupied by other individuals. If there is no free space \code{NULL} is returned.

@@ -49,5 +49,7 @@ Structure of the S4 class \code{Arena} to represent the environment in which Org
 \item{\code{occupyM}}{A matrix indicating grid cells that are obstacles}
 
 \item{\code{sublb}}{A data matrix containing positions with amounts of substance for all organism}
+
+\item{\code{removeM}}{A matrix indicating grid cells from which organisms are removed (i.e. killed) after each time step}
 }}
 

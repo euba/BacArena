@@ -32,6 +32,8 @@
 #' @slot algo Algorithm to be used during optimization (default fba)
 #' @slot rbiomass Name of biomass reactions which is used for growth model (set automatically but needs input if objective is not biomass optimization)
 #' @slot limit_growth If true then a upper bound on growth will be set, see maxweight (default: True).
+#' @slot coupling_constraints List with coupling parameters.
+#' @slot predator Name of organism which can kill this one. 
 setClass("Organism",
          representation(
            lbnd="numeric",
@@ -54,7 +56,9 @@ setClass("Organism",
            model="modelorg",
            algo="character",
            rbiomass="character",
-           limit_growth="logical"
+           limit_growth="logical",
+           coupling_constraints="list",
+           predator="character"
          ),
          prototype(
            deathrate = 0.21,
@@ -122,7 +126,7 @@ findrBiomass <- function(model, keys=c("biom", "cpd11416")){
 #' @param ... Arguments of \code{\link{Organism-class}}
 #' @return Object of class Organism
 Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]", esuffix="\\[e\\]", lyse=FALSE, feat=list(), 
-                     typename=NA, setExInf=TRUE, ...){
+                     typename=NA, setExInf=TRUE, coupling_constraints=list(), predator="", ...){
   pot_biomass <- findrBiomass(model)
   if(all(model@obj_coef==0)){
     if(length(pot_biomass)==0) stop("No objection function set in model")
@@ -151,6 +155,7 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
       warning("No biomass objective set. Please check that current objective makes sense.")
     }
   }
+  if(algo=="coupling" & length(coupling_constraints)==0) stop("Please provide couling constraints for coupling!")
   
   if(is.na(ex)){
     medc <- sybil::react_id(sybil::findExchReact(model))
@@ -176,17 +181,21 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
     lobnd[which(names(lobnd) %in% medc & lobnd==0)] <- -1000
   }
   if(is.na(typename)) typename <- ifelse( length(sybil::mod_desc(model)) > 0, sybil::mod_desc(model), "test" )
-  lpobject <- sybil::sysBiolAlg(model, algorithm=algo)
+  if(algo=="coupling"){
+    #lpobject <- sybil::sysBiolAlg(model, algorithm="mtfEasyConstraint2", easyConstraint=coupling, pFBAcoeff = 1e-5)
+    lpobject <- sybil::sysBiolAlg(model, algorithm="mtfEasyConstraint", easyConstraint=coupling)
+  }else lpobject <- sybil::sysBiolAlg(model, algorithm=algo)
   fbasol <- sybil::optimizeProb(lpobject, react=1:length(lobnd), ub=upbnd, lb=lobnd)
   names(fbasol$fluxes) = rxname
   upbnd = sybil::uppbnd(model)
   names(upbnd) = rxname
   
-  if(lyse){
+  #browser()
+  if(lyse | predator != ""){
     stochmat <- as.matrix(sybil::S(model))
     colnames(stochmat) <- rxname
     rownames(stochmat) <- sybil::met_id(model)
-    stoch <- stochmat[,which(model@obj_coef==1)] #find stochiometry of biomass components
+    stoch <- stochmat[,rbiomass]
     biomets <- stoch[-which(stoch==0)]
     exs <- sybil::findExchReact(model)
     extrans <- sybil::react_id(exs)
@@ -199,7 +208,8 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
   }
 
   new("Organism", lbnd=lobnd, ubnd=upbnd, type=typename, medium=medc, lpobj=lpobject,
-      fbasol=fbasol, feat=feat, lyse=lyse, model=model, algo=algo,rbiomass=rbiomass, ...)
+      fbasol=fbasol, feat=feat, lyse=lyse, model=model, algo=algo,rbiomass=rbiomass, 
+      coupling_constraints=coupling_constraints, predator=predator, ...)
 }
 
 ########################################################################################################
@@ -242,6 +252,10 @@ setGeneric("cellarea", function(object){standardGeneric("cellarea")})
 setMethod("cellarea", "Organism", function(object){return(object@cellarea)})
 setGeneric("algo", function(object){standardGeneric("algo")})
 setMethod("algo", "Organism", function(object){return(object@algo)})
+setGeneric("coupling_constraints", function(object){standardGeneric("coupling_constraints")})
+setMethod("coupling_constraints", "Organism", function(object){return(object@coupling_constraints)})
+setGeneric("predator", function(object){standardGeneric("predator")})
+setMethod("predator", "Organism", function(object){return(object@predator)})
 
 
 ########################################################################################################
@@ -370,7 +384,7 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
 
   if(sec_obj!="none" && fbasl$obj!=0){
     switch(sec_obj,
-           mtf =   {mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub);
+           mtf =   {mod = sybil::changeBounds(object@model, react=1:length(lb), lb=lb, ub=ub);
                     mtf_sol <- sybil::optimizeProb(mod, algorithm="mtf", mtfobj=fbasl$obj, retOptSol=F);
                     mtf_ok  <- getLPstat(opt_sol=mtf_sol, solver=lpob@problem@solver)
                     if( mtf_ok ) fbasl$fluxes = mtf_sol$fluxes},
@@ -560,14 +574,15 @@ setMethod("lysis", "Organism", function(object, sublb, factor=object@minweight){
 #' @param m A number giving the vertical size of the environment.
 #' @param pos A dataframe with all occupied x and y positions 
 #' @param occupyM A matrix indicating grid cells that are obstacles
+#' @param inverse Return occupied positions instead
 #' @return Returns the free position in the Moore neighbourhood, which is not occupied by other individuals. If there is no free space \code{NULL} is returned.
 #' @seealso \code{\link{Organism-class}}
 #' @examples
 #' NULL
-setGeneric("emptyHood", function(object, pos, n, m, x, y, occupyM){standardGeneric("emptyHood")})
+setGeneric("emptyHood", function(object, pos, n, m, x, y, occupyM, inverse=FALSE){standardGeneric("emptyHood")})
 #' @export
 #' @rdname emptyHood
-setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y, occupyM){
+setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y, occupyM, inverse=FALSE){
   occ <- which(occupyM!=0, arr.ind = T)[,c(2,1)]
   colnames(occ) <- c("x","y")
   pos <- rbind(pos, occ) # block also occupied areas
@@ -582,7 +597,11 @@ setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y, occupyM){
   nb=sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp)
   pos = pos[which(pos$x %in% xp),]
   pos = pos[which(pos$y %in% yp),]
-  freenb=setdiff(nb,paste(pos$x,pos$y,sep='_'))
+  if( !inverse ){
+    freenb=setdiff(nb,paste(pos$x,pos$y,sep='_'))  
+  }else{
+    freenb=paste(pos$x,pos$y,sep='_')
+  }
   if(length(freenb)==0){return(NULL)}else{return(freenb)}
 })
 
@@ -599,14 +618,15 @@ setMethod("emptyHood", "Organism", function(object, pos, n, m, x, y, occupyM){
 #' @param m A number giving the vertical size of the environment.
 #' @param pos A dataframe with all occupied x and y positions 
 #' @param occupyM A matrix indicating grid cells that are obstacles
+#' @param inverse Return occupied positions instead
 #' @return Returns the free position in the Moore neighbourhood, which is not occupied by other individuals. If there is no free space \code{NULL} is returned.
 #' @seealso \code{\link{Organism-class}}
 #' @examples
 #' NULL
-setGeneric("NemptyHood", function(object, pos, n, m, x, y, occupyM){standardGeneric("NemptyHood")})
+setGeneric("NemptyHood", function(object, pos, n, m, x, y, occupyM, inverse=FALSE){standardGeneric("NemptyHood")})
 #' @export
 #' @rdname NemptyHood
-setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y, occupyM){
+setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y, occupyM, inverse=FALSE){
   occ <- which(occupyM!=0, arr.ind = T)[,c(2,1)]
   colnames(occ) <- c("x","y")
   pos <- rbind(pos, occ) # block also occupied areas
@@ -623,7 +643,11 @@ setMethod("NemptyHood", "Organism", function(object, pos, n, m, x, y, occupyM){
   nb=sapply(xp,function(x,y){return(paste(x,y,sep='_'))},y=yp)
   pos = pos[which(pos$x %in% xp),]
   pos = pos[which(pos$y %in% yp),]
-  freenb=setdiff(nb,paste(pos$x,pos$y,sep='_'))
+  if( !inverse ){
+    freenb=setdiff(nb,paste(pos$x,pos$y,sep='_'))  
+  }else{
+    freenb=paste(pos$x,pos$y,sep='_')
+  }
   if(length(freenb)==0){return(NULL)}else{return(freenb)}
 })
 
@@ -892,31 +916,52 @@ setGeneric("simBac", function(object, arena, j, sublb, bacnum, sec_obj="none", c
 #' @export
 #' @rdname simBac
 setMethod("simBac", "Bac", function(object, arena, j, sublb, bacnum, sec_obj="none", cutoff=1e-6, pcut=1e-6, with_shadow=FALSE){
-  const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
-                     dryweight=arena@orgdat[j,"biomass"], tstep=arena@tstep, scale=arena@scale, j)
-  lobnd <- const[[1]]; upbnd <- const[[2]]
-  optimization <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff, with_shadow=with_shadow)
-  fbasol <- optimization[[1]]
+  predator_found <- FALSE
+  if( object@predator != ""){
+    pos  <- arena@orgdat[,c('x','y')]
+    nb <- emptyHood(object, pos, arena@n, arena@m, pos[j,1], pos[j,2], arena@occupyM, inverse=T)  
+    unlist(strsplit(nb,'_'))
+    nb_types <- sapply(strsplit(nb,'_'), function(coord){
+      arena@orgdat[arena@orgdat$x==coord[1] & arena@orgdat$y==coord[2], "type"]
+    })
+    nb_names <- unique(names(arena@specs)[unlist(nb_types)])
+    if( object@predator %in% nb_names){
+      predator_found <- TRUE
+    }
+  }
+  if( predator_found ){
+    eval.parent(substitute(sublb[j,] <- lysis(object, sublb[j,], factor=arena@orgdat[j,"biomass"])))
+    dead <- TRUE
+    arena@orgdat[j, "biomass"] <- NA
+    #print("died because of predator")
+  }else{
+    const <- constrain(object, object@medium, lb=-sublb[j,object@medium]/bacnum, #scale to population size
+                       dryweight=arena@orgdat[j,"biomass"], tstep=arena@tstep, scale=arena@scale, j)
+    lobnd <- const[[1]]; upbnd <- const[[2]]
+    optimization <- optimizeLP(object, lb=lobnd, ub=upbnd, j=j, sec_obj=sec_obj, cutoff=cutoff, with_shadow=with_shadow)
+    fbasol <- optimization[[1]]
+    
+    eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol, cutoff) )) #scale consumption to the number of cells?
+    
+    dead <- growth(object, arena, j, arena@occupyM, fbasol=fbasol, tstep=arena@tstep)
+    arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, org=object, fbasol=fbasol, cutoff=pcut))
+    
+    type <- object@type
+    arena@mflux[[type]]  <- arena@mflux[[type]] + fbasol$fluxes # remember active fluxes
+    arena@shadow[[type]] <- arena@shadow[[type]]+ optimization[[2]]
+    idx <- match(arena@mediac, names(fbasol$fluxes))
+    exchanges <- data.frame(type,t(fbasol$fluxes[idx]))
+    colnames(exchanges) <- c("species", unname(arena@mediac))
+    arena@exchanges <- rbind(arena@exchanges, exchanges) # remember exchanges
+  }
   
-  eval.parent(substitute(sublb[j,] <- consume(object, sublb[j,], bacnum=bacnum, fbasol=fbasol, cutoff) )) #scale consumption to the number of cells?
-
-  dead <- growth(object, arena, j, arena@occupyM, fbasol=fbasol, tstep=arena@tstep)
-  arena@orgdat[j,'phenotype'] <- as.integer(checkPhen(arena, org=object, fbasol=fbasol, cutoff=pcut))
-  
-  type <- object@type
-  arena@mflux[[type]]  <- arena@mflux[[type]] + fbasol$fluxes # remember active fluxes
-  arena@shadow[[type]] <- arena@shadow[[type]]+ optimization[[2]]
-  idx <- match(arena@mediac, names(fbasol$fluxes))
-  exchanges <- data.frame(type,t(fbasol$fluxes[idx]))
-  colnames(exchanges) <- c("species", unname(arena@mediac))
-  arena@exchanges <- rbind(arena@exchanges, exchanges) # remember exchanges
   
   if(dead && object@lyse){
     eval.parent(substitute(sublb[j,] <- lysis(object, sublb[j,])))
   }
-  pos <- arena@orgdat[,c('x','y')]
   if(!dead && !arena@stir && object@speed != 0){
     if(object@chem[1] == ''){
+      pos <- arena@orgdat[,c('x','y')]
       mov_pos <- move(object, pos, arena@n, arena@m, j, arena@occupyM)
       arena@orgdat[,c('x','y')] <- mov_pos
     }else{

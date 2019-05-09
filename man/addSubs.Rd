@@ -7,12 +7,12 @@
 \title{Add substances to the environment}
 \usage{
 addSubs(object, smax = 0, mediac = object@mediac, difunc = "pde",
-  pde = "Diff2d", difspeed = 6.7e-06, unit = "mmol/cell",
+  pde = "Diff2d", difspeed = 0.02412, unit = "mmol/cell",
   add = TRUE, diffmat = NULL, template = FALSE, Dgrid = NULL,
   Vgrid = NULL, addAnyway = FALSE)
 
 \S4method{addSubs}{Arena}(object, smax = 0, mediac = object@mediac,
-  difunc = "pde", pde = "Diff2d", difspeed = 6.7e-06,
+  difunc = "pde", pde = "Diff2d", difspeed = 0.02412,
   unit = "mmol/cell", add = TRUE, diffmat = NULL, template = FALSE,
   Dgrid = NULL, Vgrid = NULL, addAnyway = FALSE)
 }
@@ -27,7 +27,7 @@ addSubs(object, smax = 0, mediac = object@mediac, difunc = "pde",
 
 \item{pde}{Choose diffusion transport reaction to be used (default is diffusion only)}
 
-\item{difspeed}{A number indicating the diffusion speed (given by number of cells per iteration).}
+\item{difspeed}{A number indicating the diffusion rate (given by cm^2/h). Default is set to glucose diffusion in a aqueous solution (6.7e-6 cm^2/s * 3600 s/h = 0.02412 cm^2/h )}
 
 \item{unit}{A character used as chemical unit to set the amount of the substances to be added (valid values are: mmol/cell, mmol/cm2, mmol/arena, mM)}
 

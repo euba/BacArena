@@ -7,7 +7,8 @@
 \usage{
 Organism(model, algo = "fba", ex = "EX_", ex_comp = NA,
   csuffix = "\\\\[c\\\\]", esuffix = "\\\\[e\\\\]", lyse = FALSE,
-  feat = list(), typename = NA, setExInf = TRUE, ...)
+  feat = list(), typename = NA, setExInf = TRUE,
+  coupling_constraints = list(), predator = "", ...)
 }
 \arguments{
 \item{model}{Object of class sybil::modelorg containging the genome sclae metabolic model}
