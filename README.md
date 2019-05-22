@@ -49,6 +49,13 @@ library("BacArena")
 openArena()
 ```
 
+## matlab models
+- cobra matlab model files can be imported
+- [tutorial](https://gist.github.com/jotech/2ec33f33fb86a400fb40b816277f4147)
+```r
+readMATmod("model.mat")
+```
+
 ## SBML support
 - sybilSBML is needed for SBML input
 - currently sybilSBML is not available on CRAN because the CRAN test servers do not have the latest version of libsbml yet
