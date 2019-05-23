@@ -2889,11 +2889,12 @@ setMethod("checkCorr", "Eval", function(object, corr=NULL, tocheck=list()){
 #' @param sub_nr Maximal number of substances to be show
 #' @param cutoff Shadow costs should be smaller than cutoff
 #' @param noplot Do not plot
+#' @param useNames Use substance names instead of ids
 #' @details Returns ggplot objects
-setGeneric("plotShadowCost", function(object, spec_nr=1, sub_nr=10, cutoff=-1, noplot=FALSE){standardGeneric("plotShadowCost")})
+setGeneric("plotShadowCost", function(object, spec_nr=1, sub_nr=10, cutoff=-1, noplot=FALSE, useNames=FALSE){standardGeneric("plotShadowCost")})
 #' @export
 #' @rdname plotShadowCost
-setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutoff=-1, noplot=FALSE){
+setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutoff=-1, noplot=FALSE, useNames=FALSE){
   
   if( length(object@shadowlist[[2]][[spec_nr]]) == 0){
     stop("No shadow costs were calculated during simulation. Try to enable it with simEnv(..., with_shadow=TRUE)")
@@ -2925,6 +2926,8 @@ setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutof
   df$time=seq_along(object@shadowlist)
   df <- reshape2::melt(df, id.vars="time")
   colnames(df)[2:3] <- c("sub", "shadow")
+  
+  if( useNames ) df$sub <- object@specs[[spec_nr]]@model@met_name[match(df$sub, object@specs[[spec_nr]]@model@met_id)]
   
   # do not plot shadow costs but print statistics
   if(noplot){

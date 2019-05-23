@@ -7,10 +7,10 @@
 \title{Function to plot substance shadow costs for a specie}
 \usage{
 plotShadowCost(object, spec_nr = 1, sub_nr = 10, cutoff = -1,
-  noplot = FALSE)
+  noplot = FALSE, useNames = FALSE)
 
 \S4method{plotShadowCost}{Eval}(object, spec_nr = 1, sub_nr = 10,
-  cutoff = -1, noplot = FALSE)
+  cutoff = -1, noplot = FALSE, useNames = FALSE)
 }
 \arguments{
 \item{object}{An object of class Eval.}
@@ -22,6 +22,8 @@ plotShadowCost(object, spec_nr = 1, sub_nr = 10, cutoff = -1,
 \item{cutoff}{Shadow costs should be smaller than cutoff}
 
 \item{noplot}{Do not plot}
+
+\item{useNames}{Use substance names instead of ids}
 }
 \description{
 The generic function \code{plotShadowCost} plots substances have the highest impact on further growth (shadow cost < 0)
