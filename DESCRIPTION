@@ -20,7 +20,6 @@ Depends:
     deSolve (>= 1.12),
     Matrix (>= 1.2)
 Imports:
-    igraph,
     methods,
     utils,
     stats,
@@ -31,6 +30,7 @@ Imports:
     plyr,
     Rcpp
 Suggests:
+    igraph,
     parallel,
     knitr,
     rmarkdown
