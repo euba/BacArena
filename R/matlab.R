@@ -83,10 +83,6 @@ readMATmod <- function(file){
     
   }
   
-  mod.genes[961]
-  mod.gpr[961]
-  
-  
   # 6) bounds
   mod.lb <- as.vector(dat.mat[[which(mod.var=="lb")]])
   mod.ub <- as.vector(dat.mat[[which(mod.var=="ub")]])

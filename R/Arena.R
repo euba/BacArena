@@ -196,8 +196,20 @@ setMethod("addOrg", "Arena", function(object, specI, amount=1, x=NULL, y=NULL, p
     stop("Maxweight needs to be bigger than two-times minweight otherwise cells will die immediately after duplication")
   
   # check if name is already used by other organism
-  if( specI@type %in% names(object@specs) ) spectype <- paste0(specI@type, "_",length(grep(specI@type, names(object@specs))))
-  else spectype <- specI@type
+  idx.dupl <- match(specI@type, names(object@specs))
+  if( !is.na(idx.dupl) ){
+    if( !identical( specI@model, object@specs[[idx.dupl]]@model ) ){
+      spectype <- paste0(specI@type, "_",length(grep(specI@type, names(object@specs))))  
+      print(paste0("Organism of the same type but with different model already present, added a new one:", spectype))
+    }
+    else{
+      spectype <- specI@type  
+      print("Organism of the same type and model already present, merged new organism with old one")
+    } 
+  } 
+  else{
+    spectype <- specI@type
+  } 
   
   neworgdat <- object@orgdat
   newspecs <- object@specs
@@ -826,7 +838,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
          "Eval"={arena <- getArena(object); evaluation <- object},
          stop("Please supply an object of class Arena or Eval."))
   if( sec_obj=="none" & any(sapply(object@specs, function(s){s@limit_growth})))
-    warning("If growth is limitted by maximum weight for an organism (max_weight=TRUE) it is recommended to use minimize total flux (sec_obj='mtf').")
+    warning("If growth is limited by maximum weight for an organism (max_weight=TRUE) it is recommended to use minimize total flux (sec_obj='mtf').")
   
   if(is.null(lrw)){lrw=estimate_lrw(arena@n,arena@m)}
   for(i in names(arena@specs)){
