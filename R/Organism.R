@@ -122,11 +122,12 @@ findrBiomass <- function(model, keys=c("biom", "cpd11416")){
 #' @param feat A list containing conditional features for the object (contains at the momement only biomass components for lysis).
 #' @param typename A string defining the name (set to model name in default case)
 #' @param lyse A boolean variable indicating if the organism should lyse after death.
-#' @param setExInf Enable if all lower bounds of exchange reaction which are set to zero (i.e. no uptake possible!) should be set to -infitity
+#' @param setExInf Enable if all lower bounds of exchange reaction which are set to zero (i.e. no uptake possible!) should be set to -infitity (default: true)
+#' @param setAllExInf Enable if all lower bounds of exchange reaction should be set to -infitity (default: false)
 #' @param ... Arguments of \code{\link{Organism-class}}
 #' @return Object of class Organism
 Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]", esuffix="\\[e\\]", lyse=FALSE, feat=list(), 
-                     typename=NA, setExInf=TRUE, coupling_constraints=list(), predator="", ...){
+                     typename=NA, setExInf=TRUE, setAllExInf=FALSE, coupling_constraints=list(), predator="", ...){
   pot_biomass <- findrBiomass(model)
   if(all(model@obj_coef==0)){
     if(length(pot_biomass)==0) stop("No objection function set in model")
@@ -177,9 +178,22 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
   lobnd <- sybil::lowbnd(model)
   upbnd <- sybil::uppbnd(model) 
   names(lobnd) = rxname
-  if(setExInf){ # if setExInf is true then set lower bound of all exchange reactions which have zero values to -INF
-    lobnd[which(names(lobnd) %in% medc & lobnd==0)] <- -1000
+  if( setAllExInf ){
+    lobnd[ which( names(lobnd) %in% medc ) ] <- -1000
   }
+  if( setExInf ){ # if setExInf is true then set lower bound of all exchange reactions which have zero values to -INF
+    lobnd[ which(names(lobnd) %in% medc & lobnd==0) ] <- -1000
+  }
+  lobnd.ex <- lobnd[match(medc, rxname)]
+  lobnd.ex.med <- median(lobnd.ex[ which( lobnd.ex < 0 & lobnd.ex > -1000 ) ])
+  if( !is.na(lobnd.ex.med) ){
+    print(paste0("Median lower bound for non-zero and non-Inf exchanges is:", round(lobnd.ex.med), 6))
+    if( lobnd.ex.med > -10 ){
+      warning("Many lower bounds of of the model seems to be set to non -infinity. Please be aware that they will be used as maximal uptake rates even when the available medium is more abundant! (set setAllExInf=TRUE to reset all exchanges to -INF)")
+      #print( lobnd.ex[ which( lobnd.ex < 0 & lobnd.ex >  lobnd.ex.med ) ] )
+    }    
+  }
+  
   if(is.na(typename)) typename <- ifelse( length(sybil::mod_desc(model)) > 0, sybil::mod_desc(model), 
                                           ifelse( length(sybil::mod_name(model)) > 0, sybil::mod_name(model), 
                                                   ifelse( length(sybil::mod_id(model)) > 0, sybil::mod_id(model), "test" )))
