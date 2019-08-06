@@ -200,6 +200,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount=1, x=NULL, y=NULL, p
   if( !is.na(idx.dupl) ){
     if( !identical( specI@model, object@specs[[idx.dupl]]@model ) ){
       spectype <- paste0(specI@type, "_",length(grep(specI@type, names(object@specs))))  
+      specI@type <- spectype # needs to be re-set!
       print(paste0("Organism of the same type but with different model already present, added a new one:", spectype))
     }
     else{
