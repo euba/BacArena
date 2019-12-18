@@ -1,4 +1,8 @@
-# BacArena
+# BacArena <img src="man/bacarena.png" align="right" height = 150/>
+[![CRAN version](http://www.r-pkg.org/badges/version/BacArena?color=blue)](https://cran.r-project.org/package=BacArena)
+![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/BacArena)
+![CRAN downloads/month](https://cranlogs.r-pkg.org/badges/BacArena)
+[![twitter](https://img.shields.io/twitter/follow/_bacarena?style=social&logo=twitter)](https://twitter.com/_bacarena)
 
 BacArena is an agent based modeling framework for cellular communities.
 
