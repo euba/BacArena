@@ -7,11 +7,8 @@
 #' @param file Full path to matlab model file
 #' @details Returns sybil model object (time needed: bacterial model ~ 10s, recon2 ~ 60s)
 readMATmod <- function(file){
-  library(sybil)
-  library(R.matlab)
-  library(stringr)
-  
-  print(system.time(data <- readMat(file)))
+
+  print(system.time(data <- R.matlab::readMat(file)))
   dat.mat <- data[[1]]
   
   mod.var <- dimnames(dat.mat)[[1]]
@@ -70,7 +67,7 @@ readMATmod <- function(file){
         mod.genes[[i]] <- ""
         next
       } 
-      j <- as.numeric(unlist(str_extract_all(rule.tmp, "(?<=x\\()[0-9]+?(?=\\))")))
+      j <- as.numeric(unlist(stringr::str_extract_all(rule.tmp, "(?<=x\\()[0-9]+?(?=\\))")))
       mod.GeneMat[i,j] <- 1
       mod.genes[[i]] <- mod.gene_id[j]
     }
@@ -80,9 +77,9 @@ readMATmod <- function(file){
     mod.gprRules <- sapply(sapply(dat.mat[[which(mod.var=="rules")]], unlist), function(entry){
       if( length(entry) == 0 ) "" 
       else {
-        numbers <- as.numeric(unlist(str_extract_all(entry, "[0-9]+")))
+        numbers <- as.numeric(unlist(stringr::str_extract_all(entry, "[0-9]+")))
         dict <- as.character(numbers - min(numbers) + 1); names(dict) <- as.character(numbers)
-        gsub("\\(([0-9]+)\\)","\\[\\1\\]",str_replace_all(entry, dict)) }
+        gsub("\\(([0-9]+)\\)","\\[\\1\\]",stringr::str_replace_all(entry, dict)) }
     })
   }else{ # if 'rules' is not present construct own rules from gpr+genes
     mod.gprRules <- sapply(seq_along(mod.gpr), function(i){
@@ -91,7 +88,7 @@ readMATmod <- function(file){
         genes <- unlist(mod.genes[i])
         dict <- paste0("x[",seq_along(genes),"]")
         names(dict) <- genes
-        gsub("and","&", gsub("or","|",str_replace_all(mod.gpr[i], dict)))
+        gsub("and","&", gsub("or","|",stringr::str_replace_all(mod.gpr[i], dict)))
       }
     })
     
@@ -102,9 +99,9 @@ readMATmod <- function(file){
   mod.ub <- as.vector(dat.mat[[which(mod.var=="ub")]])
   
   # 7) compartments
-  met_comp <- str_extract_all(mod.met_id, "(?<=\\[)[a-z](?=\\])")
+  met_comp <- stringr::str_extract_all(mod.met_id, "(?<=\\[)[a-z](?=\\])")
   if( all(sapply(met_comp, length) == 0 ) ){
-    met_comp <- str_extract_all(mod.met_id, "(?<=_)[a-z][0-9]?(?=$)")
+    met_comp <- stringr::str_extract_all(mod.met_id, "(?<=_)[a-z][0-9]?(?=$)")
   }
   mod.mod_compart <- unique(unlist(met_comp))
   mod.met_comp    <- match(met_comp, mod.mod_compart)
@@ -121,7 +118,7 @@ readMATmod <- function(file){
   
   
   # create new model
-  model <- modelorg(id = mod.id, name = mod.name)
+  model <- sybil::modelorg(id = mod.id, name = mod.name)
   model@mod_desc <- mod.desc
   model@S <- mod.S
   model@lowbnd <- mod.lb
@@ -143,8 +140,8 @@ readMATmod <- function(file){
   
   obj.idx <- which(dat.mat[[which(mod.var == "c")]]!=0)
   if( length(obj.idx) > 0 ){
-    model <- changeObjFunc(model, react = obj.idx)  
-    print(optimizeProb(model))
+    model <- sybil::changeObjFunc(model, react = obj.idx)  
+    print(sybil::optimizeProb(model))
   }
   
   return(model)

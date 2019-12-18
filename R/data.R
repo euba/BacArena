@@ -24,7 +24,7 @@
 #' 
 #' @format A vector with 22 color hex-codes 
 #' 
-#' @source \url{www.iscc.org/pdf/PC54_1724_001.pdf}
+#' @source \url{http://www.iscc-archive.org/pdf/PC54_1724_001.pdf}
 "colpal3"
 
 

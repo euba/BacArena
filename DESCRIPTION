@@ -1,13 +1,14 @@
 Package: BacArena
 Title: Modeling Framework for Cellular Communities in their Environments
-Version: 1.8
+Version: 1.8.1
 Authors@R: c( person("Eugen", "Bauer", , "eugen.bauer@uni.lu", role = c("aut")), 
               person("Johannes", "Zimmermann", , "j.zimmermann@iem.uni-kiel.de", role = c("aut", "cre")))
 Author: Eugen Bauer [aut],
     Johannes Zimmermann [aut, cre]
 Maintainer: Johannes Zimmermann <j.zimmermann@iem.uni-kiel.de>
 Description: Can be used for simulation of organisms living in
-    communities. Each organism is represented individually and genome scale
+    communities (Bauer and Zimmermann (2017) <doi:10.1371/journal.pcbi.1005544>). 
+    Each organism is represented individually and genome scale
     metabolic models determine the uptake and release of compounds. Biological
     processes such as movement, diffusion, chemotaxis and kinetics are available
     along with data analysis techniques.
@@ -28,9 +29,11 @@ Imports:
     reshape2,
     glpkAPI,
     plyr,
-    Rcpp
-Suggests:
+    Rcpp,
     igraph,
+    stringr,
+    R.matlab
+Suggests:
     parallel,
     knitr,
     rmarkdown
@@ -39,5 +42,5 @@ LinkingTo: Rcpp,
     RcppEigen
 License: GPL-3 | file LICENSE
 VignetteBuilder: knitr
-RoxygenNote: 6.1.0
+RoxygenNote: 7.0.2
 LazyData: true

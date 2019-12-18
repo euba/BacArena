@@ -4,8 +4,13 @@
 \alias{plotAbundance}
 \title{Plot abundances of species}
 \usage{
-plotAbundance(simlist, time = c(NULL, NULL), col = colpal3,
-  return_dat = F, use_biomass = F)
+plotAbundance(
+  simlist,
+  time = c(NULL, NULL),
+  col = colpal3,
+  return_dat = F,
+  use_biomass = F
+)
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}

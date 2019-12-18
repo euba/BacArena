@@ -4,9 +4,17 @@
 \alias{plotPhenCurve}
 \title{Plot growth curve for several simulations}
 \usage{
-plotPhenCurve(simlist, subs, phens = NULL, time = c(NULL, NULL),
-  cluster = TRUE, inAll = TRUE, col = colpal3, with_gc = FALSE,
-  return_dat = FALSE)
+plotPhenCurve(
+  simlist,
+  subs,
+  phens = NULL,
+  time = c(NULL, NULL),
+  cluster = TRUE,
+  inAll = TRUE,
+  col = colpal3,
+  with_gc = FALSE,
+  return_dat = FALSE
+)
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}

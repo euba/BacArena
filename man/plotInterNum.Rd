@@ -4,8 +4,7 @@
 \alias{plotInterNum}
 \title{Plot number of variation in number of interactions for several simulations}
 \usage{
-plotInterNum(simlist, title = "Variation in number of interactions",
-  size = 1)
+plotInterNum(simlist, title = "Variation in number of interactions", size = 1)
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}

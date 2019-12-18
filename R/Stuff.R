@@ -927,7 +927,7 @@ findFeeding3rep <- function(simlist, time, mets, plot=TRUE, mfunction="mean"){
       if(length(which(x>0))!=0){interact = rbind(interact,cbind(names(which(x>0)),j))}
     }
     interact = interact[-1,]
-    if(class(interact)=="character"){interact = t(as.matrix(interact))}
+    if("character" %in% class(interact)){interact = t(as.matrix(interact))}
     if(nrow(interact)!=0){inter = rbind(inter,data.frame(prod=interact[,1],cons=interact[,2],met=i))}
   }
   if(any(dim(inter)==0)) {

@@ -736,7 +736,6 @@ setMethod("checkPhen", "Arena", function(object, org, cutoff=1e-6, fbasol){
 #' @param cutoff A number giving the cutoff for values of the objective function and fluxes of exchange reactions.
 #' @param fbasol Problem object according to the constraints and then solved with \code{optimizeProb}.
 #' 
-#' @rdname checkPhen_par
 setGeneric("checkPhen_par", function(object, org, cutoff=1e-6, fbasol){standardGeneric("checkPhen_par")})
 #' @export
 #' @rdname checkPhen_par
@@ -2723,7 +2722,7 @@ setMethod("findFeeding3", "Eval", function(object, time, mets, plot=TRUE, cutoff
         idx.flux <- match(interact[k,], colnames(mfluxmat))
         mfluxmat[i, idx.flux]
       })
-      if(class(interact)=="character"){interact = t(as.matrix(interact))}
+      if("character" %in% class(interact)){interact = t(as.matrix(interact))}
       inter = rbind(inter,data.frame(prod=interact[,1],cons=interact[,2],met=rownames(mfluxmat)[i], sim_step=time-1, prod.flux=flux[1,], cons.flux=flux[2,]))
     }
   }

@@ -3,7 +3,6 @@
 \docType{package}
 \name{BacArena}
 \alias{BacArena}
-\alias{BacArena-package}
 \title{BacArena: An Agent-Based Modeling Framework for Cellular Communities}
 \description{
 The BacArena package provides six classes: Arena (subclass Eval), Organism (subclasses Bac, Human) and Substance.

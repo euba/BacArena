@@ -1,4 +1,17 @@
-BacArena v.1.8 (Release data: 2019-02-15)
+BacArena v.1.8.1 (Release date: 2019-12-16)
+================
+Changes:
+- matlab import support
+- fixed several issues when adding organisms
+- corrected default diffusion constant in addSubs
+- igraph is now only suggested
+- complied with new R CRAN guidelines (matrix is of class matrix + array now)
+
+* github reference: https://github.com/euba/BacArena/releases/tag/v1.8.1
+
+
+BacArena v.1.8 (Release date: 2019-02-15)
+==============
 Changes:
 - improved detection of limiting substances (shadow costs) 
 - shadow costs analysis now possible with cplex, too

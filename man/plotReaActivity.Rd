@@ -4,8 +4,12 @@
 \alias{plotReaActivity}
 \title{Function to plot reaction activity for every species}
 \usage{
-plotReaActivity(simlist, reactions = list(), spec_list = NULL,
-  ret_data = FALSE)
+plotReaActivity(
+  simlist,
+  reactions = list(),
+  spec_list = NULL,
+  ret_data = FALSE
+)
 }
 \arguments{
 \item{simlist}{An object of class Eval or a list with objects of class Eval.}

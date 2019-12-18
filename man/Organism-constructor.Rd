@@ -5,10 +5,22 @@
 \alias{Organism}
 \title{Constructor of the S4 class \code{\link{Organism-class}}}
 \usage{
-Organism(model, algo = "fba", ex = "EX_", ex_comp = NA,
-  csuffix = "\\\\[c\\\\]", esuffix = "\\\\[e\\\\]", lyse = FALSE,
-  feat = list(), typename = NA, setExInf = TRUE,
-  coupling_constraints = list(), predator = "", ...)
+Organism(
+  model,
+  algo = "fba",
+  ex = "EX_",
+  ex_comp = NA,
+  csuffix = "\\\\[c\\\\]",
+  esuffix = "\\\\[e\\\\]",
+  lyse = FALSE,
+  feat = list(),
+  typename = NA,
+  setExInf = TRUE,
+  setAllExInf = FALSE,
+  coupling_constraints = list(),
+  predator = "",
+  ...
+)
 }
 \arguments{
 \item{model}{Object of class sybil::modelorg containging the genome sclae metabolic model}
@@ -29,7 +41,13 @@ Organism(model, algo = "fba", ex = "EX_", ex_comp = NA,
 
 \item{typename}{A string defining the name (set to model name in default case)}
 
-\item{setExInf}{Enable if all lower bounds of exchange reaction which are set to zero (i.e. no uptake possible!) should be set to -infitity}
+\item{setExInf}{Enable if all lower bounds of exchange reaction which are set to zero (i.e. no uptake possible!) should be set to -infitity (default: true)}
+
+\item{setAllExInf}{Enable if all lower bounds of exchange reaction should be set to -infitity (default: false)}
+
+\item{coupling_constraints}{List with coupling parameters.}
+
+\item{predator}{Name of organism which can kill this one.}
 
 \item{...}{Arguments of \code{\link{Organism-class}}}
 }

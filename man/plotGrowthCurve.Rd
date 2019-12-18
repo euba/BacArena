@@ -4,8 +4,13 @@
 \alias{plotGrowthCurve}
 \title{Plot growth curve for several simulations}
 \usage{
-plotGrowthCurve(simlist, time = c(NULL, NULL), ret_data = FALSE,
-  use_biomass = F, specs = NULL)
+plotGrowthCurve(
+  simlist,
+  time = c(NULL, NULL),
+  ret_data = FALSE,
+  use_biomass = F,
+  specs = NULL
+)
 }
 \arguments{
 \item{simlist}{A list of simulations (eval objects).}

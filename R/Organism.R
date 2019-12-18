@@ -124,6 +124,8 @@ findrBiomass <- function(model, keys=c("biom", "cpd11416")){
 #' @param lyse A boolean variable indicating if the organism should lyse after death.
 #' @param setExInf Enable if all lower bounds of exchange reaction which are set to zero (i.e. no uptake possible!) should be set to -infitity (default: true)
 #' @param setAllExInf Enable if all lower bounds of exchange reaction should be set to -infitity (default: false)
+#' @param coupling_constraints List with coupling parameters.
+#' @param predator Name of organism which can kill this one.
 #' @param ... Arguments of \code{\link{Organism-class}}
 #' @return Object of class Organism
 Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]", esuffix="\\[e\\]", lyse=FALSE, feat=list(), 
@@ -185,7 +187,7 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
     lobnd[ which(names(lobnd) %in% medc & lobnd==0) ] <- -1000
   }
   lobnd.ex <- lobnd[match(medc, rxname)]
-  lobnd.ex.med <- median(lobnd.ex[ which( lobnd.ex < 0 & lobnd.ex > -1000 ) ])
+  lobnd.ex.med <- stats::median(lobnd.ex[ which( lobnd.ex < 0 & lobnd.ex > -1000 ) ])
   if( !is.na(lobnd.ex.med) ){
     print(paste0("Median lower bound for non-zero and non-Inf exchanges is:", round(lobnd.ex.med), 6))
     if( lobnd.ex.med > -10 ){
@@ -198,8 +200,8 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
                                           ifelse( length(sybil::mod_name(model)) > 0, sybil::mod_name(model), 
                                                   ifelse( length(sybil::mod_id(model)) > 0, sybil::mod_id(model), "test" )))
   if(algo=="coupling"){
-    #lpobject <- sybil::sysBiolAlg(model, algorithm="mtfEasyConstraint2", easyConstraint=coupling, pFBAcoeff = 1e-5)
-    lpobject <- sybil::sysBiolAlg(model, algorithm="mtfEasyConstraint", easyConstraint=coupling)
+    #lpobject <- sybil::sysBiolAlg(model, algorithm="mtfEasyConstraint2", easyConstraint=coupling_constraints, pFBAcoeff = 1e-5)
+    lpobject <- sybil::sysBiolAlg(model, algorithm="mtfEasyConstraint", easyConstraint=coupling_constraints)
   }else lpobject <- sybil::sysBiolAlg(model, algorithm=algo)
   fbasol <- sybil::optimizeProb(lpobject, react=1:length(lobnd), ub=upbnd, lb=lobnd)
   names(fbasol$fluxes) = rxname

@@ -5,8 +5,12 @@
 \alias{Human}
 \title{Constructor of the S4 class \code{\link{Human-class}}}
 \usage{
-Human(model, objective = model@react_id[which(model@obj_coef != 0)],
-  speed = 0, ...)
+Human(
+  model,
+  objective = model@react_id[which(model@obj_coef != 0)],
+  speed = 0,
+  ...
+)
 }
 \arguments{
 \item{model}{model}
