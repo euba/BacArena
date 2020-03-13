@@ -757,7 +757,7 @@ plotSubUsage <- function(simlist, subs=vector(), cutoff=1e-2, ret_data=FALSE){
 #' @param useNames Use substance names instead of ids
 #' @param rm_unused Remove substances which do not change from plot
 #' @details Returns ggplot objects
-plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, ret_data=FALSE, useNames=FALSE, rm_unused=TRUE){
+plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, ret_data=FALSE, useNames=FALSE, rm_unused=TRUE, cutoff=1e-6){
   
   if(is(simlist, "Eval")) simlist <- list(simlist)
   if(length(subs)==0) {subs_tocheck <- names(getVarSubs(simlist[[1]]))
@@ -789,13 +789,13 @@ plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, re
   }
   df$time = df$time-1
   
-  if( useNames ) df$sub <- names(simlist[[1]]@mediac)[match(df$sub, simlist[[1]]@mediac)]
-  
   if( rm_unused ){
-    unused <- subs[sapply(subs_tocheck, function(sub){all(df[df$sub==sub,"mflux"]==0)})]
+    unused <- subs[sapply(subs_tocheck, function(sub){all(abs(df[df$sub==sub,"mflux"])<=cutoff)})]
     if( length(unused)>0 ) df <- df[!df$sub %in% unused,]
   }
-  
+
+  if( useNames ) df$sub <- names(simlist[[1]]@mediac)[match(df$sub, simlist[[1]]@mediac)]
+    
   q1 <- ggplot2::ggplot(df, ggplot2::aes_string(x="time", y="mflux")) + ggplot2::geom_line(ggplot2::aes_string(col="sub"), size=1) + 
         ggplot2::facet_wrap(~spec, scales="free_y") + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
   # q1_5 is the same as q2 but contains "+ ggplot2::facet_wrap(~spec, scales="free_y")" to plot the variance for each spec.   
