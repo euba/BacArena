@@ -5,6 +5,7 @@
 [![twitter](https://img.shields.io/twitter/follow/_bacarena?style=social&logo=twitter)](https://twitter.com/_bacarena)
 
 BacArena is an agent based modeling framework for cellular communities.
+[![DOI:10.1371/journal.pcbi.1005544](https://zenodo.org/badge/DOI/10.1371/journal.pcbi.1005544.svg)](https://doi.org/10.1371/journal.pcbi.1005544)
 
 Existing genome-scale metabolic models can be used to simulate growth and interactions in time and space.
 In BacArena two well established methods are merged: a) Flux balance analysis to predict the activity of
