@@ -1,11 +1,11 @@
 # BacArena <img src="man/bacarena.png" align="right" height = 150/>
+[![DOI:10.1371/journal.pcbi.1005544](https://zenodo.org/badge/DOI/10.1371/journal.pcbi.1005544.svg)](https://doi.org/10.1371/journal.pcbi.1005544)  
 [![CRAN version](http://www.r-pkg.org/badges/version/BacArena?color=blue)](https://cran.r-project.org/package=BacArena)
 ![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/BacArena)
 ![CRAN downloads/month](https://cranlogs.r-pkg.org/badges/BacArena)
 [![twitter](https://img.shields.io/twitter/follow/_bacarena?style=social&logo=twitter)](https://twitter.com/_bacarena)
 
 BacArena is an agent based modeling framework for cellular communities.
-[![DOI:10.1371/journal.pcbi.1005544](https://zenodo.org/badge/DOI/10.1371/journal.pcbi.1005544.svg)](https://doi.org/10.1371/journal.pcbi.1005544)
 
 Existing genome-scale metabolic models can be used to simulate growth and interactions in time and space.
 In BacArena two well established methods are merged: a) Flux balance analysis to predict the activity of
