@@ -1,3 +1,6 @@
+Title:    BacArena: Agent based modeling framework for cellular communities  
+Author:   Eugen Bauer and Johannes Zimmermann
+
 # BacArena <img src="man/bacarena.png" align="right" height = 150/>
 [![DOI:10.1371/journal.pcbi.1005544](https://zenodo.org/badge/DOI/10.1371/journal.pcbi.1005544.svg)](https://doi.org/10.1371/journal.pcbi.1005544)  
 [![CRAN version](http://www.r-pkg.org/badges/version/BacArena?color=blue)](https://cran.r-project.org/package=BacArena)

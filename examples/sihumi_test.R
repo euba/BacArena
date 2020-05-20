@@ -17,7 +17,7 @@ for(i in seq_along(sihumi)){
 }
 sihumi_test <- simEnv(arena, time=7, sec_obj = "mtf", with_shadow = T)
 
-#save(sihumi_test, file = "~/uni/bacarena/data/sihumi_test.rda")
+#save(sihumi_test, file = "~/uni/bacarena/data/sihumi_test.rda", compress="xz")
 #load("~/uni/bacarena/data/sihumi_test.rda")
 
 plotGrowthCurve(sihumi_test)[[1]]

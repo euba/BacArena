@@ -11,7 +11,8 @@ plotSpecActivity(
   spec_list = NULL,
   ret_data = FALSE,
   useNames = FALSE,
-  rm_unused = TRUE
+  rm_unused = TRUE,
+  cutoff = 1e-06
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ plotSpecActivity(
 \item{useNames}{Use substance names instead of ids}
 
 \item{rm_unused}{Remove substances which do not change from plot}
+
+\item{cutoff}{Minimum valu for fluxes to be considered}
 }
 \description{
 The generic function \code{plotSpecActivity} displays the input/output substances with the highest variance (could also be defiened manually) for all species

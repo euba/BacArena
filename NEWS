@@ -1,3 +1,9 @@
+BacArena v.1.8.2 (Release date: 2020-04-06)
+================
+- complied with new R CRAN guidelines (stringsAsFactors)
+- removed HeatMapFeeding
+
+
 BacArena v.1.8.1 (Release date: 2019-12-16)
 ================
 Changes:

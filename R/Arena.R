@@ -2944,9 +2944,9 @@ setMethod("plotShadowCost", "Eval", function(object, spec_nr=1, sub_nr=10, cutof
   # do not plot shadow costs but print statistics
   if(noplot){
     df2 <- data.frame()
-    for(s in levels(df$sub)){
+    for(s in unique(df$sub)){
       df2 <- rbind(df2, summary(df[which(df$sub==s),]$shadow))}
-    rownames(df2) <- levels(df$sub)
+    rownames(df2) <- unique(df$sub)
     colnames(df2) <- names(summary(df[which(df$sub==s),]$shadow))
     return(df2)
   }
@@ -3136,57 +3136,3 @@ setMethod("plotSubDist2", "Eval", function(object, sub, times=NULL){
     ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
   return(q)
 })
-
-#' @title Function for plotting heatmap of feeding between two selected cell models
-#'
-#' @description The generic function \code{HeatMapFeeding} returns a heatmap between two selected cell models. If there is feeding, the heatmap show only 
-#' the producer. The compounds are originated from the most varying substances of the first cell model called "speciesA".
-#' @export
-#' @rdname HeatMapFeeding
-#' @usage HeatMapFeeding(object, speciesA, speciesB, var_nr)
-#' @param object An object of class Eval.
-#' @param speciesA The sequence number of the first cell model in names(object@specs)
-#' @param speciesB The sequence number of the second cell model in names(object@specs)
-#' @param var_nr The number of the most varying speciesA's substances following plotSpecActivity structure
-#' @return Heatmap (ggplot2)
-#' 
-#' @examples 
-#' sim <- sihumi_test
-#' HeatMapFeeding(object = sim, speciesA = 1, speciesB = 2, var_nr = 78)
-#' 
-setGeneric("HeatMapFeeding", function(object, speciesA, speciesB, var_nr){standardGeneric("HeatMapFeeding")})
-#' @export
-#' @rdname HeatMapFeeding
-setMethod("HeatMapFeeding", "Eval", function(object, speciesA, speciesB, var_nr){
-  A <- BacArena::plotSpecActivity(object,spec_list = speciesA, var_nr = var_nr, ret_data = T)
-  z <- data.frame()
-  chronos <- 1:(length(object@simlist)-1)
-  for (t in chronos) { 
-    a<-data.frame()
-    a <-BacArena::findFeeding3(object, time = t, mets = A$sub[1:var_nr], plot = F)
-    if (nrow(a)!=0)
-      z <- rbind.data.frame(z,a)
-  }
-  d <- data.frame()
-  # prod:speciesA cons:speciesB   -> 1                       
-  # prod:speciesB cons:speciesA   -> -1
-  # NA -> 0
-  for (h in 1:nrow(z)){
-    if (z[h,1] == names(object@specs)[speciesA]) 
-      d[h,1] <- 1
-    else if (z[h,1] == names(object@specs)[speciesB]) 
-      d[h,1] <- -1
-    else
-      d[h,1] <- NA
-  }
-  colnames(d)[1] <- "status"
-  q <- cbind(z,d)
-  q$status[is.na(q$status)] <- 0
-  p3 <- ggplot2::ggplot(q, ggplot2::aes_string("sim_step","met")) +
-    ggplot2::geom_tile(ggplot2::aes_string(fill = "status"), colour = "white") +
-    ggplot2::scale_fill_gradient2(name = "Producer", low = "red", mid = "green", high = "blue", breaks=seq(-1,1,by=1),
-                                  labels = c(names(object@specs)[speciesB], "no feeding", names(object@specs)[speciesA])) +
-    ggplot2::xlab("Simulation Step") + ggplot2::ylab("Exchange Reactions") 
-  return((p3)) 
-})
-

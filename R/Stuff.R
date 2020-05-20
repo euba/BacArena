@@ -236,7 +236,7 @@ plotSubCurve <-function(simlist, mediac=NULL, time=c(NULL,NULL), scol=NULL, unit
   colnames(all_df)[1:2] <- c("sub", "time")
   plot_list <- list()
   
-  #levels(all_df$sub) = sort(simlist[[1]]@mediac)
+  #unique(all_df$sub) = sort(simlist[[1]]@mediac)
   if(length(simlist)>1){
     q1 <- ggplot2::ggplot(all_df, ggplot2::aes_string(color="sub", y="value", x="time")) + ggplot2::geom_line(size=1) + ggplot2::facet_wrap(~replc)    
     
@@ -602,9 +602,9 @@ plotAbundance <- function(simlist, time=c(NULL,NULL), col=colpal3, return_dat=F,
     all_df <- rbind(all_df, mat_bac_m)
   }
   if(return_dat){
-    abundances<-unlist(lapply(levels(all_df$species), function(s){
+    abundances<-unlist(lapply(unique(all_df$species), function(s){
       mean(all_df$value[which(all_df$species==s)])}))
-    names(abundances) <- levels(all_df$species)
+    names(abundances) <- unique(all_df$species)
     return(abundances)
   }else{
     q <- ggplot2::ggplot(all_df, ggplot2::aes_string("species", "value")) + ggplot2::geom_boxplot(ggplot2::aes_string(color="species", fill="species"), alpha = 0.2, outlier.size=1) + 
@@ -683,7 +683,7 @@ plotFluxVar <- function(simlist, metsel){
   concmean$time = concmean$time-1
   g <- ggplot2::ggplot(concmean, ggplot2::aes(color=concmean$met, y=concmean$mean, x=concmean$time, shape=concmean$org)) +
     ggplot2::geom_line(ggplot2::aes(x=concmean$time,y=concmean$mean,color=concmean$met),size=0.6) +
-    ggplot2::scale_shape_manual(values=1:nlevels(concmean$org)) +
+    ggplot2::scale_shape_manual(values=1:length(unique(concmean$org))) +
     ggplot2::geom_point(ggplot2::aes(shape=concmean$org),stroke=0.8,size=2.5) +
     ggplot2::geom_errorbar(ggplot2::aes(ymax=concmean$mean+concmean$sd, ymin=concmean$mean-concmean$sd), width=0.2)
   return(g)
@@ -726,7 +726,7 @@ plotSubUsage <- function(simlist, subs=vector(), cutoff=1e-2, ret_data=FALSE){
   if(!ret_data) df <- df[which(abs(df$mflux) > cutoff),,drop = FALSE] # do not drop if data is used further
   
   
-  if(length(levels(df$sub))>1){
+  if(length(unique(df$sub))>1){
     q1 <- ggplot2::ggplot(df, ggplot2::aes_string(x="time", y="mflux")) + ggplot2::geom_line(ggplot2::aes_string(col="spec"), size=1) + 
       ggplot2::facet_wrap(~sub, scales="free_y")+ ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
     
@@ -756,6 +756,7 @@ plotSubUsage <- function(simlist, subs=vector(), cutoff=1e-2, ret_data=FALSE){
 #' @param ret_data Set true if data should be returned
 #' @param useNames Use substance names instead of ids
 #' @param rm_unused Remove substances which do not change from plot
+#' @param cutoff Minimum valu for fluxes to be considered
 #' @details Returns ggplot objects
 plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, ret_data=FALSE, useNames=FALSE, rm_unused=TRUE, cutoff=1e-6){
   
@@ -780,10 +781,10 @@ plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, re
   }
   
   if(length(subs)==0){ # in case subs is not specified take substances with highest variance
-    mflux_var <- unlist(lapply(levels(df$sub), function(sub){
+    mflux_var <- unlist(lapply(unique(df$sub), function(sub){
       stats::var(df[which(df$sub==sub),]$mflux)
     }))
-    names(mflux_var) <- levels(df$sub)
+    names(mflux_var) <- unique(df$sub)
     mflux_var <- sort(mflux_var, decreasing = TRUE)
     df <- df[which(df$sub %in% names(mflux_var)[1:var_nr]),]
   }
@@ -804,7 +805,7 @@ plotSpecActivity <- function(simlist, subs=list(), var_nr=10, spec_list=NULL, re
     
   q2 <- ggplot2::ggplot(df, ggplot2::aes_string("sub", "mflux")) + ggplot2::geom_boxplot(ggplot2::aes_string(color="sub", fill="sub"), alpha=0.2) + 
     ggplot2::theme(axis.text.x =ggplot2::element_blank()) + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
-  #if(length(levels(df$spec)) > 1) q2 <- q2 + ggplot2::facet_wrap(~spec, scales="free_y") Not needed anymore because it is included in q1_5
+  #if(length(unique(df$spec)) > 1) q2 <- q2 + ggplot2::facet_wrap(~spec, scales="free_y") Not needed anymore because it is included in q1_5
   
   if(ret_data) return(df) else return(list(q1, q1_5, q2))
 }
@@ -869,13 +870,13 @@ plotReaActivity <- function(simlist, reactions=list(), spec_list=NULL, ret_data=
       }
     }
   }
-  if(length(levels(df$rea))>=1){
+  if(length(unique(df$rea))>=1){
     q1 <- ggplot2::ggplot(df, ggplot2::aes_string(x="time", y="mflux")) + ggplot2::geom_line(ggplot2::aes_string(col="rea"), size=1) + 
       ggplot2::facet_wrap(~spec, scales="free_y") + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
     
     q2 <- ggplot2::ggplot(df, ggplot2::aes_string("rea", "mflux")) + ggplot2::geom_boxplot(ggplot2::aes_string(color="rea", fill="rea"), alpha=0.2) + 
       ggplot2::theme(axis.text.x =ggplot2::element_blank()) + ggplot2::xlab("") + ggplot2::ylab("mmol/(h*g_dw)")
-    if(length(levels(df$spec)) > 2) q2 <- q2 + ggplot2::facet_wrap(~spec, scales="free_y")
+    if(length(unique(df$spec)) > 2) q2 <- q2 + ggplot2::facet_wrap(~spec, scales="free_y")
     
     df2 <- plyr::ddply(df, c("time","rea"), function(tmp) c("mflux"=sum(tmp$mflux) ))
     q3 <- ggplot2::ggplot(df2, ggplot2::aes_string("time", "rea")) + ggplot2::geom_tile(ggplot2::aes_string(fill = "mflux")) 
@@ -938,9 +939,9 @@ findFeeding3rep <- function(simlist, time, mets, plot=TRUE, mfunction="mean"){
   if (plot) {
   g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE)
   l <- igraph::layout.kamada.kawai(g)
-  plot(g,edge.color=grDevices::rainbow(length(levels(inter$met)))[as.numeric(inter$met)],
+  plot(g,edge.color=grDevices::rainbow(length(unique(inter$met)))[as.numeric(inter$met)],
        edge.width=3,edge.arrow.size=0.8,vertex.color=1:length(igraph::V(g)),layout=l)
-  legend("bottomright",legend=levels(inter$met),col=grDevices::rainbow(length(levels(inter$met))), pch=19, cex=0.7)
+  legend("bottomright",legend=unique(inter$met),col=grDevices::rainbow(length(unique(inter$met))), pch=19, cex=0.7)
   return(invisible(list(inter,g)))}
   else return(inter)
 }
