@@ -224,7 +224,7 @@ setMethod("addOrg", "Arena", function(object, specI, amount=1, x=NULL, y=NULL, p
   names(newmflux[[spectype]]) <- names(specI@lbnd)
   #shadow
   ex=sybil::findExchReact(specI@model)
-  newshadow[[spectype]] <- numeric(length(ex)+1)
+  newshadow[[spectype]] <- numeric(length(ex)+length(specI@rbiomass))
   names(newshadow[[spectype]]) <- c(ex@met_id, specI@rbiomass)
 
   type <- which(names(newspecs)==spectype) 
