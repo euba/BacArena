@@ -123,13 +123,13 @@ findrBiomass <- function(model, keys=c("biom", "cpd11416")){
 #' @param typename A string defining the name (set to model name in default case)
 #' @param lyse A boolean variable indicating if the organism should lyse after death.
 #' @param setExInf Enable if all lower bounds of exchange reaction which are set to zero (i.e. no uptake possible!) should be set to -infitity (default: true)
-#' @param setAllExInf Enable if all lower bounds of exchange reaction should be set to -infitity (default: false)
+#' @param setAllExInf Enable if all lower bounds of exchange reaction should be set to -infitity (default: true). Set this to FALSE in case you want to use the constraints that are instrinsically set in your input model.
 #' @param coupling_constraints List with coupling parameters.
 #' @param predator Name of organism which can kill this one.
 #' @param ... Arguments of \code{\link{Organism-class}}
 #' @return Object of class Organism
 Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]", esuffix="\\[e\\]", lyse=FALSE, feat=list(), 
-                     typename=NA, setExInf=TRUE, setAllExInf=FALSE, coupling_constraints=list(), predator="", ...){
+                     typename=NA, setExInf=TRUE, setAllExInf=TRUE, coupling_constraints=list(), predator="", ...){
   pot_biomass <- findrBiomass(model)
   if(all(model@obj_coef==0)){
     if(length(pot_biomass)==0) stop("No objection function set in model")
