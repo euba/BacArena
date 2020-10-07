@@ -186,15 +186,6 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
   if( setExInf ){ # if setExInf is true then set lower bound of all exchange reactions which have zero values to -INF
     lobnd[ which(names(lobnd) %in% medc & lobnd==0) ] <- -1000
   }
-  lobnd.ex <- lobnd[match(medc, rxname)]
-  lobnd.ex.med <- stats::median(lobnd.ex[ which( lobnd.ex < 0 & lobnd.ex > -1000 ) ])
-  if( !is.na(lobnd.ex.med) ){
-    print(paste0("Median lower bound for non-zero and non-Inf exchanges is:", round(lobnd.ex.med), 6))
-    if( lobnd.ex.med > -10 ){
-      warning("Many lower bounds of of the model seems to be set to non -infinity. Please be aware that they will be used as maximal uptake rates even when the available medium is more abundant! (set setAllExInf=TRUE to reset all exchanges to -INF)")
-      #print( lobnd.ex[ which( lobnd.ex < 0 & lobnd.ex >  lobnd.ex.med ) ] )
-    }    
-  }
   
   if(is.na(typename)) typename <- ifelse( length(sybil::mod_desc(model)) > 0, sybil::mod_desc(model), 
                                           ifelse( length(sybil::mod_name(model)) > 0, sybil::mod_name(model), 
