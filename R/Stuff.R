@@ -863,7 +863,7 @@ plotReaActivity <- function(simlist, reactions=list(), spec_list=NULL, ret_data=
     object <- simlist[[i]]  
     for(t in seq_along(object@mfluxlist)){
       for(spec in spec_list){
-        if(length(intersect(reactions, names(object@mfluxlist[[i]][[spec]]))) > 0 &  length(names(object@mfluxlist[[t]][[spec]])) > 0 ){
+        if(length(intersect(reactions, names(object@mfluxlist[[t]][[spec]]))) > 0 &  length(names(object@mfluxlist[[t]][[spec]])) > 0 ){
           mflux=object@mfluxlist[[t]][[spec]][which(names(object@mfluxlist[[t]][[spec]]) %in% reactions)]
           df <- rbind(df, data.frame(spec=spec, rea=names(mflux), mflux=unname(mflux), time=t, replc=i))
         }
