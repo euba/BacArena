@@ -388,7 +388,7 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
   if(is.na(solve_ok)){solve_ok = FALSE}
   if(!solve_ok | is.na(fbasl$obj) | fbasl$obj<cutoff){
     fbasl$obj <- 0
-    fbasl$fluxes <- rep(0, length(fbasl$fluxes))
+    fbasl$fluxes <- rep(0, length(lb))
   }
 
   if(sec_obj!="none" && fbasl$obj!=0){
@@ -396,7 +396,7 @@ setMethod("optimizeLP", "Organism", function(object, lpob=object@lpobj, lb=objec
            mtf =   {mod = sybil::changeBounds(object@model, react=1:length(lb), lb=lb, ub=ub);
                     mtf_sol <- sybil::optimizeProb(mod, algorithm="mtf", mtfobj=fbasl$obj, retOptSol=F);
                     mtf_ok  <- getLPstat(opt_sol=mtf_sol, solver=lpob@problem@solver)
-                    if( mtf_ok ) fbasl$fluxes = mtf_sol$fluxes},
+                    if( mtf_ok ) fbasl$fluxes = mtf_sol$fluxes[1:length(lb)]},
            opt_rxn={mod = sybil::changeBounds(object@model, object@model@react_id, lb=lb, ub=ub);
                     mod = sybil::changeBounds(mod, mod@react_id[which(obj_coef(mod)==1)], lb=fbasl$obj, ub=fbasl$obj);
                     mod <- sybil::changeObjFunc(mod, sample(mod@react_id,1));
