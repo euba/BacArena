@@ -2995,8 +2995,8 @@ setMethod("fluxVarSim", "Eval", function(object, rnd){
       model = changeBounds(model,model@react_id[which(bact@model@obj_coef==1)],lb=fbasl$obj,ub=fbasl$obj)
       nil=utils::capture.output(suppressMessages(fv <- fluxVar(model, bact@medium)))
       
-      flmat_max[bact@medium,j] = round(minSol(fv,lp_obj),rnd)
-      flmat_min[bact@medium,j] = round(maxSol(fv,lp_obj),rnd)
+      flmat_max[bact@medium,j] = round(maxSol(fv,lp_obj),rnd)
+      flmat_min[bact@medium,j] = round(minSol(fv,lp_obj),rnd)
       #mflmat[bact@medium,"max"] = mflmat[bact@medium,"max"] + round(minSol(fv,lp_obj),rnd)
       #mflmat[bact@medium,"min"] = mflmat[bact@medium,"min"] + round(maxSol(fv,lp_obj),rnd)
     }
