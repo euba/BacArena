@@ -189,6 +189,7 @@ simlist <- parLapply(cl, 1:replicates, function(i){
   sim   <- BacArena::simEnv(arena, time=5)
 })
 ```
+(please keep in mind that the Bac() object has to be created within the parLapply loop because it contains a pointer for the optimization object which must be unique for each parallel run)
 
 We can obtain a growth curve with standard deviation
 
