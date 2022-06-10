@@ -939,6 +939,7 @@ findFeeding3rep <- function(simlist, time, mets, plot=TRUE, mfunction="mean"){
   if (plot) {
   g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE)
   l <- igraph::layout.kamada.kawai(g)
+  inter$met <- factor(inter$met)
   plot(g,edge.color=grDevices::rainbow(length(unique(inter$met)))[as.numeric(inter$met)],
        edge.width=3,edge.arrow.size=0.8,vertex.color=1:length(igraph::V(g)),layout=l)
   legend("bottomright",legend=unique(inter$met),col=grDevices::rainbow(length(unique(inter$met))), pch=19, cex=0.7)
