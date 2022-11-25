@@ -16,7 +16,7 @@ Organism(
   feat = list(),
   typename = NA,
   setExInf = TRUE,
-  setAllExInf = FALSE,
+  setAllExInf = TRUE,
   coupling_constraints = list(),
   predator = "",
   ...
@@ -43,7 +43,7 @@ Organism(
 
 \item{setExInf}{Enable if all lower bounds of exchange reaction which are set to zero (i.e. no uptake possible!) should be set to -infitity (default: true)}
 
-\item{setAllExInf}{Enable if all lower bounds of exchange reaction should be set to -infitity (default: false)}
+\item{setAllExInf}{Enable if all lower bounds of exchange reaction should be set to -infitity (default: true). Set this to FALSE in case you want to use the constraints that are instrinsically set in your input model.}
 
 \item{coupling_constraints}{List with coupling parameters.}
 

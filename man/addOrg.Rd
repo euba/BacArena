@@ -44,7 +44,7 @@ addOrg(
 
 \item{y}{A numeric vector giving the y positions of individuals on the grid.}
 
-\item{posmat}{A As an alternative to parameter x, y, a matrix with corrdinates an be specified}
+\item{posmat}{A As an alternative to parameter x, y, a matrix with corrdinates an be specified (matrix entries with a '1' indicate an organism to be added)}
 
 \item{biomass}{A numeric vector giving the starting biomass of the individuals. (unit: fg)}
 

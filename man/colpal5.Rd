@@ -4,7 +4,9 @@
 \name{colpal5}
 \alias{colpal5}
 \title{Color palette}
-\format{A vector with 64 color hex-codes}
+\format{
+A vector with 64 color hex-codes
+}
 \source{
 \url{http://graphicdesign.stackexchange.com/questions/3682/where-can-i-find-a-large-palette-set-of-contrasting-colors-for-coloring-many-d}
 }

@@ -4,7 +4,9 @@
 \name{colpal3}
 \alias{colpal3}
 \title{Color palette}
-\format{A vector with 22 color hex-codes}
+\format{
+A vector with 22 color hex-codes
+}
 \source{
 \url{http://www.iscc-archive.org/pdf/PC54_1724_001.pdf}
 }

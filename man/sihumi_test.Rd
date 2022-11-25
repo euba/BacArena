@@ -4,7 +4,9 @@
 \name{sihumi_test}
 \alias{sihumi_test}
 \title{Multi-species test data set}
-\format{An object of class \code{eval}}
+\format{
+An object of class \code{eval}
+}
 \usage{
 data(sihumi_test)
 }

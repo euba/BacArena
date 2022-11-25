@@ -4,7 +4,9 @@
 \name{colpal1}
 \alias{colpal1}
 \title{Color palette}
-\format{A vector with 269 color hex-codes}
+\format{
+A vector with 269 color hex-codes
+}
 \source{
 \url{http://godsnotwheregodsnot.blogspot.ru/2013/11/kmeans-color-quantization-seeding.html}
 }

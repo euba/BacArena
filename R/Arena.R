@@ -148,7 +148,7 @@ setMethod("seed", "Arena", function(object){return(object@seed)})
 #' @param amount A numeric number giving the number of individuals to add.
 #' @param x A numeric vector giving the x positions of individuals on the grid.
 #' @param y A numeric vector giving the y positions of individuals on the grid.
-#' @param posmat A As an alternative to parameter x, y, a matrix with corrdinates an be specified
+#' @param posmat A As an alternative to parameter x, y, a matrix with corrdinates an be specified (matrix entries with a '1' indicate an organism to be added)
 #' @param n0 Start column of matrix to take free positions from (default 1)
 #' @param m0 Start row of matrix to take free positions from (default 1)
 #' @param m End row of matrix to take free positions from (default arena@n)
@@ -175,8 +175,10 @@ setGeneric("addOrg", function(object, specI, amount=1, x=NULL, y=NULL, posmat=NU
 setMethod("addOrg", "Arena", function(object, specI, amount=1, x=NULL, y=NULL, posmat=NULL, biomass=NA, n0=NULL, n=NULL, m0=NULL, m=NULL){
   switch(class(object),"Arena"={object <- object}, "Eval"={object <- getArena(object)}, stop("Please supply an object of class Arena or Eval."))
   if(length(posmat)>0){
+    if(amount!=1) stop("Either 'amount' or 'posmat' should be provided.")
     if(nrow(posmat)!=object@m | ncol(posmat)!=object@n){
       stop("Matrix posmat has invalid dimensions (should be equal to arena)")}
+      if(!1 %in% posmat) stop("Matrix needs to have entries with '1' for each orgnanism that should be added")
       idx <- which(posmat==1, arr.ind=TRUE)
       x <- idx[,2]
       y <- idx[,1]
