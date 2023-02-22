@@ -946,3 +946,55 @@ findFeeding3rep <- function(simlist, time, mets, plot=TRUE, mfunction="mean"){
   return(invisible(list(inter,g)))}
   else return(inter)
 }
+
+#' @title Function for testing ecological interactions 
+#'
+#' @description The generic function \code{ecoInteract} takes a list of models and computes single and co-growth rates and returns ecological interactions based on the comparison of growth rates. 
+#' @export
+#' @rdname ecoInteract
+#' 
+#' @param models A list with model files in sybil format
+#' @param diet Growth medium with column 'compounds' (metabolite identified) and 'maxFlux' (concentration in mM)
+#' @param cores Number of cpus used for computation
+#' @return data.frame with single, and co-growth rates and ecological interaction
+ecoInteract <- function(models, diet, cores=1){
+    comb <- combinat::combn(length(models),2)
+    if(cores>1) doParallel::registerDoParallel(cores)
+
+    eco.interact.dt <- foreach::foreach(i=1:ncol(comb), .combine=rbind) %dopar%{
+        mod1 <- models[[comb[1,i]]]; mod1@mod_desc <- mod1@mod_name
+        mod2 <- models[[comb[2,i]]]; mod2@mod_desc <- mod2@mod_name
+
+        bac1 <- Bac(mod1,setAllExInf=TRUE, cellweight_sd=0, limit_growth=F)
+        arena1 <- Arena(n=10,m=10)
+        arena1 <- addOrg(arena1, bac1, amount=10)
+        arena1 <- addSubs(arena1, smax=diet$maxFlux, mediac=paste0("EX_",diet$compounds,"_e0"), unit="mM")
+        sim1 <- simEnv(arena1, time=3, sec_obj="mtf", verbose=F)
+
+        bac2 <- Bac(mod2,setAllExInf=TRUE, cellweight_sd=0, limit_growth=F)
+        arena2 <- Arena(n=10,m=10)
+        arena2 <- addOrg(arena2, bac2, amount=10)
+        arena2 <- addSubs(arena2, smax=diet$maxFlux, mediac=paste0("EX_",diet$compounds,"_e0"), unit="mM")
+        sim2 <- simEnv(arena2, time=3, sec_obj="mtf", verbose=F)
+
+        arena3 <- Arena(n=10,m=10)
+        arena3 <- addOrg(arena3, bac1, amount=5)
+        arena3 <- addOrg(arena3, bac2, amount=5)
+        arena3 <- addSubs(arena3, smax=diet$maxFlux, mediac=paste0("EX_",diet$compounds,"_e0"), unit="mM")
+        sim3 <- simEnv(arena3, time=3, sec_obj="mtf", verbose=F)
+
+        co.r1 <- nrow(sim3@simlist[[3]][sim3@simlist[[3]]$type==1,]) / nrow(sim3@simlist[[2]][sim3@simlist[[2]] $type==1,])
+        co.r2 <- nrow(sim3@simlist[[3]][sim3@simlist[[3]]$type==2,]) / nrow(sim3@simlist[[2]][sim3@simlist[[2]] $type==2,])
+
+        si.r1 <- nrow(sim1@simlist[[3]]) / nrow(sim1@simlist[[2]])
+        si.r2 <- nrow(sim2@simlist[[3]]) / nrow(sim2@simlist[[2]])
+
+        interact.dt <- data.frame(org1=mod1@mod_name, org2=mod2@mod_name, si.r1, si.r2, co.r1, co.r2)
+        sign1 <- ifelse(round(interact.dt$si.r1,2) > round(interact.dt$co.r1,2),"-",ifelse(round(interact.dt$si.r1,2) < round(interact.dt$co.r1,2),"+"," "))
+        sign2 <- ifelse(round(interact.dt$si.r2,2) > round(interact.dt$co.r2,2),"-",ifelse(round(interact.dt$si.r2,2) < round(interact.dt$co.r2,2),"+"," "))
+        interact.dt$interaction <- paste0(sign1,"/",sign2)
+        interact.dt
+    }
+
+    return(eco.interact.dt)
+}

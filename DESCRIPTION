@@ -32,7 +32,9 @@ Imports:
     Rcpp,
     igraph,
     stringr,
-    R.matlab
+    R.matlab,
+    foreach,
+    combinat
 Suggests:
     parallel,
     knitr,
@@ -42,5 +44,5 @@ LinkingTo: Rcpp,
     RcppEigen
 License: GPL-3 | file LICENSE
 VignetteBuilder: knitr
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3
 LazyData: true
