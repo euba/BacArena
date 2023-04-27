@@ -187,9 +187,9 @@ Organism <- function(model, algo="fba", ex="EX_", ex_comp=NA, csuffix="\\[c\\]",
     lobnd[ which(names(lobnd) %in% medc & lobnd==0) ] <- -1000
   }
   
-  if(is.na(typename)) typename <- ifelse( length(sybil::mod_desc(model)) > 0, sybil::mod_desc(model), 
-                                          ifelse( length(sybil::mod_name(model)) > 0, sybil::mod_name(model), 
-                                                  ifelse( length(sybil::mod_id(model)) > 0, sybil::mod_id(model), "test" )))
+  if(is.na(typename)) typename <- ifelse( length(sybil::mod_name(model)) > 0 && sybil::mod_name(model) != "", sybil::mod_name(model), 
+                                          ifelse( length(sybil::mod_id(model)) > 0 && sybil::mod_id(model) != "", sybil::mod_id(model), 
+                                                  ifelse( length(sybil::mod_desc(model)) > 0 && sybil::mod_desc(model) != "", sybil::mod_desc(model), "test" )))
   if(algo=="coupling"){
     #lpobject <- sybil::sysBiolAlg(model, algorithm="mtfEasyConstraint2", easyConstraint=coupling_constraints, pFBAcoeff = 1e-5)
     lpobject <- sybil::sysBiolAlg(model, algorithm="mtfEasyConstraint", easyConstraint=coupling_constraints)
