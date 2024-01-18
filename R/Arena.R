@@ -1697,6 +1697,7 @@ setMethod("getArena", "Eval", function(object, time=(length(object@medlist)-1)){
                  phenotypes=object@phenotypes , media=newmedia, orgdat=occdat, stir=object@stir, 
                  shadow=object@shadowlist[[time]], seed=object@seed, exchanges=object@exchangeslist[[time]])
   arena@occupyM <- object@occupyM
+  arena@removeM <- object@removeM
   # reinitialize lp objects
   for(i in seq_along(arena@specs)){ 
     algo <- ifelse(.hasSlot(arena@specs[[i]], "algo"), arena@specs[[i]]@algo, "fba")
