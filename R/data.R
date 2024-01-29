@@ -67,3 +67,12 @@
 #' @usage data(sihumi_test)
 #'
 "sihumi_test"
+
+#' Metabolic model of E. coli
+#'
+#' Data contains the metabolic model of Escherichia coli (iJO1366, Orth et al. 2011)
+#'
+#' @format An object of class \code{eval}
+#' @usage data(ecoli)
+#'
+"ecoli"
