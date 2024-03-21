@@ -76,7 +76,7 @@ R CMD INSTALL  sybilSBML_3.0.5.tar.gz
 
 ## Documentation
 
-- A tutorial is available: [Introduction](https://CRAN.R-project.org/package=BacArena/vignettes/BacArena-Introduction.pdf) 
+- A tutorial is available: [Introduction](https://github.com/euba/BacArena/blob/master/vignettes/BacArena-Introduction.pdf) 
 - Short tutorials are on [github gist](https://gist.github.com/jotech)
 
 
