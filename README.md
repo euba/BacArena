@@ -33,7 +33,7 @@ Features:
 
 ## Installation
 
-- Install the latest CRAN release: 
+- Install the latest CRAN release (currently not available): 
 ```r
 install.packages("BacArena")
 ```
@@ -41,6 +41,7 @@ install.packages("BacArena")
 - Install the development version:
 ```r
 library(devtools)
+install_github("SysBioChalmers/sybil")
 install_github("euba/bacarena")
 ```
 
