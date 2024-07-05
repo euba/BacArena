@@ -2703,10 +2703,10 @@ setMethod("findFeeding2", "Eval", function(object, time, mets, rm_own=T, ind_thr
 #' @param cutoff Accuracy of crossfeeding interaction (minimal flux to be considered)
 #' @return Graph (igraph)
 #' 
-setGeneric("findFeeding3", function(object, time, mets, plot=TRUE, cutoff=1e-6){standardGeneric("findFeeding3")})
+setGeneric("findFeeding3", function(object, time, mets, plot=TRUE, cutoff=1e-6, useNames=FALSE){standardGeneric("findFeeding3")})
 #' @export
 #' @rdname findFeeding3
-setMethod("findFeeding3", "Eval", function(object, time, mets, plot=TRUE, cutoff=1e-6){
+setMethod("findFeeding3", "Eval", function(object, time, mets, plot=TRUE, cutoff=1e-6, useNames=FALSE){
   mets = intersect(object@mediac,as.character(mets))
   time = time+1
   mflux = object@mfluxlist[[time]]
@@ -2735,6 +2735,8 @@ setMethod("findFeeding3", "Eval", function(object, time, mets, plot=TRUE, cutoff
     return(inter)
   }
   inter$met <- factor(inter$met)
+  if( useNames ) inter$met <- factor(names(object@mediac)[match(inter$met, object@mediac)])
+
   if (plot) {
   g <- igraph::graph.data.frame(inter[,1:2], directed=TRUE)
   l <- igraph::layout.kamada.kawai(g)
