@@ -2,6 +2,7 @@
 % Please edit documentation in R/BacArena.R
 \docType{package}
 \name{BacArena}
+\alias{BacArena-package}
 \alias{BacArena}
 \title{BacArena: An Agent-Based Modeling Framework for Cellular Communities}
 \description{
@@ -24,3 +25,20 @@ The Organism functions ...
 The Substance functions ...
 }
 
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://BacArena.github.io/}
+  \item Report bugs at \url{https://github.com/euba/BacArena/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Johannes Zimmermann \email{j.zimmermann@iem.uni-kiel.de}
+
+Authors:
+\itemize{
+  \item Eugen Bauer \email{eugen.bauer@uni.lu}
+}
+
+}

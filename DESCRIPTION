@@ -44,5 +44,5 @@ LinkingTo: Rcpp,
     RcppEigen
 License: GPL-3 | file LICENSE
 VignetteBuilder: knitr
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.0
 LazyData: true

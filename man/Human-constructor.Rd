@@ -17,7 +17,7 @@ Human(
 
 \item{objective}{A character vector representing the current reaction which should be used as an objective function for the flux balance analysis.}
 
-\item{speed}{A integer vector representing the speed by which bacterium is moving (given by cell per iteration).}
+\item{speed}{A integer vector representing the speed by which a cell is moving (given by cell per iteration).}
 
 \item{...}{Arguments of \code{\link{Organism}}}
 }
