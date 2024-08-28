@@ -885,7 +885,7 @@ setMethod("simEnv", "Arena", function(object, time, lrw=NULL, continue=FALSE, re
     if(nrow(arena@orgdat) > 0){ # if there are organisms left
       org.count <- nrow(arena@orgdat)
       for(j in 1:org.count){ # for each organism in arena
-        if(verbose) cat("\rOrganims",j,"/",org.count)
+        if(verbose) cat("\rOrganisms",j,"/",org.count)
         org <- arena@specs[[arena@orgdat[j,'type']]]
         bacnum = round((arena@scale/(org@cellarea*10^(-8)))) #calculate the number of bacteria individuals per gridcell
         switch(class(org),
